@@ -24,7 +24,7 @@ function dbConnection(){
 		die('Error: No database connection!');
 	} else {
 		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-		$connect->set_charset("latin1");
+		$connect->set_charset("utf8mb4");
 		return $connect;
 	}
 }
