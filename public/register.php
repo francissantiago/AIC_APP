@@ -1,6 +1,8 @@
 <?php
 $path = $_SERVER['DOCUMENT_ROOT'];
 include_once ($path.'/public/partials/header.php');
+include_once ($path.'/functions/all_includes.php');
+$get_termsAndCondictions = get_termsAndCondictions();
 ?>
 <!-- App Capsule -->
 <div id="appCapsule">
@@ -75,27 +77,35 @@ include_once ($path.'/public/partials/header.php');
 			</div>
 			<div class="modal-body">
 				<p>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc fermentum, urna eget finibus
-					fermentum, velit metus maximus erat, nec sodales elit justo vitae sapien. Sed fermentum
-					varius erat, et dictum lorem. Cras pulvinar vestibulum purus sed hendrerit. Praesent et
-					auctor dolor. Ut sed ultrices justo. Fusce tortor erat, scelerisque sit amet diam rhoncus,
-					cursus dictum lorem. Ut vitae arcu egestas, congue nulla at, gravida purus.
-				</p>
-				<p>
-					Donec in justo urna. Fusce pretium quam sed viverra blandit. Vivamus a facilisis lectus.
-					Nunc non aliquet nulla. Aenean arcu metus, dictum tincidunt lacinia quis, efficitur vitae
-					dui. Integer id nisi sit amet leo rutrum placerat in ac tortor. Duis sed fermentum mi, ut
-					vulputate ligula.
-				</p>
-				<p>
-					Vivamus eget sodales elit, cursus scelerisque leo. Suspendisse lorem leo, sollicitudin
-					egestas interdum sit amet, sollicitudin tristique ex. Class aptent taciti sociosqu ad litora
-					torquent per conubia nostra, per inceptos himenaeos. Phasellus id ultricies eros. Praesent
-					vulputate interdum dapibus. Duis varius faucibus metus, eget sagittis purus consectetur in.
-					Praesent fringilla tristique sapien, et maximus tellus dapibus a. Quisque nec magna dapibus
-					sapien iaculis consectetur. Fusce in vehicula arcu. Aliquam erat volutpat. Class aptent
-					taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
-				</p>
+					<?php
+						if(empty($get_termsAndCondictions)){
+							echo "Sem termos e condições.";
+						} else {
+							foreach ($get_termsAndCondictions as $key => $value):
+								$terms_id = $value['terms_id'];
+								$terms_user_author = $value['terms_user_author'];
+								$terms_user_editor = $value['terms_user_editor'];
+								$terms_title = $value['terms_title'];
+								$terms_text = $value['terms_text'];
+								$terms_created_at = date('d/m/Y H:i', strtotime($value['terms_created_at']));
+
+								echo $terms_title;
+								echo "<p>";
+								echo $terms_text;
+								echo "</p>";
+								echo "<p>";
+								echo "Criado em: ".$terms_created_at;
+								echo "</p>";
+								if (!is_null($value['terms_updated_at'])) {
+									$terms_updated_at = date('d/m/Y H:i', strtotime($value['terms_updated_at']));
+									echo "<p>";
+									echo "Atualizado em: ".$terms_updated_at;
+									echo "</p>";
+								}
+		 					endforeach;
+		 				}
+	 				?>
+	 			</p>
 			</div>
 		</div>
 	</div>
