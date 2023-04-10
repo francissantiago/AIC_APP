@@ -5,7 +5,7 @@ include_once($path.'/public/partials/header.php');
 <!-- App Capsule -->
 <div id="appCapsule">
 	<div class="section mt-2 text-center">
-		<h1>Log in</h1>
+		<h1>Entrar</h1>
 		<h4>Preencha o formulário para entrar</h4>
 	</div>
 	<div class="section mb-5 p-2">
@@ -14,8 +14,8 @@ include_once($path.'/public/partials/header.php');
 				<div class="card-body pb-1">
 					<div class="form-group basic">
 						<div class="input-wrapper">
-							<label class="label" for="email1">CPF</label>
-							<input type="email" class="form-control" id="email1" placeholder="Seu e-mail">
+							<label class="label" for="userLogin">CPF</label>
+							<input type="text" class="form-control" id="userLogin" placeholder="Seu CPF">
 							<i class="clear-input">
 								<ion-icon name="close-circle"></ion-icon>
 							</i>
@@ -24,9 +24,9 @@ include_once($path.'/public/partials/header.php');
 
 					<div class="form-group basic">
 						<div class="input-wrapper">
-							<label class="label" for="password1">Password</label>
-							<input type="password" class="form-control" id="password1" autocomplete="off"
-								placeholder="Your password">
+							<label class="label" for="userPassword">Senha</label>
+							<input type="password" class="form-control" id="userPassword" autocomplete="off"
+								placeholder="Sua Senha">
 							<i class="clear-input">
 								<ion-icon name="close-circle"></ion-icon>
 							</i>
@@ -36,12 +36,12 @@ include_once($path.'/public/partials/header.php');
 			</div>
 			<div class="form-links mt-2">
 				<div>
-					<a href="app-register.html">Register Now</a>
+					<a href="register">Registrar</a>
 				</div>
-				<div><a href="app-forgot-password.html" class="text-muted">Forgot Password?</a></div>
+				<div><a href="forgotPass" class="text-muted">Esqueceu a senha?</a></div>
 			</div>
 			<div class="form-button-group  transparent">
-				<button type="submit" class="btn btn-primary btn-block btn-lg">Log in</button>
+				<button type="submit" class="btn btn-primary btn-block btn-lg">Entrar</button>
 			</div>
 		</form>
 	</div>
