@@ -7,4 +7,5 @@ RewriteCond %{SCRIPT_FILENAME} !-f
 
 RewriteRule ^index$ index.php [NC]
 RewriteRule ^login$ public/login.php [NC]
+RewriteRule ^register$ public/register.php [NC]
 </IfModule>
