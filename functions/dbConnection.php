@@ -28,6 +28,4 @@ function dbConnection(){
 		return $connect;
 	}
 }
-
-var_dump(dbConnection());
 ?>
