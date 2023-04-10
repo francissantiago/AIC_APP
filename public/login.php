@@ -56,5 +56,15 @@ include_once($path.'/public/partials/header.php');
 <script src="<?php $path;?>/assets/js/plugins/splide/splide.min.js"></script>
 <!-- Base Js File -->
 <script src="<?php $path;?>/assets/js/base.js"></script>
+<!-- Custom JS -->
+<script type="text/javascript">
+// Focar no input de login ao carregar a tela e formatar CPF
+$(document).ready(function(){
+	$('#userLogin').focus();
+	var mask_login = $('#userLogin');
+	mask_login.focus();
+	mask_login.mask('999.999.999-99', {reverse: true});
+});
+</script>
 </body>
 </html>

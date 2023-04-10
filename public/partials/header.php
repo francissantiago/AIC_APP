@@ -16,6 +16,10 @@ $path = $_SERVER['DOCUMENT_ROOT'];
 	<link rel="apple-touch-icon" sizes="180x180" href="<?php $path;?>/assets/img/icon/192x192.png">
 	<link rel="stylesheet" href="<?php $path;?>/assets/css/style.css">
 	<link rel="manifest" href="<?php $path;?>/__manifest.json">
+	<!-- JQuery -->
+	<script src="<?php $path;?>/assets/js/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+	<!-- JQuery Mask -->
+	<script src="<?php $path;?>/assets/js/jquery.maskedinput.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 	<!-- loader -->
