@@ -1,6 +1,6 @@
 <?php
 $path = $_SERVER['DOCUMENT_ROOT'];
-include_once($path.'/public/partials/header.php');
+include_once ($path.'/public/partials/header.php');
 ?>
 <!-- App Capsule -->
 <div id="appCapsule">

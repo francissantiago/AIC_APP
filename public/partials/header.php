@@ -1,6 +1,6 @@
 <?php
 $path = $_SERVER['DOCUMENT_ROOT'];
-require($path.'/functions/vars.php');
+require ($path.'/functions/vars.php');
 ?>
 <!doctype html>
 <html lang="pt-br">
