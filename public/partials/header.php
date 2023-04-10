@@ -1,5 +1,6 @@
 <?php
 $path = $_SERVER['DOCUMENT_ROOT'];
+require($path.'/functions/vars.php');
 ?>
 <!doctype html>
 <html lang="pt-br">
@@ -9,8 +10,8 @@ $path = $_SERVER['DOCUMENT_ROOT'];
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<meta name="theme-color" content="#000000">
-	<title>AIC APP</title>
-	<meta name="description" content="AIC - Administração de Igrejas Cristã">
+	<title><?php echo $siteName; ?></title>
+	<meta name="description" content="AIC - Administração de Igrejas Cristãs">
 	<meta name="keywords" content="bootstrap, wallet, mobile, html, responsive, christian" />
 	<link rel="icon" type="image/png" href="<?php $path;?>/assets/img/favicon.png" sizes="32x32">
 	<link rel="apple-touch-icon" sizes="180x180" href="<?php $path;?>/assets/img/icon/192x192.png">
