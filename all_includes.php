@@ -11,17 +11,11 @@ $path = $_SERVER['DOCUMENT_ROOT'];
 date_default_timezone_set('America/Sao_Paulo');
 error_reporting(E_ERROR | E_PARSE | E_ALL);
 
-require ($path.'/functions/dbConnection.php');
-require ($path.'/functions/vars.php');
+require_once($path.'/settings/dbConnection.php');
+$conn =  dbConnection();
+require_once($path.'/settings/vars.php');
 
 if (isset($_SESSION['session_userLogin'])) {
 	$userSessionId = $_SESSION['session_userLogin'];
 }
-
-/*
-* ==================================================
-* Funções
-* ==================================================
-*/
-require ($path.'/functions/terms/general.php');
 ?>

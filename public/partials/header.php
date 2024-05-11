@@ -1,6 +1,5 @@
 <?php
-$path = $_SERVER['DOCUMENT_ROOT'];
-require ($path.'/functions/vars.php');
+require_once ($_SERVER['DOCUMENT_ROOT'].'/all_includes.php');
 ?>
 <!doctype html>
 <html lang="pt-br">
@@ -20,11 +19,11 @@ require ($path.'/functions/vars.php');
 	<!-- JQuery -->
 	<script src="<?php $path;?>/assets/js/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
 	<!-- JQuery Mask -->
-	<script src="<?php $path;?>/assets/js/jquery.maskedinput.min.js" crossorigin="anonymous"></script>
+	<script src="<?php $path;?>/assets/js/jquery.mask.js" crossorigin="anonymous"></script>
 </head>
 <body>
 	<!-- loader -->
-	<div id="loader">
+	<!-- <div id="loader">
 		<img src="<?php $path;?>/assets/img/loading-icon.png" alt="icon" class="loading-icon">
-	</div>
+	</div> -->
 	<!-- * loader -->

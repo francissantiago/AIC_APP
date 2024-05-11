@@ -1,8 +1,19 @@
 <?php
 $path = $_SERVER['DOCUMENT_ROOT'];
-include_once ($path.'/public/partials/header.php');
-include_once ($path.'/functions/all_includes.php');
-$get_termsAndCondictions = get_termsAndCondictions();
+require ($path.'/public/partials/header.php');
+require ($path.'/controllers/policies/PoliciesController.php');
+
+/* Recupera informações de políticas e termos de usuário */
+$getPoliciesClass = new PoliciesController($conn);
+// Políticas de Usuário
+$callResponsePolicies = $getPoliciesClass->get_userPolicies();
+$getResponsePolicies_code = $callResponsePolicies['code'];
+$getResponsePolicies_message = $callResponsePolicies['message'];
+// Termos de Usuário
+$callResponseTerms = $getPoliciesClass->get_userTerms();
+$getResponseTerms_code = $callResponseTerms['code'];
+$getResponseTerms_message = $callResponseTerms['message'];
+
 ?>
 <!-- App Capsule -->
 <div id="appCapsule">
@@ -50,7 +61,15 @@ $get_termsAndCondictions = get_termsAndCondictions();
 						<div class="form-check">
 							<input type="checkbox" class="form-check-input" id="customCheckb1">
 							<label class="form-check-label" for="customCheckb1">
-								Eu aceito os <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">termos e condições</a>
+								Eu aceito os <a href="#" data-bs-toggle="modal" data-bs-target="#policiesModal">Políticas de Usuário</a>.
+							</label>
+						</div>
+					</div>
+					<div class="custom-control custom-checkbox mt-2 mb-1">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="customCheckb2">
+							<label class="form-check-label" for="customCheckb2">
+								Eu aceito os <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Termos e Condições de Usuário</a>.
 							</label>
 						</div>
 					</div>
@@ -66,43 +85,84 @@ $get_termsAndCondictions = get_termsAndCondictions();
 </div>
 <!-- * App Capsule -->
 
+<!-- Policies Modal -->
+<div class="modal fade modalbox" id="policiesModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Políticas de Usuário</h5>
+				<a href="#" data-bs-dismiss="modal">Fechar</a>
+			</div>
+			<div class="modal-body">
+				<p>
+					<?php
+						if(!is_array($getResponsePolicies_message)){
+							echo "Sem termos e condições.";
+						} else {
+							foreach ($getResponsePolicies_message as $value) {
+								$policy_id = $value['policy_id'];
+								$policy_user_author = $value['policy_user_author'];
+								$policy_user_editor = $value['policy_user_editor'];
+								$policy_title = $value['policy_title'];
+								$policy_text = $value['policy_text'];
+								$policy_created_at = date('d/m/Y H:i', strtotime($value['policy_created_at']));
+
+								echo "<p>";
+								echo $policy_text;
+								echo "</p>";
+								echo "<p>";
+								echo "Criado em: ".$policy_created_at;
+								echo "</p>";
+								if (!is_null($value['policy_updated_at'])) {
+									$policy_updated_at = date('d/m/Y H:i', strtotime($value['policy_updated_at']));
+									echo "<p>";
+									echo "Atualizado em: ".$policy_updated_at;
+									echo "</p>";
+								}
+		 					}
+		 				}
+	 				?>
+	 			</p>
+			</div>
+		</div>
+	</div>
+</div>
 
 <!-- Terms Modal -->
 <div class="modal fade modalbox" id="termsModal" tabindex="-1" role="dialog">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title">Termos e Condições</h5>
+				<h5 class="modal-title">Termos e Condições de Usuário</h5>
 				<a href="#" data-bs-dismiss="modal">Fechar</a>
 			</div>
 			<div class="modal-body">
 				<p>
 					<?php
-						if(empty($get_termsAndCondictions)){
+						if(!is_array($getResponseTerms_message)){
 							echo "Sem termos e condições.";
 						} else {
-							foreach ($get_termsAndCondictions as $key => $value):
-								$terms_id = $value['terms_id'];
-								$terms_user_author = $value['terms_user_author'];
-								$terms_user_editor = $value['terms_user_editor'];
-								$terms_title = $value['terms_title'];
-								$terms_text = $value['terms_text'];
-								$terms_created_at = date('d/m/Y H:i', strtotime($value['terms_created_at']));
+							foreach ($getResponseTerms_message as $value) {
+								$term_id = $value['term_id'];
+								$term_user_author = $value['term_user_author'];
+								$term_user_editor = $value['term_user_editor'];
+								$term_title = $value['term_title'];
+								$term_text = $value['term_text'];
+								$term_created_at = date('d/m/Y H:i', strtotime($value['term_created_at']));
 
-								echo $terms_title;
 								echo "<p>";
-								echo $terms_text;
+								echo $term_text;
 								echo "</p>";
 								echo "<p>";
-								echo "Criado em: ".$terms_created_at;
+								echo "Criado em: ".$term_created_at;
 								echo "</p>";
-								if (!is_null($value['terms_updated_at'])) {
-									$terms_updated_at = date('d/m/Y H:i', strtotime($value['terms_updated_at']));
+								if (!is_null($value['term_updated_at'])) {
+									$term_updated_at = date('d/m/Y H:i', strtotime($value['term_updated_at']));
 									echo "<p>";
-									echo "Atualizado em: ".$terms_updated_at;
+									echo "Atualizado em: ".$term_updated_at;
 									echo "</p>";
 								}
-		 					endforeach;
+		 					}
 		 				}
 	 				?>
 	 			</p>
