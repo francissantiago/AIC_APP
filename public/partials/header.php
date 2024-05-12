@@ -25,7 +25,7 @@ require_once ($_SERVER['DOCUMENT_ROOT'].'/all_includes.php');
 </head>
 <body>
 	<!-- loader -->
-	<!-- <div id="loader">
+	<div id="loader">
 		<img src="<?php $path;?>/assets/img/loading-icon.png" alt="icon" class="loading-icon">
-	</div> -->
+	</div>
 	<!-- * loader -->
