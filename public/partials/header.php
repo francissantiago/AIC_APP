@@ -20,6 +20,8 @@ require_once ($_SERVER['DOCUMENT_ROOT'].'/all_includes.php');
 	<script src="<?php $path;?>/assets/js/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
 	<!-- JQuery Mask -->
 	<script src="<?php $path;?>/assets/js/jquery.mask.js" crossorigin="anonymous"></script>
+	<!-- SweetAlert2 -->
+	<script src="<?php $path;?>/assets/js/sweetalert2@11.js" crossorigin="anonymous"></script>
 </head>
 <body>
 	<!-- loader -->
