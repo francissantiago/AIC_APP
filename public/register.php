@@ -524,7 +524,7 @@ $(document).ready(() => {
 						showConfirmButton: true,
 						timer: 2000
 					}).then(function(){
-						//window.location.reload();
+						window.location.href="login";
 					});
 				} else {
 					Swal.fire({
