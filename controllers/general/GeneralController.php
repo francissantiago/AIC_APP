@@ -106,7 +106,7 @@ class GeneralController {
      *               - 412: Pré-condição falhou (erro ao preparar a consulta).
      *               - 500: Erro interno do servidor (erro ao executar a consulta).
      */
-    public function insertDataInTable($tableName, $columns, $values, $bindTypes, $bindParams){
+    public function insertDataInTable($tableName, $columns, $values, $bindTypes, $bindParams) {
         $msg = [];
         // Construir a string SQL
         $sql = "INSERT INTO $tableName (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ")";
@@ -122,9 +122,13 @@ class GeneralController {
             $stmt->bind_param($bindTypes, ...$bindParams);
     
             if($stmt->execute()){
+                // Recupere o último ID inserido dentro da transação
+                $lastInsertedId = $this->conn->query("SELECT LAST_INSERT_ID()")->fetch_assoc()['LAST_INSERT_ID()'];
+
                 $msg = [
                     'code' => 200,
-                    'message' => "Dados inseridos com sucesso!"
+                    'message' => "Dados inseridos com sucesso!",
+                    'last_inserted_id' => $lastInsertedId
                 ];
             } else {
                 $msg = [
@@ -136,6 +140,9 @@ class GeneralController {
             $stmt->free_result();
             $stmt->close();
         }
+
+        // Commit da transação
+        $this->conn->commit();
         
         return $msg;
     }
