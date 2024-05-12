@@ -6,7 +6,28 @@ class GeneralController {
         $this->conn = $conn;
     }
 
-    /* Função genérica de seleção em um banco de dados */
+        
+    /**
+     * Seleciona todos os dados de uma tabela do banco de dados.
+     *
+     * Esta função executa uma consulta SQL para selecionar todos os dados de uma tabela
+     * do banco de dados. Pode opcionalmente adicionar uma condição WHERE, ordenação e
+     * limitação aos resultados da consulta.
+     *
+     * @param string $tableName O nome da tabela do banco de dados.
+     * @param string|null $auxColum O nome da coluna para a condição WHERE (opcional).
+     * @param mixed $auxParameter O parâmetro para a condição WHERE (opcional).
+     * @param string|null $auxParameterType O tipo do parâmetro para a condição WHERE (opcional).
+     * @param int|null $auxLimit O número máximo de linhas a serem retornadas (opcional).
+     * @param string|null $auxOrder A cláusula ORDER BY para ordenar os resultados (opcional).
+     *
+     * @return array Um array associativo contendo o código de status e a mensagem da operação.
+     *               O código de status pode ser um dos seguintes:
+     *               - 200: OK (consulta bem-sucedida).
+     *               - 404: Não encontrado (nenhum dado corresponde à consulta).
+     *               - 412: Pré-condição falhou (erro ao preparar a consulta).
+     *               - 500: Erro interno do servidor (erro ao executar a consulta).
+     */
     public function selectAllDataInTable($tableName, $auxColum = null, $auxParameter = null, $auxParameterType = null, $auxLimit = null, $auxOrder = null) {
         $msg = [];
         $sql = "SELECT * FROM $tableName";
