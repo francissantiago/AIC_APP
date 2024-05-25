@@ -1,12 +1,13 @@
 <?php
-class GeneralController {
+class GeneralController
+{
     private $conn;
-    
-    public function __construct($conn){
+
+    public function __construct($conn = null)
+    {
         $this->conn = $conn;
     }
 
-        
     /**
      * Seleciona todos os dados de uma tabela do banco de dados.
      *
@@ -28,10 +29,11 @@ class GeneralController {
      *               - 412: Pré-condição falhou (erro ao preparar a consulta).
      *               - 500: Erro interno do servidor (erro ao executar a consulta).
      */
-    public function selectAllDataInTable($tableName, $whereColumn = null, $whereValue = null, $whereValueType = null, $limit = null, $orderBy = null) {
+    public function selectAllDataInTable($tableName, $whereColumn = null, $whereValue = null, $whereValueType = null, $limit = null, $orderBy = null)
+    {
         $msg = [];
         $sql = "SELECT * FROM $tableName";
-        
+
         // Adiciona condição WHERE se $whereColumn não for nulo
         if ($whereColumn !== null) {
             $sql .= " WHERE $whereColumn = ?";
@@ -41,14 +43,14 @@ class GeneralController {
         if ($orderBy !== null) {
             $sql .= " ORDER BY $orderBy";
         }
-        
+
         // Adiciona condição LIMIT se $limit não for nulo
         if ($limit !== null) {
             $sql .= " LIMIT $limit";
         }
-        
+
         $stmt = $this->conn->prepare($sql);
-        
+
         if ($stmt === false) {
             $msg = [
                 'code' => 412,
@@ -59,7 +61,7 @@ class GeneralController {
                 // Se $whereColumn não for nulo, bind do parâmetro
                 $stmt->bind_param($whereValueType, $whereValue);
             }
-        
+
             if ($stmt->execute()) {
                 $result = $stmt->get_result();
                 if ($result->num_rows > 0) {
@@ -83,10 +85,9 @@ class GeneralController {
             }
             $stmt->close();
         }
-        
+
         return $msg;
     }
-
 
     /**
      * Insere dados em uma tabela do banco de dados.
@@ -106,13 +107,14 @@ class GeneralController {
      *               - 412: Pré-condição falhou (erro ao preparar a consulta).
      *               - 500: Erro interno do servidor (erro ao executar a consulta).
      */
-    public function insertDataInTable($tableName, $columns, $values, $bindTypes, $bindParams) {
+    public function insertDataInTable($tableName, $columns, $values, $bindTypes, $bindParams)
+    {
         $msg = [];
         // Construir a string SQL
         $sql = "INSERT INTO $tableName (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ")";
         $stmt = $this->conn->prepare($sql);
-    
-        if($stmt === false){
+
+        if ($stmt === false) {
             $msg = [
                 'code' => 412,
                 'message' => "Erro ao preparar inserção de dados no banco de dados."
@@ -120,8 +122,8 @@ class GeneralController {
         } else {
             // Vincular os parâmetros
             $stmt->bind_param($bindTypes, ...$bindParams);
-    
-            if($stmt->execute()){
+
+            if ($stmt->execute()) {
                 // Recupere o último ID inserido dentro da transação
                 $lastInsertedId = $this->conn->query("SELECT LAST_INSERT_ID()")->fetch_assoc()['LAST_INSERT_ID()'];
 
@@ -136,15 +138,29 @@ class GeneralController {
                     'message' => "Erro ao executar inserção de dados no banco de dados."
                 ];
             }
-    
+
             $stmt->free_result();
             $stmt->close();
         }
 
         // Commit da transação
         $this->conn->commit();
-        
+
         return $msg;
+    }
+    
+    /**
+     * Gera um token aleatório de acordo com o tamanho definido
+     *
+     * @param  mixed $length Tamanho do token
+     * @return void
+     */
+    public function genToken($length)
+    {
+        $randomBytes = openssl_random_pseudo_bytes($length);
+        $token = bin2hex($randomBytes);
+
+        return $token;
     }
 }
 ?>

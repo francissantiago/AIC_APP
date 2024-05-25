@@ -532,16 +532,17 @@ $(document).ready(() => {
 						html: jsonResponse.message,
 						icon: "error",
 						showConfirmButton: true,
-						timer: 2000
+						timer: 5000
 					});
 				}
 			},
 			error: function(e){
 				Swal.fire({
 					title: "Erro!",
-					html: "Ocorreu um erro grave no envio do formulário, verifique o console para mais detalhes.",
+					html: e.message,
 					icon: "error",
-					showConfirmButton: true
+					showConfirmButton: true,
+					timer: 5000
 				});
 				console.log(e);
 			}
