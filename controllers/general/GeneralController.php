@@ -148,7 +148,7 @@ class GeneralController
 
         return $msg;
     }
-    
+
     /**
      * Gera um token aleatório de acordo com o tamanho definido
      *
