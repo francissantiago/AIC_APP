@@ -51,7 +51,6 @@ class UsersController extends GeneralController
 		require_once ($_SERVER['DOCUMENT_ROOT'] . '/settings/vars.php');
 		require_once ($_SERVER['DOCUMENT_ROOT'] . '/controllers/general/MailerController.php');
 		$sendMail = new MailerController($mailHost, $mailUsername, $mailPassword, $mailSMTPSecure, $mailPort, $mailFrom, $mail_FromName);
-
 		$getClass = new GeneralController($this->conn);
 
 		// Verifica se o CPF já está cadastrado
@@ -232,13 +231,15 @@ class UsersController extends GeneralController
 			} else {
 				return [
 					'code' => 404,
-					'message' => 'Houve um erro ao tentar enviar o e-mail de confirmação.<br> Tente realizar login para reenviar o e-mail de confirmação.'
+					'message' => 'Houve um erro ao tentar enviar o e-mail de confirmação.<br> Tente realizar login para reenviar o e-mail de confirmação.',
+					'log' => $message
 				];
 			}
 		} catch (Exception $e) {
 			return [
 				'code' => 404,
-				'message' => 'Houve um erro ao tentar enviar o e-mail de confirmação.<br> Por favor, entre em contato com o suporte.'
+				'message' => 'Houve um erro ao tentar enviar o e-mail de confirmação.<br> Por favor, entre em contato com o suporte.',
+				'log' => $e
 			];
 		}
 	}
