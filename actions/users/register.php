@@ -4,8 +4,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 $msg = [];
 /* Validar método de acesso ao arquivo */
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if( isset(
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (
+        isset(
         $_POST['userName'],
         $_POST['userDoc'],
         $_POST['userBirth'],
@@ -16,9 +17,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_POST['termCheckbox'],
         $_POST['userLegalResponsibleName'],
         $_POST['userLegalResponsibleDoc']
-    )){
-        require_once ($_SERVER['DOCUMENT_ROOT'].'/settings/dbConnection.php');
-        require_once ($_SERVER['DOCUMENT_ROOT'].'/controllers/users/UsersController.php');
+    )
+    ) {
+        require_once ($_SERVER['DOCUMENT_ROOT'] . '/settings/dbConnection.php');
+        require_once ($_SERVER['DOCUMENT_ROOT'] . '/controllers/users/UsersController.php');
         // Atribuição dos dados recebidos em variáveis
         $userName = $_POST['userName'];
         $userDoc = $_POST['userDoc'];
@@ -46,35 +48,35 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Verifica os campos ausentes
         $missingFileds = [];
-        if(!isset($_POST['userName'])) {
+        if (!isset($_POST['userName'])) {
             $missingFileds[] = 'Nome';
         }
-        if(!isset($_POST['userDoc'])) {
+        if (!isset($_POST['userDoc'])) {
             $missingFileds[] = 'CPF';
         }
-        if(!isset($_POST['userBirth'])) {
+        if (!isset($_POST['userBirth'])) {
             $missingFileds[] = 'Data de Nascimento';
         }
-        if(!isset($_POST['userEmail'])) {
+        if (!isset($_POST['userEmail'])) {
             $missingFileds[] = 'E-mail';
         }
-        if(!isset($_POST['userPassword'])) {
+        if (!isset($_POST['userPassword'])) {
             $missingFileds[] = 'Senha';
         }
-        if(!isset($_POST['userRepeatPassword'])) {
+        if (!isset($_POST['userRepeatPassword'])) {
             $missingFileds[] = 'Repetir a Senha';
         }
-        if(!isset($_POST['policyCheckbox'])) {
+        if (!isset($_POST['policyCheckbox'])) {
             $missingFileds[] = 'Política de Usuário';
         }
-        if(!isset($_POST['termCheckbox'])) {
+        if (!isset($_POST['termCheckbox'])) {
             $missingFileds[] = 'Termos e Condições de Usuário';
         }
 
         // Relaciona os campos ausentes e retorna o erro com dados mais completos sobre os campos ausentes
         $msg = [
             'code' => 400,
-            'message' => 'Existe(m) campo(s) ausente(s) no formulário! Por favor corrija o(s) campo(s): '.implode(', ', $missingFields)
+            'message' => 'Existe(m) campo(s) ausente(s) no formulário! Por favor corrija o(s) campo(s): ' . implode(', ', $missingFields)
         ];
     }
 
