@@ -1,21 +1,28 @@
 <?php
+require ($_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php');
+
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable($_SERVER['DOCUMENT_ROOT']);
+$dotenv->safeLoad();
+
 /*
 * Configurações do banco de dados
 */
 function dbConnection(){
-	$app_env = 'local';
+	$app_env = $_ENV['APP_ENV'];
 	if($app_env == 'production'){
-		$dbhost = 'IP_PRODUCTION';
-		$dbport = 3306;
-		$dbuser = 'USER_DB_PRODUCTION';
-		$dbpass = 'PASS_DB_PRODUCTION';
-		$dbdatabase = 'db_aic';
-	} elseif($app_env == 'local') {
-		$dbhost = 'localhost';
-		$dbport = 3306;
-		$dbuser = 'root';
-		$dbpass = '';
-		$dbdatabase = 'db_aic';
+		$dbhost = $_ENV['ENV_DB_PROD_HOST'];
+		$dbport = $_ENV['ENV_DB_PROD_PORT'];
+		$dbuser = $_ENV['ENV_DB_PROD_USER'];
+		$dbpass = $_ENV['ENV_DB_PROD_PASS'];
+		$dbdatabase = $_ENV['ENV_DB_PROD_NAME'];
+	} elseif($app_env == 'development') {
+		$dbhost = $_ENV['ENV_DB_DEV_HOST'];
+		$dbport = $_ENV['ENV_DB_DEV_PORT'];
+		$dbuser = $_ENV['ENV_DB_DEV_USER'];
+		$dbpass = $_ENV['ENV_DB_DEV_PASS'];
+		$dbdatabase = $_ENV['ENV_DB_DEV_NAME'];
 	}
 	
 	$connect = new mysqli($dbhost, $dbuser, $dbpass, $dbdatabase, $dbport);
