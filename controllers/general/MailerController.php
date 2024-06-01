@@ -79,7 +79,7 @@ class MailerController
         $this->mailSMTPSecure = $mailSMTPSecure;
         $this->mailPort = $mailPort;
         $this->mailFrom = $mailFrom;
-        $this->mail_FromName = $mail_FromName;
+        $this->mailFromName = $mail_FromName;
     }
 
     /**

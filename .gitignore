@@ -2,3 +2,4 @@
 /.phpdoc
 phpDocumentor.phar
 /vendor
+.env
