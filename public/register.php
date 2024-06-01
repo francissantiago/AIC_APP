@@ -530,7 +530,7 @@ $(document).ready(() => {
 					Swal.fire({
 						title: "Erro!",
 						html: jsonResponse.message,
-						icon: "error",
+						icon: "warning",
 						showConfirmButton: true,
 						timer: 5000
 					});
