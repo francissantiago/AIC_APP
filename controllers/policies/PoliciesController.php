@@ -1,12 +1,14 @@
 <?php
-require_once ($_SERVER['DOCUMENT_ROOT'].'/controllers/general/GeneralController.php');
+require_once ($_SERVER['DOCUMENT_ROOT'] . '/controllers/general/GeneralController.php');
 
-class PoliciesController extends GeneralController {
+class PoliciesController extends GeneralController
+{
 	private $conn;
 
-	public function __construct($conn){
-        $this->conn = $conn;
-    }
+	public function __construct($conn)
+	{
+		$this->conn = $conn;
+	}
 
 	/**
 	 * Obtém todas as políticas de usuário do banco de dados.
@@ -21,12 +23,13 @@ class PoliciesController extends GeneralController {
 	 *               - 412: Pré-condição falhou (erro ao preparar a consulta).
 	 *               - 500: Erro interno do servidor (erro ao executar a consulta).
 	 */
-	public function get_userPolicies() {
+	public function get_userPolicies()
+	{
 		$tableName = "user_policies";
 
 		$getClass = new GeneralController($this->conn);
 		$getResponse = $getClass->selectAllDataInTable($tableName);
-		
+
 		return $getResponse;
 	}
 
@@ -43,12 +46,13 @@ class PoliciesController extends GeneralController {
 	 *               - 412: Pré-condição falhou (erro ao preparar a consulta).
 	 *               - 500: Erro interno do servidor (erro ao executar a consulta).
 	 */
-	public function get_userTerms() {
+	public function get_userTerms()
+	{
 		$tableName = "user_terms";
 
 		$getClass = new GeneralController($this->conn);
 		$getResponse = $getClass->selectAllDataInTable($tableName);
-		
+
 		return $getResponse;
 	}
 }
