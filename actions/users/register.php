@@ -46,30 +46,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } else {
         // Verifica os campos ausentes
-        $missingFileds = [];
+        $missingFields = [];
         if (!isset($_POST['userName'])) {
-            $missingFileds[] = 'Nome';
+            $missingFields[] = 'Nome';
         }
         if (!isset($_POST['userDoc'])) {
-            $missingFileds[] = 'CPF';
+            $missingFields[] = 'CPF';
         }
         if (!isset($_POST['userBirth'])) {
-            $missingFileds[] = 'Data de Nascimento';
+            $missingFields[] = 'Data de Nascimento';
         }
         if (!isset($_POST['userEmail'])) {
-            $missingFileds[] = 'E-mail';
+            $missingFields[] = 'E-mail';
         }
         if (!isset($_POST['userPassword'])) {
-            $missingFileds[] = 'Senha';
+            $missingFields[] = 'Senha';
         }
         if (!isset($_POST['userRepeatPassword'])) {
-            $missingFileds[] = 'Repetir a Senha';
+            $missingFields[] = 'Repetir a Senha';
         }
         if (!isset($_POST['policyCheckbox'])) {
-            $missingFileds[] = 'Política de Usuário';
+            $missingFields[] = 'Política de Usuário';
         }
         if (!isset($_POST['termCheckbox'])) {
-            $missingFileds[] = 'Termos e Condições de Usuário';
+            $missingFields[] = 'Termos e Condições de Usuário';
         }
 
         // Relaciona os campos ausentes e retorna o erro com dados mais completos sobre os campos ausentes

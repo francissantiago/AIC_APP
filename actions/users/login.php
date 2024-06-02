@@ -28,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } else {
         // Verifica os campos ausentes
-        $missingFileds = [];
+        $missingFields = [];
         if (!isset($_POST['login_user_val'])) {
-            $missingFileds[] = 'CPF';
+            $missingFields[] = 'CPF';
         }
         if (!isset($_POST['login_password_val'])) {
-            $missingFileds[] = 'Senha';
+            $missingFields[] = 'Senha';
         }
 
         // Relaciona os campos ausentes e retorna o erro com dados mais completos sobre os campos ausentes
