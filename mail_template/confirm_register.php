@@ -98,6 +98,7 @@
             </p>
             <p>Este link irá expirar em <b>48 horas</b>.</p>
             <p>Se você tiver alguma dúvida ou precisar de ajuda, entre em contato conosco em <a href="mailto:PHP_SITE_EMAIL" class="link">PHP_SITE_EMAIL</a>.</p>
+            <p><b>Se você não criou essa conta, entre em contato conosco no e-mail acima o mais rápido possível.</b></p>
         </div>
 
         <div class="footer">
