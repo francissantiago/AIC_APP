@@ -150,6 +150,72 @@ class GeneralController
     }
 
     /**
+     * Atualiza dados em uma tabela do banco de dados com múltiplas condições.
+     *
+     * @param string $updateTable Nome da tabela de atualização.
+     * @param array $updateColumns Colunas a serem atualizadas.
+     * @param array $updateWhereColumns Colunas de condição para atualização.
+     * @param string $updateBindTypes Tipos dos parâmetros (usado em bind_param).
+     * @param array $updateBindParams Parâmetros para bind.
+     * 
+     * @return array Retorna um array contendo um código de status e a mensagem associada.
+     */
+    public function updateDataWithMultipleParams($updateTable, $updateColumns, $updateWhereColumns, $updateBindTypes, $updateBindParams)
+    {
+        // Constrói a consulta SQL
+        $setColumns = implode(' = ?, ', $updateColumns) . ' = ?';
+        $whereConditions = implode(' = ? AND ', $updateWhereColumns) . ' = ?';
+        $sql_update = "UPDATE $updateTable SET $setColumns WHERE $whereConditions";
+
+        // Prepara a consulta
+        $stmt_update = $this->conn->prepare($sql_update);
+
+        // Inicializa a variável de mensagem
+        $msg = [];
+
+        if ($stmt_update === false) {
+            // Erro ao preparar a consulta
+            $msg = [
+                'code' => 412,
+                'message' => "Erro ao preparar atualização no banco de dados: " . $this->conn->error
+            ];
+        } else {
+            // Vincula os parâmetros
+            $stmt_update->bind_param($updateBindTypes, ...$updateBindParams);
+
+            // Executa a consulta
+            if ($stmt_update->execute()) {
+                // Verifica se alguma linha foi afetada
+                if ($stmt_update->affected_rows > 0) {
+                    // Sucesso na atualização
+                    $msg = [
+                        'code' => 200,
+                        'message' => "Registro alterado com sucesso!"
+                    ];
+                } else {
+                    // Nenhuma linha afetada, possivelmente porque os dados já estavam iguais
+                    $msg = [
+                        'code' => 204,
+                        'message' => "Nenhum registro foi alterado. Os dados podem já estar atualizados ou as condições de atualização não foram atendidas."
+                    ];
+                }
+            } else {
+                // Erro ao executar a atualização
+                $msg = [
+                    'code' => 500,
+                    'message' => "Erro ao executar atualização no banco de dados: " . $stmt_update->error
+                ];
+            }
+
+            // Fecha a declaração
+            $stmt_update->close();
+        }
+
+        return $msg;
+    }
+
+
+    /**
      * Gera um token aleatório de acordo com o tamanho definido
      *
      * @param  mixed $length Tamanho do token
