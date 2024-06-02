@@ -7,32 +7,51 @@ $dotenv = Dotenv::createImmutable($_SERVER['DOCUMENT_ROOT']);
 $dotenv->safeLoad();
 
 /*
-* Configurações do banco de dados
-*/
-function dbConnection(){
+ * Configurações do banco de dados
+ */
+function dbConnection()
+{
+	// Definindo o fuso horário a partir da variável de ambiente
+	$app_timezone = $_ENV['APP_TIMEZONE'];
+	date_default_timezone_set($app_timezone);
+
+	// Obtendo o ambiente da aplicação
 	$app_env = $_ENV['APP_ENV'];
-	if($app_env == 'production'){
+
+	// Configurações de banco de dados para produção
+	if ($app_env == 'production') {
 		$dbhost = $_ENV['ENV_DB_PROD_HOST'];
 		$dbport = $_ENV['ENV_DB_PROD_PORT'];
 		$dbuser = $_ENV['ENV_DB_PROD_USER'];
 		$dbpass = $_ENV['ENV_DB_PROD_PASS'];
 		$dbdatabase = $_ENV['ENV_DB_PROD_NAME'];
-	} elseif($app_env == 'development') {
+	}
+	// Configurações de banco de dados para desenvolvimento
+	elseif ($app_env == 'development') {
 		$dbhost = $_ENV['ENV_DB_DEV_HOST'];
 		$dbport = $_ENV['ENV_DB_DEV_PORT'];
 		$dbuser = $_ENV['ENV_DB_DEV_USER'];
 		$dbpass = $_ENV['ENV_DB_DEV_PASS'];
 		$dbdatabase = $_ENV['ENV_DB_DEV_NAME'];
+	} else {
+		// Caso o ambiente não seja especificado corretamente
+		die('Error: Environment not set or incorrect!');
 	}
-	
+
+	// Criando a conexão com o banco de dados
 	$connect = new mysqli($dbhost, $dbuser, $dbpass, $dbdatabase, $dbport);
 
-	if($connect->connect_error){
+	// Verificando se houve erro na conexão
+	if ($connect->connect_error) {
 		die('Error: No database connection!');
-	} else {
-		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-		$connect->set_charset("utf8mb4");
-		return $connect;
 	}
+
+	// Configurando o relatório de erros do MySQLi
+	mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+	// Definindo o charset da conexão
+	$connect->set_charset("utf8mb4");
+
+	return $connect;
 }
 ?>
