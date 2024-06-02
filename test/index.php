@@ -13,14 +13,15 @@ class TestsController extends GeneralController
         $this->conn = $conn;
     }
 
-    public function main($usrDoc)
+    public function main()
     {
 
     }
 }
-
-$conn = dbConnection();
 $msg = [];
+$conn = dbConnection();
+$callClass = new TestsController($conn);
+$callMethod = $callClass->main();
 
-echo json_encode($msg);
+echo json_encode($callMethod);
 ?>
