@@ -90,6 +90,81 @@ class GeneralController
     }
 
     /**
+     * Realiza uma seleção genérica em uma tabela do banco de dados com duas condições.
+     *
+     * @param string $tableName Nome da tabela.
+     * @param string|null $auxColum Nome da primeira coluna para condição WHERE.
+     * @param mixed|null $auxParameter Valor do primeiro parâmetro para condição WHERE.
+     * @param string|null $auxParameterType Tipo do primeiro parâmetro (usado em bind_param).
+     * @param string|null $auxColumTwo Nome da segunda coluna para condição WHERE.
+     * @param mixed|null $auxParameterTwo Valor do segundo parâmetro para condição WHERE.
+     * @param string|null $auxParameterTypeTwo Tipo do segundo parâmetro (usado em bind_param).
+     * @param int|null $auxLimit Limite de registros a serem retornados.
+     * @param string|null $auxOrder Coluna usada para ordenar os resultados.
+     * 
+     * @return array Retorna um array contendo um código de status e a mensagem associada.
+     */
+    public function selectAllDataInTableWithTwoArguments($tableName, $auxColum = null, $auxParameter = null, $auxParameterType = null, $auxColumTwo = null, $auxParameterTwo = null, $auxParameterTypeTwo = null, $auxLimit = null, $auxOrder = null)
+    {
+        $msg = [];
+        $sql = "SELECT * FROM $tableName WHERE 1=1"; // Adiciona um início de condição sempre verdadeira
+
+        // Adiciona condições WHERE se $auxColum e $auxColumTwo não forem nulos
+        if ($auxColum !== null && $auxColumTwo !== null) {
+            $sql .= " AND $auxColum = ? AND $auxColumTwo = ?";
+        }
+
+        // Adiciona condição ORDER BY se $auxOrder não for nulo
+        if ($auxOrder !== null) {
+            $sql .= " ORDER BY $auxOrder";
+        }
+
+        // Adiciona condição LIMIT se $auxLimit não for nulo
+        if ($auxLimit !== null) {
+            $sql .= " LIMIT $auxLimit";
+        }
+
+        $stmt = $this->conn->prepare($sql);
+
+        if ($stmt === false) {
+            $msg = [
+                'code' => 412,
+                'message' => "Erro ao preparar seleção de informações no banco de dados."
+            ];
+        } else {
+            if ($auxColum !== null && $auxColumTwo !== null) {
+                // Se $auxColum e $auxColumTwo não forem nulos, bind dos parâmetros
+                $stmt->bind_param($auxParameterType . $auxParameterTypeTwo, $auxParameter, $auxParameterTwo);
+            }
+
+            if ($stmt->execute()) {
+                $result = $stmt->get_result();
+                if ($result->num_rows > 0) {
+                    // Se houver resultados, converte para array associativo
+                    $result_array = $result->fetch_all(MYSQLI_ASSOC);
+                    $msg = [
+                        'code' => 200,
+                        'message' => $result_array
+                    ];
+                } else {
+                    $msg = [
+                        'code' => 404,
+                        'message' => "Não existem informações no banco de dados."
+                    ];
+                }
+            } else {
+                $msg = [
+                    'code' => 500,
+                    'message' => "Erro ao executar seleção de informações no banco de dados."
+                ];
+            }
+            $stmt->close();
+        }
+
+        return $msg;
+    }
+
+    /**
      * Insere dados em uma tabela do banco de dados.
      *
      * Esta função executa uma consulta SQL para inserir dados em uma tabela
