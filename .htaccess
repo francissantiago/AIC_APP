@@ -8,4 +8,7 @@ RewriteCond %{SCRIPT_FILENAME} !-f
 RewriteRule ^index$ index.php [NC]
 RewriteRule ^login$ public/login.php [NC]
 RewriteRule ^register$ public/register.php [NC]
+
+# Auth Tokens
+RewriteRule ^confirm_register$ auth_token/confirm_register.php [NC]
 </IfModule>
