@@ -1,0 +1,137 @@
+<div class="example">
+    <div>
+        <h1>Example</h1>
+        <p>This is an example component.</p>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2>GET HTTP Request</h2>
+            <form [formGroup]="getForm" (ngSubmit)="getPostById()">
+                <input type="number" [formControl]="get_postId" />
+                <button type="submit" [disabled]="getForm.invalid || getLoading()">Get Post by ID</button>
+            </form>
+        </div>
+        <div>
+            <p class="post">
+                <span>Result from GET HTTP Request:</span>
+                <br>
+                @if (getLoading()) {
+                    <span>Loading...</span>
+                } @else {
+                    @if (getResult() === null) {
+                        <span>No post found</span>
+                    } @else {
+                        <pre>{{ getResult() | json }}</pre>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2>POST HTTP Request</h2>
+            <form [formGroup]="postForm" (ngSubmit)="submitPost()">
+                <input type="text" formControlName="title" placeholder="Title" />
+                <input type="text" formControlName="body" placeholder="Body" />
+                <button type="submit" [disabled]="postForm.invalid || postLoading()">Post Post</button>
+            </form>
+        </div>
+        <div>
+            <p class="post">
+                <span>Result from POST HTTP Request:</span>
+                <br>
+                @if (postLoading()) {
+                    <span>Loading...</span>
+                } @else {
+                    @if (postResult() === null) {
+                        <span>No post found</span>
+                    } @else {
+                        <pre>{{ postResult() | json }}</pre>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2>PUT HTTP Request</h2>
+            <form [formGroup]="putForm" (ngSubmit)="submitPut()">
+                <input type="number" formControlName="postId" placeholder="Post ID" />
+                <input type="number" formControlName="userId" placeholder="User ID" />
+                <input type="text" formControlName="title" placeholder="Title" />
+                <input type="text" formControlName="body" placeholder="Body" />
+                <button type="submit" [disabled]="putForm.invalid || putLoading()">Put Post</button>
+            </form>
+        </div>
+        <div>
+            <p class="post">
+                <span>Result from PUT HTTP Request:</span>
+                <br>
+                @if (putLoading()) {
+                    <span>Loading...</span>
+                } @else {
+                    @if (putResult() === null) {
+                        <span>No post found</span>
+                    } @else {
+                        <pre>{{ putResult() | json }}</pre>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2>PATCH HTTP Request</h2>
+            <form [formGroup]="patchForm" (ngSubmit)="submitPatch()">
+                <input type="number" formControlName="postId" placeholder="Post ID" />
+                <input type="text" formControlName="title" placeholder="Title (optional)" />
+                <input type="text" formControlName="body" placeholder="Body (optional)" />
+                <button type="submit" [disabled]="patchForm.invalid || patchLoading()">Patch Post</button>
+            </form>
+        </div>
+        <div>
+            <p class="post">
+                <span>Result from PATCH HTTP Request:</span>
+                <br>
+                @if (patchLoading()) {
+                    <span>Loading...</span>
+                } @else {
+                    @if (patchResult() === null) {
+                        <span>No post found</span>
+                    } @else {
+                        <pre>{{ patchResult() | json }}</pre>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2>DELETE HTTP Request</h2>
+            <form [formGroup]="deleteForm" (ngSubmit)="submitDelete()">
+                <input type="number" formControlName="postId" placeholder="Post ID" />
+                <button type="submit" [disabled]="deleteForm.invalid || deleteLoading()">Delete Post</button>
+            </form>
+        </div>
+        <div>
+            <p class="post">
+                <span>Result from DELETE HTTP Request:</span>
+                <br>
+                @if (deleteLoading()) {
+                    <span>Loading...</span>
+                } @else {
+                    @if (deleteResult() === null) {
+                        <span>No post found</span>
+                    } @else {
+                        <pre>{{ deleteResult() | json }}</pre>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+</div>
