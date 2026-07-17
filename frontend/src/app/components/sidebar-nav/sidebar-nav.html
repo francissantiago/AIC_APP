@@ -1,19 +1,21 @@
 <nav [attr.aria-label]="'NAV.MAIN_NAV' | translate">
-  <ul class="flex flex-col gap-1 px-2 py-2">
+  <ul class="flex flex-col gap-2 px-2 py-4">
     @for (item of items; track item.route) {
       <li>
         <a
           [routerLink]="item.route"
-          routerLinkActive="bg-slate-100 text-slate-900 border-slate-900"
-          class="flex items-center gap-3 rounded-md border-l-2 border-transparent px-2.5 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          routerLinkActive="bg-slate-600 text-slate-100 border-sky-400 shadow-sm"
+          class="group flex min-h-11 items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
+          [class.px-3]="expanded()"
+          [class.px-0]="!expanded()"
           [attr.aria-label]="expanded() ? null : (item.labelKey | translate)"
           [attr.title]="expanded() ? null : (item.labelKey | translate)"
         >
           @switch (item.icon) {
             @case ('users') {
               <svg
-                class="size-5 shrink-0 text-slate-500"
+                class="size-5 shrink-0 text-current"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -35,7 +37,7 @@
             }
             @case ('roles') {
               <svg
-                class="size-5 shrink-0 text-slate-500"
+                class="size-5 shrink-0 text-current"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -51,7 +53,7 @@
             }
             @case ('members') {
               <svg
-                class="size-5 shrink-0 text-slate-500"
+                class="size-5 shrink-0 text-current"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -73,7 +75,7 @@
             }
             @case ('congregation') {
               <svg
-                class="size-5 shrink-0 text-slate-500"
+                class="size-5 shrink-0 text-current"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

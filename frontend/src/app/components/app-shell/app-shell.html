@@ -1,7 +1,7 @@
 <div class="flex min-h-screen bg-slate-50">
   <aside
     [id]="sidebarId"
-    class="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-slate-200 bg-white shadow-sm transition-[width] duration-200"
+    class="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-slate-600 bg-slate-500 shadow-lg transition-[width] duration-200"
     [class.w-60]="sidebarExpanded()"
     [class.w-16]="!sidebarExpanded()"
     (mouseenter)="onSidebarEnter()"
@@ -10,18 +10,31 @@
     (focusout)="onSidebarFocusOut($event)"
   >
     <div
-      class="flex h-14 items-center border-b border-slate-200 px-3"
+      class="flex h-16 items-center border-b border-slate-600 px-3"
       [class.justify-center]="!sidebarExpanded()"
       [class.justify-between]="sidebarExpanded()"
     >
       @if (sidebarExpanded()) {
-        <span class="truncate text-sm font-semibold text-slate-900">
-          {{ 'APP_SHELL.APP_NAME' | translate }}
-        </span>
+        <div class="flex min-w-0 items-center gap-3">
+          <span
+            class="flex size-8 shrink-0 items-center justify-center rounded-md bg-white text-sm font-bold text-slate-500 shadow-sm"
+            aria-hidden="true"
+          >
+            A
+          </span>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-semibold tracking-wide text-white">
+              {{ 'APP_SHELL.APP_NAME' | translate }}
+            </p>
+            <p class="truncate text-[0.6875rem] text-slate-200">
+              {{ 'APP.TITLE' | translate }}
+            </p>
+          </div>
+        </div>
       }
       <button
         type="button"
-        class="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-slate-600 bg-slate-700 text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         [attr.aria-label]="'APP_SHELL.TOGGLE_SIDEBAR' | translate"
         [attr.aria-expanded]="sidebarExpanded()"
         [attr.aria-controls]="sidebarId"
@@ -114,5 +127,17 @@
         <router-outlet />
       </div>
     </main>
+
+    <footer class="border-t border-slate-200 bg-white px-4 py-3 text-center text-xs text-slate-500">
+      <span>{{ 'APP_SHELL.DEVELOPED_BY' | translate }}</span>
+      <a
+        href="https://lightburden.net"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ml-1 font-medium text-slate-700 transition-colors hover:text-slate-950 hover:underline focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        Francis Santiago
+      </a>
+    </footer>
   </div>
 </div>

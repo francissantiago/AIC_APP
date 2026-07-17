@@ -19,7 +19,8 @@
     "PAGE_USERS": "Users",
     "PAGE_ROLES": "Roles",
     "PAGE_MEMBERS": "Members",
-    "PAGE_CONGREGATION": "Congregation"
+    "PAGE_CONGREGATION": "Congregation",
+    "DEVELOPED_BY": "Developed by"
   },
   "COMMON": {
     "LOADING": "Loading...",
