@@ -35,6 +35,22 @@ export const routes: Routes = [
       import('@components/roles-catalog/roles-catalog').then((m) => m.RolesCatalog),
   },
   {
+    path: 'members',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('@components/members-list/members-list').then((m) => m.MembersList),
+  },
+  {
+    path: 'members/new',
+    canActivate: [authGuard],
+    loadComponent: () => import('@components/member-form/member-form').then((m) => m.MemberForm),
+  },
+  {
+    path: 'members/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () => import('@components/member-form/member-form').then((m) => m.MemberForm),
+  },
+  {
     path: 'example',
     canActivate: [authGuard],
     loadComponent: () => import('@components/example/example').then((m) => m.Example),

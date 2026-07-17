@@ -29,6 +29,13 @@ import { AuthService } from '@services/auth-service';
             >
               {{ 'ROLES.TITLE' | translate }}
             </a>
+            <a
+              routerLink="/members"
+              routerLinkActive="font-semibold text-slate-900"
+              class="text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              {{ 'MEMBERS.TITLE' | translate }}
+            </a>
           } @else {
             <span class="font-semibold text-slate-900">{{ 'APP.NAME' | translate }}</span>
           }
