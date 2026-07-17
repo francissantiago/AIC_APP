@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CongregationsService } from '../congregations/congregations.service';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
 import {
@@ -29,9 +30,11 @@ export class MembersService {
     private readonly membersRepository: Repository<Member>,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly congregationsService: CongregationsService,
   ) {}
 
   async create(dto: CreateMemberDto): Promise<MemberResponseDto> {
+    const base = await this.congregationsService.getOrCreateBase();
     await this.assertEmailDocumentUniqueness(dto.email, dto.document);
     if (dto.userId) {
       await this.assertUserExists(dto.userId);
@@ -54,6 +57,7 @@ export class MembersService {
       state: dto.state ?? null,
       zipCode: dto.zipCode ?? null,
       notes: dto.notes ?? null,
+      congregationId: base.id,
       userId: dto.userId ?? null,
     });
 
@@ -63,10 +67,14 @@ export class MembersService {
   }
 
   async findAll(query: QueryMembersDto): Promise<PaginatedMembersResponseDto> {
+    const base = await this.congregationsService.getOrCreateBase();
     const { page, limit, status, gender, q } = query;
 
     const qb = this.membersRepository
       .createQueryBuilder('member')
+      .where('member.congregationId = :congregationId', {
+        congregationId: base.id,
+      })
       .orderBy('member.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -169,7 +177,10 @@ export class MembersService {
   }
 
   private async getMemberOrFail(id: string): Promise<Member> {
-    const member = await this.membersRepository.findOne({ where: { id } });
+    const base = await this.congregationsService.getOrCreateBase();
+    const member = await this.membersRepository.findOne({
+      where: { id, congregationId: base.id },
+    });
     if (!member) {
       throw new NotFoundException(`Membro ${id} não encontrado`);
     }

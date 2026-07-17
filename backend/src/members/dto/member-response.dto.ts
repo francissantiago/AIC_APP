@@ -56,6 +56,12 @@ export class MemberResponseDto {
   @ApiPropertyOptional({ example: 'Observações pastorais', nullable: true })
   notes!: string | null;
 
+  @ApiProperty({
+    example: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+    description: 'ID da congregação-base (somente leitura)',
+  })
+  congregationId!: string;
+
   @ApiPropertyOptional({
     example: '4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f',
     nullable: true,
@@ -86,6 +92,7 @@ export class MemberResponseDto {
     dto.state = member.state;
     dto.zipCode = member.zipCode;
     dto.notes = member.notes;
+    dto.congregationId = member.congregationId;
     dto.userId = member.userId;
     dto.createdAt = member.createdAt;
     dto.updatedAt = member.updatedAt;

@@ -5,6 +5,10 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { CongregationsService } from '../congregations/congregations.service';
+import { Congregation } from '../congregations/entities/congregation.entity';
+import { CongregationStatus } from '../congregations/enums/congregation-status.enum';
+import { CongregationType } from '../congregations/enums/congregation-type.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { Member } from './entities/member.entity';
@@ -16,6 +20,8 @@ import { MembersService } from './members.service';
 describe('MembersService', () => {
   let service: MembersService;
 
+  const baseCongregationId = 'cccccccc-dddd-eeee-ffff-000000000001';
+
   const membersRepository = {
     findOne: jest.fn(),
     create: jest.fn(),
@@ -25,6 +31,18 @@ describe('MembersService', () => {
   };
   const usersRepository = {
     findOne: jest.fn(),
+  };
+  const congregationsService = {
+    getOrCreateBase: jest.fn(),
+  };
+
+  const baseCongregation = (): Congregation => {
+    const congregation = new Congregation();
+    congregation.id = baseCongregationId;
+    congregation.name = 'Congregação';
+    congregation.type = CongregationType.HEADQUARTERS;
+    congregation.status = CongregationStatus.ACTIVE;
+    return congregation;
   };
 
   const baseMember = (): Member => {
@@ -45,6 +63,7 @@ describe('MembersService', () => {
     member.state = 'SP';
     member.zipCode = '01310-100';
     member.notes = null;
+    member.congregationId = baseCongregationId;
     member.userId = null;
     member.user = null;
     member.createdAt = new Date('2026-07-17T00:00:00Z');
@@ -62,11 +81,13 @@ describe('MembersService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    congregationsService.getOrCreateBase.mockResolvedValue(baseCongregation());
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MembersService,
         { provide: getRepositoryToken(Member), useValue: membersRepository },
         { provide: getRepositoryToken(User), useValue: usersRepository },
+        { provide: CongregationsService, useValue: congregationsService },
       ],
     }).compile();
 
@@ -74,7 +95,7 @@ describe('MembersService', () => {
   });
 
   describe('create', () => {
-    it('deve criar membro com defaults de gender, maritalStatus e status', async () => {
+    it('deve criar membro associado à congregação-base', async () => {
       membersRepository.findOne.mockResolvedValue(null);
       const saved = baseMember();
       membersRepository.create.mockReturnValue(saved);
@@ -82,15 +103,18 @@ describe('MembersService', () => {
 
       const result = await service.create(createDto());
 
+      expect(congregationsService.getOrCreateBase).toHaveBeenCalled();
       expect(membersRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           fullName: 'Maria da Silva',
           gender: MemberGender.UNSPECIFIED,
           maritalStatus: MemberMaritalStatus.OTHER,
           status: MemberStatus.ACTIVE,
+          congregationId: baseCongregationId,
         }),
       );
       expect(result.fullName).toBe('Maria da Silva');
+      expect(result.congregationId).toBe(baseCongregationId);
       expect(result).not.toHaveProperty('user');
     });
 
@@ -109,9 +133,10 @@ describe('MembersService', () => {
   });
 
   describe('findAll', () => {
-    it('deve paginar e aplicar filtros de status e busca q', async () => {
+    it('deve listar apenas membros da congregação-base', async () => {
       const member = baseMember();
       const queryBuilder = {
+        where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
@@ -127,9 +152,15 @@ describe('MembersService', () => {
         q: 'silva',
       });
 
+      expect(congregationsService.getOrCreateBase).toHaveBeenCalled();
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'member.congregationId = :congregationId',
+        { congregationId: baseCongregationId },
+      );
       expect(queryBuilder.andWhere).toHaveBeenCalledTimes(2);
       expect(result.total).toBe(1);
       expect(result.data[0].fullName).toBe('Maria da Silva');
+      expect(result.data[0].congregationId).toBe(baseCongregationId);
     });
   });
 
@@ -146,6 +177,14 @@ describe('MembersService', () => {
         service.update(member.id, { email: 'outro@igreja.org' }),
       ).rejects.toThrow(ConflictException);
     });
+
+    it('deve lançar 404 quando o membro está fora do escopo da base', async () => {
+      membersRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.update('id-fora-do-escopo', { fullName: 'Outro' }),
+      ).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('remove', () => {
@@ -156,6 +195,9 @@ describe('MembersService', () => {
 
       await service.remove(member.id);
 
+      expect(membersRepository.findOne).toHaveBeenCalledWith({
+        where: { id: member.id, congregationId: baseCongregationId },
+      });
       expect(membersRepository.softRemove).toHaveBeenCalledWith(member);
     });
 
@@ -170,7 +212,7 @@ describe('MembersService', () => {
   });
 
   describe('findOne', () => {
-    it('deve lançar 404 quando o membro não existe', async () => {
+    it('deve lançar 404 quando o membro não existe no escopo da base', async () => {
       membersRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne('id-inexistente')).rejects.toThrow(

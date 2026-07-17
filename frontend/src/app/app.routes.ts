@@ -37,8 +37,7 @@ export const routes: Routes = [
   {
     path: 'members',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('@components/members-list/members-list').then((m) => m.MembersList),
+    loadComponent: () => import('@components/members-list/members-list').then((m) => m.MembersList),
   },
   {
     path: 'members/new',
@@ -49,6 +48,29 @@ export const routes: Routes = [
     path: 'members/:id/edit',
     canActivate: [authGuard],
     loadComponent: () => import('@components/member-form/member-form').then((m) => m.MemberForm),
+  },
+  {
+    path: 'congregation',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('@components/congregation-form/congregation-form').then((m) => m.CongregationForm),
+  },
+  {
+    path: 'congregations',
+    pathMatch: 'full',
+    redirectTo: 'congregation',
+  },
+  {
+    path: 'congregations/new',
+    redirectTo: 'congregation',
+  },
+  {
+    path: 'congregations/:id/edit',
+    redirectTo: 'congregation',
+  },
+  {
+    path: 'congregations/:id',
+    redirectTo: 'congregation',
   },
   {
     path: 'example',

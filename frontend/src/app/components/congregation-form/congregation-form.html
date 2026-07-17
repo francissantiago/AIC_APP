@@ -1,0 +1,199 @@
+<section class="mx-auto max-w-2xl px-4 py-6">
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900">
+      {{ 'CONGREGATION.EDIT_TITLE' | translate }}
+    </h1>
+    <p class="mt-1 text-sm text-slate-600">{{ 'CONGREGATION.DESCRIPTION' | translate }}</p>
+  </div>
+
+  @if (feedbackKey(); as key) {
+    <p
+      class="mb-4 rounded-md px-3 py-2 text-sm"
+      [class.bg-emerald-50]="key === 'CONGREGATION.SAVE_SUCCESS'"
+      [class.text-emerald-900]="key === 'CONGREGATION.SAVE_SUCCESS'"
+      [class.bg-red-50]="key !== 'CONGREGATION.SAVE_SUCCESS'"
+      [class.text-red-800]="key !== 'CONGREGATION.SAVE_SUCCESS'"
+      role="alert"
+    >
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'CONGREGATION.LOAD_ERROR' | translate }}</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'CONGREGATION.NAME' | translate }}</span>
+        <input
+          type="text"
+          formControlName="name"
+          autocomplete="organization"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('name')"
+        />
+        @if (fieldInvalid('name')) {
+          <span class="text-xs text-red-700">{{
+            'CONGREGATION.VALIDATION_REQUIRED' | translate
+          }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'CONGREGATION.TRADE_NAME' | translate }}</span>
+        <input
+          type="text"
+          formControlName="tradeName"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        />
+      </label>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.TYPE' | translate }}</span>
+          <select
+            formControlName="type"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            @for (type of types; track type) {
+              <option [value]="type">{{ typeLabelKey(type) | translate }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.STATUS' | translate }}</span>
+          <select
+            formControlName="status"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.DOCUMENT' | translate }}</span>
+          <input
+            type="text"
+            formControlName="document"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.PHONE' | translate }}</span>
+          <input
+            type="tel"
+            formControlName="phone"
+            autocomplete="tel"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+      </div>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'CONGREGATION.EMAIL' | translate }}</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('email')"
+        />
+        @if (fieldInvalid('email')) {
+          <span class="text-xs text-red-700">{{
+            'CONGREGATION.VALIDATION_EMAIL' | translate
+          }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'CONGREGATION.ADDRESS' | translate }}</span>
+        <input
+          type="text"
+          formControlName="address"
+          autocomplete="street-address"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        />
+      </label>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.CITY' | translate }}</span>
+          <input
+            type="text"
+            formControlName="city"
+            autocomplete="address-level2"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.STATE' | translate }}</span>
+          <input
+            type="text"
+            formControlName="state"
+            autocomplete="address-level1"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.ZIP_CODE' | translate }}</span>
+          <input
+            type="text"
+            formControlName="zipCode"
+            autocomplete="postal-code"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.FOUNDATION_DATE' | translate }}</span>
+          <input
+            type="date"
+            formControlName="foundationDate"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.WEBSITE' | translate }}</span>
+          <input
+            type="url"
+            formControlName="website"
+            autocomplete="url"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+      </div>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'CONGREGATION.NOTES' | translate }}</span>
+        <textarea
+          formControlName="notes"
+          rows="3"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        ></textarea>
+      </label>
+
+      <div class="mt-2">
+        <button
+          type="submit"
+          class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

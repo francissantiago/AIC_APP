@@ -21,6 +21,7 @@ export interface IMember {
   zipCode: string | null;
   notes: string | null;
   userId: string | null;
+  congregationId: string;
   createdAt: string;
   updatedAt: string;
 }

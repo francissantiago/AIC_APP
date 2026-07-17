@@ -36,6 +36,13 @@ import { AuthService } from '@services/auth-service';
             >
               {{ 'MEMBERS.TITLE' | translate }}
             </a>
+            <a
+              routerLink="/congregation"
+              routerLinkActive="font-semibold text-slate-900"
+              class="text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              {{ 'CONGREGATION.TITLE' | translate }}
+            </a>
           } @else {
             <span class="font-semibold text-slate-900">{{ 'APP.NAME' | translate }}</span>
           }

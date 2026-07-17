@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Congregation } from '../../congregations/entities/congregation.entity';
 import { User } from '../../users/entities/user.entity';
 import { MemberGender } from '../enums/member-gender.enum';
 import { MemberMaritalStatus } from '../enums/member-marital-status.enum';
@@ -78,6 +79,16 @@ export class Member {
 
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
+
+  @Index('IDX_members_congregation_id')
+  @Column({ name: 'congregation_id', type: 'char', length: 36 })
+  congregationId!: string;
+
+  @ManyToOne(() => Congregation, (congregation) => congregation.members, {
+    nullable: false,
+  })
+  @JoinColumn({ name: 'congregation_id' })
+  congregation!: Congregation;
 
   @Column({ name: 'user_id', type: 'char', length: 36, nullable: true })
   userId!: string | null;
