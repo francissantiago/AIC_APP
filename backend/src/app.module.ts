@@ -4,7 +4,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from './events/events.module';
 import { HealthModule } from './health/health.module';
+import { RolesModule } from './roles/roles.module';
 import { TasksModule } from './tasks/tasks.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { TasksModule } from './tasks/tasks.module';
     HealthModule,
     TasksModule,
     EventsModule,
+    RolesModule,
+    UsersModule,
   ],
 })
 export class AppModule {}

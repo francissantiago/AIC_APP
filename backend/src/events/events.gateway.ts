@@ -15,9 +15,7 @@ import { Server, Socket } from 'socket.io';
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
   },
 })
-export class EventsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(EventsGateway.name);
 
   @WebSocketServer()
