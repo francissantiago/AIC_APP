@@ -24,3 +24,7 @@ npm-debug.log*
 
 # MCP
 mcp/dist/
+.cursor/agents/
+.cursor/commands/
+.cursor/skills/
+docs
