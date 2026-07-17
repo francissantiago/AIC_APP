@@ -1,0 +1,195 @@
+<section class="mx-auto max-w-2xl px-4 py-6">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-semibold text-slate-900">
+      @if (isEditMode()) {
+        {{ 'USERS.EDIT_TITLE' | translate }}
+      } @else {
+        {{ 'USERS.CREATE_TITLE' | translate }}
+      }
+    </h1>
+    <a
+      routerLink="/users"
+      class="text-sm text-slate-700 underline underline-offset-2 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'COMMON.BACK' | translate }}
+    </a>
+  </div>
+
+  @if (feedbackKey(); as key) {
+    <p
+      class="mb-4 rounded-md px-3 py-2 text-sm"
+      [class.bg-emerald-50]="key === 'USERS.SAVE_SUCCESS'"
+      [class.text-emerald-900]="key === 'USERS.SAVE_SUCCESS'"
+      [class.bg-red-50]="key !== 'USERS.SAVE_SUCCESS'"
+      [class.text-red-800]="key !== 'USERS.SAVE_SUCCESS'"
+      role="alert"
+    >
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'USERS.LOAD_ERROR' | translate }}</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'USERS.USERNAME' | translate }}</span>
+        <input
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+          [attr.aria-invalid]="fieldInvalid('username')"
+        />
+        @if (isEditMode()) {
+          <span class="text-xs text-slate-500">{{ 'USERS.USERNAME_READONLY' | translate }}</span>
+        }
+        @if (fieldInvalid('username')) {
+          <span class="text-xs text-red-700">{{ 'USERS.VALIDATION_REQUIRED' | translate }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'USERS.EMAIL' | translate }}</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('email')"
+        />
+        @if (fieldInvalid('email')) {
+          <span class="text-xs text-red-700">
+            @if (form.controls.email.hasError('email')) {
+              {{ 'USERS.VALIDATION_EMAIL' | translate }}
+            } @else {
+              {{ 'USERS.VALIDATION_REQUIRED' | translate }}
+            }
+          </span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'USERS.FULL_NAME' | translate }}</span>
+        <input
+          type="text"
+          formControlName="fullName"
+          autocomplete="name"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('fullName')"
+        />
+        @if (fieldInvalid('fullName')) {
+          <span class="text-xs text-red-700">{{ 'USERS.VALIDATION_REQUIRED' | translate }}</span>
+        }
+      </label>
+
+      @if (!isEditMode()) {
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'USERS.PASSWORD' | translate }}</span>
+          <input
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.aria-invalid]="fieldInvalid('password')"
+          />
+          <span class="text-xs text-slate-500">{{ 'USERS.PASSWORD_HINT' | translate }}</span>
+          @if (fieldInvalid('password')) {
+            <span class="text-xs text-red-700">{{ 'USERS.VALIDATION_REQUIRED' | translate }}</span>
+          }
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'USERS.CONFIRM_PASSWORD' | translate }}</span>
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.aria-invalid]="passwordMismatch() || fieldInvalid('confirmPassword')"
+          />
+          @if (passwordMismatch()) {
+            <span class="text-xs text-red-700">{{
+              'USERS.VALIDATION_PASSWORD_MATCH' | translate
+            }}</span>
+          } @else if (fieldInvalid('confirmPassword')) {
+            <span class="text-xs text-red-700">{{ 'USERS.VALIDATION_REQUIRED' | translate }}</span>
+          }
+        </label>
+      }
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'USERS.STATUS' | translate }}</span>
+        <select
+          formControlName="status"
+          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+          }
+        </select>
+      </label>
+
+      <fieldset class="rounded-md border border-slate-200 p-3">
+        <legend class="px-1 text-sm font-medium text-slate-800">
+          {{ 'USERS.ROLES' | translate }}
+        </legend>
+        <p class="mb-2 text-xs text-slate-500">{{ 'USERS.SELECT_ROLES' | translate }}</p>
+        <div class="grid gap-2">
+          @for (role of roles(); track role.id) {
+            <label class="flex items-start gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                class="mt-0.5"
+                [checked]="isRoleSelected(role.id)"
+                (change)="toggleRole(role.id)"
+              />
+              <span>
+                <span class="font-medium">{{ roleLabel(role) }}</span>
+                <span class="block text-xs text-slate-500">{{ role.code }}</span>
+              </span>
+            </label>
+          }
+        </div>
+        @if (fieldInvalid('roleIds')) {
+          <p class="mt-2 text-xs text-red-700">{{ 'USERS.SELECT_ROLES' | translate }}</p>
+        }
+      </fieldset>
+
+      @if (isEditMode() && currentUser(); as user) {
+        <dl
+          class="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700"
+        >
+          <div class="flex justify-between gap-3">
+            <dt>{{ 'USERS.TWO_FACTOR' | translate }}</dt>
+            <dd>
+              {{ user.twoFactorEnabled ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) }}
+            </dd>
+          </div>
+          <div class="flex justify-between gap-3">
+            <dt>{{ 'USERS.LAST_LOGIN' | translate }}</dt>
+            <dd>{{ user.lastLoginAt || '' }}</dd>
+          </div>
+        </dl>
+      }
+
+      <div class="mt-2 flex flex-wrap gap-3">
+        <button
+          type="submit"
+          class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+        <a
+          routerLink="/users"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </a>
+      </div>
+    </form>
+  }
+</section>

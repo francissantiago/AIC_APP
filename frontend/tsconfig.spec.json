@@ -4,7 +4,19 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["vitest/globals"]
+    "baseUrl": "./src",
+    "types": ["vitest/globals"],
+    "paths": {
+      "@components/*": ["app/components/*"],
+      "@services/*": ["app/services/*"],
+      "@models/*": ["app/models/*"],
+      "@interfaces/*": ["app/interfaces/*"],
+      "@enums/*": ["app/enums/*"],
+      "@guards/*": ["app/guards/*"],
+      "@interceptors/*": ["app/interceptors/*"],
+      "@resolvers/*": ["app/resolvers/*"],
+      "@pipes/*": ["app/pipes/*"]
+    }
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+  "include": ["src/**/*.d.ts", "src/**/*.ts"]
 }

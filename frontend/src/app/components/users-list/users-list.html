@@ -1,0 +1,171 @@
+<section class="mx-auto max-w-6xl px-4 py-6">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">{{ 'USERS.LIST_TITLE' | translate }}</h1>
+      <p class="text-sm text-slate-600">{{ 'USERS.TITLE' | translate }}</p>
+    </div>
+    <a
+      routerLink="/users/new"
+      class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+    >
+      {{ 'COMMON.CREATE' | translate }}
+    </a>
+  </div>
+
+  <form
+    [formGroup]="filterForm"
+    class="mb-6 grid gap-3 md:grid-cols-3"
+    [attr.aria-label]="'COMMON.FILTER' | translate"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'USERS.SEARCH' | translate }}</span>
+      <input
+        type="search"
+        formControlName="q"
+        class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'USERS.FILTER_STATUS' | translate }}</span>
+      <select
+        formControlName="status"
+        class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'USERS.FILTER_ROLE' | translate }}</span>
+      <select
+        formControlName="roleCode"
+        class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (role of roles(); track role.id) {
+          <option [value]="role.code">{{ roleLabel(role) }}</option>
+        }
+      </select>
+    </label>
+  </form>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (pendingDeleteId()) {
+    <div
+      class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+      role="alertdialog"
+      aria-labelledby="delete-confirm-title"
+      aria-describedby="delete-confirm-desc"
+    >
+      <p id="delete-confirm-title" class="font-medium">{{ 'COMMON.CONFIRM_DELETE' | translate }}</p>
+      <p id="delete-confirm-desc" class="mt-1">{{ 'USERS.CONFIRM_DELETE' | translate }}</p>
+      <div class="mt-3 flex gap-2">
+        <button
+          type="button"
+          class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [disabled]="deleting()"
+          (click)="confirmDelete()"
+        >
+          {{ 'COMMON.YES' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [disabled]="deleting()"
+          (click)="cancelDelete()"
+        >
+          {{ 'COMMON.NO' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'USERS.LOAD_ERROR' | translate }}</p>
+  } @else if (users().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'USERS.EMPTY' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'USERS.USERNAME' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'USERS.FULL_NAME' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'USERS.EMAIL' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'USERS.STATUS' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'USERS.ROLES' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'USERS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ user.username }}</td>
+              <td class="px-3 py-2 text-slate-900">{{ user.fullName }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ user.email }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ statusLabelKey(user.status) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ rolesSummary(user) }}</td>
+              <td class="px-3 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <a
+                    [routerLink]="['/users', user.id, 'edit']"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  >
+                    {{ 'COMMON.EDIT' | translate }}
+                  </a>
+                  <button
+                    type="button"
+                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                    (click)="askDelete(user.id)"
+                  >
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+      <p>
+        {{ 'COMMON.PAGE' | translate }}
+        {{ page() }}
+        /
+        {{ totalPages() }}
+      </p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() <= 1"
+          (click)="previousPage()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() >= totalPages()"
+          (click)="nextPage()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</section>

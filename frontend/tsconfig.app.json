@@ -15,9 +15,9 @@
       "@guards/*": ["app/guards/*"],
       "@interceptors/*": ["app/interceptors/*"],
       "@resolvers/*": ["app/resolvers/*"],
-      "@pipes/*": ["app/pipes/*"],
+      "@pipes/*": ["app/pipes/*"]
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts"]
+  "exclude": ["src/**/*.spec.ts", "src/app/testing/**"]
 }

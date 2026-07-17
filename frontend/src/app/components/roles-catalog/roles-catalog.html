@@ -1,0 +1,35 @@
+<section class="mx-auto max-w-4xl px-4 py-6">
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900">{{ 'ROLES.CATALOG_TITLE' | translate }}</h1>
+    <p class="text-sm text-slate-600">{{ 'ROLES.TITLE' | translate }}</p>
+  </div>
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'ROLES.LOAD_ERROR' | translate }}</p>
+  } @else if (roles().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'ROLES.EMPTY' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.CODE' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.NAME' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.DESCRIPTION' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (role of roles(); track role.id) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 font-medium text-slate-900">{{ role.code }}</td>
+              <td class="px-3 py-2 text-slate-800">{{ roleLabel(role) }}</td>
+              <td class="px-3 py-2 text-slate-600">{{ role.description || '' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
