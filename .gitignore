@@ -1,2 +1,26 @@
+# OS / editors
+.DS_Store
+Thumbs.db
 .specstory/
-backend/node_modules/@angular-devkit/core/index.d.ts
+
+# Dependencies
+**/node_modules/
+
+# Env / secrets
+**/.env
+**/.env.local
+**/.env.*.local
+!.env.example
+!**/.env.example
+
+# Builds
+**/dist/
+**/coverage/
+**/.angular/
+
+# Logs
+*.log
+npm-debug.log*
+
+# MCP
+mcp/dist/

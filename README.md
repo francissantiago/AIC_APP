@@ -10,6 +10,7 @@ Monorepo com frontend Angular e backend NestJS.
 AIC_APP/
 ├── frontend/   # Angular 21 + Tailwind
 ├── backend/    # NestJS + MySQL (TypeORM)
+├── mcp/        # Servidor MCP (Cursor)
 └── README.md
 ```
 
@@ -48,9 +49,22 @@ npm start
 
 Detalhes em [frontend/README.md](frontend/README.md).
 
+### MCP (Cursor)
+
+Servidor MCP na pasta [`mcp/`](mcp/) para queries MySQL (somente SELECT), blueprints Angular/Nest e guidelines do projeto.
+
+```bash
+cd mcp
+cp .env.example .env   # ou reutilize backend/.env
+npm install
+```
+
+Registro: [`.cursor/mcp.json`](.cursor/mcp.json). Detalhes em [mcp/README.md](mcp/README.md).
+
 ## Stack
 
 | Camada | Tecnologias |
 |--------|-------------|
 | Frontend | Angular 21, TypeScript, Tailwind CSS, ngx-translate (en / es / pt-BR) |
 | Backend | NestJS, TypeScript, MySQL, TypeORM, Swagger, Cron, WebSocket |
+| MCP | TypeScript, `@modelcontextprotocol/sdk`, mysql2 (SELECT-only) |
