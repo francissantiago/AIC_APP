@@ -1,0 +1,45 @@
+{
+  "APP": {
+    "NAME": "AIC",
+    "TITLE": "AIC — Administração de Igrejas Cristãs"
+  },
+  "COMMON": {
+    "LOADING": "Carregando...",
+    "LANGUAGE": "Idioma",
+    "SAVE": "Salvar",
+    "CANCEL": "Cancelar",
+    "CONFIRM": "Confirmar",
+    "BACK": "Voltar"
+  },
+  "EXAMPLE": {
+    "TITLE": "Exemplo",
+    "DESCRIPTION": "Este é um componente de exemplo.",
+    "GET_TITLE": "Requisição HTTP GET",
+    "GET_BUTTON": "Buscar post por ID",
+    "GET_RESULT": "Resultado da requisição HTTP GET:",
+    "POST_TITLE": "Requisição HTTP POST",
+    "POST_BUTTON": "Criar post",
+    "POST_RESULT": "Resultado da requisição HTTP POST:",
+    "PUT_TITLE": "Requisição HTTP PUT",
+    "PUT_BUTTON": "Atualizar post",
+    "PUT_RESULT": "Resultado da requisição HTTP PUT:",
+    "PATCH_TITLE": "Requisição HTTP PATCH",
+    "PATCH_BUTTON": "Alterar post",
+    "PATCH_RESULT": "Resultado da requisição HTTP PATCH:",
+    "DELETE_TITLE": "Requisição HTTP DELETE",
+    "DELETE_BUTTON": "Excluir post",
+    "DELETE_RESULT": "Resultado da requisição HTTP DELETE:",
+    "NO_POST": "Nenhum post encontrado",
+    "PLACEHOLDER_TITLE": "Título",
+    "PLACEHOLDER_BODY": "Conteúdo",
+    "PLACEHOLDER_POST_ID": "ID do post",
+    "PLACEHOLDER_USER_ID": "ID do usuário",
+    "PLACEHOLDER_TITLE_OPTIONAL": "Título (opcional)",
+    "PLACEHOLDER_BODY_OPTIONAL": "Conteúdo (opcional)"
+  },
+  "LANGUAGES": {
+    "EN": "Inglês",
+    "ES": "Espanhol",
+    "PT_BR": "Português do Brasil"
+  }
+}

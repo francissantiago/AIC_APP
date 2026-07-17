@@ -52,5 +52,5 @@ Detalhes em [frontend/README.md](frontend/README.md).
 
 | Camada | Tecnologias |
 |--------|-------------|
-| Frontend | Angular 21, TypeScript, Tailwind CSS |
+| Frontend | Angular 21, TypeScript, Tailwind CSS, ngx-translate (en / es / pt-BR) |
 | Backend | NestJS, TypeScript, MySQL, TypeORM, Swagger, Cron, WebSocket |

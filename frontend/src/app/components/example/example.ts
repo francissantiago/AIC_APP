@@ -1,6 +1,7 @@
 import { CommonModule, JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal, WritableSignal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Iexample } from '@interfaces/Iexample';
 import { IexamplePatch } from '@interfaces/IexamplePatch';
 import { ExampleService } from '@services/example-service';
@@ -8,7 +9,7 @@ import { Observable, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-example',
-  imports: [CommonModule, ReactiveFormsModule, JsonPipe],
+  imports: [CommonModule, ReactiveFormsModule, JsonPipe, TranslatePipe],
   templateUrl: './example.html',
   styleUrl: './example.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,26 +1,28 @@
 <div class="example">
     <div>
-        <h1>Example</h1>
-        <p>This is an example component.</p>
+        <h1>{{ 'EXAMPLE.TITLE' | translate }}</h1>
+        <p>{{ 'EXAMPLE.DESCRIPTION' | translate }}</p>
     </div>
 
     <div class="grid-2">
         <div>
-            <h2>GET HTTP Request</h2>
+            <h2>{{ 'EXAMPLE.GET_TITLE' | translate }}</h2>
             <form [formGroup]="getForm" (ngSubmit)="getPostById()">
                 <input type="number" [formControl]="get_postId" />
-                <button type="submit" [disabled]="getForm.invalid || getLoading()">Get Post by ID</button>
+                <button type="submit" [disabled]="getForm.invalid || getLoading()">
+                    {{ 'EXAMPLE.GET_BUTTON' | translate }}
+                </button>
             </form>
         </div>
         <div>
             <p class="post">
-                <span>Result from GET HTTP Request:</span>
+                <span>{{ 'EXAMPLE.GET_RESULT' | translate }}</span>
                 <br>
                 @if (getLoading()) {
-                    <span>Loading...</span>
+                    <span>{{ 'COMMON.LOADING' | translate }}</span>
                 } @else {
                     @if (getResult() === null) {
-                        <span>No post found</span>
+                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
                     } @else {
                         <pre>{{ getResult() | json }}</pre>
                     }
@@ -31,22 +33,24 @@
 
     <div class="grid-2">
         <div>
-            <h2>POST HTTP Request</h2>
+            <h2>{{ 'EXAMPLE.POST_TITLE' | translate }}</h2>
             <form [formGroup]="postForm" (ngSubmit)="submitPost()">
-                <input type="text" formControlName="title" placeholder="Title" />
-                <input type="text" formControlName="body" placeholder="Body" />
-                <button type="submit" [disabled]="postForm.invalid || postLoading()">Post Post</button>
+                <input type="text" formControlName="title" [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE' | translate" />
+                <input type="text" formControlName="body" [placeholder]="'EXAMPLE.PLACEHOLDER_BODY' | translate" />
+                <button type="submit" [disabled]="postForm.invalid || postLoading()">
+                    {{ 'EXAMPLE.POST_BUTTON' | translate }}
+                </button>
             </form>
         </div>
         <div>
             <p class="post">
-                <span>Result from POST HTTP Request:</span>
+                <span>{{ 'EXAMPLE.POST_RESULT' | translate }}</span>
                 <br>
                 @if (postLoading()) {
-                    <span>Loading...</span>
+                    <span>{{ 'COMMON.LOADING' | translate }}</span>
                 } @else {
                     @if (postResult() === null) {
-                        <span>No post found</span>
+                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
                     } @else {
                         <pre>{{ postResult() | json }}</pre>
                     }
@@ -57,24 +61,26 @@
 
     <div class="grid-2">
         <div>
-            <h2>PUT HTTP Request</h2>
+            <h2>{{ 'EXAMPLE.PUT_TITLE' | translate }}</h2>
             <form [formGroup]="putForm" (ngSubmit)="submitPut()">
-                <input type="number" formControlName="postId" placeholder="Post ID" />
-                <input type="number" formControlName="userId" placeholder="User ID" />
-                <input type="text" formControlName="title" placeholder="Title" />
-                <input type="text" formControlName="body" placeholder="Body" />
-                <button type="submit" [disabled]="putForm.invalid || putLoading()">Put Post</button>
+                <input type="number" formControlName="postId" [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate" />
+                <input type="number" formControlName="userId" [placeholder]="'EXAMPLE.PLACEHOLDER_USER_ID' | translate" />
+                <input type="text" formControlName="title" [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE' | translate" />
+                <input type="text" formControlName="body" [placeholder]="'EXAMPLE.PLACEHOLDER_BODY' | translate" />
+                <button type="submit" [disabled]="putForm.invalid || putLoading()">
+                    {{ 'EXAMPLE.PUT_BUTTON' | translate }}
+                </button>
             </form>
         </div>
         <div>
             <p class="post">
-                <span>Result from PUT HTTP Request:</span>
+                <span>{{ 'EXAMPLE.PUT_RESULT' | translate }}</span>
                 <br>
                 @if (putLoading()) {
-                    <span>Loading...</span>
+                    <span>{{ 'COMMON.LOADING' | translate }}</span>
                 } @else {
                     @if (putResult() === null) {
-                        <span>No post found</span>
+                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
                     } @else {
                         <pre>{{ putResult() | json }}</pre>
                     }
@@ -85,23 +91,25 @@
 
     <div class="grid-2">
         <div>
-            <h2>PATCH HTTP Request</h2>
+            <h2>{{ 'EXAMPLE.PATCH_TITLE' | translate }}</h2>
             <form [formGroup]="patchForm" (ngSubmit)="submitPatch()">
-                <input type="number" formControlName="postId" placeholder="Post ID" />
-                <input type="text" formControlName="title" placeholder="Title (optional)" />
-                <input type="text" formControlName="body" placeholder="Body (optional)" />
-                <button type="submit" [disabled]="patchForm.invalid || patchLoading()">Patch Post</button>
+                <input type="number" formControlName="postId" [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate" />
+                <input type="text" formControlName="title" [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE_OPTIONAL' | translate" />
+                <input type="text" formControlName="body" [placeholder]="'EXAMPLE.PLACEHOLDER_BODY_OPTIONAL' | translate" />
+                <button type="submit" [disabled]="patchForm.invalid || patchLoading()">
+                    {{ 'EXAMPLE.PATCH_BUTTON' | translate }}
+                </button>
             </form>
         </div>
         <div>
             <p class="post">
-                <span>Result from PATCH HTTP Request:</span>
+                <span>{{ 'EXAMPLE.PATCH_RESULT' | translate }}</span>
                 <br>
                 @if (patchLoading()) {
-                    <span>Loading...</span>
+                    <span>{{ 'COMMON.LOADING' | translate }}</span>
                 } @else {
                     @if (patchResult() === null) {
-                        <span>No post found</span>
+                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
                     } @else {
                         <pre>{{ patchResult() | json }}</pre>
                     }
@@ -112,21 +120,23 @@
 
     <div class="grid-2">
         <div>
-            <h2>DELETE HTTP Request</h2>
+            <h2>{{ 'EXAMPLE.DELETE_TITLE' | translate }}</h2>
             <form [formGroup]="deleteForm" (ngSubmit)="submitDelete()">
-                <input type="number" formControlName="postId" placeholder="Post ID" />
-                <button type="submit" [disabled]="deleteForm.invalid || deleteLoading()">Delete Post</button>
+                <input type="number" formControlName="postId" [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate" />
+                <button type="submit" [disabled]="deleteForm.invalid || deleteLoading()">
+                    {{ 'EXAMPLE.DELETE_BUTTON' | translate }}
+                </button>
             </form>
         </div>
         <div>
             <p class="post">
-                <span>Result from DELETE HTTP Request:</span>
+                <span>{{ 'EXAMPLE.DELETE_RESULT' | translate }}</span>
                 <br>
                 @if (deleteLoading()) {
-                    <span>Loading...</span>
+                    <span>{{ 'COMMON.LOADING' | translate }}</span>
                 } @else {
                     @if (deleteResult() === null) {
-                        <span>No post found</span>
+                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
                     } @else {
                         <pre>{{ deleteResult() | json }}</pre>
                     }

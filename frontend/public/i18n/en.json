@@ -1,0 +1,45 @@
+{
+  "APP": {
+    "NAME": "AIC",
+    "TITLE": "AIC — Church Administration"
+  },
+  "COMMON": {
+    "LOADING": "Loading...",
+    "LANGUAGE": "Language",
+    "SAVE": "Save",
+    "CANCEL": "Cancel",
+    "CONFIRM": "Confirm",
+    "BACK": "Back"
+  },
+  "EXAMPLE": {
+    "TITLE": "Example",
+    "DESCRIPTION": "This is an example component.",
+    "GET_TITLE": "GET HTTP Request",
+    "GET_BUTTON": "Get Post by ID",
+    "GET_RESULT": "Result from GET HTTP Request:",
+    "POST_TITLE": "POST HTTP Request",
+    "POST_BUTTON": "Create Post",
+    "POST_RESULT": "Result from POST HTTP Request:",
+    "PUT_TITLE": "PUT HTTP Request",
+    "PUT_BUTTON": "Update Post",
+    "PUT_RESULT": "Result from PUT HTTP Request:",
+    "PATCH_TITLE": "PATCH HTTP Request",
+    "PATCH_BUTTON": "Patch Post",
+    "PATCH_RESULT": "Result from PATCH HTTP Request:",
+    "DELETE_TITLE": "DELETE HTTP Request",
+    "DELETE_BUTTON": "Delete Post",
+    "DELETE_RESULT": "Result from DELETE HTTP Request:",
+    "NO_POST": "No post found",
+    "PLACEHOLDER_TITLE": "Title",
+    "PLACEHOLDER_BODY": "Body",
+    "PLACEHOLDER_POST_ID": "Post ID",
+    "PLACEHOLDER_USER_ID": "User ID",
+    "PLACEHOLDER_TITLE_OPTIONAL": "Title (optional)",
+    "PLACEHOLDER_BODY_OPTIONAL": "Body (optional)"
+  },
+  "LANGUAGES": {
+    "EN": "English",
+    "ES": "Spanish",
+    "PT_BR": "Brazilian Portuguese"
+  }
+}

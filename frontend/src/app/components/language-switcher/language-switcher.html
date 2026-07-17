@@ -1,0 +1,13 @@
+<label class="language-switcher">
+  <span class="language-switcher__label">{{ 'COMMON.LANGUAGE' | translate }}</span>
+  <select
+    class="language-switcher__select"
+    [value]="i18n.currentLang()"
+    (change)="onLanguageChange($event)"
+    [attr.aria-label]="'COMMON.LANGUAGE' | translate"
+  >
+    @for (language of i18n.languages; track language.code) {
+      <option [value]="language.code">{{ language.labelKey | translate }}</option>
+    }
+  </select>
+</label>

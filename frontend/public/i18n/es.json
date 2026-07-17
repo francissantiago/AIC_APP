@@ -1,0 +1,45 @@
+{
+  "APP": {
+    "NAME": "AIC",
+    "TITLE": "AIC — Administración de Iglesias"
+  },
+  "COMMON": {
+    "LOADING": "Cargando...",
+    "LANGUAGE": "Idioma",
+    "SAVE": "Guardar",
+    "CANCEL": "Cancelar",
+    "CONFIRM": "Confirmar",
+    "BACK": "Volver"
+  },
+  "EXAMPLE": {
+    "TITLE": "Ejemplo",
+    "DESCRIPTION": "Este es un componente de ejemplo.",
+    "GET_TITLE": "Solicitud HTTP GET",
+    "GET_BUTTON": "Obtener publicación por ID",
+    "GET_RESULT": "Resultado de la solicitud HTTP GET:",
+    "POST_TITLE": "Solicitud HTTP POST",
+    "POST_BUTTON": "Crear publicación",
+    "POST_RESULT": "Resultado de la solicitud HTTP POST:",
+    "PUT_TITLE": "Solicitud HTTP PUT",
+    "PUT_BUTTON": "Actualizar publicación",
+    "PUT_RESULT": "Resultado de la solicitud HTTP PUT:",
+    "PATCH_TITLE": "Solicitud HTTP PATCH",
+    "PATCH_BUTTON": "Modificar publicación",
+    "PATCH_RESULT": "Resultado de la solicitud HTTP PATCH:",
+    "DELETE_TITLE": "Solicitud HTTP DELETE",
+    "DELETE_BUTTON": "Eliminar publicación",
+    "DELETE_RESULT": "Resultado de la solicitud HTTP DELETE:",
+    "NO_POST": "No se encontró la publicación",
+    "PLACEHOLDER_TITLE": "Título",
+    "PLACEHOLDER_BODY": "Contenido",
+    "PLACEHOLDER_POST_ID": "ID de la publicación",
+    "PLACEHOLDER_USER_ID": "ID del usuario",
+    "PLACEHOLDER_TITLE_OPTIONAL": "Título (opcional)",
+    "PLACEHOLDER_BODY_OPTIONAL": "Contenido (opcional)"
+  },
+  "LANGUAGES": {
+    "EN": "Inglés",
+    "ES": "Español",
+    "PT_BR": "Portugués de Brasil"
+  }
+}
