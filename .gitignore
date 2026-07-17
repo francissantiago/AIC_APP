@@ -1,5 +1,1 @@
-
-/.phpdoc
-phpDocumentor.phar
-/vendor
-.env
+.specstory/
