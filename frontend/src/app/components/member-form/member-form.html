@@ -1,4 +1,4 @@
-<section class="w-full max-w-2xl">
+<section class="w-full max-w-7xl">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-semibold text-slate-900">
       @if (isEditMode()) {
@@ -9,7 +9,7 @@
     </h1>
     <a
       routerLink="/members"
-      class="text-sm text-slate-700 underline underline-offset-2 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      class="text-sm text-slate-00 underline underline-offset-2 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
     >
       {{ 'COMMON.BACK' | translate }}
     </a>
@@ -40,7 +40,7 @@
           type="text"
           formControlName="fullName"
           autocomplete="name"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [attr.aria-invalid]="fieldInvalid('fullName')"
         />
         @if (fieldInvalid('fullName')) {
@@ -54,7 +54,7 @@
           type="email"
           formControlName="email"
           autocomplete="email"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [attr.aria-invalid]="fieldInvalid('email')"
         />
         @if (fieldInvalid('email')) {
@@ -69,7 +69,7 @@
             type="tel"
             formControlName="phone"
             autocomplete="tel"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -78,7 +78,7 @@
           <input
             type="text"
             formControlName="document"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -88,7 +88,7 @@
         <input
           type="date"
           formControlName="birthDate"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         />
       </label>
 
@@ -97,7 +97,7 @@
           <span>{{ 'MEMBERS.GENDER' | translate }}</span>
           <select
             formControlName="gender"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             @for (gender of genders; track gender) {
               <option [value]="gender">{{ genderLabelKey(gender) | translate }}</option>
@@ -109,7 +109,7 @@
           <span>{{ 'MEMBERS.MARITAL_STATUS' | translate }}</span>
           <select
             formControlName="maritalStatus"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             @for (status of maritalStatuses; track status) {
               <option [value]="status">{{ maritalLabelKey(status) | translate }}</option>
@@ -121,7 +121,7 @@
           <span>{{ 'MEMBERS.STATUS' | translate }}</span>
           <select
             formControlName="status"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             @for (status of statuses; track status) {
               <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
@@ -136,7 +136,7 @@
           <input
             type="date"
             formControlName="baptismDate"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -145,7 +145,7 @@
           <input
             type="date"
             formControlName="membershipDate"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -156,7 +156,7 @@
           type="text"
           formControlName="address"
           autocomplete="street-address"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         />
       </label>
 
@@ -167,7 +167,7 @@
             type="text"
             formControlName="city"
             autocomplete="address-level2"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -177,7 +177,7 @@
             type="text"
             formControlName="state"
             autocomplete="address-level1"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -187,7 +187,7 @@
             type="text"
             formControlName="zipCode"
             autocomplete="postal-code"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -197,7 +197,7 @@
         <textarea
           formControlName="notes"
           rows="3"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         ></textarea>
       </label>
 
@@ -206,14 +206,14 @@
         <input
           type="text"
           formControlName="userId"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         />
       </label>
 
       <div class="mt-2 flex flex-wrap gap-3">
         <button
           type="submit"
-          class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           [disabled]="saving()"
         >
           {{ 'COMMON.SAVE' | translate }}

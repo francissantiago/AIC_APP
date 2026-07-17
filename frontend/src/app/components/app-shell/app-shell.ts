@@ -36,6 +36,12 @@ export class AppShell {
   #collapseTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly pageTitleKey = computed(() => this.#resolvePageTitle(this.#currentUrl()));
+  readonly contentLayoutClass = computed(() =>
+    [
+      'flex min-h-screen min-w-0 flex-1 flex-col transition-[margin] duration-200',
+      this.sidebarExpanded() ? 'md:ml-60' : 'md:ml-16',
+    ].join(' '),
+  );
 
   constructor() {
     this.#router.events
@@ -86,6 +92,18 @@ export class AppShell {
   #resolvePageTitle(url: string): string {
     const path = url.split('?')[0] ?? '';
 
+    if (path.startsWith('/finance/entries')) {
+      return 'APP_SHELL.PAGE_ENTRIES';
+    }
+    if (path.startsWith('/finance/assets')) {
+      return 'APP_SHELL.PAGE_ASSETS';
+    }
+    if (path.startsWith('/finance/reports')) {
+      return 'APP_SHELL.PAGE_REPORTS';
+    }
+    if (path.startsWith('/finance')) {
+      return 'APP_SHELL.PAGE_FINANCE';
+    }
     if (path.startsWith('/roles')) {
       return 'APP_SHELL.PAGE_ROLES';
     }

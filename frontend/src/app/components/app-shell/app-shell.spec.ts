@@ -57,6 +57,16 @@ describe('AppShell', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should reserve sidebar space only on desktop', () => {
+    component.sidebarExpanded.set(true);
+    expect(component.contentLayoutClass()).toContain('md:ml-60');
+    expect(component.contentLayoutClass()).not.toContain(' ml-60');
+
+    component.sidebarExpanded.set(false);
+    expect(component.contentLayoutClass()).toContain('md:ml-16');
+    expect(component.contentLayoutClass()).not.toContain(' ml-16');
+  });
+
   it('toggleSidebar should flip expanded state and cancel pending auto-collapse', () => {
     vi.useFakeTimers();
     component.sidebarExpanded.set(true);

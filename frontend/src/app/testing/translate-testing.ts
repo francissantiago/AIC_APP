@@ -1,9 +1,11 @@
+import { signal } from '@angular/core';
 import { of } from 'rxjs';
 
 /** Minimal TranslateService stub for component unit tests (avoids NG0203 with provideTranslateService). */
 export function translateServiceStub() {
   return {
     instant: (key: string) => key,
+    translate: (key: string) => signal(key),
     get: (key: string) => of(key),
     stream: (key: string) => of(key),
     onLangChange: of({ lang: 'en', translations: {} }),

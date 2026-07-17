@@ -1,9 +1,21 @@
 <div class="flex min-h-screen bg-slate-50">
+  @if (sidebarExpanded()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-10 bg-slate-950/40 md:hidden"
+      [attr.aria-label]="'APP_SHELL.TOGGLE_SIDEBAR' | translate"
+      [attr.aria-controls]="sidebarId"
+      (click)="toggleSidebar()"
+    ></button>
+  }
+
   <aside
     [id]="sidebarId"
-    class="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-slate-600 bg-slate-500 shadow-lg transition-[width] duration-200"
+    class="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-slate-600 bg-slate-500 shadow-lg transition-[width,transform] duration-200 md:translate-x-0"
     [class.w-60]="sidebarExpanded()"
     [class.w-16]="!sidebarExpanded()"
+    [class.-translate-x-full]="!sidebarExpanded()"
+    [class.translate-x-0]="sidebarExpanded()"
     (mouseenter)="onSidebarEnter()"
     (mouseleave)="onSidebarLeave()"
     (focusin)="onSidebarFocusIn()"
@@ -34,7 +46,7 @@
       }
       <button
         type="button"
-        class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-slate-600 bg-slate-700 text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-slate-600 bg-slate-600 text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         [attr.aria-label]="'APP_SHELL.TOGGLE_SIDEBAR' | translate"
         [attr.aria-expanded]="sidebarExpanded()"
         [attr.aria-controls]="sidebarId"
@@ -62,11 +74,7 @@
     </div>
   </aside>
 
-  <div
-    class="flex min-h-screen min-w-0 flex-1 flex-col transition-[margin] duration-200"
-    [class.ml-60]="sidebarExpanded()"
-    [class.ml-16]="!sidebarExpanded()"
-  >
+  <div [class]="contentLayoutClass()">
     <header
       role="banner"
       class="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 shadow-xs md:px-6"
@@ -100,7 +108,8 @@
         <app-language-switcher />
         <button
           type="button"
-          class="inline-flex h-9 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+          class="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:h-9 sm:w-auto sm:gap-2 sm:px-3"
+          [attr.aria-label]="'AUTH.LOGOUT' | translate"
           (click)="logout()"
         >
           <svg
@@ -117,7 +126,7 @@
               d="M14 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-3M9 12h12m0 0-3-3m3 3-3 3"
             />
           </svg>
-          {{ 'AUTH.LOGOUT' | translate }}
+          <span class="hidden sm:inline">{{ 'AUTH.LOGOUT' | translate }}</span>
         </button>
       </div>
     </header>

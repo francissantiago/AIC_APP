@@ -32,7 +32,7 @@
             type="text"
             formControlName="name"
             autocomplete="organization"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [attr.aria-invalid]="fieldInvalid('name')"
           />
           @if (fieldInvalid('name')) {
@@ -47,7 +47,7 @@
           <input
             type="text"
             formControlName="tradeName"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -57,7 +57,7 @@
           <span>{{ 'CONGREGATION.TYPE' | translate }}</span>
           <select
             formControlName="type"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             @for (type of types; track type) {
               <option [value]="type">{{ typeLabelKey(type) | translate }}</option>
@@ -69,7 +69,7 @@
           <span>{{ 'CONGREGATION.STATUS' | translate }}</span>
           <select
             formControlName="status"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             @for (status of statuses; track status) {
               <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
@@ -84,7 +84,7 @@
           <input
             type="text"
             formControlName="document"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -94,7 +94,7 @@
             type="tel"
             formControlName="phone"
             autocomplete="tel"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -105,7 +105,7 @@
           type="email"
           formControlName="email"
           autocomplete="email"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [attr.aria-invalid]="fieldInvalid('email')"
         />
         @if (fieldInvalid('email')) {
@@ -121,7 +121,7 @@
           type="text"
           formControlName="address"
           autocomplete="street-address"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         />
       </label>
 
@@ -132,7 +132,7 @@
             type="text"
             formControlName="city"
             autocomplete="address-level2"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -142,7 +142,7 @@
             type="text"
             formControlName="state"
             autocomplete="address-level1"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -152,7 +152,7 @@
             type="text"
             formControlName="zipCode"
             autocomplete="postal-code"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -163,7 +163,7 @@
           <input
             type="date"
             formControlName="foundationDate"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
 
@@ -173,7 +173,7 @@
             type="url"
             formControlName="website"
             autocomplete="url"
-            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
         </label>
       </div>
@@ -183,14 +183,14 @@
         <textarea
           formControlName="notes"
           rows="3"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         ></textarea>
       </label>
 
       <div class="mt-2">
         <button
           type="submit"
-          class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           [disabled]="saving()"
         >
           {{ 'COMMON.SAVE' | translate }}

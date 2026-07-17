@@ -6,7 +6,7 @@
     </div>
     <a
       routerLink="/users/new"
-      class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+      class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
     >
       {{ 'COMMON.CREATE' | translate }}
     </a>
@@ -22,7 +22,7 @@
       <input
         type="search"
         formControlName="q"
-        class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       />
     </label>
 
@@ -30,7 +30,7 @@
       <span>{{ 'USERS.FILTER_STATUS' | translate }}</span>
       <select
         formControlName="status"
-        class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         <option value="">{{ 'COMMON.FILTER' | translate }}</option>
         @for (status of statuses; track status) {
@@ -43,7 +43,7 @@
       <span>{{ 'USERS.FILTER_ROLE' | translate }}</span>
       <select
         formControlName="roleCode"
-        class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         <option value="">{{ 'COMMON.FILTER' | translate }}</option>
         @for (role of roles(); track role.id) {

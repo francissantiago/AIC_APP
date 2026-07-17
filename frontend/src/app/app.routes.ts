@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@guards/auth-guard';
 import { guestGuard } from '@guards/guest-guard';
+import { financeRoleGuard } from '@guards/role-guard';
 
 export const routes: Routes = [
   {
@@ -71,6 +72,32 @@ export const routes: Routes = [
       {
         path: 'example',
         loadComponent: () => import('@components/example/example').then((m) => m.Example),
+      },
+      {
+        path: 'finance',
+        canActivate: [financeRoleGuard],
+        loadComponent: () =>
+          import('@components/financial-dashboard/financial-dashboard').then(
+            (m) => m.FinancialDashboard,
+          ),
+      },
+      {
+        path: 'finance/entries',
+        canActivate: [financeRoleGuard],
+        loadComponent: () =>
+          import('@components/financial-entries/financial-entries').then((m) => m.FinancialEntries),
+      },
+      {
+        path: 'finance/assets',
+        canActivate: [financeRoleGuard],
+        loadComponent: () =>
+          import('@components/assets-list/assets-list').then((m) => m.AssetsList),
+      },
+      {
+        path: 'finance/reports',
+        canActivate: [financeRoleGuard],
+        loadComponent: () =>
+          import('@components/financial-reports/financial-reports').then((m) => m.FinancialReports),
       },
     ],
   },

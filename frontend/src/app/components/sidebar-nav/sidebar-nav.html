@@ -96,5 +96,57 @@
         </a>
       </li>
     }
+    @if (canViewFinance()) {
+      <li>
+        <button
+          type="button"
+          class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.justify-center]="!expanded()"
+          [class.bg-slate-600]="currentUrl().startsWith('/finance')"
+          [class.px-3]="expanded()"
+          [class.px-0]="!expanded()"
+          [attr.aria-label]="expanded() ? null : ('NAV.FINANCE_ASSETS' | translate)"
+          [attr.title]="expanded() ? null : ('NAV.FINANCE_ASSETS' | translate)"
+          [attr.aria-expanded]="expanded() ? financeOpen() : null"
+          [attr.aria-controls]="expanded() ? 'finance-submenu' : null"
+          (click)="toggleFinance()"
+        >
+          <svg
+            class="size-5 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-3M7 5h10"
+            />
+          </svg>
+          @if (expanded()) {
+            <span class="flex-1 truncate text-left">{{ 'NAV.FINANCE_ASSETS' | translate }}</span>
+            <span aria-hidden="true">{{ financeOpen() ? '−' : '+' }}</span>
+          }
+        </button>
+        @if (expanded() && financeOpen()) {
+          <ul id="finance-submenu" class="ml-5 mt-1 border-l border-slate-400 pl-3">
+            @for (item of financeItems; track item.route) {
+              <li>
+                <a
+                  [routerLink]="item.route"
+                  routerLinkActive="bg-slate-600 text-white"
+                  [routerLinkActiveOptions]="{ exact: item.route === '/finance' }"
+                  class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                >
+                  {{ item.labelKey | translate }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </li>
+    }
   </ul>
 </nav>
