@@ -14,7 +14,7 @@ import { SidebarNav } from '@components/sidebar-nav/sidebar-nav';
 import { AuthService } from '@services/auth-service';
 import { filter, startWith } from 'rxjs';
 
-const AUTO_COLLAPSE_MS = 3000;
+const AUTO_COLLAPSE_MS = 2000;
 const SIDEBAR_ID = 'app-sidebar';
 
 @Component({
@@ -58,9 +58,6 @@ export class AppShell {
 
   onSidebarEnter(): void {
     this.#clearCollapseTimer();
-    if (!this.sidebarExpanded()) {
-      this.sidebarExpanded.set(true);
-    }
   }
 
   onSidebarLeave(): void {
@@ -69,9 +66,6 @@ export class AppShell {
 
   onSidebarFocusIn(): void {
     this.#clearCollapseTimer();
-    if (!this.sidebarExpanded()) {
-      this.sidebarExpanded.set(true);
-    }
   }
 
   onSidebarFocusOut(event: FocusEvent): void {

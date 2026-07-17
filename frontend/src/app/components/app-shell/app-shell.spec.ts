@@ -62,16 +62,16 @@ describe('AppShell', () => {
     component.sidebarExpanded.set(true);
     component.onSidebarLeave();
     component.toggleSidebar();
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(2000);
 
     expect(component.sidebarExpanded()).toBe(false);
   });
 
-  it('should auto-collapse after 3s on sidebar leave when expanded', () => {
+  it('should auto-collapse after 2s on sidebar leave when expanded', () => {
     vi.useFakeTimers();
     component.sidebarExpanded.set(true);
     component.onSidebarLeave();
-    vi.advanceTimersByTime(2999);
+    vi.advanceTimersByTime(1999);
     expect(component.sidebarExpanded()).toBe(true);
     vi.advanceTimersByTime(1);
     expect(component.sidebarExpanded()).toBe(false);
@@ -83,22 +83,28 @@ describe('AppShell', () => {
     component.onSidebarLeave();
     vi.advanceTimersByTime(1000);
     component.onSidebarEnter();
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(1000);
 
     expect(component.sidebarExpanded()).toBe(true);
   });
 
-  it('should expand on focus when collapsed', () => {
+  it('should remain collapsed when focused', () => {
     component.sidebarExpanded.set(false);
     component.onSidebarFocusIn();
-    expect(component.sidebarExpanded()).toBe(true);
+    expect(component.sidebarExpanded()).toBe(false);
+  });
+
+  it('should remain collapsed when pointer enters', () => {
+    component.sidebarExpanded.set(false);
+    component.onSidebarEnter();
+    expect(component.sidebarExpanded()).toBe(false);
   });
 
   it('should not schedule auto-collapse when already collapsed', () => {
     vi.useFakeTimers();
     component.sidebarExpanded.set(false);
     component.onSidebarLeave();
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(1000);
     expect(component.sidebarExpanded()).toBe(false);
   });
 });
