@@ -1,0 +1,445 @@
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
+import {
+  AssetStatus,
+  AssetType,
+  FinancialType,
+  PaymentMethod,
+} from '../enums/finance.enums';
+
+const trim = ({ value }: { value: unknown }): unknown =>
+  typeof value === 'string' ? value.trim() : value;
+
+const MAX_MONEY = 99_999_999_999.99;
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+export class CreateFinancialCategoryDto {
+  @ApiProperty({ example: 'Dízimos', maxLength: 100 })
+  @Transform(trim)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  name!: string;
+
+  @ApiProperty({ enum: FinancialType })
+  @IsEnum(FinancialType)
+  type!: FinancialType;
+}
+
+export class UpdateFinancialCategoryDto extends PartialType(
+  CreateFinancialCategoryDto,
+) {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
+}
+
+export class QueryFinancialCategoriesDto {
+  @ApiPropertyOptional({ enum: FinancialType })
+  @IsOptional()
+  @IsEnum(FinancialType)
+  type?: FinancialType;
+
+  @ApiPropertyOptional({ type: Boolean })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    value === true || value === 'true'
+      ? true
+      : value === false || value === 'false'
+        ? false
+        : value,
+  )
+  @IsBoolean()
+  active?: boolean;
+}
+
+export class CreateFinancialEntryDto {
+  @ApiProperty({ example: '2026-07-17', format: 'date' })
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  entryDate!: string;
+
+  @ApiProperty({ enum: FinancialType })
+  @IsEnum(FinancialType)
+  type!: FinancialType;
+
+  @ApiProperty({ format: 'uuid' })
+  @IsUUID()
+  categoryId!: string;
+
+  @ApiProperty({ example: 'Oferta do culto', maxLength: 255 })
+  @Transform(trim)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(255)
+  description!: string;
+
+  @ApiProperty({ example: 1250.5, minimum: 0.01 })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(MAX_MONEY)
+  amount!: number;
+
+  @ApiProperty({ enum: PaymentMethod, default: PaymentMethod.OTHER })
+  @IsEnum(PaymentMethod)
+  paymentMethod: PaymentMethod = PaymentMethod.OTHER;
+
+  @ApiPropertyOptional({ nullable: true, maxLength: 100 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(100)
+  reference?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(65535)
+  notes?: string | null;
+}
+
+export class UpdateFinancialEntryDto extends PartialType(
+  CreateFinancialEntryDto,
+) {}
+
+export class PaginationDto {
+  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page: number = 1;
+
+  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit: number = 20;
+}
+
+export class PeriodQueryDto {
+  @ApiPropertyOptional({ example: '2026-07-01', format: 'date' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  from?: string;
+
+  @ApiPropertyOptional({ example: '2026-07-31', format: 'date' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  to?: string;
+}
+
+export class QueryFinancialEntriesDto extends PaginationDto {
+  @ApiPropertyOptional({ format: 'date' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  from?: string;
+
+  @ApiPropertyOptional({ format: 'date' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  to?: string;
+
+  @ApiPropertyOptional({ enum: FinancialType })
+  @IsOptional()
+  @IsEnum(FinancialType)
+  type?: FinancialType;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(255)
+  q?: string;
+}
+
+export class CashFlowQueryDto extends QueryFinancialEntriesDto {}
+
+export class CashFlowCsvQueryDto extends PeriodQueryDto {
+  @ApiPropertyOptional({ enum: FinancialType })
+  @IsOptional()
+  @IsEnum(FinancialType)
+  type?: FinancialType;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
+}
+
+export class CreateAssetDto {
+  @ApiPropertyOptional({ nullable: true, maxLength: 50 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(50)
+  assetTag?: string | null;
+
+  @ApiProperty({ maxLength: 150 })
+  @Transform(trim)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(150)
+  name!: string;
+
+  @ApiProperty({ enum: AssetType })
+  @IsEnum(AssetType)
+  type!: AssetType;
+
+  @ApiPropertyOptional({ nullable: true, format: 'date' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  acquisitionDate?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, minimum: 0.01 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(MAX_MONEY)
+  acquisitionValue?: number | null;
+
+  @ApiPropertyOptional({ nullable: true, minimum: 0.01 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(MAX_MONEY)
+  currentValue?: number | null;
+
+  @ApiPropertyOptional({ nullable: true, maxLength: 150 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(150)
+  location?: string | null;
+
+  @ApiProperty({ enum: AssetStatus, default: AssetStatus.ACTIVE })
+  @IsEnum(AssetStatus)
+  status: AssetStatus = AssetStatus.ACTIVE;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(65535)
+  notes?: string | null;
+}
+
+export class UpdateAssetDto extends PartialType(CreateAssetDto) {}
+
+export class QueryAssetsDto extends PaginationDto {
+  @ApiPropertyOptional({ enum: AssetType })
+  @IsOptional()
+  @IsEnum(AssetType)
+  type?: AssetType;
+
+  @ApiPropertyOptional({ enum: AssetStatus })
+  @IsOptional()
+  @IsEnum(AssetStatus)
+  status?: AssetStatus;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(255)
+  q?: string;
+}
+
+export class FinancialCategoryResponseDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiProperty()
+  name!: string;
+  @ApiProperty({ enum: FinancialType })
+  type!: FinancialType;
+  @ApiProperty()
+  active!: boolean;
+  @ApiProperty()
+  isDefault!: boolean;
+  @ApiProperty({ format: 'date-time' })
+  createdAt!: Date;
+  @ApiProperty({ format: 'date-time' })
+  updatedAt!: Date;
+}
+
+export class FinancialEntryResponseDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiProperty({ format: 'uuid' })
+  categoryId!: string;
+  @ApiProperty({ format: 'uuid' })
+  createdByUserId!: string;
+  @ApiProperty({ enum: FinancialType })
+  type!: FinancialType;
+  @ApiProperty({ example: '1250.00', description: 'Decimal como string' })
+  amount!: string;
+  @ApiProperty({ format: 'date' })
+  entryDate!: string;
+  @ApiProperty()
+  description!: string;
+  @ApiProperty({ enum: PaymentMethod })
+  paymentMethod!: PaymentMethod;
+  @ApiPropertyOptional({ nullable: true })
+  reference!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  notes!: string | null;
+  @ApiProperty({ type: FinancialCategoryResponseDto })
+  category!: FinancialCategoryResponseDto;
+  @ApiProperty({ format: 'date-time' })
+  createdAt!: Date;
+  @ApiProperty({ format: 'date-time' })
+  updatedAt!: Date;
+}
+
+export class PaginatedFinancialEntriesResponseDto {
+  @ApiProperty({ type: FinancialEntryResponseDto, isArray: true })
+  data!: FinancialEntryResponseDto[];
+  @ApiProperty()
+  total!: number;
+  @ApiProperty()
+  page!: number;
+  @ApiProperty()
+  limit!: number;
+}
+
+export class AssetResponseDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiProperty({ format: 'uuid' })
+  createdByUserId!: string;
+  @ApiPropertyOptional({ nullable: true })
+  assetTag!: string | null;
+  @ApiProperty()
+  name!: string;
+  @ApiProperty({ enum: AssetType })
+  type!: AssetType;
+  @ApiPropertyOptional({ nullable: true, format: 'date' })
+  acquisitionDate!: string | null;
+  @ApiPropertyOptional({ nullable: true, example: '5000.00' })
+  acquisitionValue!: string | null;
+  @ApiPropertyOptional({ nullable: true, example: '4500.00' })
+  currentValue!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  location!: string | null;
+  @ApiProperty({ enum: AssetStatus })
+  status!: AssetStatus;
+  @ApiPropertyOptional({ nullable: true })
+  notes!: string | null;
+  @ApiProperty({ format: 'date-time' })
+  createdAt!: Date;
+  @ApiProperty({ format: 'date-time' })
+  updatedAt!: Date;
+}
+
+export class PaginatedAssetsResponseDto {
+  @ApiProperty({ type: AssetResponseDto, isArray: true })
+  data!: AssetResponseDto[];
+  @ApiProperty()
+  total!: number;
+  @ApiProperty()
+  page!: number;
+  @ApiProperty()
+  limit!: number;
+}
+
+export class PeriodResponseDto {
+  @ApiProperty({ format: 'date' })
+  from!: string;
+  @ApiProperty({ format: 'date' })
+  to!: string;
+}
+
+export class FinancialTotalsDto {
+  @ApiProperty({ example: '1000.00' })
+  income!: string;
+  @ApiProperty({ example: '400.00' })
+  expense!: string;
+  @ApiProperty({ example: '600.00' })
+  balance!: string;
+  @ApiProperty()
+  activeAssets!: number;
+  @ApiProperty({ example: '25000.00' })
+  estimatedAssetValue!: string;
+}
+
+export class MonthlyFinancialDto {
+  @ApiProperty({ example: '2026-07' })
+  month!: string;
+  @ApiProperty({ example: '1000.00' })
+  income!: string;
+  @ApiProperty({ example: '400.00' })
+  expense!: string;
+}
+
+export class ExpenseByCategoryDto {
+  @ApiPropertyOptional({ nullable: true, format: 'uuid' })
+  categoryId!: string | null;
+  @ApiProperty()
+  categoryName!: string;
+  @ApiProperty({ example: '400.00' })
+  amount!: string;
+}
+
+export class FinancialDashboardResponseDto {
+  @ApiProperty({ type: PeriodResponseDto })
+  period!: PeriodResponseDto;
+  @ApiProperty({ type: FinancialTotalsDto })
+  totals!: FinancialTotalsDto;
+  @ApiProperty({ type: MonthlyFinancialDto, isArray: true })
+  monthly!: MonthlyFinancialDto[];
+  @ApiProperty({ type: ExpenseByCategoryDto, isArray: true })
+  expensesByCategory!: ExpenseByCategoryDto[];
+}
+
+export class CashFlowSummaryDto {
+  @ApiProperty({ example: '1000.00' })
+  income!: string;
+  @ApiProperty({ example: '400.00' })
+  expense!: string;
+  @ApiProperty({ example: '600.00' })
+  balance!: string;
+}
+
+export class CashFlowReportResponseDto extends PaginatedFinancialEntriesResponseDto {
+  @ApiProperty({ type: CashFlowSummaryDto })
+  summary!: CashFlowSummaryDto;
+}
+
+export class AssetReportResponseDto extends PaginatedAssetsResponseDto {
+  @ApiProperty()
+  quantity!: number;
+  @ApiProperty({ example: '25000.00' })
+  estimatedValue!: string;
+}

@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CongregationsModule } from './congregations/congregations.module';
 import { EventsModule } from './events/events.module';
+import { FinanceModule } from './finance/finance.module';
 import { HealthModule } from './health/health.module';
 import { MembersModule } from './members/members.module';
 import { RolesModule } from './roles/roles.module';
@@ -37,6 +38,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     MembersModule,
     CongregationsModule,
+    FinanceModule,
   ],
 })
 export class AppModule {}
