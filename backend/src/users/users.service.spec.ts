@@ -25,6 +25,7 @@ describe('UsersService', () => {
     save: jest.fn(),
     softRemove: jest.fn(),
     createQueryBuilder: jest.fn(),
+    update: jest.fn(),
   };
   const rolesRepository = {
     findBy: jest.fn(),

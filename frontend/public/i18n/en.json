@@ -108,5 +108,20 @@
     "CODE_SECRETARY": "Secretary",
     "CODE_LEADER": "Ministry leader",
     "CODE_MEMBER": "Member"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "Sign in",
+    "LOGIN_SUBTITLE": "Access the AIC platform",
+    "EMAIL": "Email",
+    "PASSWORD": "Password",
+    "SUBMIT": "Sign in",
+    "LOGOUT": "Sign out",
+    "ERROR_INVALID_CREDENTIALS": "Invalid email or password",
+    "ERROR_INACTIVE": "This account is not active",
+    "ERROR_GENERIC": "Unable to sign in. Try again.",
+    "SESSION_EXPIRED": "Your session has expired",
+    "UNAUTHORIZED": "You need to sign in to continue",
+    "EMAIL_REQUIRED": "Email is required",
+    "PASSWORD_REQUIRED": "Password is required"
   }
 }

@@ -137,6 +137,25 @@ export class UsersService {
     this.logger.log(`Usuário removido (soft delete): ${id}`);
   }
 
+  /**
+   * Busca usuário para autenticação (inclui passwordHash).
+   * Soft-deleted não é retornado (sem withDeleted).
+   */
+  async findByEmailForAuth(email: string): Promise<User | null> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .leftJoinAndSelect('user.roles', 'role')
+      .where('user.email = :email', { email })
+      .getOne();
+  }
+
+  async touchLastLogin(userId: string): Promise<void> {
+    await this.usersRepository.update(userId, {
+      lastLoginAt: new Date(),
+    });
+  }
+
   private async getUserOrFail(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },

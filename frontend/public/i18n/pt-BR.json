@@ -108,5 +108,20 @@
     "CODE_SECRETARY": "Secretário(a)",
     "CODE_LEADER": "Líder de ministério",
     "CODE_MEMBER": "Membro"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "Entrar",
+    "LOGIN_SUBTITLE": "Acesse a plataforma AIC",
+    "EMAIL": "E-mail",
+    "PASSWORD": "Senha",
+    "SUBMIT": "Entrar",
+    "LOGOUT": "Sair",
+    "ERROR_INVALID_CREDENTIALS": "E-mail ou senha inválidos",
+    "ERROR_INACTIVE": "Esta conta não está ativa",
+    "ERROR_GENERIC": "Não foi possível entrar. Tente novamente.",
+    "SESSION_EXPIRED": "Sua sessão expirou",
+    "UNAUTHORIZED": "Você precisa entrar para continuar",
+    "EMAIL_REQUIRED": "E-mail é obrigatório",
+    "PASSWORD_REQUIRED": "Senha é obrigatória"
   }
 }
