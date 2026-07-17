@@ -1,6 +1,6 @@
-<section class="mx-auto max-w-2xl px-4 py-6">
-  <div class="mb-6">
-    <h1 class="text-2xl font-semibold text-slate-900">
+<section class="w-full max-w-7xl">
+  <div class="mb-4">
+    <h1 class="text-xl font-semibold text-slate-900">
       {{ 'CONGREGATION.EDIT_TITLE' | translate }}
     </h1>
     <p class="mt-1 text-sm text-slate-600">{{ 'CONGREGATION.DESCRIPTION' | translate }}</p>
@@ -25,30 +25,32 @@
     <p class="text-sm text-red-700" role="alert">{{ 'CONGREGATION.LOAD_ERROR' | translate }}</p>
   } @else {
     <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'CONGREGATION.NAME' | translate }}</span>
-        <input
-          type="text"
-          formControlName="name"
-          autocomplete="organization"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [attr.aria-invalid]="fieldInvalid('name')"
-        />
-        @if (fieldInvalid('name')) {
-          <span class="text-xs text-red-700">{{
-            'CONGREGATION.VALIDATION_REQUIRED' | translate
-          }}</span>
-        }
-      </label>
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.NAME' | translate }}</span>
+          <input
+            type="text"
+            formControlName="name"
+            autocomplete="organization"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.aria-invalid]="fieldInvalid('name')"
+          />
+          @if (fieldInvalid('name')) {
+            <span class="text-xs text-red-700">{{
+              'CONGREGATION.VALIDATION_REQUIRED' | translate
+            }}</span>
+          }
+        </label>
 
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'CONGREGATION.TRADE_NAME' | translate }}</span>
-        <input
-          type="text"
-          formControlName="tradeName"
-          class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        />
-      </label>
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'CONGREGATION.TRADE_NAME' | translate }}</span>
+          <input
+            type="text"
+            formControlName="tradeName"
+            class="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+      </div>
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex flex-col gap-1 text-sm text-slate-700">

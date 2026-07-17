@@ -3,6 +3,24 @@
     "NAME": "AIC",
     "TITLE": "AIC — Church Administration"
   },
+  "NAV": {
+    "MAIN_NAV": "Main navigation",
+    "USERS": "Users",
+    "ROLES": "Roles",
+    "MEMBERS": "Members",
+    "CONGREGATIONS": "Congregation",
+    "EXPAND": "Expand menu",
+    "COLLAPSE": "Collapse menu"
+  },
+  "APP_SHELL": {
+    "APP_NAME": "AIC",
+    "TOGGLE_SIDEBAR": "Toggle sidebar",
+    "CONTENT_AREA": "Main content",
+    "PAGE_USERS": "Users",
+    "PAGE_ROLES": "Roles",
+    "PAGE_MEMBERS": "Members",
+    "PAGE_CONGREGATION": "Congregation"
+  },
   "COMMON": {
     "LOADING": "Loading...",
     "LANGUAGE": "Language",

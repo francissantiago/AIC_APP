@@ -55,9 +55,7 @@ export class MembersList implements OnInit {
     this.filterForm.valueChanges
       .pipe(
         debounceTime(300),
-        distinctUntilChanged(
-          (prev, next) => prev.q === next.q && prev.status === next.status,
-        ),
+        distinctUntilChanged((prev, next) => prev.q === next.q && prev.status === next.status),
         takeUntilDestroyed(this.#destroyRef),
       )
       .subscribe(() => {

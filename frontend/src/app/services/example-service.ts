@@ -16,37 +16,37 @@ export class ExampleService {
 
   #headers = new HttpHeaders({
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    Accept: 'application/json',
   });
 
   getPostById(id: number): Observable<Iexample> {
-    return this.#http.get<Iexample>(`${this.#apiUrl}/${id}`, { headers: this.#headers }).pipe(
-      this.#withRetry()
-    );
+    return this.#http
+      .get<Iexample>(`${this.#apiUrl}/${id}`, { headers: this.#headers })
+      .pipe(this.#withRetry());
   }
 
   postPost(body: Iexample): Observable<Iexample> {
-    return this.#http.post<Iexample>(`${this.#apiUrl}`, body, { headers: this.#headers }).pipe(
-      this.#withRetry()
-    );
+    return this.#http
+      .post<Iexample>(`${this.#apiUrl}`, body, { headers: this.#headers })
+      .pipe(this.#withRetry());
   }
 
   putPost(id: number, body: Iexample): Observable<Iexample> {
-    return this.#http.put<Iexample>(`${this.#apiUrl}/${id}`, body, { headers: this.#headers }).pipe(
-      this.#withRetry()
-    );
+    return this.#http
+      .put<Iexample>(`${this.#apiUrl}/${id}`, body, { headers: this.#headers })
+      .pipe(this.#withRetry());
   }
 
   patchPost(id: number, body: IexamplePatch): Observable<Iexample> {
-    return this.#http.patch<Iexample>(`${this.#apiUrl}/${id}`, body, { headers: this.#headers }).pipe(
-      this.#withRetry()
-    );
+    return this.#http
+      .patch<Iexample>(`${this.#apiUrl}/${id}`, body, { headers: this.#headers })
+      .pipe(this.#withRetry());
   }
 
   deletePost(id: number): Observable<Record<string, never>> {
-    return this.#http.delete<Record<string, never>>(`${this.#apiUrl}/${id}`, { headers: this.#headers }).pipe(
-      this.#withRetry()
-    );
+    return this.#http
+      .delete<Record<string, never>>(`${this.#apiUrl}/${id}`, { headers: this.#headers })
+      .pipe(this.#withRetry());
   }
 
   #withRetry<T>() {
@@ -57,9 +57,11 @@ export class ExampleService {
           throw error;
         }
 
-        console.warn(`Error ${error.status} on attempt ${retryCount} of ${this.#retryCount}. Trying again in ${this.#retryDelay}ms...`);
+        console.warn(
+          `Error ${error.status} on attempt ${retryCount} of ${this.#retryCount}. Trying again in ${this.#retryDelay}ms...`,
+        );
         return timer(this.#retryDelay);
-      }
+      },
     });
   }
 }

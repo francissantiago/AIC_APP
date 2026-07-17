@@ -1,147 +1,187 @@
 <div class="example">
+  <div>
+    <h1>{{ 'EXAMPLE.TITLE' | translate }}</h1>
+    <p>{{ 'EXAMPLE.DESCRIPTION' | translate }}</p>
+  </div>
+
+  <div class="grid-2">
     <div>
-        <h1>{{ 'EXAMPLE.TITLE' | translate }}</h1>
-        <p>{{ 'EXAMPLE.DESCRIPTION' | translate }}</p>
+      <h2>{{ 'EXAMPLE.GET_TITLE' | translate }}</h2>
+      <form [formGroup]="getForm" (ngSubmit)="getPostById()">
+        <input type="number" [formControl]="get_postId" />
+        <button type="submit" [disabled]="getForm.invalid || getLoading()">
+          {{ 'EXAMPLE.GET_BUTTON' | translate }}
+        </button>
+      </form>
     </div>
+    <div>
+      <p class="post">
+        <span>{{ 'EXAMPLE.GET_RESULT' | translate }}</span>
+        <br />
+        @if (getLoading()) {
+          <span>{{ 'COMMON.LOADING' | translate }}</span>
+        } @else {
+          @if (getResult() === null) {
+            <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
+          } @else {
+            <pre>{{ getResult() | json }}</pre>
+          }
+        }
+      </p>
+    </div>
+  </div>
 
-    <div class="grid-2">
-        <div>
-            <h2>{{ 'EXAMPLE.GET_TITLE' | translate }}</h2>
-            <form [formGroup]="getForm" (ngSubmit)="getPostById()">
-                <input type="number" [formControl]="get_postId" />
-                <button type="submit" [disabled]="getForm.invalid || getLoading()">
-                    {{ 'EXAMPLE.GET_BUTTON' | translate }}
-                </button>
-            </form>
-        </div>
-        <div>
-            <p class="post">
-                <span>{{ 'EXAMPLE.GET_RESULT' | translate }}</span>
-                <br>
-                @if (getLoading()) {
-                    <span>{{ 'COMMON.LOADING' | translate }}</span>
-                } @else {
-                    @if (getResult() === null) {
-                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
-                    } @else {
-                        <pre>{{ getResult() | json }}</pre>
-                    }
-                }
-            </p>
-        </div>
+  <div class="grid-2">
+    <div>
+      <h2>{{ 'EXAMPLE.POST_TITLE' | translate }}</h2>
+      <form [formGroup]="postForm" (ngSubmit)="submitPost()">
+        <input
+          type="text"
+          formControlName="title"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE' | translate"
+        />
+        <input
+          type="text"
+          formControlName="body"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_BODY' | translate"
+        />
+        <button type="submit" [disabled]="postForm.invalid || postLoading()">
+          {{ 'EXAMPLE.POST_BUTTON' | translate }}
+        </button>
+      </form>
     </div>
+    <div>
+      <p class="post">
+        <span>{{ 'EXAMPLE.POST_RESULT' | translate }}</span>
+        <br />
+        @if (postLoading()) {
+          <span>{{ 'COMMON.LOADING' | translate }}</span>
+        } @else {
+          @if (postResult() === null) {
+            <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
+          } @else {
+            <pre>{{ postResult() | json }}</pre>
+          }
+        }
+      </p>
+    </div>
+  </div>
 
-    <div class="grid-2">
-        <div>
-            <h2>{{ 'EXAMPLE.POST_TITLE' | translate }}</h2>
-            <form [formGroup]="postForm" (ngSubmit)="submitPost()">
-                <input type="text" formControlName="title" [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE' | translate" />
-                <input type="text" formControlName="body" [placeholder]="'EXAMPLE.PLACEHOLDER_BODY' | translate" />
-                <button type="submit" [disabled]="postForm.invalid || postLoading()">
-                    {{ 'EXAMPLE.POST_BUTTON' | translate }}
-                </button>
-            </form>
-        </div>
-        <div>
-            <p class="post">
-                <span>{{ 'EXAMPLE.POST_RESULT' | translate }}</span>
-                <br>
-                @if (postLoading()) {
-                    <span>{{ 'COMMON.LOADING' | translate }}</span>
-                } @else {
-                    @if (postResult() === null) {
-                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
-                    } @else {
-                        <pre>{{ postResult() | json }}</pre>
-                    }
-                }
-            </p>
-        </div>
+  <div class="grid-2">
+    <div>
+      <h2>{{ 'EXAMPLE.PUT_TITLE' | translate }}</h2>
+      <form [formGroup]="putForm" (ngSubmit)="submitPut()">
+        <input
+          type="number"
+          formControlName="postId"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate"
+        />
+        <input
+          type="number"
+          formControlName="userId"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_USER_ID' | translate"
+        />
+        <input
+          type="text"
+          formControlName="title"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE' | translate"
+        />
+        <input
+          type="text"
+          formControlName="body"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_BODY' | translate"
+        />
+        <button type="submit" [disabled]="putForm.invalid || putLoading()">
+          {{ 'EXAMPLE.PUT_BUTTON' | translate }}
+        </button>
+      </form>
     </div>
+    <div>
+      <p class="post">
+        <span>{{ 'EXAMPLE.PUT_RESULT' | translate }}</span>
+        <br />
+        @if (putLoading()) {
+          <span>{{ 'COMMON.LOADING' | translate }}</span>
+        } @else {
+          @if (putResult() === null) {
+            <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
+          } @else {
+            <pre>{{ putResult() | json }}</pre>
+          }
+        }
+      </p>
+    </div>
+  </div>
 
-    <div class="grid-2">
-        <div>
-            <h2>{{ 'EXAMPLE.PUT_TITLE' | translate }}</h2>
-            <form [formGroup]="putForm" (ngSubmit)="submitPut()">
-                <input type="number" formControlName="postId" [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate" />
-                <input type="number" formControlName="userId" [placeholder]="'EXAMPLE.PLACEHOLDER_USER_ID' | translate" />
-                <input type="text" formControlName="title" [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE' | translate" />
-                <input type="text" formControlName="body" [placeholder]="'EXAMPLE.PLACEHOLDER_BODY' | translate" />
-                <button type="submit" [disabled]="putForm.invalid || putLoading()">
-                    {{ 'EXAMPLE.PUT_BUTTON' | translate }}
-                </button>
-            </form>
-        </div>
-        <div>
-            <p class="post">
-                <span>{{ 'EXAMPLE.PUT_RESULT' | translate }}</span>
-                <br>
-                @if (putLoading()) {
-                    <span>{{ 'COMMON.LOADING' | translate }}</span>
-                } @else {
-                    @if (putResult() === null) {
-                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
-                    } @else {
-                        <pre>{{ putResult() | json }}</pre>
-                    }
-                }
-            </p>
-        </div>
+  <div class="grid-2">
+    <div>
+      <h2>{{ 'EXAMPLE.PATCH_TITLE' | translate }}</h2>
+      <form [formGroup]="patchForm" (ngSubmit)="submitPatch()">
+        <input
+          type="number"
+          formControlName="postId"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate"
+        />
+        <input
+          type="text"
+          formControlName="title"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE_OPTIONAL' | translate"
+        />
+        <input
+          type="text"
+          formControlName="body"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_BODY_OPTIONAL' | translate"
+        />
+        <button type="submit" [disabled]="patchForm.invalid || patchLoading()">
+          {{ 'EXAMPLE.PATCH_BUTTON' | translate }}
+        </button>
+      </form>
     </div>
+    <div>
+      <p class="post">
+        <span>{{ 'EXAMPLE.PATCH_RESULT' | translate }}</span>
+        <br />
+        @if (patchLoading()) {
+          <span>{{ 'COMMON.LOADING' | translate }}</span>
+        } @else {
+          @if (patchResult() === null) {
+            <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
+          } @else {
+            <pre>{{ patchResult() | json }}</pre>
+          }
+        }
+      </p>
+    </div>
+  </div>
 
-    <div class="grid-2">
-        <div>
-            <h2>{{ 'EXAMPLE.PATCH_TITLE' | translate }}</h2>
-            <form [formGroup]="patchForm" (ngSubmit)="submitPatch()">
-                <input type="number" formControlName="postId" [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate" />
-                <input type="text" formControlName="title" [placeholder]="'EXAMPLE.PLACEHOLDER_TITLE_OPTIONAL' | translate" />
-                <input type="text" formControlName="body" [placeholder]="'EXAMPLE.PLACEHOLDER_BODY_OPTIONAL' | translate" />
-                <button type="submit" [disabled]="patchForm.invalid || patchLoading()">
-                    {{ 'EXAMPLE.PATCH_BUTTON' | translate }}
-                </button>
-            </form>
-        </div>
-        <div>
-            <p class="post">
-                <span>{{ 'EXAMPLE.PATCH_RESULT' | translate }}</span>
-                <br>
-                @if (patchLoading()) {
-                    <span>{{ 'COMMON.LOADING' | translate }}</span>
-                } @else {
-                    @if (patchResult() === null) {
-                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
-                    } @else {
-                        <pre>{{ patchResult() | json }}</pre>
-                    }
-                }
-            </p>
-        </div>
+  <div class="grid-2">
+    <div>
+      <h2>{{ 'EXAMPLE.DELETE_TITLE' | translate }}</h2>
+      <form [formGroup]="deleteForm" (ngSubmit)="submitDelete()">
+        <input
+          type="number"
+          formControlName="postId"
+          [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate"
+        />
+        <button type="submit" [disabled]="deleteForm.invalid || deleteLoading()">
+          {{ 'EXAMPLE.DELETE_BUTTON' | translate }}
+        </button>
+      </form>
     </div>
-
-    <div class="grid-2">
-        <div>
-            <h2>{{ 'EXAMPLE.DELETE_TITLE' | translate }}</h2>
-            <form [formGroup]="deleteForm" (ngSubmit)="submitDelete()">
-                <input type="number" formControlName="postId" [placeholder]="'EXAMPLE.PLACEHOLDER_POST_ID' | translate" />
-                <button type="submit" [disabled]="deleteForm.invalid || deleteLoading()">
-                    {{ 'EXAMPLE.DELETE_BUTTON' | translate }}
-                </button>
-            </form>
-        </div>
-        <div>
-            <p class="post">
-                <span>{{ 'EXAMPLE.DELETE_RESULT' | translate }}</span>
-                <br>
-                @if (deleteLoading()) {
-                    <span>{{ 'COMMON.LOADING' | translate }}</span>
-                } @else {
-                    @if (deleteResult() === null) {
-                        <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
-                    } @else {
-                        <pre>{{ deleteResult() | json }}</pre>
-                    }
-                }
-            </p>
-        </div>
+    <div>
+      <p class="post">
+        <span>{{ 'EXAMPLE.DELETE_RESULT' | translate }}</span>
+        <br />
+        @if (deleteLoading()) {
+          <span>{{ 'COMMON.LOADING' | translate }}</span>
+        } @else {
+          @if (deleteResult() === null) {
+            <span>{{ 'EXAMPLE.NO_POST' | translate }}</span>
+          } @else {
+            <pre>{{ deleteResult() | json }}</pre>
+          }
+        }
+      </p>
     </div>
+  </div>
 </div>

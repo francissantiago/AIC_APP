@@ -12,10 +12,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
-import {
-  MEMBER_MARITAL_STATUSES,
-  MemberMaritalStatus,
-} from '@enums/member-marital-status';
+import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IUpdateMember } from '@interfaces/IUpdateMember';

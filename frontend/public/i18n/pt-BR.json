@@ -3,6 +3,24 @@
     "NAME": "AIC",
     "TITLE": "AIC — Administração de Igrejas Cristãs"
   },
+  "NAV": {
+    "MAIN_NAV": "Navegação principal",
+    "USERS": "Usuários",
+    "ROLES": "Perfis",
+    "MEMBERS": "Membros",
+    "CONGREGATIONS": "Congregação",
+    "EXPAND": "Expandir menu",
+    "COLLAPSE": "Recolher menu"
+  },
+  "APP_SHELL": {
+    "APP_NAME": "AIC",
+    "TOGGLE_SIDEBAR": "Alternar menu lateral",
+    "CONTENT_AREA": "Conteúdo principal",
+    "PAGE_USERS": "Usuários",
+    "PAGE_ROLES": "Perfis",
+    "PAGE_MEMBERS": "Membros",
+    "PAGE_CONGREGATION": "Congregação"
+  },
   "COMMON": {
     "LOADING": "Carregando...",
     "LANGUAGE": "Idioma",

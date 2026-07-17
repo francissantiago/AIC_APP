@@ -1,17 +1,3 @@
 :host {
-  display: block;
-}
-
-.language-switcher {
   display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.language-switcher__label {
-  font-size: 0.875rem;
-}
-
-.language-switcher__select {
-  min-width: 10rem;
 }

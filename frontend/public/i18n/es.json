@@ -3,6 +3,24 @@
     "NAME": "AIC",
     "TITLE": "AIC — Administración de Iglesias"
   },
+  "NAV": {
+    "MAIN_NAV": "Navegación principal",
+    "USERS": "Usuarios",
+    "ROLES": "Roles",
+    "MEMBERS": "Miembros",
+    "CONGREGATIONS": "Congregación",
+    "EXPAND": "Expandir menú",
+    "COLLAPSE": "Contraer menú"
+  },
+  "APP_SHELL": {
+    "APP_NAME": "AIC",
+    "TOGGLE_SIDEBAR": "Alternar barra lateral",
+    "CONTENT_AREA": "Contenido principal",
+    "PAGE_USERS": "Usuarios",
+    "PAGE_ROLES": "Roles",
+    "PAGE_MEMBERS": "Miembros",
+    "PAGE_CONGREGATION": "Congregación"
+  },
   "COMMON": {
     "LOADING": "Cargando...",
     "LANGUAGE": "Idioma",

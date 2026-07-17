@@ -1,7 +1,7 @@
-<section class="mx-auto max-w-6xl px-4 py-6">
-  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+<section class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div>
-      <h1 class="text-2xl font-semibold text-slate-900">{{ 'MEMBERS.LIST_TITLE' | translate }}</h1>
+      <h1 class="text-xl font-semibold text-slate-900">{{ 'MEMBERS.LIST_TITLE' | translate }}</h1>
       <p class="text-sm text-slate-600">{{ 'MEMBERS.TITLE' | translate }}</p>
     </div>
     <a
@@ -14,7 +14,7 @@
 
   <form
     [formGroup]="filterForm"
-    class="mb-6 grid gap-3 md:grid-cols-2"
+    class="mb-4 grid gap-3 md:grid-cols-2"
     [attr.aria-label]="'COMMON.FILTER' | translate"
   >
     <label class="flex flex-col gap-1 text-sm text-slate-700">
