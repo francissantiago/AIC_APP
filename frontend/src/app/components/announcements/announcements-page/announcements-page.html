@@ -1,0 +1,14 @@
+<section class="w-full">
+  <div class="mb-6">
+    <h1 class="text-xl font-semibold text-slate-900">{{ 'ANNOUNCEMENTS.TITLE' | translate }}</h1>
+    <p class="text-sm text-slate-600">{{ 'ANNOUNCEMENTS.DESCRIPTION' | translate }}</p>
+  </div>
+
+  <div class="mb-8">
+    <app-announcements-board />
+  </div>
+
+  @if (canWrite()) {
+    <app-announcements-list (changed)="onManagementChanged()" />
+  }
+</section>

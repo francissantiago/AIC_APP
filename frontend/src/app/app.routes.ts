@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from '@guards/auth-guard';
 import { guestGuard } from '@guards/guest-guard';
 import {
+  announcementsPermissionGuard,
   assetsPermissionGuard,
   classesPermissionGuard,
   congregationsPermissionGuard,
@@ -36,6 +37,14 @@ export const routes: Routes = [
       {
         path: 'no-access',
         loadComponent: () => import('@components/auth/no-access/no-access').then((m) => m.NoAccess),
+      },
+      {
+        path: 'announcements',
+        canActivate: [announcementsPermissionGuard],
+        loadComponent: () =>
+          import('@components/announcements/announcements-page/announcements-page').then(
+            (m) => m.AnnouncementsPage,
+          ),
       },
       {
         path: 'users',

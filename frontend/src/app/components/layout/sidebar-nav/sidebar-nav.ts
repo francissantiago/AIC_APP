@@ -16,7 +16,8 @@ import { filter } from 'rxjs';
 export type SidebarNavItem = {
   route: string;
   labelKey: string;
-  icon: 'users' | 'roles' | 'members' | 'families' | 'ministries' | 'congregation';
+  icon:
+    'announcements' | 'users' | 'roles' | 'members' | 'families' | 'ministries' | 'congregation';
   permission: string;
 };
 
@@ -60,6 +61,12 @@ export class SidebarNav {
   readonly canViewSmallGroups = computed(() => this.#auth.hasPermission('small-groups:read'));
 
   readonly allItems: readonly SidebarNavItem[] = [
+    {
+      route: '/announcements',
+      labelKey: 'NAV.ANNOUNCEMENTS',
+      icon: 'announcements',
+      permission: 'announcements:read',
+    },
     { route: '/users', labelKey: 'NAV.USERS', icon: 'users', permission: 'users:read' },
     { route: '/roles', labelKey: 'NAV.ROLES', icon: 'roles', permission: 'roles:read' },
     {

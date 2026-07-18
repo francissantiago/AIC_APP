@@ -1,0 +1,41 @@
+<section class="w-full" [attr.aria-label]="'ANNOUNCEMENTS.BOARD_TITLE' | translate">
+  <div class="mb-4">
+    <h2 class="text-lg font-semibold text-slate-900">
+      {{ 'ANNOUNCEMENTS.BOARD_TITLE' | translate }}
+    </h2>
+  </div>
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'ANNOUNCEMENTS.LOAD_ERROR' | translate }}</p>
+  } @else if (announcements().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'ANNOUNCEMENTS.BOARD_EMPTY' | translate }}</p>
+  } @else {
+    <ul class="flex flex-col gap-3">
+      @for (item of announcements(); track item.id) {
+        <li class="border-b border-slate-200 pb-3 last:border-b-0">
+          <div class="mb-1 flex flex-wrap items-center gap-2">
+            <h3 class="text-base font-medium text-slate-900">{{ item.title }}</h3>
+            <span
+              class="rounded px-2 py-0.5 text-xs font-medium"
+              [class.bg-emerald-100]="item.status === 'active'"
+              [class.text-emerald-800]="item.status === 'active'"
+              [class.bg-amber-100]="item.status === 'scheduled'"
+              [class.text-amber-900]="item.status === 'scheduled'"
+              [class.bg-slate-100]="item.status === 'expired'"
+              [class.text-slate-700]="item.status === 'expired'"
+            >
+              {{ statusLabelKey(item.status) | translate }}
+            </span>
+          </div>
+          <p class="whitespace-pre-wrap text-sm text-slate-700">{{ item.body }}</p>
+          <p class="mt-2 text-xs text-slate-500">
+            {{ 'ANNOUNCEMENTS.AUTHOR' | translate }}: {{ item.authorFullName }} ·
+            {{ formatDate(item.publishedAt) }}
+          </p>
+        </li>
+      }
+    </ul>
+  }
+</section>

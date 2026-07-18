@@ -14,7 +14,13 @@ describe('authorization', () => {
     expect(hasAnyPermission(['members:read'], ['finance:read', 'finance:write'])).toBe(false);
   });
 
-  it('getDefaultRouteForUser prefers users over members', () => {
+  it('getDefaultRouteForUser prefers announcements over users', () => {
+    expect(getDefaultRouteForUser(['announcements:read', 'users:read', 'members:read'])).toBe(
+      '/announcements',
+    );
+  });
+
+  it('getDefaultRouteForUser prefers users over members when announcements absent', () => {
     expect(getDefaultRouteForUser(['users:read', 'members:read'])).toBe('/users');
   });
 

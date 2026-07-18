@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from './infra/events/events.module';
 import { HealthModule } from './infra/health/health.module';
 import { TasksModule } from './infra/tasks/tasks.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClassesModule } from './modules/classes/classes.module';
@@ -47,6 +48,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     MembersModule,
     FamiliesModule,
+    AnnouncementsModule,
     MinistriesModule,
     ClassesModule,
     SmallGroupsModule,

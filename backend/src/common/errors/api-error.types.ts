@@ -147,6 +147,11 @@ export const ApiErrorCode = {
   SCHEDULES_CONGREGATION_MISMATCH: 'SCHEDULES.CONGREGATION_MISMATCH',
   SCHEDULES_ASSIGNMENT_CONFLICT: 'SCHEDULES.ASSIGNMENT_CONFLICT',
   SCHEDULES_INVALID_PERIOD: 'SCHEDULES.INVALID_PERIOD',
+
+  ANNOUNCEMENTS_NOT_FOUND: 'ANNOUNCEMENTS.NOT_FOUND',
+  ANNOUNCEMENTS_AUDIENCE_NOT_SUPPORTED: 'ANNOUNCEMENTS.AUDIENCE_NOT_SUPPORTED',
+  ANNOUNCEMENTS_EXPIRES_BEFORE_PUBLISH: 'ANNOUNCEMENTS.EXPIRES_BEFORE_PUBLISH',
+  ANNOUNCEMENTS_INVALID_TARGETS: 'ANNOUNCEMENTS.INVALID_TARGETS',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -320,4 +325,11 @@ export const ApiErrorMessage = {
     'Já existe uma atribuição deste membro neste ministério para o evento.',
   [ApiErrorCode.SCHEDULES_INVALID_PERIOD]:
     'Período inválido: from deve ser ≤ to e o intervalo máximo é de 92 dias.',
+  [ApiErrorCode.ANNOUNCEMENTS_NOT_FOUND]: 'Aviso não encontrado.',
+  [ApiErrorCode.ANNOUNCEMENTS_AUDIENCE_NOT_SUPPORTED]:
+    'Este tipo de audiência ainda não é suportado. Use audience=all.',
+  [ApiErrorCode.ANNOUNCEMENTS_EXPIRES_BEFORE_PUBLISH]:
+    'A data de expiração deve ser posterior à data de publicação.',
+  [ApiErrorCode.ANNOUNCEMENTS_INVALID_TARGETS]:
+    'Targets de audiência inválidos no MVP. Envie null ou lista vazia.',
 } as const;

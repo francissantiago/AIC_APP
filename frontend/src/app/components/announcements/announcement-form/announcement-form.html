@@ -1,0 +1,96 @@
+<section class="w-full">
+  @if (feedbackKey(); as key) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'ANNOUNCEMENTS.LOAD_ERROR' | translate }}</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ANNOUNCEMENTS.FIELD_TITLE' | translate }}</span>
+        <input
+          type="text"
+          formControlName="title"
+          maxlength="160"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('title')"
+        />
+        @if (fieldInvalid('title')) {
+          <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ANNOUNCEMENTS.FIELD_BODY' | translate }}</span>
+        <textarea
+          formControlName="body"
+          rows="5"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('body')"
+        ></textarea>
+        @if (fieldInvalid('body')) {
+          <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ANNOUNCEMENTS.FIELD_PUBLISHED_AT' | translate }}</span>
+        <input
+          type="datetime-local"
+          formControlName="publishedAt"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        />
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ANNOUNCEMENTS.FIELD_EXPIRES_AT' | translate }}</span>
+        <input
+          type="datetime-local"
+          formControlName="expiresAt"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        />
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ANNOUNCEMENTS.FIELD_AUDIENCE' | translate }}</span>
+        <select
+          formControlName="audience"
+          class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-slate-600"
+        >
+          <option [value]="'all'">{{ 'ANNOUNCEMENTS.AUDIENCE_ALL' | translate }}</option>
+        </select>
+      </label>
+
+      <div class="mt-2 flex flex-wrap gap-3">
+        <button
+          type="submit"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          (click)="cancelled.emit()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

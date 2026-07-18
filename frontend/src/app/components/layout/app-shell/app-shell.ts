@@ -92,6 +92,9 @@ export class AppShell {
   #resolvePageTitle(url: string): string {
     const path = url.split('?')[0] ?? '';
 
+    if (path.startsWith('/announcements')) {
+      return 'APP_SHELL.PAGE_ANNOUNCEMENTS';
+    }
     if (path.startsWith('/finance/entries')) {
       return 'APP_SHELL.PAGE_ENTRIES';
     }
