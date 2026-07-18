@@ -1,0 +1,159 @@
+<section class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">{{ 'SCHEDULES.TITLE' | translate }}</h1>
+      <p class="text-sm text-slate-600">{{ 'SCHEDULES.DESCRIPTION' | translate }}</p>
+    </div>
+    @if (canWrite()) {
+      <button
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        type="button"
+        (click)="openEditor()"
+      >
+        {{ 'SCHEDULES.EDITOR_TITLE' | translate }}
+      </button>
+    }
+  </div>
+
+  <div class="mb-4 flex flex-wrap items-end gap-3" [formGroup]="filterForm">
+    <div class="flex flex-col gap-1">
+      <span class="text-sm text-slate-700">{{ 'SCHEDULES.FILTER_WEEK' | translate }}</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          type="button"
+          (click)="previousWeek()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          type="button"
+          (click)="goCurrentWeek()"
+        >
+          {{ 'SECRETARIAT.TODAY' | translate }}
+        </button>
+        <button
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          type="button"
+          (click)="nextWeek()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+        <span class="text-sm font-medium text-slate-900" aria-live="polite">{{ weekLabel() }}</span>
+      </div>
+    </div>
+
+    <label class="flex min-w-48 flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SCHEDULES.FILTER_MINISTRY' | translate }}</span>
+      <select
+        class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        formControlName="ministryId"
+      >
+        <option value="">{{ 'SCHEDULES.FILTER_MINISTRY' | translate }}</option>
+        @for (ministry of ministries(); track ministry.id) {
+          <option [value]="ministry.id">{{ ministry.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex items-center gap-2 pb-2 text-sm text-slate-700">
+      <input type="checkbox" formControlName="unconfirmedOnly" class="size-4" />
+      <span>{{ 'SCHEDULES.FILTER_UNCONFIRMED' | translate }}</span>
+    </label>
+  </div>
+
+  @if (feedback(); as key) {
+    <p class="mb-3 text-sm text-emerald-700" role="status">{{ key | translate }}</p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p role="alert" class="text-sm text-red-700">{{ 'SCHEDULES.LOAD_ERROR' | translate }}</p>
+  } @else if (events().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'SCHEDULES.EMPTY' | translate }}</p>
+  } @else {
+    <div class="grid gap-4">
+      @for (event of events(); track event.id) {
+        <article class="rounded-md border border-slate-200 p-4">
+          <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-900">{{ event.title }}</h2>
+              <p class="text-sm text-slate-600">
+                {{ event.startsAt | date: 'short' }} — {{ event.endsAt | date: 'short' }}
+              </p>
+            </div>
+            <button
+              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              type="button"
+              (click)="openEditor(event.id)"
+            >
+              {{ 'SCHEDULES.EDITOR_TITLE' | translate }}
+            </button>
+          </div>
+
+          @if (event.ministries.length === 0) {
+            <p class="text-sm text-slate-600">{{ 'SCHEDULES.EMPTY' | translate }}</p>
+          } @else {
+            <div class="grid gap-3">
+              @for (group of event.ministries; track group.ministryId) {
+                <section class="rounded-md bg-slate-50 p-3">
+                  <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="font-medium text-slate-900">{{ group.ministryName }}</h3>
+                    <button
+                      class="text-sm text-slate-700 underline hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      type="button"
+                      (click)="openEditor(event.id, group.ministryId)"
+                    >
+                      {{ 'SCHEDULES.EDITOR_TITLE' | translate }}
+                    </button>
+                  </div>
+                  @if (group.assignments.length === 0) {
+                    <p class="text-sm text-slate-600">{{ 'SCHEDULES.EMPTY' | translate }}</p>
+                  } @else {
+                    <ul class="grid gap-2">
+                      @for (assignment of group.assignments; track assignment.id) {
+                        <li
+                          class="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                        >
+                          <div>
+                            <p class="font-medium text-slate-900">
+                              {{ assignment.member.fullName }}
+                            </p>
+                            <p class="text-slate-600">{{ assignment.roleLabel }}</p>
+                          </div>
+                          <span
+                            class="rounded-full px-2 py-0.5 text-xs font-medium"
+                            [class.bg-emerald-100]="assignment.confirmed"
+                            [class.text-emerald-800]="assignment.confirmed"
+                            [class.bg-amber-100]="!assignment.confirmed"
+                            [class.text-amber-800]="!assignment.confirmed"
+                          >
+                            {{
+                              (assignment.confirmed ? 'SCHEDULES.CONFIRMED' : 'SCHEDULES.PENDING')
+                                | translate
+                            }}
+                          </span>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </section>
+              }
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  <app-schedule-event-editor
+    [open]="editorOpen()"
+    [eventId]="editorEventId()"
+    [ministryId]="editorMinistryId()"
+    [canWrite]="canWrite()"
+    (closed)="closeEditor()"
+    (saved)="afterSave()"
+  />
+</section>

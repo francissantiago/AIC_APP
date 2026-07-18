@@ -62,7 +62,7 @@ describe('SidebarNav', () => {
     expect(component.canViewFinanceSection()).toBe(false);
   });
 
-  it('canViewSecretariat is false without secretariat:read permission', () => {
+  it('canViewSecretariat is false without secretariat:read or schedules:read', () => {
     expect(component.canViewSecretariat()).toBe(false);
   });
 
@@ -155,6 +155,53 @@ describe('SidebarNav with permissions', () => {
 
   it('canViewSecretariat is true when user has secretariat:read', () => {
     expect(component.canViewSecretariat()).toBe(true);
+  });
+});
+
+describe('SidebarNav schedules-only section', () => {
+  let component: SidebarNav;
+  let fixture: ComponentFixture<SidebarNav>;
+
+  beforeEach(async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [SidebarNav],
+      providers: [
+        {
+          provide: Router,
+          useValue: {
+            url: '/secretariat/schedules',
+            events: new Subject().asObservable(),
+            navigateByUrl: vi.fn(),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: authStub(['schedules:read']),
+        },
+        { provide: TranslateService, useValue: translateServiceStub() },
+        { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
+      ],
+    })
+      .overrideComponent(SidebarNav, {
+        set: { template: '', imports: [] },
+      })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(SidebarNav);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('shows secretariat section with only schedules when user has schedules:read', () => {
+    expect(component.canViewSecretariat()).toBe(true);
+    expect(component.secretariatItems()).toEqual([
+      {
+        route: '/secretariat/schedules',
+        labelKey: 'NAV.SECRETARIAT_SCHEDULES',
+        permission: 'schedules:read',
+      },
+    ]);
   });
 });
 

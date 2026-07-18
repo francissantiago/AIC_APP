@@ -119,6 +119,18 @@ export const ApiErrorCode = {
   SMALL_GROUPS_ATTENDANCE_MEMBER_NOT_ACTIVE:
     'SMALL_GROUPS.ATTENDANCE_MEMBER_NOT_ACTIVE',
   SMALL_GROUPS_INVALID_PERIOD: 'SMALL_GROUPS.INVALID_PERIOD',
+
+  SCHEDULES_NOT_FOUND: 'SCHEDULES.NOT_FOUND',
+  SCHEDULES_EVENT_NOT_FOUND: 'SCHEDULES.EVENT_NOT_FOUND',
+  SCHEDULES_MINISTRY_NOT_FOUND: 'SCHEDULES.MINISTRY_NOT_FOUND',
+  SCHEDULES_MINISTRY_INACTIVE: 'SCHEDULES.MINISTRY_INACTIVE',
+  SCHEDULES_MEMBER_NOT_FOUND: 'SCHEDULES.MEMBER_NOT_FOUND',
+  SCHEDULES_MEMBER_INACTIVE: 'SCHEDULES.MEMBER_INACTIVE',
+  SCHEDULES_MEMBER_WRONG_CONGREGATION: 'SCHEDULES.MEMBER_WRONG_CONGREGATION',
+  SCHEDULES_MEMBER_NOT_IN_MINISTRY: 'SCHEDULES.MEMBER_NOT_IN_MINISTRY',
+  SCHEDULES_CONGREGATION_MISMATCH: 'SCHEDULES.CONGREGATION_MISMATCH',
+  SCHEDULES_ASSIGNMENT_CONFLICT: 'SCHEDULES.ASSIGNMENT_CONFLICT',
+  SCHEDULES_INVALID_PERIOD: 'SCHEDULES.INVALID_PERIOD',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -249,4 +261,22 @@ export const ApiErrorMessage = {
     'O membro não possui vínculo ativo neste pequeno grupo.',
   [ApiErrorCode.SMALL_GROUPS_INVALID_PERIOD]:
     'Período inválido: from deve ser ≤ to e o intervalo máximo é de 24 meses.',
+  [ApiErrorCode.SCHEDULES_NOT_FOUND]: 'Atribuição de escala não encontrada.',
+  [ApiErrorCode.SCHEDULES_EVENT_NOT_FOUND]: 'Evento não encontrado.',
+  [ApiErrorCode.SCHEDULES_MINISTRY_NOT_FOUND]: 'Ministério não encontrado.',
+  [ApiErrorCode.SCHEDULES_MINISTRY_INACTIVE]:
+    'Ministério inativo não aceita novas atribuições.',
+  [ApiErrorCode.SCHEDULES_MEMBER_NOT_FOUND]: 'Membro não encontrado.',
+  [ApiErrorCode.SCHEDULES_MEMBER_INACTIVE]:
+    'O membro selecionado não está ativo.',
+  [ApiErrorCode.SCHEDULES_MEMBER_WRONG_CONGREGATION]:
+    'O membro deve pertencer a esta congregação.',
+  [ApiErrorCode.SCHEDULES_MEMBER_NOT_IN_MINISTRY]:
+    'O membro não pertence a este ministério.',
+  [ApiErrorCode.SCHEDULES_CONGREGATION_MISMATCH]:
+    'Evento e ministério devem pertencer à mesma congregação.',
+  [ApiErrorCode.SCHEDULES_ASSIGNMENT_CONFLICT]:
+    'Já existe uma atribuição deste membro neste ministério para o evento.',
+  [ApiErrorCode.SCHEDULES_INVALID_PERIOD]:
+    'Período inválido: from deve ser ≤ to e o intervalo máximo é de 92 dias.',
 } as const;

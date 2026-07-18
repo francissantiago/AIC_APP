@@ -40,6 +40,7 @@
     "SECRETARIAT_VISITORS": "Visitors",
     "SECRETARIAT_ATTENDANCE": "Attendance",
     "SECRETARIAT_DOCUMENTS": "Minutes & documents",
+    "SECRETARIAT_SCHEDULES": "Schedules",
     "SMALL_GROUPS": "Small groups",
     "SMALL_GROUPS_REPORTS": "Frequency"
   },
@@ -64,6 +65,7 @@
     "PAGE_SECRETARIAT_VISITORS": "Visitors",
     "PAGE_SECRETARIAT_ATTENDANCE": "Attendance",
     "PAGE_SECRETARIAT_DOCUMENTS": "Minutes & documents",
+    "PAGE_SECRETARIAT_SCHEDULES": "Volunteer schedules",
     "PAGE_SMALL_GROUPS": "Small groups",
     "PAGE_SMALL_GROUPS_REPORTS": "Small groups frequency"
   },
@@ -720,7 +722,47 @@
       "MEETING_DATE_CONFLICT": "A meeting already exists for this date.",
       "ATTENDANCE_MEMBER_NOT_ACTIVE": "Member is not active in this group.",
       "INVALID_PERIOD": "Invalid period: check date order or the 24-month limit."
+    },
+    "SCHEDULES": {
+      "NOT_FOUND": "Schedule assignment not found.",
+      "EVENT_NOT_FOUND": "Event not found.",
+      "MINISTRY_NOT_FOUND": "Ministry not found.",
+      "MINISTRY_INACTIVE": "Inactive ministries do not accept new assignments.",
+      "MEMBER_NOT_FOUND": "Member not found.",
+      "MEMBER_INACTIVE": "The selected member is not active.",
+      "MEMBER_WRONG_CONGREGATION": "Member must belong to this congregation.",
+      "MEMBER_NOT_IN_MINISTRY": "Member does not belong to this ministry.",
+      "CONGREGATION_MISMATCH": "Event and ministry must belong to the same congregation.",
+      "ASSIGNMENT_CONFLICT": "This member is already assigned to this ministry for the event.",
+      "INVALID_PERIOD": "Invalid period: from must be ≤ to and the maximum range is 92 days."
     }
+  },
+  "SCHEDULES": {
+    "TITLE": "Volunteer schedules",
+    "DESCRIPTION": "Assign members to ministries for each event",
+    "WEEK_VIEW": "Weekly view",
+    "FILTER_WEEK": "Week",
+    "FILTER_EVENT": "Event",
+    "FILTER_MINISTRY": "Ministry",
+    "FILTER_UNCONFIRMED": "Unconfirmed only",
+    "EVENT": "Event",
+    "MINISTRY": "Ministry",
+    "MEMBER": "Member",
+    "ROLE_LABEL": "Role on schedule",
+    "CONFIRMED": "Confirmed",
+    "PENDING": "Pending",
+    "ASSIGN": "Assign",
+    "UNASSIGN": "Remove",
+    "CONFIRM": "Confirm",
+    "UNCONFIRM": "Mark pending",
+    "EMPTY": "No assignments in this period",
+    "SAVE": "Save schedule",
+    "SAVE_SUCCESS": "Schedule saved",
+    "DELETE_CONFIRM": "Remove this assignment?",
+    "LOAD_ERROR": "Could not load schedules",
+    "MEMBER_NOT_IN_MINISTRY": "Member is not in this ministry",
+    "OPEN_FROM_AGENDA": "View schedule",
+    "EDITOR_TITLE": "Edit event schedule"
   },
   "SMALL_GROUPS": {
     "TITLE": "Small groups",

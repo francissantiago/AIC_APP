@@ -10,6 +10,7 @@ import {
   membersPermissionGuard,
   ministriesPermissionGuard,
   rolesPermissionGuard,
+  schedulesPermissionGuard,
   secretariatPermissionGuard,
   smallGroupsPermissionGuard,
   usersPermissionGuard,
@@ -183,6 +184,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@components/secretariat/agenda-calendar/agenda-calendar').then(
             (m) => m.AgendaCalendar,
+          ),
+      },
+      {
+        path: 'secretariat/schedules',
+        canActivate: [schedulesPermissionGuard],
+        loadComponent: () =>
+          import('@components/secretariat/schedules-board/schedules-board').then(
+            (m) => m.SchedulesBoard,
           ),
       },
       {

@@ -1,0 +1,138 @@
+<app-dialog
+  [open]="dialogOpen()"
+  [title]="'SCHEDULES.EDITOR_TITLE' | translate"
+  (closed)="onDialogClosed()"
+>
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'SCHEDULES.FILTER_EVENT' | translate }}</span>
+        <select
+          class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+          formControlName="calendarEventId"
+          (change)="onEventChange()"
+        >
+          <option value="">{{ 'SCHEDULES.FILTER_EVENT' | translate }}</option>
+          @for (event of events(); track event.id) {
+            <option [value]="event.id">
+              {{ event.title }} — {{ event.startsAt | date: 'short' }}
+            </option>
+          }
+        </select>
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'SCHEDULES.FILTER_MINISTRY' | translate }}</span>
+        <select
+          class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+          formControlName="ministryId"
+          (change)="onMinistryChange()"
+        >
+          <option value="">{{ 'SCHEDULES.FILTER_MINISTRY' | translate }}</option>
+          @for (ministry of ministries(); track ministry.id) {
+            <option [value]="ministry.id">{{ ministry.name }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="grid gap-3" formArrayName="rows">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-medium text-slate-900">
+            {{ 'SCHEDULES.ASSIGN' | translate }}
+          </h3>
+          @if (canWrite()) {
+            <button
+              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              type="button"
+              (click)="addRow()"
+            >
+              {{ 'SCHEDULES.ASSIGN' | translate }}
+            </button>
+          }
+        </div>
+
+        @for (row of rows.controls; track $index; let index = $index) {
+          <fieldset
+            class="grid gap-3 rounded-md border border-slate-200 p-3 md:grid-cols-2"
+            [formGroupName]="index"
+          >
+            <legend class="sr-only">{{ 'SCHEDULES.MEMBER' | translate }} {{ index + 1 }}</legend>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SCHEDULES.MEMBER' | translate }}</span>
+              <select
+                class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="memberId"
+              >
+                <option value="">{{ 'SCHEDULES.MEMBER' | translate }}</option>
+                @for (option of memberOptions(); track option.id) {
+                  <option [value]="option.id">{{ option.fullName }}</option>
+                }
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SCHEDULES.ROLE_LABEL' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="roleLabel"
+                maxlength="80"
+              />
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" formControlName="confirmed" class="size-4" />
+              <span>{{ 'SCHEDULES.CONFIRMED' | translate }}</span>
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.NOTES' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="notes"
+                maxlength="255"
+              />
+            </label>
+            @if (canWrite()) {
+              <div class="md:col-span-2">
+                <button
+                  class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  type="button"
+                  (click)="removeRow(index)"
+                >
+                  {{ 'SCHEDULES.UNASSIGN' | translate }}
+                </button>
+              </div>
+            }
+          </fieldset>
+        }
+      </div>
+
+      @if (errorMessage(); as message) {
+        <p role="alert" class="text-sm text-red-700">
+          {{ message }}
+          @if (supportHint(); as hint) {
+            <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+          }
+        </p>
+      }
+
+      <div class="mt-2 flex flex-wrap gap-3">
+        @if (canWrite()) {
+          <button
+            class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+            type="submit"
+            [disabled]="saving()"
+          >
+            {{ 'SCHEDULES.SAVE' | translate }}
+          </button>
+        }
+        <button
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          type="button"
+          (click)="onDialogClosed()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</app-dialog>

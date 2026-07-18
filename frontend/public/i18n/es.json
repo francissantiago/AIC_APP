@@ -40,6 +40,7 @@
     "SECRETARIAT_VISITORS": "Visitantes",
     "SECRETARIAT_ATTENDANCE": "Asistencia",
     "SECRETARIAT_DOCUMENTS": "Actas y documentos",
+    "SECRETARIAT_SCHEDULES": "Escalas",
     "SMALL_GROUPS": "Grupos pequeños",
     "SMALL_GROUPS_REPORTS": "Frecuencia"
   },
@@ -64,6 +65,7 @@
     "PAGE_SECRETARIAT_VISITORS": "Visitantes",
     "PAGE_SECRETARIAT_ATTENDANCE": "Asistencia",
     "PAGE_SECRETARIAT_DOCUMENTS": "Actas y documentos",
+    "PAGE_SECRETARIAT_SCHEDULES": "Escalas de voluntariado",
     "PAGE_SMALL_GROUPS": "Grupos pequeños",
     "PAGE_SMALL_GROUPS_REPORTS": "Frecuencia de grupos pequeños"
   },
@@ -720,7 +722,47 @@
       "MEETING_DATE_CONFLICT": "Ya existe una reunión para esta fecha.",
       "ATTENDANCE_MEMBER_NOT_ACTIVE": "El miembro no está activo en este grupo.",
       "INVALID_PERIOD": "Período inválido: revise el orden de fechas o el límite de 24 meses."
+    },
+    "SCHEDULES": {
+      "NOT_FOUND": "Asignación de escala no encontrada.",
+      "EVENT_NOT_FOUND": "Evento no encontrado.",
+      "MINISTRY_NOT_FOUND": "Ministerio no encontrado.",
+      "MINISTRY_INACTIVE": "Los ministerios inactivos no aceptan nuevas asignaciones.",
+      "MEMBER_NOT_FOUND": "Miembro no encontrado.",
+      "MEMBER_INACTIVE": "El miembro seleccionado no está activo.",
+      "MEMBER_WRONG_CONGREGATION": "El miembro debe pertenecer a esta congregación.",
+      "MEMBER_NOT_IN_MINISTRY": "El miembro no pertenece a este ministerio.",
+      "CONGREGATION_MISMATCH": "El evento y el ministerio deben pertenecer a la misma congregación.",
+      "ASSIGNMENT_CONFLICT": "Este miembro ya está asignado a este ministerio para el evento.",
+      "INVALID_PERIOD": "Período inválido: from debe ser ≤ to y el intervalo máximo es de 92 días."
     }
+  },
+  "SCHEDULES": {
+    "TITLE": "Escalas de voluntariado",
+    "DESCRIPTION": "Asigna miembros a ministerios por evento",
+    "WEEK_VIEW": "Vista semanal",
+    "FILTER_WEEK": "Semana",
+    "FILTER_EVENT": "Evento",
+    "FILTER_MINISTRY": "Ministerio",
+    "FILTER_UNCONFIRMED": "Solo sin confirmar",
+    "EVENT": "Evento",
+    "MINISTRY": "Ministerio",
+    "MEMBER": "Miembro",
+    "ROLE_LABEL": "Función en la escala",
+    "CONFIRMED": "Confirmado",
+    "PENDING": "Pendiente",
+    "ASSIGN": "Asignar",
+    "UNASSIGN": "Quitar",
+    "CONFIRM": "Confirmar",
+    "UNCONFIRM": "Marcar pendiente",
+    "EMPTY": "Sin asignaciones en este período",
+    "SAVE": "Guardar escala",
+    "SAVE_SUCCESS": "Escala guardada",
+    "DELETE_CONFIRM": "¿Quitar esta asignación?",
+    "LOAD_ERROR": "No se pudieron cargar las escalas",
+    "MEMBER_NOT_IN_MINISTRY": "El miembro no pertenece a este ministerio",
+    "OPEN_FROM_AGENDA": "Ver escala",
+    "EDITOR_TITLE": "Editar escala del evento"
   },
   "SMALL_GROUPS": {
     "TITLE": "Grupos pequeños",

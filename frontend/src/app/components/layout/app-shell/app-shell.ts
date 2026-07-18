@@ -107,6 +107,9 @@ export class AppShell {
     if (path.startsWith('/secretariat/agenda')) {
       return 'APP_SHELL.PAGE_SECRETARIAT_AGENDA';
     }
+    if (path.startsWith('/secretariat/schedules')) {
+      return 'APP_SHELL.PAGE_SECRETARIAT_SCHEDULES';
+    }
     if (path.startsWith('/secretariat/visitors')) {
       return 'APP_SHELL.PAGE_SECRETARIAT_VISITORS';
     }

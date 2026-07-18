@@ -20,6 +20,7 @@ const DEFAULT_ROUTE_CANDIDATES: readonly { route: string; permission: string }[]
   { route: '/finance', permission: 'finance:read' },
   { route: '/finance/assets', permission: 'assets:read' },
   { route: '/secretariat', permission: 'secretariat:read' },
+  { route: '/secretariat/schedules', permission: 'schedules:read' },
 ];
 
 export function getDefaultRouteForUser(permissions: readonly string[]): string {

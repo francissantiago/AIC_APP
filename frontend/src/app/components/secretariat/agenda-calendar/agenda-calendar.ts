@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import {
   CalendarDatePipe,
@@ -59,6 +60,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
     CalendarTodayDirective,
     CalendarWeekViewComponent,
     ReactiveFormsModule,
+    RouterLink,
     TranslatePipe,
   ],
   providers: [provideCalendar({ provide: DateAdapter, useFactory: adapterFactory })],
@@ -225,14 +227,16 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             </p>
           }
           <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
-            <button
-              class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
-              type="submit"
-              [disabled]="saving()"
-            >
-              {{ 'COMMON.SAVE' | translate }}
-            </button>
-            @if (editing()) {
+            @if (canWrite()) {
+              <button
+                class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+                type="submit"
+                [disabled]="saving()"
+              >
+                {{ 'COMMON.SAVE' | translate }}
+              </button>
+            }
+            @if (canWrite() && editing()) {
               <button
                 class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 type="button"
@@ -240,6 +244,15 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
               >
                 {{ 'COMMON.DELETE' | translate }}
               </button>
+            }
+            @if (canViewSchedules() && editing()) {
+              <a
+                class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                [routerLink]="['/secretariat/schedules']"
+                [queryParams]="{ eventId: editing()!.id }"
+              >
+                {{ 'SCHEDULES.OPEN_FROM_AGENDA' | translate }}
+              </a>
             }
             <button
               class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -430,6 +443,7 @@ export class AgendaCalendar implements OnInit {
   readonly pendingDelete = signal<string | null>(null);
 
   readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
+  readonly canViewSchedules = computed(() => this.#auth.hasPermission('schedules:read'));
   readonly locale = computed(() => this.#translate.currentLang() || 'en');
 
   readonly calendarEvents = computed<CalendarEvent<ICalendarEvent>[]>(() =>
@@ -480,6 +494,9 @@ export class AgendaCalendar implements OnInit {
   }
 
   openCreate(date?: Date): void {
+    if (!this.canWrite()) {
+      return;
+    }
     this.editing.set(null);
     const start = date ? new Date(date) : new Date();
     if (date) {
@@ -498,6 +515,7 @@ export class AgendaCalendar implements OnInit {
       recurrenceInterval: 1,
       recurrenceUntil: '',
     });
+    this.form.enable({ emitEvent: false });
     this.showForm.set(true);
   }
 
@@ -521,6 +539,7 @@ export class AgendaCalendar implements OnInit {
             recurrenceInterval: master.recurrenceInterval || 1,
             recurrenceUntil: master.recurrenceUntil ?? '',
           });
+          this.#syncFormEditability();
           this.showForm.set(true);
         },
         error: () => {
@@ -537,6 +556,7 @@ export class AgendaCalendar implements OnInit {
             recurrenceInterval: event.recurrenceInterval || 1,
             recurrenceUntil: event.recurrenceUntil ?? '',
           });
+          this.#syncFormEditability();
           this.showForm.set(true);
         },
       });
@@ -562,12 +582,15 @@ export class AgendaCalendar implements OnInit {
   }
 
   onEventClicked(event: CalendarEvent<ICalendarEvent>): void {
-    if (this.canWrite() && event.meta) {
+    if (event.meta && (this.canWrite() || this.canViewSchedules())) {
       this.openEdit(event.meta);
     }
   }
 
   submit(): void {
+    if (!this.canWrite()) {
+      return;
+    }
     if (this.form.invalid || this.rangeInvalid()) {
       this.form.markAllAsTouched();
       this.#focusFirstInvalid();
@@ -675,6 +698,14 @@ export class AgendaCalendar implements OnInit {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  #syncFormEditability(): void {
+    if (this.canWrite()) {
+      this.form.enable({ emitEvent: false });
+    } else {
+      this.form.disable({ emitEvent: false });
+    }
   }
 
   #focusFirstInvalid(): void {

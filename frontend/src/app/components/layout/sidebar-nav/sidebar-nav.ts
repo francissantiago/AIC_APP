@@ -26,6 +26,12 @@ export type SidebarFinanceItem = {
   permission: string;
 };
 
+export type SidebarSecretariatItem = {
+  route: string;
+  labelKey: string;
+  permission: string;
+};
+
 @Component({
   selector: 'app-sidebar-nav',
   imports: [RouterLink, RouterLinkActive, TranslatePipe],
@@ -47,7 +53,9 @@ export class SidebarNav {
   readonly canViewFinanceSection = computed(() =>
     this.#auth.hasAnyPermission('finance:read', 'assets:read'),
   );
-  readonly canViewSecretariat = computed(() => this.#auth.hasPermission('secretariat:read'));
+  readonly canViewSecretariat = computed(() =>
+    this.#auth.hasAnyPermission('secretariat:read', 'schedules:read'),
+  );
   readonly canViewEbd = computed(() => this.#auth.hasPermission('classes:read'));
   readonly canViewSmallGroups = computed(() => this.#auth.hasPermission('small-groups:read'));
 
@@ -99,13 +107,42 @@ export class SidebarNav {
     this.allFinanceItems.filter((item) => this.#auth.hasPermission(item.permission)),
   );
 
-  readonly secretariatItems = [
-    { route: '/secretariat', labelKey: 'NAV.SECRETARIAT_DASHBOARD' },
-    { route: '/secretariat/agenda', labelKey: 'NAV.SECRETARIAT_AGENDA' },
-    { route: '/secretariat/visitors', labelKey: 'NAV.SECRETARIAT_VISITORS' },
-    { route: '/secretariat/attendance', labelKey: 'NAV.SECRETARIAT_ATTENDANCE' },
-    { route: '/secretariat/documents', labelKey: 'NAV.SECRETARIAT_DOCUMENTS' },
-  ] as const;
+  readonly allSecretariatItems: readonly SidebarSecretariatItem[] = [
+    {
+      route: '/secretariat',
+      labelKey: 'NAV.SECRETARIAT_DASHBOARD',
+      permission: 'secretariat:read',
+    },
+    {
+      route: '/secretariat/agenda',
+      labelKey: 'NAV.SECRETARIAT_AGENDA',
+      permission: 'secretariat:read',
+    },
+    {
+      route: '/secretariat/visitors',
+      labelKey: 'NAV.SECRETARIAT_VISITORS',
+      permission: 'secretariat:read',
+    },
+    {
+      route: '/secretariat/attendance',
+      labelKey: 'NAV.SECRETARIAT_ATTENDANCE',
+      permission: 'secretariat:read',
+    },
+    {
+      route: '/secretariat/documents',
+      labelKey: 'NAV.SECRETARIAT_DOCUMENTS',
+      permission: 'secretariat:read',
+    },
+    {
+      route: '/secretariat/schedules',
+      labelKey: 'NAV.SECRETARIAT_SCHEDULES',
+      permission: 'schedules:read',
+    },
+  ];
+
+  readonly secretariatItems = computed(() =>
+    this.allSecretariatItems.filter((item) => this.#auth.hasPermission(item.permission)),
+  );
 
   constructor() {
     this.#router.events
@@ -140,8 +177,9 @@ export class SidebarNav {
   }
 
   toggleSecretariat(): void {
+    const firstRoute = this.secretariatItems()[0]?.route ?? '/secretariat';
     if (!this.expanded()) {
-      void this.#router.navigateByUrl('/secretariat');
+      void this.#router.navigateByUrl(firstRoute);
       return;
     }
     this.secretariatOpen.update((value) => !value);
