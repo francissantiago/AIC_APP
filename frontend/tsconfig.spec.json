@@ -4,18 +4,18 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "rootDir": "./src",
+    "baseUrl": "./src",
     "types": ["vitest/globals"],
     "paths": {
-      "@components/*": ["./src/app/components/*"],
-      "@services/*": ["./src/app/services/*"],
-      "@models/*": ["./src/app/models/*"],
-      "@interfaces/*": ["./src/app/interfaces/*"],
-      "@enums/*": ["./src/app/enums/*"],
-      "@guards/*": ["./src/app/guards/*"],
-      "@interceptors/*": ["./src/app/interceptors/*"],
-      "@resolvers/*": ["./src/app/resolvers/*"],
-      "@pipes/*": ["./src/app/pipes/*"]
+      "@components/*": ["app/components/*"],
+      "@services/*": ["app/services/*"],
+      "@models/*": ["app/models/*"],
+      "@interfaces/*": ["app/interfaces/*"],
+      "@enums/*": ["app/enums/*"],
+      "@guards/*": ["app/guards/*"],
+      "@interceptors/*": ["app/interceptors/*"],
+      "@resolvers/*": ["app/resolvers/*"],
+      "@pipes/*": ["app/pipes/*"]
     }
   },
   "include": ["src/**/*.d.ts", "src/**/*.ts"]
