@@ -9,6 +9,8 @@ import {
   ICreateCalendarEvent,
   ICreateSecretariatDocument,
   ICreateVisitor,
+  IConvertVisitorToMember,
+  IConvertVisitorToMemberResponse,
   IPaginatedAttendance,
   IPaginatedCalendarEvents,
   IPaginatedSecretariatDocuments,
@@ -76,6 +78,18 @@ export class SecretariatService {
 
   removeVisitor(id: string): Observable<void> {
     return this.#request(this.#http.delete<void>(`${this.#apiUrl}/visitors/${id}`));
+  }
+
+  convertVisitorToMember(
+    id: string,
+    body: IConvertVisitorToMember = {},
+  ): Observable<IConvertVisitorToMemberResponse> {
+    return this.#request(
+      this.#http.post<IConvertVisitorToMemberResponse>(
+        `${this.#apiUrl}/visitors/${id}/convert-to-member`,
+        body,
+      ),
+    );
   }
 
   attendance(query: IAttendanceQuery): Observable<IPaginatedAttendance> {

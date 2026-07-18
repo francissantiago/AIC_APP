@@ -24,6 +24,10 @@ describe('MembersService', () => {
     save: jest.fn(),
     softRemove: jest.fn(),
     createQueryBuilder: jest.fn(),
+    manager: {
+      create: jest.fn(),
+      save: jest.fn(),
+    },
   };
   const usersRepository = {
     findOne: jest.fn(),
@@ -94,13 +98,14 @@ describe('MembersService', () => {
     it('deve criar membro associado à congregação-base', async () => {
       membersRepository.findOne.mockResolvedValue(null);
       const saved = baseMember();
-      membersRepository.create.mockReturnValue(saved);
-      membersRepository.save.mockResolvedValue(saved);
+      membersRepository.manager.create.mockReturnValue(saved);
+      membersRepository.manager.save.mockResolvedValue(saved);
 
       const result = await service.create(createDto());
 
       expect(congregationsService.getOrCreateBase).toHaveBeenCalled();
-      expect(membersRepository.create).toHaveBeenCalledWith(
+      expect(membersRepository.manager.create).toHaveBeenCalledWith(
+        Member,
         expect.objectContaining({
           fullName: 'Maria da Silva',
           gender: MemberGender.UNSPECIFIED,
@@ -124,7 +129,7 @@ describe('MembersService', () => {
           userId: '4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f',
         }),
       ).rejects.toThrow(ApiException);
-      expect(membersRepository.save).not.toHaveBeenCalled();
+      expect(membersRepository.manager.save).not.toHaveBeenCalled();
     });
   });
 

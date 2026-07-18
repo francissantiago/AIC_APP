@@ -1,14 +1,19 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Brackets, DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   ApiErrorCode,
   ApiErrorMessage,
 } from '../../../common/errors/api-error.types';
 import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
+import { CreateMemberDto } from '../../members/dto/create-member.dto';
+import { MemberResponseDto } from '../../members/dto/member-response.dto';
+import { MembersService } from '../../members/members.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
+  ConvertVisitorToMemberDto,
+  ConvertVisitorToMemberResponseDto,
   CreateVisitorDto,
   PaginatedVisitorsResponseDto,
   QueryVisitorsDto,
@@ -25,6 +30,9 @@ export class VisitorsService {
     @InjectRepository(Visitor)
     private readonly visitorsRepository: Repository<Visitor>,
     private readonly congregationsService: CongregationsService,
+    private readonly membersService: MembersService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async createVisitor(
@@ -92,12 +100,97 @@ export class VisitorsService {
     return this.toDto(saved);
   }
 
+  async convertToMember(
+    id: string,
+    dto: ConvertVisitorToMemberDto,
+    user: UserResponseDto,
+  ): Promise<ConvertVisitorToMemberResponseDto> {
+    this.assertCanConvert(user);
+    const congregationId = await this.getCongregationId();
+
+    return this.dataSource.transaction(async (manager) => {
+      const visitor = await manager.findOne(Visitor, {
+        where: { id, congregationId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!visitor) {
+        throw new ApiException(HttpStatus.NOT_FOUND, {
+          code: ApiErrorCode.SECRETARIAT_VISITOR_NOT_FOUND,
+          message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_VISITOR_NOT_FOUND],
+        });
+      }
+      if (visitor.memberId) {
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.SECRETARIAT_VISITOR_ALREADY_CONVERTED,
+          message:
+            ApiErrorMessage[ApiErrorCode.SECRETARIAT_VISITOR_ALREADY_CONVERTED],
+        });
+      }
+
+      const memberDto = this.buildMemberDto(visitor, dto);
+      const member = await this.membersService.createInTransaction(
+        manager,
+        memberDto,
+        congregationId,
+      );
+
+      visitor.memberId = member.id;
+      visitor.followUpDone = true;
+      const savedVisitor = await manager.save(visitor);
+      this.logger.log(
+        `Visitante ${savedVisitor.id} convertido em membro ${member.id}`,
+      );
+
+      return {
+        visitor: this.toDto(savedVisitor),
+        member: MemberResponseDto.fromEntity(member),
+      };
+    });
+  }
+
   async removeVisitor(id: string): Promise<void> {
     const congregationId = await this.getCongregationId();
     await this.visitorsRepository.softRemove(
       await this.getVisitorOrFail(id, congregationId),
     );
     this.logger.log(`Visitante removido (soft delete): ${id}`);
+  }
+
+  private assertCanConvert(user: UserResponseDto): void {
+    const granted = user.permissions?.includes('members:write') ?? false;
+    if (!granted) {
+      throw new ApiException(HttpStatus.FORBIDDEN, {
+        code: ApiErrorCode.AUTH_FORBIDDEN,
+        message: ApiErrorMessage[ApiErrorCode.AUTH_FORBIDDEN],
+      });
+    }
+  }
+
+  private buildMemberDto(
+    visitor: Visitor,
+    dto: ConvertVisitorToMemberDto,
+  ): CreateMemberDto {
+    const notesParts: string[] = [];
+    if (visitor.notes) {
+      notesParts.push(`[Visitante ${visitor.visitDate}] ${visitor.notes}`);
+    }
+    if (dto.notes?.trim()) {
+      notesParts.push(dto.notes.trim());
+    }
+
+    return {
+      fullName: dto.fullName?.trim() || visitor.fullName,
+      phone: this.nullableText(dto.phone ?? visitor.phone) ?? undefined,
+      email: dto.email,
+      document: dto.document,
+      membershipDate: dto.membershipDate ?? this.todayIso(),
+      baptismDate: dto.baptismDate,
+      notes: notesParts.length > 0 ? notesParts.join('\n\n') : undefined,
+    };
+  }
+
+  private todayIso(): string {
+    return new Date().toISOString().slice(0, 10);
   }
 
   private async getCongregationId(): Promise<string> {

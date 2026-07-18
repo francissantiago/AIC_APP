@@ -32,6 +32,8 @@ import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   CreateVisitorDto,
+  ConvertVisitorToMemberDto,
+  ConvertVisitorToMemberResponseDto,
   PaginatedVisitorsResponseDto,
   QueryVisitorsDto,
   UpdateVisitorDto,
@@ -91,6 +93,19 @@ export class VisitorsController {
     @Body() dto: UpdateVisitorDto,
   ): Promise<VisitorResponseDto> {
     return this.visitorsService.updateVisitor(id, dto);
+  }
+
+  @Post(':id/convert-to-member')
+  @RequirePermission('secretariat:write')
+  @ApiOperation({ summary: 'Converter visitante em membro (transacional)' })
+  @ApiCreatedResponse({ type: ConvertVisitorToMemberResponseDto })
+  @ApiNotFoundResponse({ description: 'Visitante não encontrado' })
+  convertToMember(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConvertVisitorToMemberDto,
+    @CurrentUser() user: UserResponseDto,
+  ): Promise<ConvertVisitorToMemberResponseDto> {
+    return this.visitorsService.convertToMember(id, dto, user);
   }
 
   @Delete(':id')

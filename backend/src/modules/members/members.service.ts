@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import {
   ApiErrorCode,
   ApiErrorMessage,
@@ -34,13 +34,26 @@ export class MembersService {
 
   async create(dto: CreateMemberDto): Promise<MemberResponseDto> {
     const base = await this.congregationsService.getOrCreateBase();
+    const saved = await this.createInTransaction(
+      this.membersRepository.manager,
+      dto,
+      base.id,
+    );
+    return MemberResponseDto.fromEntity(saved);
+  }
+
+  async createInTransaction(
+    manager: EntityManager,
+    dto: CreateMemberDto,
+    congregationId: string,
+  ): Promise<Member> {
     await this.assertEmailDocumentUniqueness(dto.email, dto.document);
     if (dto.userId) {
       await this.assertUserExists(dto.userId);
       await this.assertUserIdUniqueness(dto.userId);
     }
 
-    const member = this.membersRepository.create({
+    const member = manager.create(Member, {
       fullName: dto.fullName,
       email: dto.email ?? null,
       phone: dto.phone ?? null,
@@ -56,13 +69,13 @@ export class MembersService {
       state: dto.state ?? null,
       zipCode: dto.zipCode ?? null,
       notes: dto.notes ?? null,
-      congregationId: base.id,
+      congregationId,
       userId: dto.userId ?? null,
     });
 
-    const saved = await this.membersRepository.save(member);
+    const saved = await manager.save(member);
     this.logger.log(`Membro criado: ${saved.id} (${saved.fullName})`);
-    return MemberResponseDto.fromEntity(saved);
+    return saved;
   }
 
   async findAll(query: QueryMembersDto): Promise<PaginatedMembersResponseDto> {

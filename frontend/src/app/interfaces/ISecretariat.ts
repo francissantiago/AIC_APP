@@ -5,6 +5,7 @@ import {
   SecretariatDocumentStatus,
   SecretariatDocumentType,
 } from '@enums/secretariat';
+import { IMember } from '@interfaces/IMember';
 
 export interface IPaginationQuery {
   page?: number;
@@ -104,6 +105,21 @@ export interface IPaginatedVisitors {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface IConvertVisitorToMember {
+  fullName?: string;
+  phone?: string | null;
+  email?: string;
+  document?: string;
+  membershipDate?: string;
+  baptismDate?: string;
+  notes?: string;
+}
+
+export interface IConvertVisitorToMemberResponse {
+  visitor: IVisitor;
+  member: IMember;
 }
 
 // ---------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
+  IsEmail,
   IsEnum,
   IsInt,
   IsOptional,
@@ -14,6 +15,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { MemberResponseDto } from '../../members/dto/member-response.dto';
 import {
   AttendanceEventType,
   CalendarEventType,
@@ -306,6 +308,63 @@ export class PaginatedVisitorsResponseDto {
   page!: number;
   @ApiProperty()
   limit!: number;
+}
+
+export class ConvertVisitorToMemberDto {
+  @ApiPropertyOptional({ maxLength: 150 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(150)
+  fullName?: string;
+
+  @ApiPropertyOptional({ nullable: true, maxLength: 30 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(30)
+  phone?: string | null;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
+
+  @ApiPropertyOptional({ maxLength: 30 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(30)
+  document?: string;
+
+  @ApiPropertyOptional({ format: 'date', example: '2026-07-18' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  membershipDate?: string;
+
+  @ApiPropertyOptional({ format: 'date', example: '2010-08-15' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  baptismDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(65535)
+  notes?: string;
+}
+
+export class ConvertVisitorToMemberResponseDto {
+  @ApiProperty({ type: VisitorResponseDto })
+  visitor!: VisitorResponseDto;
+
+  @ApiProperty({ type: MemberResponseDto })
+  member!: MemberResponseDto;
 }
 
 // ---------------------------------------------------------------------------

@@ -10,6 +10,7 @@ import {
   CreateCalendarEventDto,
   CreateSecretariatDocumentDto,
   CreateVisitorDto,
+  ConvertVisitorToMemberDto,
 } from './secretariat.dto';
 
 describe('Secretariat DTOs', () => {
@@ -87,5 +88,23 @@ describe('Secretariat DTOs', () => {
     const errors = await validate(dto);
 
     expect(errors.some((error) => error.property === 'title')).toBe(true);
+  });
+
+  it('aceita conversão de visitante com body vazio', async () => {
+    const dto = plainToInstance(ConvertVisitorToMemberDto, {});
+
+    const errors = await validate(dto);
+
+    expect(errors).toHaveLength(0);
+  });
+
+  it('rejeita e-mail inválido na conversão de visitante', async () => {
+    const dto = plainToInstance(ConvertVisitorToMemberDto, {
+      email: 'nao-e-email',
+    });
+
+    const errors = await validate(dto);
+
+    expect(errors.some((error) => error.property === 'email')).toBe(true);
   });
 });

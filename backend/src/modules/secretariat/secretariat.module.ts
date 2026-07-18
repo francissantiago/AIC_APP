@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { CongregationsModule } from '../congregations/congregations.module';
+import { MembersModule } from '../members/members.module';
 import { Member } from '../members/entities/member.entity';
 import { AttendanceController } from './attendance/attendance.controller';
 import { AttendanceService } from './attendance/attendance.service';
@@ -29,6 +30,7 @@ import { VisitorsService } from './visitors/visitors.service';
     ]),
     AuthModule,
     CongregationsModule,
+    MembersModule,
   ],
   controllers: [
     SecretariatController,
