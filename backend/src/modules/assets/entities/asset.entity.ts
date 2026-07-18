@@ -8,7 +8,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetStatus, AssetType } from '../enums/finance.enums';
+import { AssetStatus, AssetType } from '../enums/asset.enums';
 
 @Entity({ name: 'assets' })
 @Unique('UQ_assets_congregation_asset_tag', ['congregationId', 'assetTag'])

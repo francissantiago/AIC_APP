@@ -4,11 +4,11 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { AssetsService } from '../assets/assets.service';
 import { CongregationsService } from '../congregations/congregations.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { FinancialCategory } from './entities/financial-category.entity';
 import { FinancialEntry } from './entities/financial-entry.entity';
-import { Asset } from './entities/asset.entity';
 import { FinanceService } from './finance.service';
 import { FinancialType, PaymentMethod } from './enums/finance.enums';
 
@@ -26,15 +26,20 @@ describe('FinanceService', () => {
   const entriesRepository = {
     findOne: entryFindOne,
   } as unknown as Repository<FinancialEntry>;
-  const assetsRepository = {} as Repository<Asset>;
   const congregationsService = {
     getOrCreateBase: jest.fn().mockResolvedValue({ id: 'congregation-1' }),
   } as unknown as CongregationsService;
+  const assetsService = {
+    getDashboardTotals: jest.fn().mockResolvedValue({
+      activeAssets: 0,
+      estimatedAssetValue: '0.00',
+    }),
+  } as unknown as AssetsService;
   const service = new FinanceService(
     categoriesRepository,
     entriesRepository,
-    assetsRepository,
     congregationsService,
+    assetsService,
   );
 
   beforeEach(() => jest.clearAllMocks());

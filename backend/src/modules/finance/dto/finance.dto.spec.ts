@@ -1,11 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateAssetDto, CreateFinancialEntryDto } from './finance.dto';
-import {
-  AssetType,
-  FinancialType,
-  PaymentMethod,
-} from '../enums/finance.enums';
+import { FinancialType, PaymentMethod } from '../enums/finance.enums';
+import { CreateFinancialEntryDto } from './finance.dto';
 
 describe('Finance DTOs', () => {
   it('aceita somente data ISO sem horário nos lançamentos', async () => {
@@ -21,19 +17,5 @@ describe('Finance DTOs', () => {
     const errors = await validate(dto);
 
     expect(errors.some((error) => error.property === 'entryDate')).toBe(true);
-  });
-
-  it('rejeita valores acima da capacidade de DECIMAL(13,2)', async () => {
-    const dto = plainToInstance(CreateAssetDto, {
-      name: 'Templo',
-      type: AssetType.PROPERTY,
-      acquisitionValue: 100_000_000_000,
-    });
-
-    const errors = await validate(dto);
-
-    expect(errors.some((error) => error.property === 'acquisitionValue')).toBe(
-      true,
-    );
   });
 });

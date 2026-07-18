@@ -2,15 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
-import { CongregationsModule } from './congregations/congregations.module';
-import { EventsModule } from './events/events.module';
-import { FinanceModule } from './finance/finance.module';
-import { HealthModule } from './health/health.module';
-import { MembersModule } from './members/members.module';
-import { RolesModule } from './roles/roles.module';
-import { TasksModule } from './tasks/tasks.module';
-import { UsersModule } from './users/users.module';
+import { EventsModule } from './infra/events/events.module';
+import { HealthModule } from './infra/health/health.module';
+import { TasksModule } from './infra/tasks/tasks.module';
+import { AssetsModule } from './modules/assets/assets.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { CongregationsModule } from './modules/congregations/congregations.module';
+import { FinanceModule } from './modules/finance/finance.module';
+import { MembersModule } from './modules/members/members.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { UsersModule } from './users/users.module';
     MembersModule,
     CongregationsModule,
     FinanceModule,
+    AssetsModule,
   ],
 })
 export class AppModule {}

@@ -36,24 +36,18 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import {
-  AssetReportResponseDto,
-  AssetResponseDto,
   CashFlowCsvQueryDto,
   CashFlowQueryDto,
   CashFlowReportResponseDto,
-  CreateAssetDto,
   CreateFinancialCategoryDto,
   CreateFinancialEntryDto,
   FinancialCategoryResponseDto,
   FinancialDashboardResponseDto,
   FinancialEntryResponseDto,
-  PaginatedAssetsResponseDto,
   PaginatedFinancialEntriesResponseDto,
   PeriodQueryDto,
-  QueryAssetsDto,
   QueryFinancialCategoriesDto,
   QueryFinancialEntriesDto,
-  UpdateAssetDto,
   UpdateFinancialCategoryDto,
   UpdateFinancialEntryDto,
 } from './dto/finance.dto';
@@ -110,13 +104,6 @@ export class FinanceController {
         'attachment; filename="fluxo-financeiro.csv"',
       )
       .send(csv);
-  }
-
-  @Get('reports/assets')
-  @ApiOperation({ summary: 'Gerar relatório de inventário patrimonial' })
-  @ApiOkResponse({ type: AssetReportResponseDto })
-  assetReport(@Query() query: QueryAssetsDto): Promise<AssetReportResponseDto> {
-    return this.financeService.getAssetReport(query);
   }
 
   @Get('categories')
@@ -214,61 +201,5 @@ export class FinanceController {
   @ApiNotFoundResponse({ description: 'Lançamento não encontrado' })
   removeEntry(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.financeService.removeEntry(id);
-  }
-
-  @Get('assets')
-  @ApiOperation({ summary: 'Listar bens patrimoniais' })
-  @ApiOkResponse({ type: PaginatedAssetsResponseDto })
-  findAssets(
-    @Query() query: QueryAssetsDto,
-  ): Promise<PaginatedAssetsResponseDto> {
-    return this.financeService.findAssets(query);
-  }
-
-  @Get('assets/:id')
-  @ApiOperation({ summary: 'Detalhar bem patrimonial' })
-  @ApiOkResponse({ type: AssetResponseDto })
-  @ApiNotFoundResponse({ description: 'Bem não encontrado' })
-  findAsset(@Param('id', ParseUUIDPipe) id: string): Promise<AssetResponseDto> {
-    return this.financeService.findAsset(id);
-  }
-
-  @Post('assets')
-  @Roles(...WRITE_ROLES)
-  @ApiOperation({ summary: 'Cadastrar bem patrimonial' })
-  @ApiCreatedResponse({ type: AssetResponseDto })
-  @ApiConflictResponse({
-    description: 'Identificação patrimonial já está em uso',
-  })
-  createAsset(
-    @Body() dto: CreateAssetDto,
-    @CurrentUser() user: UserResponseDto,
-  ): Promise<AssetResponseDto> {
-    return this.financeService.createAsset(dto, user);
-  }
-
-  @Patch('assets/:id')
-  @Roles(...WRITE_ROLES)
-  @ApiOperation({ summary: 'Atualizar bem patrimonial' })
-  @ApiOkResponse({ type: AssetResponseDto })
-  @ApiNotFoundResponse({ description: 'Bem não encontrado' })
-  @ApiConflictResponse({
-    description: 'Identificação patrimonial já está em uso',
-  })
-  updateAsset(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateAssetDto,
-  ): Promise<AssetResponseDto> {
-    return this.financeService.updateAsset(id, dto);
-  }
-
-  @Delete('assets/:id')
-  @Roles(...WRITE_ROLES)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Remover bem patrimonial por soft delete' })
-  @ApiNoContentResponse({ description: 'Bem removido' })
-  @ApiNotFoundResponse({ description: 'Bem não encontrado' })
-  removeAsset(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.financeService.removeAsset(id);
   }
 }

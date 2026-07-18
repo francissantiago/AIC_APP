@@ -13,32 +13,26 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
+import { AssetsService } from '../assets/assets.service';
 import { CongregationsService } from '../congregations/congregations.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import {
-  AssetReportResponseDto,
-  AssetResponseDto,
   CashFlowCsvQueryDto,
   CashFlowQueryDto,
   CashFlowReportResponseDto,
-  CreateAssetDto,
   CreateFinancialCategoryDto,
   CreateFinancialEntryDto,
   ExpenseByCategoryDto,
   FinancialCategoryResponseDto,
   FinancialDashboardResponseDto,
   FinancialEntryResponseDto,
-  PaginatedAssetsResponseDto,
   PaginatedFinancialEntriesResponseDto,
   PeriodQueryDto,
-  QueryAssetsDto,
   QueryFinancialCategoriesDto,
   QueryFinancialEntriesDto,
-  UpdateAssetDto,
   UpdateFinancialCategoryDto,
   UpdateFinancialEntryDto,
 } from './dto/finance.dto';
-import { Asset } from './entities/asset.entity';
 import { FinancialCategory } from './entities/financial-category.entity';
 import { FinancialEntry } from './entities/financial-entry.entity';
 import { FinancialType } from './enums/finance.enums';
@@ -57,11 +51,6 @@ const DEFAULT_CATEGORIES: ReadonlyArray<readonly [string, FinancialType]> = [
 ];
 
 type TotalRow = { income: string | null; expense: string | null };
-type AssetTotalRow = { quantity: string; estimatedValue: string | null };
-type AssetDashboardRow = {
-  activeAssets: string;
-  estimatedValue: string | null;
-};
 
 @Injectable()
 export class FinanceService {
@@ -72,9 +61,8 @@ export class FinanceService {
     private readonly categoriesRepository: Repository<FinancialCategory>,
     @InjectRepository(FinancialEntry)
     private readonly entriesRepository: Repository<FinancialEntry>,
-    @InjectRepository(Asset)
-    private readonly assetsRepository: Repository<Asset>,
     private readonly congregationsService: CongregationsService,
+    private readonly assetsService: AssetsService,
   ) {}
 
   async findCategories(
@@ -242,97 +230,6 @@ export class FinanceService {
     this.logger.log(`Lançamento removido (soft delete): ${id}`);
   }
 
-  async createAsset(
-    dto: CreateAssetDto,
-    user: UserResponseDto,
-  ): Promise<AssetResponseDto> {
-    const congregationId = await this.getCongregationId();
-    const asset = this.assetsRepository.create({
-      congregationId,
-      createdByUserId: user.id,
-      assetTag: this.nullableText(dto.assetTag),
-      name: dto.name.trim(),
-      type: dto.type,
-      acquisitionDate: dto.acquisitionDate ?? null,
-      acquisitionValue:
-        dto.acquisitionValue == null ? null : this.money(dto.acquisitionValue),
-      currentValue:
-        dto.currentValue == null ? null : this.money(dto.currentValue),
-      location: this.nullableText(dto.location),
-      status: dto.status,
-      notes: this.nullableText(dto.notes),
-    });
-    try {
-      return this.toAssetDto(await this.assetsRepository.save(asset));
-    } catch (error) {
-      this.rethrowDuplicate(error, 'Identificação patrimonial já está em uso');
-    }
-  }
-
-  async findAssets(query: QueryAssetsDto): Promise<PaginatedAssetsResponseDto> {
-    const congregationId = await this.getCongregationId();
-    const qb = this.assetsRepository
-      .createQueryBuilder('asset')
-      .where('asset.congregationId = :congregationId', { congregationId });
-    this.applyAssetFilters(qb, query);
-    qb.orderBy('asset.createdAt', 'DESC')
-      .skip((query.page - 1) * query.limit)
-      .take(query.limit);
-    const [assets, total] = await qb.getManyAndCount();
-    return {
-      data: assets.map(this.toAssetDto),
-      total,
-      page: query.page,
-      limit: query.limit,
-    };
-  }
-
-  async findAsset(id: string): Promise<AssetResponseDto> {
-    const congregationId = await this.getCongregationId();
-    return this.toAssetDto(await this.getAssetOrFail(id, congregationId));
-  }
-
-  async updateAsset(
-    id: string,
-    dto: UpdateAssetDto,
-  ): Promise<AssetResponseDto> {
-    const congregationId = await this.getCongregationId();
-    const asset = await this.getAssetOrFail(id, congregationId);
-    if (dto.assetTag !== undefined)
-      asset.assetTag = this.nullableText(dto.assetTag);
-    if (dto.name !== undefined) asset.name = dto.name.trim();
-    if (dto.type !== undefined) asset.type = dto.type;
-    if (dto.acquisitionDate !== undefined) {
-      asset.acquisitionDate = dto.acquisitionDate;
-    }
-    if (dto.acquisitionValue !== undefined) {
-      asset.acquisitionValue =
-        dto.acquisitionValue == null ? null : this.money(dto.acquisitionValue);
-    }
-    if (dto.currentValue !== undefined) {
-      asset.currentValue =
-        dto.currentValue == null ? null : this.money(dto.currentValue);
-    }
-    if (dto.location !== undefined) {
-      asset.location = this.nullableText(dto.location);
-    }
-    if (dto.status !== undefined) asset.status = dto.status;
-    if (dto.notes !== undefined) asset.notes = this.nullableText(dto.notes);
-    try {
-      return this.toAssetDto(await this.assetsRepository.save(asset));
-    } catch (error) {
-      this.rethrowDuplicate(error, 'Identificação patrimonial já está em uso');
-    }
-  }
-
-  async removeAsset(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
-    await this.assetsRepository.softRemove(
-      await this.getAssetOrFail(id, congregationId),
-    );
-    this.logger.log(`Bem removido (soft delete): ${id}`);
-  }
-
   async getDashboard(
     query: PeriodQueryDto,
   ): Promise<FinancialDashboardResponseDto> {
@@ -343,19 +240,8 @@ export class FinanceService {
       period.from,
       period.to,
     );
-    const assetTotals = await this.assetsRepository
-      .createQueryBuilder('asset')
-      .select(
-        "SUM(CASE WHEN asset.status = 'active' THEN 1 ELSE 0 END)",
-        'activeAssets',
-      )
-      .addSelect(
-        'SUM(COALESCE(asset.currentValue, asset.acquisitionValue, 0))',
-        'estimatedValue',
-      )
-      .where('asset.congregationId = :congregationId', { congregationId })
-      .getRawOne<AssetDashboardRow>()
-      .then((row) => row ?? { activeAssets: '0', estimatedValue: '0' });
+    const assetTotals =
+      await this.assetsService.getDashboardTotals(congregationId);
     const sixMonthStart = new Date(`${period.to}T00:00:00.000Z`);
     sixMonthStart.setUTCMonth(sixMonthStart.getUTCMonth() - 5, 1);
     const monthlyFrom = [
@@ -422,8 +308,8 @@ export class FinanceService {
         income: this.money(totals.income),
         expense: this.money(totals.expense),
         balance: this.subtractMoney(totals.income, totals.expense),
-        activeAssets: Number(assetTotals.activeAssets),
-        estimatedAssetValue: this.money(assetTotals.estimatedValue),
+        activeAssets: assetTotals.activeAssets,
+        estimatedAssetValue: assetTotals.estimatedAssetValue,
       },
       monthly: monthlyRows.map((row) => ({
         month: row.month,
@@ -500,19 +386,6 @@ export class FinanceService {
       ]),
     ];
     return `\uFEFF${rows.map((row) => row.map(this.csvCell).join(';')).join('\r\n')}`;
-  }
-
-  async getAssetReport(query: QueryAssetsDto): Promise<AssetReportResponseDto> {
-    const congregationId = await this.getCongregationId();
-    const [assets, totals] = await Promise.all([
-      this.findAssets(query),
-      this.getAssetTotals(congregationId, query),
-    ]);
-    return {
-      ...assets,
-      quantity: Number(totals.quantity),
-      estimatedValue: this.money(totals.estimatedValue),
-    };
   }
 
   private async getCongregationId(): Promise<string> {
@@ -594,17 +467,6 @@ export class FinanceService {
     return entry;
   }
 
-  private async getAssetOrFail(
-    id: string,
-    congregationId: string,
-  ): Promise<Asset> {
-    const asset = await this.assetsRepository.findOne({
-      where: { id, congregationId },
-    });
-    if (!asset) throw new NotFoundException(`Bem ${id} não encontrado`);
-    return asset;
-  }
-
   private applyEntryFilters(
     qb: SelectQueryBuilder<FinancialEntry>,
     query: {
@@ -636,25 +498,6 @@ export class FinanceService {
     }
   }
 
-  private applyAssetFilters(
-    qb: SelectQueryBuilder<Asset>,
-    query: QueryAssetsDto,
-  ): void {
-    if (query.type) qb.andWhere('asset.type = :type', { type: query.type });
-    if (query.status)
-      qb.andWhere('asset.status = :status', { status: query.status });
-    if (query.q) {
-      qb.andWhere(
-        new Brackets((nested) => {
-          nested
-            .where('asset.name LIKE :q', { q: `%${query.q}%` })
-            .orWhere('asset.assetTag LIKE :q', { q: `%${query.q}%` })
-            .orWhere('asset.location LIKE :q', { q: `%${query.q}%` });
-        }),
-      );
-    }
-  }
-
   private async getEntryTotals(
     congregationId: string,
     from?: string,
@@ -677,24 +520,6 @@ export class FinanceService {
     return qb
       .getRawOne<TotalRow>()
       .then((row) => row ?? { income: '0', expense: '0' });
-  }
-
-  private async getAssetTotals(
-    congregationId: string,
-    query: QueryAssetsDto,
-  ): Promise<AssetTotalRow> {
-    const qb = this.assetsRepository
-      .createQueryBuilder('asset')
-      .select('COUNT(asset.id)', 'quantity')
-      .addSelect(
-        'SUM(COALESCE(asset.currentValue, asset.acquisitionValue, 0))',
-        'estimatedValue',
-      )
-      .where('asset.congregationId = :congregationId', { congregationId });
-    this.applyAssetFilters(qb, query);
-    return qb
-      .getRawOne<AssetTotalRow>()
-      .then((row) => row ?? { quantity: '0', estimatedValue: '0' });
   }
 
   private resolvePeriod(
@@ -793,26 +618,6 @@ export class FinanceService {
     category: this.toCategoryDto(entry.category),
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
-  });
-
-  private readonly toAssetDto = (asset: Asset): AssetResponseDto => ({
-    id: asset.id,
-    createdByUserId: asset.createdByUserId,
-    assetTag: asset.assetTag,
-    name: asset.name,
-    type: asset.type,
-    acquisitionDate: asset.acquisitionDate,
-    acquisitionValue:
-      asset.acquisitionValue == null
-        ? null
-        : this.money(asset.acquisitionValue),
-    currentValue:
-      asset.currentValue == null ? null : this.money(asset.currentValue),
-    location: asset.location,
-    status: asset.status,
-    notes: asset.notes,
-    createdAt: asset.createdAt,
-    updatedAt: asset.updatedAt,
   });
 
   private readonly csvCell = (value: string): string =>
