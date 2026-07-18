@@ -11,8 +11,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
+  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:4200');
   app.enableCors({
-    origin: configService.get<string>('CORS_ORIGIN', 'http://localhost:4200'),
+    origin: corsOrigin.includes(',')
+      ? corsOrigin.split(',').map((origin) => origin.trim())
+      : corsOrigin,
   });
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(

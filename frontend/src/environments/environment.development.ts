@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3002/api',
+  /** Relativo: mesmo host do tunnel/dev-server; proxy encaminha para o Nest. */
+  apiUrl: '/api',
 };

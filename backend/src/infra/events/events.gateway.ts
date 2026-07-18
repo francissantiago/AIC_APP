@@ -9,10 +9,14 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:4200';
+
 @WebSocketGateway({
   namespace: '/ws',
   cors: {
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
+    origin: corsOrigin.includes(',')
+      ? corsOrigin.split(',').map((origin) => origin.trim())
+      : corsOrigin,
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
