@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { CongregationStatus } from '@enums/congregation-status';
 import { CongregationType } from '@enums/congregation-type';
-import { environment } from 'environments/environment.development';
+import { environment } from 'environments/environment';
 import { of } from 'rxjs';
 import { CongregationService } from './congregation-service';
 

@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { IAuthResponse } from '@interfaces/IAuthResponse';
 import { ILoginRequest } from '@interfaces/ILoginRequest';
 import { IUser } from '@interfaces/IUser';
-import { environment } from 'environments/environment.development';
+import { environment } from 'environments/environment';
 import { catchError, finalize, Observable, of, tap, throwError } from 'rxjs';
 
 const TOKEN_STORAGE_KEY = 'aic.accessToken';

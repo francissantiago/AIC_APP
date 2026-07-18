@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { UserStatus } from '@enums/user-status';
 import { IAuthResponse } from '@interfaces/IAuthResponse';
 import { IUser } from '@interfaces/IUser';
-import { environment } from 'environments/environment.development';
+import { environment } from 'environments/environment';
 import { of, throwError } from 'rxjs';
 import { AuthService } from './auth-service';
 

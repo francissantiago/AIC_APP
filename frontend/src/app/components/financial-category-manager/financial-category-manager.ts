@@ -84,31 +84,33 @@ import { FinanceService } from '@services/finance-service';
           </button>
         }
       </form>
-      <ul class="divide-y divide-slate-100 overflow-hidden rounded-md border border-slate-200">
-        @for (category of categories(); track category.id) {
-          <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-            <span class="text-sm text-slate-900">
-              {{ category.name }} · {{ typeLabel(category.type) | translate }}
-            </span>
-            <span class="flex flex-wrap gap-3">
-              <button
-                type="button"
-                class="text-sm text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                (click)="edit(category)"
-              >
-                {{ 'COMMON.EDIT' | translate }}
-              </button>
-              <button
-                type="button"
-                class="text-sm text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                (click)="toggle(category)"
-              >
-                {{ (category.active ? 'FINANCE.DEACTIVATE' : 'FINANCE.ACTIVATE') | translate }}
-              </button>
-            </span>
-          </li>
-        }
-      </ul>
+      <div class="overflow-hidden rounded-md border border-slate-200">
+        <ul class="divide-y divide-slate-100">
+          @for (category of categories(); track category.id) {
+            <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+              <span class="text-sm text-slate-900">
+                {{ category.name }} · {{ typeLabel(category.type) | translate }}
+              </span>
+              <span class="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  class="text-sm text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  (click)="edit(category)"
+                >
+                  {{ 'COMMON.EDIT' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="text-sm text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  (click)="toggle(category)"
+                >
+                  {{ (category.active ? 'FINANCE.DEACTIVATE' : 'FINANCE.ACTIVATE') | translate }}
+                </button>
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
       @if (error()) {
         <p role="alert" class="mt-3 text-sm text-red-700">
           {{ 'FINANCE.CATEGORY_SAVE_ERROR' | translate }}

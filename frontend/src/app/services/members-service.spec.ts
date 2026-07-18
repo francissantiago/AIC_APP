@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { MemberStatus } from '@enums/member-status';
-import { environment } from 'environments/environment.development';
+import { environment } from 'environments/environment';
 import { of } from 'rxjs';
 import { MembersService } from './members-service';
 

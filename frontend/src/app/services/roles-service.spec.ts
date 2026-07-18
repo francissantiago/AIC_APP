@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { environment } from 'environments/environment.development';
+import { environment } from 'environments/environment';
 import { of } from 'rxjs';
 import { RolesService } from './roles-service';
 

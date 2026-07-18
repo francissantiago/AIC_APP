@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from 'environments/environment.development';
+import { environment } from 'environments/environment';
 import { Observable, retry, timer } from 'rxjs';
 import { ICongregation } from '@interfaces/ICongregation';
 import { IUpdateCongregation } from '@interfaces/IUpdateCongregation';
