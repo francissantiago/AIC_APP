@@ -14,6 +14,7 @@ import { FamiliesModule } from './modules/families/families.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { MembersModule } from './modules/members/members.module';
 import { MinistriesModule } from './modules/ministries/ministries.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { SecretariatModule } from './modules/secretariat/secretariat.module';
@@ -49,6 +50,7 @@ import { UsersModule } from './modules/users/users.module';
     MembersModule,
     FamiliesModule,
     AnnouncementsModule,
+    NotificationsModule,
     MinistriesModule,
     ClassesModule,
     SmallGroupsModule,

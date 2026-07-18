@@ -152,6 +152,8 @@ export const ApiErrorCode = {
   ANNOUNCEMENTS_AUDIENCE_NOT_SUPPORTED: 'ANNOUNCEMENTS.AUDIENCE_NOT_SUPPORTED',
   ANNOUNCEMENTS_EXPIRES_BEFORE_PUBLISH: 'ANNOUNCEMENTS.EXPIRES_BEFORE_PUBLISH',
   ANNOUNCEMENTS_INVALID_TARGETS: 'ANNOUNCEMENTS.INVALID_TARGETS',
+
+  NOTIFICATIONS_NOT_FOUND: 'NOTIFICATIONS.NOT_FOUND',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -332,4 +334,5 @@ export const ApiErrorMessage = {
     'A data de expiração deve ser posterior à data de publicação.',
   [ApiErrorCode.ANNOUNCEMENTS_INVALID_TARGETS]:
     'Targets de audiência inválidos no MVP. Envie null ou lista vazia.',
+  [ApiErrorCode.NOTIFICATIONS_NOT_FOUND]: 'Notificação não encontrada.',
 } as const;
