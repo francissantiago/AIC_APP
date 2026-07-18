@@ -88,6 +88,11 @@ export const ApiErrorCode = {
   MINISTRIES_MEMBER_WRONG_CONGREGATION: 'MINISTRIES.MEMBER_WRONG_CONGREGATION',
   MINISTRIES_MEMBER_ALREADY_LINKED: 'MINISTRIES.MEMBER_ALREADY_LINKED',
   MINISTRIES_MEMBER_LINK_NOT_FOUND: 'MINISTRIES.MEMBER_LINK_NOT_FOUND',
+
+  CLASSES_NOT_FOUND: 'CLASSES.NOT_FOUND',
+  CLASSES_NAME_IN_USE: 'CLASSES.NAME_IN_USE',
+  CLASSES_TEACHER_NOT_FOUND: 'CLASSES.TEACHER_NOT_FOUND',
+  CLASSES_TEACHER_WRONG_CONGREGATION: 'CLASSES.TEACHER_WRONG_CONGREGATION',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -177,4 +182,10 @@ export const ApiErrorMessage = {
   [ApiErrorCode.MINISTRIES_MEMBER_ALREADY_LINKED]:
     'Membro já vinculado a este ministério.',
   [ApiErrorCode.MINISTRIES_MEMBER_LINK_NOT_FOUND]: 'Vínculo não encontrado.',
+  [ApiErrorCode.CLASSES_NOT_FOUND]: 'Turma não encontrada.',
+  [ApiErrorCode.CLASSES_NAME_IN_USE]: 'Já existe uma turma com este nome.',
+  [ApiErrorCode.CLASSES_TEACHER_NOT_FOUND]:
+    'Professor selecionado não encontrado.',
+  [ApiErrorCode.CLASSES_TEACHER_WRONG_CONGREGATION]:
+    'O professor deve pertencer a esta congregação.',
 } as const;

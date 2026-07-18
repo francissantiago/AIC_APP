@@ -3,6 +3,7 @@ import { authGuard } from '@guards/auth-guard';
 import { guestGuard } from '@guards/guest-guard';
 import {
   assetsPermissionGuard,
+  classesPermissionGuard,
   congregationsPermissionGuard,
   defaultRouteGuard,
   financePermissionGuard,
@@ -77,6 +78,12 @@ export const routes: Routes = [
           import('@components/ministries/ministries-list/ministries-list').then(
             (m) => m.MinistriesList,
           ),
+      },
+      {
+        path: 'ebd',
+        canActivate: [classesPermissionGuard],
+        loadComponent: () =>
+          import('@components/ebd/classes-list/classes-list').then((m) => m.ClassesList),
       },
       {
         path: 'congregation',

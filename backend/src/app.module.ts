@@ -7,6 +7,7 @@ import { HealthModule } from './infra/health/health.module';
 import { TasksModule } from './infra/tasks/tasks.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ClassesModule } from './modules/classes/classes.module';
 import { CongregationsModule } from './modules/congregations/congregations.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { MembersModule } from './modules/members/members.module';
@@ -43,6 +44,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     MembersModule,
     MinistriesModule,
+    ClassesModule,
     CongregationsModule,
     FinanceModule,
     AssetsModule,
