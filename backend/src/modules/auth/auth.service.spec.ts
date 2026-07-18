@@ -1,8 +1,8 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
+import { ApiException } from '../../common/errors/api.exception';
 import { Role } from '../roles/entities/role.entity';
 import { User } from '../users/entities/user.entity';
 import { UserStatus } from '../users/enums/user-status.enum';
@@ -108,7 +108,7 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ email: 'nao@existe.com', password: 'x' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ApiException);
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
 
@@ -118,7 +118,7 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ email: 'admin@admin.com', password: 'errada' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ApiException);
       expect(usersService.touchLastLogin).not.toHaveBeenCalled();
     });
 
@@ -130,7 +130,7 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ email: 'admin@admin.com', password: 'S3nh@Forte!' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ApiException);
       expect(usersService.touchLastLogin).not.toHaveBeenCalled();
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
@@ -140,7 +140,7 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ email: 'admin@admin.com', password: 'S3nh@Forte!' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ApiException);
     });
   });
 });

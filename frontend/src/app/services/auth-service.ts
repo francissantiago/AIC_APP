@@ -1,9 +1,10 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, Injector, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IAuthResponse } from '@interfaces/IAuthResponse';
 import { ILoginRequest } from '@interfaces/ILoginRequest';
 import { IUser } from '@interfaces/IUser';
+import { ApiErrorService } from '@services/api-error.service';
 import { environment } from 'environments/environment';
 import { catchError, finalize, Observable, of, tap, throwError } from 'rxjs';
 
@@ -15,6 +16,8 @@ const TOKEN_STORAGE_KEY = 'aic.accessToken';
 export class AuthService {
   readonly #http = inject(HttpClient);
   readonly #router = inject(Router);
+  /** Lazy: evita ciclo com interceptor/TranslateService no bootstrap. */
+  readonly #injector = inject(Injector);
   readonly #apiUrl = `${environment.apiUrl}/auth`;
 
   readonly #headers = new HttpHeaders({
@@ -118,9 +121,6 @@ export class AuthService {
   }
 
   #mapLoginError(error: HttpErrorResponse): string {
-    if (error.status === 401) {
-      return 'AUTH.ERROR_INVALID_CREDENTIALS';
-    }
-    return 'AUTH.ERROR_GENERIC';
+    return this.#injector.get(ApiErrorService).resolve(error).displayMessage;
   }
 }

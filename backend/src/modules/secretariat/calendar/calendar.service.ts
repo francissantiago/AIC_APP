@@ -1,11 +1,11 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../../common/errors/api-error.types';
+import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
@@ -193,15 +193,22 @@ export class CalendarService {
     const event = await this.calendarEventsRepository.findOne({
       where: { id, congregationId },
     });
-    if (!event) throw new NotFoundException(`Evento ${id} não encontrado`);
+    if (!event) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_EVENT_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_EVENT_NOT_FOUND],
+      });
+    }
     return event;
   }
 
   private validateRange(startsAt: Date, endsAt: Date): void {
     if (endsAt.getTime() < startsAt.getTime()) {
-      throw new BadRequestException(
-        'ends_at deve ser posterior ou igual a starts_at',
-      );
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_EVENT_ENDS_BEFORE_START,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_EVENT_ENDS_BEFORE_START],
+      });
     }
   }
 
@@ -230,9 +237,13 @@ export class CalendarService {
     const interval = Math.max(1, dto.recurrenceInterval ?? 1);
     const until = dto.recurrenceUntil?.trim() || null;
     if (until && until < this.toIsoDate(startsAt)) {
-      throw new BadRequestException(
-        'recurrence_until deve ser posterior ou igual à data de início',
-      );
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID,
+        message:
+          ApiErrorMessage[
+            ApiErrorCode.SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID
+          ],
+      });
     }
     return {
       recurrenceFrequency: frequency,

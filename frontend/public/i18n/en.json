@@ -400,5 +400,64 @@
     "STATUS": "Status",
     "STATUS_DRAFT": "Draft",
     "STATUS_FINAL": "Final"
+  },
+  "ERRORS": {
+    "GENERIC": "Something went wrong. Please try again.",
+    "SAVE_FAILED": "Could not save. Please try again.",
+    "LOAD_FAILED": "Could not load data. Please try again.",
+    "NETWORK": "Network error. Check your connection.",
+    "UNAUTHORIZED": "Invalid credentials.",
+    "SUPPORT_HINT": "Support code: {{code}} · Ref: {{traceId}}",
+    "SYS": {
+      "INTERNAL": "An internal error occurred. If it persists, share the support code.",
+      "VALIDATION": "Invalid data. Check the highlighted fields.",
+      "BAD_REQUEST": "Invalid request.",
+      "NOT_FOUND": "Resource not found."
+    },
+    "AUTH": {
+      "INVALID_CREDENTIALS": "Invalid credentials.",
+      "FORBIDDEN": "You do not have permission for this action."
+    },
+    "USERS": {
+      "NOT_FOUND": "User not found.",
+      "EMAIL_IN_USE": "This email is already registered.",
+      "USERNAME_IN_USE": "This username is already in use.",
+      "ROLES_NOT_FOUND": "One or more roles do not exist."
+    },
+    "MEMBERS": {
+      "NOT_FOUND": "Member not found.",
+      "EMAIL_IN_USE": "This email is already registered.",
+      "DOCUMENT_IN_USE": "This document is already registered.",
+      "USER_ALREADY_LINKED": "This user is already linked to another member.",
+      "USER_NOT_FOUND": "Linked user not found."
+    },
+    "CONGREGATIONS": {
+      "EMAIL_IN_USE": "This email is already registered.",
+      "DOCUMENT_IN_USE": "This document is already registered."
+    },
+    "FINANCE": {
+      "CATEGORY_NOT_FOUND": "Category not found.",
+      "ENTRY_NOT_FOUND": "Entry not found.",
+      "CATEGORY_TYPE_LOCKED": "A category in use cannot change type.",
+      "CATEGORY_TYPE_MISMATCH": "The entry type must match the category type.",
+      "CATEGORY_INACTIVE": "Inactive categories do not accept new entries.",
+      "CATEGORY_DUPLICATE": "A category with this name and type already exists.",
+      "EXPORT_RANGE_REQUIRED": "from and to are required to export CSV.",
+      "EXPORT_RANGE_ORDER": "from must be earlier than or equal to to.",
+      "EXPORT_RANGE_MAX": "The maximum allowed period is 24 months."
+    },
+    "ASSETS": {
+      "NOT_FOUND": "Asset not found.",
+      "DUPLICATE": "An asset with these details already exists."
+    },
+    "SECRETARIAT": {
+      "ATTENDANCE_NOT_FOUND": "Attendance record not found.",
+      "ATTENDANCE_TOTAL_MISMATCH": "Adults plus children must equal total present.",
+      "VISITOR_NOT_FOUND": "Visitor not found.",
+      "DOCUMENT_NOT_FOUND": "Document not found.",
+      "EVENT_NOT_FOUND": "Event not found.",
+      "EVENT_ENDS_BEFORE_START": "Event end must be after or equal to the start.",
+      "EVENT_RECURRENCE_UNTIL_INVALID": "Recurrence end date must be after or equal to the start date."
+    }
   }
 }

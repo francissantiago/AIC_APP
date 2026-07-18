@@ -25,6 +25,7 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,6 +39,7 @@ import { UsersService } from './users.service';
 
 @ApiTags('users')
 @ApiBearerAuth()
+@ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @UseGuards(JwtAuthGuard)
 @Controller('users')

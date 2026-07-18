@@ -1,7 +1,10 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { AuthService } from '@services/auth-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
+import { Subject } from 'rxjs';
 import { SidebarNav } from './sidebar-nav';
 
 describe('SidebarNav', () => {
@@ -13,7 +16,20 @@ describe('SidebarNav', () => {
     await TestBed.configureTestingModule({
       imports: [SidebarNav],
       providers: [
-        provideRouter([]),
+        {
+          provide: Router,
+          useValue: {
+            url: '/users',
+            events: new Subject().asObservable(),
+            navigateByUrl: vi.fn(),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: signal(null),
+          },
+        },
         { provide: TranslateService, useValue: translateServiceStub() },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
       ],

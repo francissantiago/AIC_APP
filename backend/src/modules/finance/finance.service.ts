@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Brackets,
@@ -13,6 +6,11 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../common/errors/api-error.types';
+import { ApiException } from '../../common/errors/api.exception';
 import { AssetsService } from '../assets/assets.service';
 import { CongregationsService } from '../congregations/congregations.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
@@ -97,10 +95,7 @@ export class FinanceService {
     try {
       return this.toCategoryDto(await this.categoriesRepository.save(category));
     } catch (error) {
-      this.rethrowDuplicate(
-        error,
-        'Já existe uma categoria com esse nome e tipo',
-      );
+      this.rethrowCategoryDuplicate(error);
     }
   }
 
@@ -117,9 +112,10 @@ export class FinanceService {
         .where('entry.categoryId = :id', { id })
         .getCount();
       if (used > 0) {
-        throw new UnprocessableEntityException(
-          'Categoria em uso não pode trocar de tipo',
-        );
+        throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+          code: ApiErrorCode.FINANCE_CATEGORY_TYPE_LOCKED,
+          message: ApiErrorMessage[ApiErrorCode.FINANCE_CATEGORY_TYPE_LOCKED],
+        });
       }
       category.type = dto.type;
     }
@@ -128,10 +124,7 @@ export class FinanceService {
     try {
       return this.toCategoryDto(await this.categoriesRepository.save(category));
     } catch (error) {
-      this.rethrowDuplicate(
-        error,
-        'Já existe uma categoria com esse nome e tipo',
-      );
+      this.rethrowCategoryDuplicate(error);
     }
   }
 
@@ -347,9 +340,10 @@ export class FinanceService {
 
   async exportCashFlowCsv(query: CashFlowCsvQueryDto): Promise<string> {
     if (!query.from || !query.to) {
-      throw new BadRequestException(
-        'from e to são obrigatórios para exportar CSV',
-      );
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.FINANCE_EXPORT_RANGE_REQUIRED,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_EXPORT_RANGE_REQUIRED],
+      });
     }
     this.validatePeriod(query.from, query.to);
     const congregationId = await this.getCongregationId();
@@ -431,14 +425,16 @@ export class FinanceService {
   ): Promise<FinancialCategory> {
     const category = await this.getCategoryOrFail(id, congregationId);
     if (category.type !== type) {
-      throw new UnprocessableEntityException(
-        'O tipo do lançamento deve corresponder ao tipo da categoria',
-      );
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.FINANCE_CATEGORY_TYPE_MISMATCH,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_CATEGORY_TYPE_MISMATCH],
+      });
     }
     if (requireActive && !category.active) {
-      throw new UnprocessableEntityException(
-        'Categoria inativa não aceita novos lançamentos',
-      );
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.FINANCE_CATEGORY_INACTIVE,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_CATEGORY_INACTIVE],
+      });
     }
     return category;
   }
@@ -450,8 +446,12 @@ export class FinanceService {
     const category = await this.categoriesRepository.findOne({
       where: { id, congregationId },
     });
-    if (!category)
-      throw new NotFoundException(`Categoria ${id} não encontrada`);
+    if (!category) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.FINANCE_CATEGORY_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_CATEGORY_NOT_FOUND],
+      });
+    }
     return category;
   }
 
@@ -463,7 +463,12 @@ export class FinanceService {
       where: { id, congregationId },
       relations: { category: true },
     });
-    if (!entry) throw new NotFoundException(`Lançamento ${id} não encontrado`);
+    if (!entry) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.FINANCE_ENTRY_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_ENTRY_NOT_FOUND],
+      });
+    }
     return entry;
   }
 
@@ -548,12 +553,18 @@ export class FinanceService {
 
   private validatePeriod(from: string, to: string): void {
     if (from > to) {
-      throw new BadRequestException('from deve ser anterior ou igual a to');
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.FINANCE_EXPORT_RANGE_ORDER,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_EXPORT_RANGE_ORDER],
+      });
     }
     const max = new Date(`${from}T00:00:00.000Z`);
     max.setUTCMonth(max.getUTCMonth() + 24);
     if (new Date(`${to}T00:00:00.000Z`) > max) {
-      throw new BadRequestException('O período máximo permitido é de 24 meses');
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.FINANCE_EXPORT_RANGE_MAX,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_EXPORT_RANGE_MAX],
+      });
     }
   }
 
@@ -630,8 +641,13 @@ export class FinanceService {
     );
   }
 
-  private rethrowDuplicate(error: unknown, message: string): never {
-    if (this.isDuplicate(error)) throw new ConflictException(message);
+  private rethrowCategoryDuplicate(error: unknown): never {
+    if (this.isDuplicate(error)) {
+      throw new ApiException(HttpStatus.CONFLICT, {
+        code: ApiErrorCode.FINANCE_CATEGORY_DUPLICATE,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_CATEGORY_DUPLICATE],
+      });
+    }
     throw error;
   }
 }

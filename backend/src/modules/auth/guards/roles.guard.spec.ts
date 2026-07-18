@@ -1,5 +1,6 @@
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ApiException } from '../../../common/errors/api.exception';
 import { RoleResponseDto } from '../../roles/dto/role-response.dto';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { RolesGuard } from './roles.guard';
@@ -29,7 +30,7 @@ describe('RolesGuard', () => {
     } as unknown as Reflector;
 
     expect(() => new RolesGuard(reflector).canActivate(context)).toThrow(
-      ForbiddenException,
+      ApiException,
     );
   });
 

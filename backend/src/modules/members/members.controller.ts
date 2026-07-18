@@ -24,6 +24,7 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateMemberDto } from './dto/create-member.dto';
 import {
@@ -36,6 +37,7 @@ import { MembersService } from './members.service';
 
 @ApiTags('members')
 @ApiBearerAuth()
+@ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @UseGuards(JwtAuthGuard)
 @Controller('members')

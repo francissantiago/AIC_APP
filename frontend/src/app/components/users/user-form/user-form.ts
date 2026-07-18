@@ -23,6 +23,7 @@ import { ICreateUser } from '@interfaces/ICreateUser';
 import { IRole } from '@interfaces/IRole';
 import { IUpdateUser } from '@interfaces/IUpdateUser';
 import { IUser } from '@interfaces/IUser';
+import { ApiErrorService } from '@services/api-error.service';
 import { RolesService } from '@services/roles-service';
 import { UsersService } from '@services/users-service';
 import { switchMap } from 'rxjs';
@@ -51,6 +52,7 @@ function minRolesValidator(control: AbstractControl): ValidationErrors | null {
 export class UserForm implements OnInit {
   readonly #usersService = inject(UsersService);
   readonly #rolesService = inject(RolesService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #translate = inject(TranslateService);
@@ -64,6 +66,8 @@ export class UserForm implements OnInit {
   readonly saving = signal(false);
   readonly loadError = signal(false);
   readonly feedbackKey = signal<string | null>(null);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
   readonly currentUser = signal<IUser | null>(null);
   readonly initialRoleIds = signal<number[]>([]);
 
@@ -245,7 +249,7 @@ export class UserForm implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
-          this.feedbackKey.set(this.#mapSaveError(error));
+          this.#applySaveError(error);
         },
       });
   }
@@ -284,15 +288,15 @@ export class UserForm implements OnInit {
       },
       error: (error: HttpErrorResponse) => {
         this.saving.set(false);
-        this.feedbackKey.set(this.#mapSaveError(error));
+        this.#applySaveError(error);
       },
     });
   }
 
-  #mapSaveError(error: HttpErrorResponse): string {
-    if (error.status === 409) {
-      return 'USERS.CONFLICT_ERROR';
-    }
-    return 'USERS.SAVE_ERROR';
+  #applySaveError(error: HttpErrorResponse): void {
+    const resolved = this.#apiError.resolve(error);
+    this.feedbackKey.set(null);
+    this.errorMessage.set(resolved.displayMessage);
+    this.supportHint.set(resolved.supportHint ?? null);
   }
 }

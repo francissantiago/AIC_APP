@@ -14,6 +14,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { FINANCIAL_TYPES, FinancialType, PAYMENT_METHODS, PaymentMethod } from '@enums/finance';
 import { IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ApiErrorService } from '@services/api-error.service';
 import { FinanceService } from '@services/finance-service';
 
 @Component({
@@ -149,9 +150,12 @@ import { FinanceService } from '@services/finance-service';
             formControlName="notes"
           ></textarea>
         </label>
-        @if (error()) {
+        @if (errorMessage(); as message) {
           <p class="text-sm text-red-700 md:col-span-2" role="alert">
-            {{ 'FINANCE.SAVE_ERROR' | translate }}
+            {{ message }}
+            @if (supportHint(); as hint) {
+              <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+            }
           </p>
         }
         <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
@@ -177,6 +181,7 @@ import { FinanceService } from '@services/finance-service';
 })
 export class FinancialEntryForm {
   readonly #finance = inject(FinanceService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly entry = input<IFinancialEntry | null>(null);
@@ -184,7 +189,8 @@ export class FinancialEntryForm {
   readonly saved = output<void>();
   readonly cancelled = output<void>();
   readonly saving = signal(false);
-  readonly error = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
   readonly financialTypes = FINANCIAL_TYPES;
   readonly paymentMethods = PAYMENT_METHODS;
 
@@ -252,15 +258,18 @@ export class FinancialEntryForm {
       ? this.#finance.updateEntry(this.entry()!.id, payload)
       : this.#finance.createEntry(payload);
     this.saving.set(true);
-    this.error.set(false);
+    this.errorMessage.set(null);
+    this.supportHint.set(null);
     request.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.saved.emit();
       },
-      error: () => {
+      error: (error: unknown) => {
         this.saving.set(false);
-        this.error.set(true);
+        const resolved = this.#apiError.resolve(error);
+        this.errorMessage.set(resolved.displayMessage);
+        this.supportHint.set(resolved.supportHint ?? null);
       },
     });
   }

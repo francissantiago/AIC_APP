@@ -1,13 +1,12 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { In, Repository } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../common/errors/api-error.types';
+import { ApiException } from '../../common/errors/api.exception';
 import { Role } from '../roles/entities/role.entity';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -105,7 +104,17 @@ export class UsersService {
         withDeleted: true,
       });
       if (conflict && conflict.id !== id) {
-        throw new ConflictException('email já está em uso');
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.USERS_EMAIL_IN_USE,
+          message: ApiErrorMessage[ApiErrorCode.USERS_EMAIL_IN_USE],
+          details: [
+            {
+              field: 'email',
+              code: ApiErrorCode.USERS_EMAIL_IN_USE,
+              message: ApiErrorMessage[ApiErrorCode.USERS_EMAIL_IN_USE],
+            },
+          ],
+        });
       }
       user.email = dto.email;
     }
@@ -162,7 +171,10 @@ export class UsersService {
       relations: { roles: true },
     });
     if (!user) {
-      throw new NotFoundException(`Usuário ${id} não encontrado`);
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.USERS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.USERS_NOT_FOUND],
+      });
     }
     return user;
   }
@@ -177,8 +189,22 @@ export class UsersService {
       withDeleted: true,
     });
     if (conflict) {
-      const field = conflict.username === username ? 'username' : 'email';
-      throw new ConflictException(`${field} já está em uso`);
+      const isUsername = conflict.username === username;
+      const code = isUsername
+        ? ApiErrorCode.USERS_USERNAME_IN_USE
+        : ApiErrorCode.USERS_EMAIL_IN_USE;
+      const field = isUsername ? 'username' : 'email';
+      throw new ApiException(HttpStatus.CONFLICT, {
+        code,
+        message: ApiErrorMessage[code],
+        details: [
+          {
+            field,
+            code,
+            message: ApiErrorMessage[code],
+          },
+        ],
+      });
     }
   }
 
@@ -188,9 +214,17 @@ export class UsersService {
     if (roles.length !== uniqueIds.length) {
       const foundIds = new Set(roles.map((role) => role.id));
       const missing = uniqueIds.filter((roleId) => !foundIds.has(roleId));
-      throw new UnprocessableEntityException(
-        `Roles inexistentes: [${missing.join(', ')}]`,
-      );
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.USERS_ROLES_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.USERS_ROLES_NOT_FOUND],
+        details: [
+          {
+            field: 'roleIds',
+            code: ApiErrorCode.USERS_ROLES_NOT_FOUND,
+            message: `Roles inexistentes: [${missing.join(', ')}]`,
+          },
+        ],
+      });
     }
     return roles;
   }

@@ -1,10 +1,15 @@
 import {
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../../common/errors/api-error.types';
+import { ApiException } from '../../../common/errors/api.exception';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
@@ -28,7 +33,10 @@ export class RolesGuard implements CanActivate {
       allowedRoles.includes(role.code),
     );
     if (!granted) {
-      throw new ForbiddenException('Perfil sem permissão para esta operação');
+      throw new ApiException(HttpStatus.FORBIDDEN, {
+        code: ApiErrorCode.AUTH_FORBIDDEN,
+        message: ApiErrorMessage[ApiErrorCode.AUTH_FORBIDDEN],
+      });
     }
     return true;
   }

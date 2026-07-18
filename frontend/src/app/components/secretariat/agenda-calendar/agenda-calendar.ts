@@ -35,6 +35,7 @@ import { SECRETARIAT_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
 import { ICalendarEvent } from '@interfaces/ISecretariat';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
+import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
 import { endOfDay, endOfMonth, endOfWeek, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
 
@@ -221,9 +222,12 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
                 {{ 'SECRETARIAT.RECURRENCE_EDIT_HINT' | translate }}
               </p>
             }
-            @if (saveError()) {
+            @if (errorMessage(); as message) {
               <p role="alert" class="text-sm text-red-700 md:col-span-2">
-                {{ 'SECRETARIAT.SAVE_ERROR' | translate }}
+                {{ message }}
+                @if (supportHint(); as hint) {
+                  <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+                }
               </p>
             }
             <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
@@ -411,6 +415,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
 })
 export class AgendaCalendar implements OnInit {
   readonly #secretariat = inject(SecretariatService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
@@ -429,7 +434,8 @@ export class AgendaCalendar implements OnInit {
   readonly showForm = signal(false);
   readonly editing = signal<ICalendarEvent | null>(null);
   readonly saving = signal(false);
-  readonly saveError = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
   readonly pendingDelete = signal<string | null>(null);
 
   readonly canWrite = computed(() =>
@@ -550,7 +556,8 @@ export class AgendaCalendar implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.editing.set(null);
-    this.saveError.set(false);
+    this.errorMessage.set(null);
+    this.supportHint.set(null);
   }
 
   onDayClicked(date: Date): void {
@@ -598,16 +605,19 @@ export class AgendaCalendar implements OnInit {
       ? this.#secretariat.updateCalendarEvent(seriesId, payload)
       : this.#secretariat.createCalendarEvent(payload);
     this.saving.set(true);
-    this.saveError.set(false);
+    this.errorMessage.set(null);
+    this.supportHint.set(null);
     request.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.closeForm();
         this.#load(this.view(), this.viewDate());
       },
-      error: () => {
+      error: (error: unknown) => {
         this.saving.set(false);
-        this.saveError.set(true);
+        const resolved = this.#apiError.resolve(error);
+        this.errorMessage.set(resolved.displayMessage);
+        this.supportHint.set(resolved.supportHint ?? null);
       },
     });
   }

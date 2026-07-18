@@ -7,6 +7,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CongregationResponseDto } from './dto/congregation-response.dto';
 import { UpdateCongregationDto } from './dto/update-congregation.dto';
@@ -14,6 +15,7 @@ import { CongregationsService } from './congregations.service';
 
 @ApiTags('congregation')
 @ApiBearerAuth()
+@ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @UseGuards(JwtAuthGuard)
 @Controller('congregation')

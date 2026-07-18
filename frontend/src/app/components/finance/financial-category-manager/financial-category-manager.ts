@@ -13,6 +13,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { FINANCIAL_TYPES, FinancialType } from '@enums/finance';
 import { IFinancialCategory } from '@interfaces/IFinance';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ApiErrorService } from '@services/api-error.service';
 import { FinanceService } from '@services/finance-service';
 
 @Component({
@@ -111,9 +112,12 @@ import { FinanceService } from '@services/finance-service';
           }
         </ul>
       </div>
-      @if (error()) {
+      @if (errorMessage(); as message) {
         <p role="alert" class="mt-3 text-sm text-red-700">
-          {{ 'FINANCE.CATEGORY_SAVE_ERROR' | translate }}
+          {{ message }}
+          @if (supportHint(); as hint) {
+            <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+          }
         </p>
       }
     </section>
@@ -122,12 +126,14 @@ import { FinanceService } from '@services/finance-service';
 })
 export class FinancialCategoryManager {
   readonly #finance = inject(FinanceService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly categories = input.required<readonly IFinancialCategory[]>();
   readonly changed = output<void>();
   readonly closed = output<void>();
-  readonly error = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
   readonly editingId = signal<string | null>(null);
   readonly types = FINANCIAL_TYPES;
   readonly form = new FormGroup({
@@ -143,7 +149,7 @@ export class FinancialCategoryManager {
       );
       return;
     }
-    this.error.set(false);
+    this.#clearError();
     const id = this.editingId();
     const request = id
       ? this.#finance.updateCategory(id, this.form.getRawValue())
@@ -153,7 +159,7 @@ export class FinancialCategoryManager {
         this.cancelEdit();
         this.changed.emit();
       },
-      error: () => this.error.set(true),
+      error: (error: unknown) => this.#applyError(error),
     });
   }
 
@@ -168,17 +174,28 @@ export class FinancialCategoryManager {
   }
 
   toggle(category: IFinancialCategory): void {
-    this.error.set(false);
+    this.#clearError();
     this.#finance
       .updateCategory(category.id, { active: !category.active })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: () => this.changed.emit(),
-        error: () => this.error.set(true),
+        error: (error: unknown) => this.#applyError(error),
       });
   }
 
   typeLabel(type: FinancialType): string {
     return type === FinancialType.INCOME ? 'FINANCE.INCOME' : 'FINANCE.EXPENSE';
+  }
+
+  #clearError(): void {
+    this.errorMessage.set(null);
+    this.supportHint.set(null);
+  }
+
+  #applyError(error: unknown): void {
+    const resolved = this.#apiError.resolve(error);
+    this.errorMessage.set(resolved.displayMessage);
+    this.supportHint.set(resolved.supportHint ?? null);
   }
 }

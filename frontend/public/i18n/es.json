@@ -400,5 +400,64 @@
     "STATUS": "Estado",
     "STATUS_DRAFT": "Borrador",
     "STATUS_FINAL": "Final"
+  },
+  "ERRORS": {
+    "GENERIC": "Algo salió mal. Inténtalo de nuevo.",
+    "SAVE_FAILED": "No se pudo guardar. Inténtalo de nuevo.",
+    "LOAD_FAILED": "No se pudieron cargar los datos. Inténtalo de nuevo.",
+    "NETWORK": "Error de red. Comprueba tu conexión.",
+    "UNAUTHORIZED": "Credenciales inválidas.",
+    "SUPPORT_HINT": "Código de soporte: {{code}} · Ref: {{traceId}}",
+    "SYS": {
+      "INTERNAL": "Ocurrió un error interno. Si persiste, informe el código de soporte.",
+      "VALIDATION": "Datos inválidos. Revisa los campos marcados.",
+      "BAD_REQUEST": "Solicitud inválida.",
+      "NOT_FOUND": "Recurso no encontrado."
+    },
+    "AUTH": {
+      "INVALID_CREDENTIALS": "Credenciales inválidas.",
+      "FORBIDDEN": "No tienes permiso para esta operación."
+    },
+    "USERS": {
+      "NOT_FOUND": "Usuario no encontrado.",
+      "EMAIL_IN_USE": "Este correo ya está registrado.",
+      "USERNAME_IN_USE": "Este nombre de usuario ya está en uso.",
+      "ROLES_NOT_FOUND": "Una o más roles informadas no existen."
+    },
+    "MEMBERS": {
+      "NOT_FOUND": "Miembro no encontrado.",
+      "EMAIL_IN_USE": "Este correo ya está registrado.",
+      "DOCUMENT_IN_USE": "Este documento ya está registrado.",
+      "USER_ALREADY_LINKED": "Este usuario ya está vinculado a otro miembro.",
+      "USER_NOT_FOUND": "Usuario vinculado no encontrado."
+    },
+    "CONGREGATIONS": {
+      "EMAIL_IN_USE": "Este correo ya está registrado.",
+      "DOCUMENT_IN_USE": "Este documento ya está registrado."
+    },
+    "FINANCE": {
+      "CATEGORY_NOT_FOUND": "Categoría no encontrada.",
+      "ENTRY_NOT_FOUND": "Lanzamiento no encontrado.",
+      "CATEGORY_TYPE_LOCKED": "Una categoría en uso no puede cambiar de tipo.",
+      "CATEGORY_TYPE_MISMATCH": "El tipo del lanzamiento debe corresponder al tipo de la categoría.",
+      "CATEGORY_INACTIVE": "Una categoría inactiva no acepta nuevos lanzamientos.",
+      "CATEGORY_DUPLICATE": "Ya existe una categoría con ese nombre y tipo.",
+      "EXPORT_RANGE_REQUIRED": "from y to son obligatorios para exportar CSV.",
+      "EXPORT_RANGE_ORDER": "from debe ser anterior o igual a to.",
+      "EXPORT_RANGE_MAX": "El período máximo permitido es de 24 meses."
+    },
+    "ASSETS": {
+      "NOT_FOUND": "Bien no encontrado.",
+      "DUPLICATE": "Ya existe un bien con estos datos."
+    },
+    "SECRETARIAT": {
+      "ATTENDANCE_NOT_FOUND": "Registro de asistencia no encontrado.",
+      "ATTENDANCE_TOTAL_MISMATCH": "La suma de adultos y niños debe ser igual al total presente.",
+      "VISITOR_NOT_FOUND": "Visitante no encontrado.",
+      "DOCUMENT_NOT_FOUND": "Documento no encontrado.",
+      "EVENT_NOT_FOUND": "Evento no encontrado.",
+      "EVENT_ENDS_BEFORE_START": "El fin del evento debe ser posterior o igual al inicio.",
+      "EVENT_RECURRENCE_UNTIL_INVALID": "La fecha final de la recurrencia debe ser posterior o igual a la fecha de inicio."
+    }
   }
 }

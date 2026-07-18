@@ -14,6 +14,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ASSET_STATUSES, ASSET_TYPES, AssetStatus, AssetType } from '@enums/finance';
 import { IAsset } from '@interfaces/IFinance';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ApiErrorService } from '@services/api-error.service';
 import { FinanceService } from '@services/finance-service';
 
 @Component({
@@ -139,9 +140,12 @@ import { FinanceService } from '@services/finance-service';
             formControlName="notes"
           ></textarea>
         </label>
-        @if (error()) {
+        @if (errorMessage(); as message) {
           <p role="alert" class="text-sm text-red-700 md:col-span-2">
-            {{ 'ASSETS.SAVE_ERROR' | translate }}
+            {{ message }}
+            @if (supportHint(); as hint) {
+              <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+            }
           </p>
         }
         <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
@@ -166,13 +170,15 @@ import { FinanceService } from '@services/finance-service';
 })
 export class AssetForm {
   readonly #finance = inject(FinanceService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly asset = input<IAsset | null>(null);
   readonly saved = output<void>();
   readonly cancelled = output<void>();
   readonly saving = signal(false);
-  readonly error = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
   readonly types = ASSET_TYPES;
   readonly statuses = ASSET_STATUSES;
   readonly form = new FormGroup({
@@ -238,15 +244,18 @@ export class AssetForm {
       ? this.#finance.updateAsset(this.asset()!.id, payload)
       : this.#finance.createAsset(payload);
     this.saving.set(true);
-    this.error.set(false);
+    this.errorMessage.set(null);
+    this.supportHint.set(null);
     request.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.saved.emit();
       },
-      error: () => {
+      error: (error: unknown) => {
         this.saving.set(false);
-        this.error.set(true);
+        const resolved = this.#apiError.resolve(error);
+        this.errorMessage.set(resolved.displayMessage);
+        this.supportHint.set(resolved.supportHint ?? null);
       },
     });
   }

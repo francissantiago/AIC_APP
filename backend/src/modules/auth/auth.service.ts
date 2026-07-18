@@ -1,7 +1,12 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../common/errors/api-error.types';
+import { ApiException } from '../../common/errors/api.exception';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { UserStatus } from '../users/enums/user-status.enum';
 import { UsersService } from '../users/users.service';
@@ -26,7 +31,7 @@ export class AuthService {
       this.logger.warn(
         `Login falhou: email não encontrado (${this.maskEmail(dto.email)})`,
       );
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw this.invalidCredentials();
     }
 
     const passwordOk = await bcrypt.compare(dto.password, user.passwordHash);
@@ -34,7 +39,7 @@ export class AuthService {
       this.logger.warn(
         `Login falhou: senha inválida (${this.maskEmail(dto.email)})`,
       );
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw this.invalidCredentials();
     }
 
     // D2: status ≠ active → 401 genérico (anti-enumeração)
@@ -42,7 +47,7 @@ export class AuthService {
       this.logger.warn(
         `Login falhou: status ${user.status} (${this.maskEmail(dto.email)})`,
       );
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw this.invalidCredentials();
     }
 
     await this.usersService.touchLastLogin(user.id);
@@ -71,6 +76,13 @@ export class AuthService {
 
   async me(userId: string): Promise<UserResponseDto> {
     return this.usersService.findOne(userId);
+  }
+
+  private invalidCredentials(): ApiException {
+    return new ApiException(HttpStatus.UNAUTHORIZED, {
+      code: ApiErrorCode.AUTH_INVALID_CREDENTIALS,
+      message: ApiErrorMessage[ApiErrorCode.AUTH_INVALID_CREDENTIALS],
+    });
   }
 
   private maskEmail(email: string): string {

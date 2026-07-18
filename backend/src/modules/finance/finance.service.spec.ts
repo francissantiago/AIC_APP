@@ -1,9 +1,5 @@
-import {
-  BadRequestException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { ApiException } from '../../common/errors/api.exception';
 import { AssetsService } from '../assets/assets.service';
 import { CongregationsService } from '../congregations/congregations.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
@@ -66,7 +62,7 @@ describe('FinanceService', () => {
         },
         { id: 'user-1' } as UserResponseDto,
       ),
-    ).rejects.toBeInstanceOf(UnprocessableEntityException);
+    ).rejects.toBeInstanceOf(ApiException);
   });
 
   it('rejeita tipo incompatível com a categoria', async () => {
@@ -91,14 +87,14 @@ describe('FinanceService', () => {
         },
         { id: 'user-1' } as UserResponseDto,
       ),
-    ).rejects.toBeInstanceOf(UnprocessableEntityException);
+    ).rejects.toBeInstanceOf(ApiException);
   });
 
   it('isola busca de lançamento pela congregação-base', async () => {
     entryFindOne.mockResolvedValue(null);
 
     await expect(service.findEntry('entry-1')).rejects.toBeInstanceOf(
-      NotFoundException,
+      ApiException,
     );
     expect(entryFindOne).toHaveBeenCalledWith({
       where: { id: 'entry-1', congregationId: 'congregation-1' },
@@ -108,16 +104,16 @@ describe('FinanceService', () => {
 
   it('exige período no CSV', async () => {
     await expect(service.exportCashFlowCsv({})).rejects.toBeInstanceOf(
-      BadRequestException,
+      ApiException,
     );
   });
 
   it('rejeita período invertido e superior a 24 meses', () => {
     expect(() => service['validatePeriod']('2026-08-01', '2026-07-01')).toThrow(
-      BadRequestException,
+      ApiException,
     );
     expect(() => service['validatePeriod']('2024-01-01', '2026-02-01')).toThrow(
-      BadRequestException,
+      ApiException,
     );
   });
 

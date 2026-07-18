@@ -1,6 +1,6 @@
-import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from './congregations.service';
 import { Congregation } from './entities/congregation.entity';
 import { CongregationStatus } from './enums/congregation-status.enum';
@@ -137,7 +137,7 @@ describe('CongregationsService', () => {
 
       await expect(
         service.updateBase({ email: 'outro@aic.org' }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(ApiException);
     });
 
     it('deve lançar 409 quando o novo document pertence a outra congregação', async () => {
@@ -149,7 +149,7 @@ describe('CongregationsService', () => {
 
       await expect(
         service.updateBase({ document: '12.345.678/0001-99' }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(ApiException);
     });
 
     it('não deve criar dois ativos em chamadas sequenciais com base existente', async () => {

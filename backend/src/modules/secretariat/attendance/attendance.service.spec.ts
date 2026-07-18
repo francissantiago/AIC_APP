@@ -1,5 +1,5 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { AttendanceEventType } from '../enums/secretariat.enums';
@@ -38,7 +38,7 @@ describe('AttendanceService', () => {
         },
         user,
       ),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(ApiException);
   });
 
   it('aceita quando adults + children é igual a total_present', async () => {
@@ -112,14 +112,14 @@ describe('AttendanceService', () => {
 
     await expect(
       service.updateRecord('record-1', { totalPresent: 100 }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(ApiException);
   });
 
-  it('lança NotFoundException quando o registro não existe na congregação', async () => {
+  it('lança ApiException quando o registro não existe na congregação', async () => {
     findOne.mockResolvedValue(null);
 
     await expect(service.findRecord('record-x')).rejects.toBeInstanceOf(
-      NotFoundException,
+      ApiException,
     );
   });
 });

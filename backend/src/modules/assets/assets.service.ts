@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Brackets,
@@ -11,6 +6,11 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../common/errors/api-error.types';
+import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import {
@@ -63,7 +63,7 @@ export class AssetsService {
     try {
       return this.toAssetDto(await this.assetsRepository.save(asset));
     } catch (error) {
-      this.rethrowDuplicate(error, 'Identificação patrimonial já está em uso');
+      this.rethrowAssetDuplicate(error);
     }
   }
 
@@ -119,7 +119,7 @@ export class AssetsService {
     try {
       return this.toAssetDto(await this.assetsRepository.save(asset));
     } catch (error) {
-      this.rethrowDuplicate(error, 'Identificação patrimonial já está em uso');
+      this.rethrowAssetDuplicate(error);
     }
   }
 
@@ -177,7 +177,12 @@ export class AssetsService {
     const asset = await this.assetsRepository.findOne({
       where: { id, congregationId },
     });
-    if (!asset) throw new NotFoundException(`Bem ${id} não encontrado`);
+    if (!asset) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.ASSETS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.ASSETS_NOT_FOUND],
+      });
+    }
     return asset;
   }
 
@@ -271,8 +276,13 @@ export class AssetsService {
     );
   }
 
-  private rethrowDuplicate(error: unknown, message: string): never {
-    if (this.isDuplicate(error)) throw new ConflictException(message);
+  private rethrowAssetDuplicate(error: unknown): never {
+    if (this.isDuplicate(error)) {
+      throw new ApiException(HttpStatus.CONFLICT, {
+        code: ApiErrorCode.ASSETS_DUPLICATE,
+        message: ApiErrorMessage[ApiErrorCode.ASSETS_DUPLICATE],
+      });
+    }
     throw error;
   }
 }

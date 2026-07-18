@@ -1,11 +1,7 @@
-import {
-  ConflictException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { ApiException } from '../../common/errors/api.exception';
 import { Role } from '../roles/entities/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -112,9 +108,7 @@ describe('UsersService', () => {
     it('deve lançar 409 quando username já existe (incluindo soft-deleted)', async () => {
       usersRepository.findOne.mockResolvedValue(baseUser());
 
-      await expect(service.create(createDto())).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(service.create(createDto())).rejects.toThrow(ApiException);
       expect(usersRepository.findOne).toHaveBeenCalledWith(
         expect.objectContaining({ withDeleted: true }),
       );
@@ -125,9 +119,7 @@ describe('UsersService', () => {
       usersRepository.findOne.mockResolvedValue(null);
       rolesRepository.findBy.mockResolvedValue([]);
 
-      await expect(service.create(createDto())).rejects.toThrow(
-        UnprocessableEntityException,
-      );
+      await expect(service.create(createDto())).rejects.toThrow(ApiException);
       expect(usersRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -143,7 +135,7 @@ describe('UsersService', () => {
 
       await expect(
         service.update(user.id, { email: 'outro@igreja.org' }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(ApiException);
     });
 
     it('deve atualizar fullName e status', async () => {
@@ -186,7 +178,7 @@ describe('UsersService', () => {
 
       await expect(
         service.setRoles(baseUser().id, { roleIds: [6, 999] }),
-      ).rejects.toThrow(UnprocessableEntityException);
+      ).rejects.toThrow(ApiException);
     });
   });
 
@@ -205,7 +197,7 @@ describe('UsersService', () => {
       usersRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove('id-inexistente')).rejects.toThrow(
-        NotFoundException,
+        ApiException,
       );
       expect(usersRepository.softRemove).not.toHaveBeenCalled();
     });

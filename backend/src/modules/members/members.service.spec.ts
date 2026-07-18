@@ -1,10 +1,6 @@
-import {
-  ConflictException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
 import { Congregation } from '../congregations/entities/congregation.entity';
 import { CongregationStatus } from '../congregations/enums/congregation-status.enum';
@@ -127,7 +123,7 @@ describe('MembersService', () => {
           ...createDto(),
           userId: '4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f',
         }),
-      ).rejects.toThrow(UnprocessableEntityException);
+      ).rejects.toThrow(ApiException);
       expect(membersRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -175,7 +171,7 @@ describe('MembersService', () => {
 
       await expect(
         service.update(member.id, { email: 'outro@igreja.org' }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(ApiException);
     });
 
     it('deve lançar 404 quando o membro está fora do escopo da base', async () => {
@@ -183,7 +179,7 @@ describe('MembersService', () => {
 
       await expect(
         service.update('id-fora-do-escopo', { fullName: 'Outro' }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ApiException);
     });
   });
 
@@ -205,7 +201,7 @@ describe('MembersService', () => {
       membersRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove('id-inexistente')).rejects.toThrow(
-        NotFoundException,
+        ApiException,
       );
       expect(membersRepository.softRemove).not.toHaveBeenCalled();
     });
@@ -216,7 +212,7 @@ describe('MembersService', () => {
       membersRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne('id-inexistente')).rejects.toThrow(
-        NotFoundException,
+        ApiException,
       );
     });
   });

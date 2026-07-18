@@ -1,11 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../../common/errors/api-error.types';
+import { ApiException } from '../../../common/errors/api.exception';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { UserStatus } from '../../users/enums/user-status.enum';
 import { UsersService } from '../../users/users.service';
@@ -28,14 +29,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     try {
       const user = await this.usersService.findOne(payload.sub);
       if (user.status !== UserStatus.ACTIVE) {
-        throw new UnauthorizedException('Credenciais inválidas');
+        throw this.invalidCredentials();
       }
       return user;
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new UnauthorizedException('Credenciais inválidas');
+      if (error instanceof ApiException && error.getStatus() === 401) {
+        throw error;
+      }
+      if (error instanceof HttpException && error.getStatus() === 404) {
+        throw this.invalidCredentials();
       }
       throw error;
     }
+  }
+
+  private invalidCredentials(): ApiException {
+    return new ApiException(HttpStatus.UNAUTHORIZED, {
+      code: ApiErrorCode.AUTH_INVALID_CREDENTIALS,
+      message: ApiErrorMessage[ApiErrorCode.AUTH_INVALID_CREDENTIALS],
+    });
   }
 }

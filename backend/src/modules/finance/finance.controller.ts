@@ -30,6 +30,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -58,6 +59,7 @@ const WRITE_ROLES = ['ADMIN', 'TREASURER'];
 
 @ApiTags('finance')
 @ApiBearerAuth()
+@ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })

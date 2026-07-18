@@ -1,6 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../../common/errors/api-error.types';
+import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
@@ -106,8 +111,12 @@ export class DocumentsService {
     const document = await this.documentsRepository.findOne({
       where: { id, congregationId },
     });
-    if (!document)
-      throw new NotFoundException(`Documento ${id} não encontrado`);
+    if (!document) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_NOT_FOUND],
+      });
+    }
     return document;
   }
 

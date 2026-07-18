@@ -7,6 +7,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -17,6 +18,7 @@ const READ_ROLES = ['ADMIN', 'PASTOR', 'SECRETARY'];
 
 @ApiTags('Secretariat')
 @ApiBearerAuth()
+@ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @UseGuards(JwtAuthGuard, RolesGuard)

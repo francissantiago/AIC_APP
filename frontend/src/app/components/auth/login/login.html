@@ -82,9 +82,9 @@
           }
         </div>
 
-        @if (loginError(); as errorKey) {
+        @if (loginError(); as message) {
           <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
-            {{ errorKey | translate }}
+            {{ message }}
           </p>
         }
 

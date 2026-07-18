@@ -28,6 +28,15 @@
     </p>
   }
 
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
   @if (loading()) {
     <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
   } @else if (loadError()) {

@@ -13,6 +13,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-status';
 import { CONGREGATION_TYPES, CongregationType } from '@enums/congregation-type';
 import { IUpdateCongregation } from '@interfaces/IUpdateCongregation';
+import { ApiErrorService } from '@services/api-error.service';
 import { CongregationService } from '@services/congregation-service';
 
 @Component({
@@ -24,6 +25,7 @@ import { CongregationService } from '@services/congregation-service';
 })
 export class CongregationForm implements OnInit {
   readonly #congregationService = inject(CongregationService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly statuses = CONGREGATION_STATUSES;
@@ -33,6 +35,8 @@ export class CongregationForm implements OnInit {
   readonly saving = signal(false);
   readonly loadError = signal(false);
   readonly feedbackKey = signal<string | null>(null);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
 
   readonly form = new FormGroup({
     name: new FormControl('', {
@@ -141,7 +145,7 @@ export class CongregationForm implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
-          this.feedbackKey.set(this.#mapSaveError(error));
+          this.#applySaveError(error);
         },
       });
   }
@@ -238,10 +242,10 @@ export class CongregationForm implements OnInit {
     return payload;
   }
 
-  #mapSaveError(error: HttpErrorResponse): string {
-    if (error.status === 409) {
-      return 'CONGREGATION.CONFLICT_ERROR';
-    }
-    return 'CONGREGATION.SAVE_ERROR';
+  #applySaveError(error: HttpErrorResponse): void {
+    const resolved = this.#apiError.resolve(error);
+    this.feedbackKey.set(null);
+    this.errorMessage.set(resolved.displayMessage);
+    this.supportHint.set(resolved.supportHint ?? null);
   }
 }

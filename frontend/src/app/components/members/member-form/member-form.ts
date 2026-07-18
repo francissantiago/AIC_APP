@@ -16,6 +16,7 @@ import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-mari
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
+import { ApiErrorService } from '@services/api-error.service';
 import { MembersService } from '@services/members-service';
 
 @Component({
@@ -27,6 +28,7 @@ import { MembersService } from '@services/members-service';
 })
 export class MemberForm implements OnInit {
   readonly #membersService = inject(MembersService);
+  readonly #apiError = inject(ApiErrorService);
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
@@ -41,6 +43,8 @@ export class MemberForm implements OnInit {
   readonly saving = signal(false);
   readonly loadError = signal(false);
   readonly feedbackKey = signal<string | null>(null);
+  readonly errorMessage = signal<string | null>(null);
+  readonly supportHint = signal<string | null>(null);
 
   readonly form = new FormGroup({
     fullName: new FormControl('', {
@@ -187,7 +191,7 @@ export class MemberForm implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
-          this.feedbackKey.set(this.#mapSaveError(error));
+          this.#applySaveError(error);
         },
       });
   }
@@ -212,7 +216,7 @@ export class MemberForm implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
-          this.feedbackKey.set(this.#mapSaveError(error));
+          this.#applySaveError(error);
         },
       });
   }
@@ -275,10 +279,10 @@ export class MemberForm implements OnInit {
     return payload;
   }
 
-  #mapSaveError(error: HttpErrorResponse): string {
-    if (error.status === 409) {
-      return 'MEMBERS.CONFLICT_ERROR';
-    }
-    return 'MEMBERS.SAVE_ERROR';
+  #applySaveError(error: HttpErrorResponse): void {
+    const resolved = this.#apiError.resolve(error);
+    this.feedbackKey.set(null);
+    this.errorMessage.set(resolved.displayMessage);
+    this.supportHint.set(resolved.supportHint ?? null);
   }
 }

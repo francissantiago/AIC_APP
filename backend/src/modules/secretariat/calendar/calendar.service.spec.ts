@@ -1,5 +1,5 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { CalendarEventType } from '../enums/secretariat.enums';
@@ -38,7 +38,7 @@ describe('CalendarService', () => {
         },
         user,
       ),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(ApiException);
   });
 
   it('aceita ends_at igual a starts_at', async () => {
@@ -86,14 +86,14 @@ describe('CalendarService', () => {
       service.updateEvent('event-1', {
         endsAt: '2026-07-20T18:00:00.000Z',
       }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(ApiException);
   });
 
-  it('lança NotFoundException quando o evento não existe na congregação', async () => {
+  it('lança ApiException quando o evento não existe na congregação', async () => {
     findOne.mockResolvedValue(null);
 
     await expect(service.findEvent('event-x')).rejects.toBeInstanceOf(
-      NotFoundException,
+      ApiException,
     );
     expect(findOne).toHaveBeenCalledWith({
       where: { id: 'event-x', congregationId: 'congregation-1' },

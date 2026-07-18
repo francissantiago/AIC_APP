@@ -1,6 +1,11 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../common/errors/api-error.types';
+import { ApiException } from '../../common/errors/api.exception';
 import { CongregationResponseDto } from './dto/congregation-response.dto';
 import { UpdateCongregationDto } from './dto/update-congregation.dto';
 import { Congregation } from './entities/congregation.entity';
@@ -124,7 +129,17 @@ export class CongregationsService {
         withDeleted: true,
       });
       if (conflict && conflict.id !== excludeId) {
-        throw new ConflictException('email já está em uso');
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.CONGREGATIONS_EMAIL_IN_USE,
+          message: ApiErrorMessage[ApiErrorCode.CONGREGATIONS_EMAIL_IN_USE],
+          details: [
+            {
+              field: 'email',
+              code: ApiErrorCode.CONGREGATIONS_EMAIL_IN_USE,
+              message: ApiErrorMessage[ApiErrorCode.CONGREGATIONS_EMAIL_IN_USE],
+            },
+          ],
+        });
       }
     }
     if (document) {
@@ -133,7 +148,18 @@ export class CongregationsService {
         withDeleted: true,
       });
       if (conflict && conflict.id !== excludeId) {
-        throw new ConflictException('document já está em uso');
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE,
+          message: ApiErrorMessage[ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE],
+          details: [
+            {
+              field: 'document',
+              code: ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE,
+              message:
+                ApiErrorMessage[ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE],
+            },
+          ],
+        });
       }
     }
   }

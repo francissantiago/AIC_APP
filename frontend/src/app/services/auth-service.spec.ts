@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { UserStatus } from '@enums/user-status';
 import { IAuthResponse } from '@interfaces/IAuthResponse';
 import { IUser } from '@interfaces/IUser';
@@ -53,6 +54,13 @@ describe('AuthService', () => {
         AuthService,
         { provide: HttpClient, useValue: http },
         { provide: Router, useValue: router },
+        {
+          provide: TranslateService,
+          useValue: {
+            instant: (key: string) =>
+              key === 'ERRORS.AUTH.INVALID_CREDENTIALS' ? 'Invalid credentials.' : key,
+          },
+        },
       ],
     });
     service = TestBed.inject(AuthService);
@@ -82,16 +90,28 @@ describe('AuthService', () => {
     expect(service.isAuthenticated()).toBe(true);
   });
 
-  it('login should map 401 to AUTH.ERROR_INVALID_CREDENTIALS without retry', () => {
+  it('login should map 401 to translated invalid credentials without retry', () => {
     http.post.mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' })),
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            statusText: 'Unauthorized',
+            error: {
+              statusCode: 401,
+              error: 'Unauthorized',
+              code: 'AUTH.INVALID_CREDENTIALS',
+              message: 'Credenciais inválidas',
+            },
+          }),
+      ),
     );
 
     service.login({ email: 'admin@admin.com', password: 'wrong' }).subscribe({
       error: () => undefined,
     });
 
-    expect(service.loginError()).toBe('AUTH.ERROR_INVALID_CREDENTIALS');
+    expect(service.loginError()).toBe('Invalid credentials.');
     expect(service.isAuthenticated()).toBe(false);
   });
 

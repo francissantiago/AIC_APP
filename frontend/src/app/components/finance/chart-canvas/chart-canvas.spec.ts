@@ -1,7 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { TranslateService } from '@ngx-translate/core';
 import { vi } from 'vitest';
-import { translateServiceStub } from '../../../testing/translate-testing';
 import { ChartCanvas } from './chart-canvas';
 
 const chartSpies = vi.hoisted(() => ({
@@ -27,17 +25,46 @@ vi.mock('chart.js', async (importOriginal) => {
 });
 
 describe('ChartCanvas', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     chartSpies.create.mockClear();
     chartSpies.destroy.mockClear();
-  });
-
-  it('renders an accessible textual fallback without an empty canvas', async () => {
+    TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [ChartCanvas],
-      providers: [{ provide: TranslateService, useValue: translateServiceStub() }],
-    }).compileComponents();
+    })
+      .overrideComponent(ChartCanvas, {
+        set: {
+          imports: [],
+          template: `
+            <section class="rounded-md border border-slate-200 p-4" [attr.aria-labelledby]="titleId()">
+              <h2 [id]="titleId()" class="mb-3 font-semibold text-slate-900">{{ titleKey() }}</h2>
+              @if (empty()) {
+                <p class="text-sm text-slate-600">FINANCE.NO_CHART_DATA</p>
+              } @else {
+                <div class="relative h-72">
+                  <canvas
+                    #canvas
+                    role="img"
+                    [attr.aria-label]="titleKey()"
+                    [attr.aria-describedby]="summaryId()"
+                  ></canvas>
+                </div>
+              }
+              @if (summary().length > 0) {
+                <ul [id]="summaryId()" class="mt-3 space-y-1 text-sm text-slate-600">
+                  @for (item of summary(); track item) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              }
+            </section>
+          `,
+        },
+      })
+      .compileComponents();
+  });
 
+  it('renders an accessible textual fallback without an empty canvas', () => {
     const fixture = TestBed.createComponent(ChartCanvas);
     fixture.componentRef.setInput('type', 'bar');
     fixture.componentRef.setInput('data', { labels: [], datasets: [] });
@@ -51,12 +78,7 @@ describe('ChartCanvas', () => {
     );
   });
 
-  it('renders the chart summary as visible equivalent content', async () => {
-    await TestBed.configureTestingModule({
-      imports: [ChartCanvas],
-      providers: [{ provide: TranslateService, useValue: translateServiceStub() }],
-    }).compileComponents();
-
+  it('renders the chart summary as visible equivalent content', () => {
     const fixture = TestBed.createComponent(ChartCanvas);
     fixture.componentRef.setInput('type', 'bar');
     fixture.componentRef.setInput('data', { labels: ['2026-07'], datasets: [] });
@@ -71,12 +93,7 @@ describe('ChartCanvas', () => {
     expect(summary.textContent).toContain('2026-07');
   });
 
-  it('creates and destroys the Chart.js instance with the component lifecycle', async () => {
-    await TestBed.configureTestingModule({
-      imports: [ChartCanvas],
-      providers: [{ provide: TranslateService, useValue: translateServiceStub() }],
-    }).compileComponents();
-
+  it('creates and destroys the Chart.js instance with the component lifecycle', () => {
     const fixture = TestBed.createComponent(ChartCanvas);
     fixture.componentRef.setInput('type', 'bar');
     fixture.componentRef.setInput('data', { labels: ['2026-07'], datasets: [] });

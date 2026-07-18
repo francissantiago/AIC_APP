@@ -1,12 +1,11 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  ApiErrorCode,
+  ApiErrorMessage,
+} from '../../common/errors/api-error.types';
+import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -182,7 +181,10 @@ export class MembersService {
       where: { id, congregationId: base.id },
     });
     if (!member) {
-      throw new NotFoundException(`Membro ${id} não encontrado`);
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.MEMBERS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MEMBERS_NOT_FOUND],
+      });
     }
     return member;
   }
@@ -198,7 +200,17 @@ export class MembersService {
         withDeleted: true,
       });
       if (conflict && conflict.id !== excludeId) {
-        throw new ConflictException('email já está em uso');
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.MEMBERS_EMAIL_IN_USE,
+          message: ApiErrorMessage[ApiErrorCode.MEMBERS_EMAIL_IN_USE],
+          details: [
+            {
+              field: 'email',
+              code: ApiErrorCode.MEMBERS_EMAIL_IN_USE,
+              message: ApiErrorMessage[ApiErrorCode.MEMBERS_EMAIL_IN_USE],
+            },
+          ],
+        });
       }
     }
     if (document) {
@@ -207,7 +219,17 @@ export class MembersService {
         withDeleted: true,
       });
       if (conflict && conflict.id !== excludeId) {
-        throw new ConflictException('document já está em uso');
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.MEMBERS_DOCUMENT_IN_USE,
+          message: ApiErrorMessage[ApiErrorCode.MEMBERS_DOCUMENT_IN_USE],
+          details: [
+            {
+              field: 'document',
+              code: ApiErrorCode.MEMBERS_DOCUMENT_IN_USE,
+              message: ApiErrorMessage[ApiErrorCode.MEMBERS_DOCUMENT_IN_USE],
+            },
+          ],
+        });
       }
     }
   }
@@ -221,16 +243,34 @@ export class MembersService {
       withDeleted: true,
     });
     if (conflict && conflict.id !== excludeId) {
-      throw new ConflictException('userId já está vinculado a outro membro');
+      throw new ApiException(HttpStatus.CONFLICT, {
+        code: ApiErrorCode.MEMBERS_USER_ALREADY_LINKED,
+        message: ApiErrorMessage[ApiErrorCode.MEMBERS_USER_ALREADY_LINKED],
+        details: [
+          {
+            field: 'userId',
+            code: ApiErrorCode.MEMBERS_USER_ALREADY_LINKED,
+            message: ApiErrorMessage[ApiErrorCode.MEMBERS_USER_ALREADY_LINKED],
+          },
+        ],
+      });
     }
   }
 
   private async assertUserExists(userId: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new UnprocessableEntityException(
-        `Usuário ${userId} não encontrado`,
-      );
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.MEMBERS_USER_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MEMBERS_USER_NOT_FOUND],
+        details: [
+          {
+            field: 'userId',
+            code: ApiErrorCode.MEMBERS_USER_NOT_FOUND,
+            message: ApiErrorMessage[ApiErrorCode.MEMBERS_USER_NOT_FOUND],
+          },
+        ],
+      });
     }
   }
 }
