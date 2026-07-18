@@ -26,9 +26,9 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../../common/decorators/api-error-responses.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { Roles } from '../../auth/decorators/roles.decorator';
+import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
+import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   CreateVisitorDto,
@@ -39,17 +39,14 @@ import {
 } from '../dto/secretariat.dto';
 import { VisitorsService } from './visitors.service';
 
-const READ_ROLES = ['ADMIN', 'PASTOR', 'SECRETARY'];
-const WRITE_ROLES = ['ADMIN', 'SECRETARY'];
-
 @ApiTags('Secretariat')
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(...READ_ROLES)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('secretariat:read')
 @Controller('secretariat/visitors')
 export class VisitorsController {
   constructor(private readonly visitorsService: VisitorsService) {}
@@ -74,7 +71,7 @@ export class VisitorsController {
   }
 
   @Post()
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('secretariat:write')
   @ApiOperation({ summary: 'Cadastrar visitante' })
   @ApiCreatedResponse({ type: VisitorResponseDto })
   createVisitor(
@@ -85,7 +82,7 @@ export class VisitorsController {
   }
 
   @Patch(':id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('secretariat:write')
   @ApiOperation({ summary: 'Atualizar visitante' })
   @ApiOkResponse({ type: VisitorResponseDto })
   @ApiNotFoundResponse({ description: 'Visitante não encontrado' })
@@ -97,7 +94,7 @@ export class VisitorsController {
   }
 
   @Delete(':id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('secretariat:write')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remover visitante por soft delete' })
   @ApiNoContentResponse({ description: 'Visitante removido' })

@@ -155,6 +155,7 @@ export class UsersService {
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')
       .leftJoinAndSelect('user.roles', 'role')
+      .leftJoinAndSelect('role.permissions', 'permission')
       .where('user.email = :email', { email })
       .getOne();
   }
@@ -168,7 +169,7 @@ export class UsersService {
   private async getUserOrFail(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: { roles: true },
+      relations: { roles: { permissions: true } },
     });
     if (!user) {
       throw new ApiException(HttpStatus.NOT_FOUND, {

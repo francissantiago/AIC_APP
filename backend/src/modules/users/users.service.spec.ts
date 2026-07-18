@@ -27,6 +27,23 @@ describe('UsersService', () => {
     findBy: jest.fn(),
   };
 
+  const membersReadPermission = {
+    id: 5,
+    code: 'members:read',
+    resource: 'members',
+    action: 'read',
+    description: 'Visualizar membros da congregação',
+    createdAt: new Date('2026-07-17T00:00:00Z'),
+    updatedAt: new Date('2026-07-17T00:00:00Z'),
+  };
+
+  const membersWritePermission = {
+    ...membersReadPermission,
+    id: 6,
+    code: 'members:write',
+    action: 'write',
+  };
+
   const memberRole: Role = {
     id: 6,
     code: 'MEMBER',
@@ -34,6 +51,7 @@ describe('UsersService', () => {
     description: 'Acesso básico de membro comum',
     createdAt: new Date('2026-07-17T00:00:00Z'),
     updatedAt: new Date('2026-07-17T00:00:00Z'),
+    permissions: [membersReadPermission, membersWritePermission],
   };
 
   const baseUser = (): User => {
@@ -200,6 +218,40 @@ describe('UsersService', () => {
         ApiException,
       );
       expect(usersRepository.softRemove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('permissions (UserResponseDto.fromEntity)', () => {
+    it('deve deduplicar permissions de múltiplos papéis do mesmo usuário', async () => {
+      const adminRoleWithOverlap: Role = {
+        id: 1,
+        code: 'ADMIN',
+        name: 'Administrador',
+        description: 'Acesso total ao sistema',
+        createdAt: new Date('2026-07-17T00:00:00Z'),
+        updatedAt: new Date('2026-07-17T00:00:00Z'),
+        permissions: [membersReadPermission, membersWritePermission],
+      };
+      const user = baseUser();
+      user.roles = [memberRole, adminRoleWithOverlap];
+      usersRepository.findOne.mockResolvedValue(user);
+
+      const result = await service.findOne(user.id);
+
+      expect(result.permissions).toEqual(
+        expect.arrayContaining(['members:read', 'members:write']),
+      );
+      expect(result.permissions).toHaveLength(2);
+    });
+
+    it('deve retornar permissions vazio quando o usuário não tem papéis com permissões', async () => {
+      const user = baseUser();
+      user.roles = [];
+      usersRepository.findOne.mockResolvedValue(user);
+
+      const result = await service.findOne(user.id);
+
+      expect(result.permissions).toEqual([]);
     });
   });
 

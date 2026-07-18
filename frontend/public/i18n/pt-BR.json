@@ -142,17 +142,50 @@
   "ROLES": {
     "TITLE": "Papéis",
     "CATALOG_TITLE": "Catálogo de níveis de acesso",
+    "LIST_TITLE": "Gestão de papéis",
+    "CREATE_TITLE": "Criar papel",
+    "EDIT_TITLE": "Editar papel",
+    "ACTIONS": "Ações",
     "CODE": "Código",
     "NAME": "Nome",
     "DESCRIPTION": "Descrição",
     "EMPTY": "Nenhum papel encontrado",
     "LOAD_ERROR": "Falha ao carregar papéis",
+    "CONFIRM_DELETE": "Remover este papel?",
+    "SAVE_SUCCESS": "Papel salvo com sucesso",
+    "SAVE_ERROR": "Falha ao salvar papel",
+    "DELETE_SUCCESS": "Papel removido",
+    "DELETE_ERROR": "Falha ao remover papel",
+    "CONFLICT_ERROR": "Código de papel já em uso",
+    "VALIDATION_REQUIRED": "Campo obrigatório",
+    "VALIDATION_CODE": "Use 2–30 caracteres: A–Z, 0–9, underscore; comece com letra",
+    "CODE_HINT": "Código estável usado pelo sistema (não pode ser alterado depois)",
+    "CODE_READONLY": "O código não pode ser alterado",
+    "SYSTEM_ROLE_HINT": "Papel do sistema",
+    "DELETE_BLOCKED_SYSTEM": "Papéis do sistema não podem ser removidos",
+    "DELETE_BLOCKED_ASSIGNED": "Não é possível remover: há usuários vinculados a este papel",
     "CODE_ADMIN": "Administrador",
     "CODE_PASTOR": "Pastor / Líder",
     "CODE_TREASURER": "Tesoureiro",
     "CODE_SECRETARY": "Secretário(a)",
     "CODE_LEADER": "Líder de ministério",
-    "CODE_MEMBER": "Membro"
+    "CODE_MEMBER": "Membro",
+    "PERMISSIONS_TITLE": "Permissões de acesso",
+    "PERMISSIONS_HINT": "Selecione a quais conteúdos este papel pode acessar",
+    "PERMISSIONS_LOAD_ERROR": "Falha ao carregar catálogo de permissões",
+    "PERMISSIONS_EMPTY_HINT": "Nenhuma permissão selecionada — este papel não vai liberar nenhum módulo protegido",
+    "ADMIN_LOCK_HINT": "O papel ADMIN precisa manter sempre \"Gerenciar papéis\" para não perder o acesso a esta tela"
+  },
+  "PERMISSIONS": {
+    "ACTION_READ": "Visualizar",
+    "ACTION_WRITE": "Gerenciar",
+    "RESOURCE_USERS": "Usuários",
+    "RESOURCE_ROLES": "Papéis",
+    "RESOURCE_MEMBERS": "Membros",
+    "RESOURCE_CONGREGATIONS": "Congregação",
+    "RESOURCE_FINANCE": "Finanças",
+    "RESOURCE_ASSETS": "Bens patrimoniais",
+    "RESOURCE_SECRETARIAT": "Secretaria"
   },
   "AUTH": {
     "LOGIN_TITLE": "Entrar",
@@ -427,6 +460,16 @@
       "EMAIL_IN_USE": "Este e-mail já está cadastrado.",
       "USERNAME_IN_USE": "Este nome de usuário já está em uso.",
       "ROLES_NOT_FOUND": "Uma ou mais roles informadas não existem."
+    },
+    "ROLES": {
+      "NOT_FOUND": "Papel não encontrado.",
+      "CODE_IN_USE": "Este código de papel já está em uso.",
+      "SYSTEM_PROTECTED": "Papéis do sistema não podem ser removidos.",
+      "IN_USE": "Não é possível remover: há usuários vinculados a este papel.",
+      "ADMIN_REQUIRES_ROLES_WRITE": "O papel ADMIN não pode perder a permissão de gerenciar papéis."
+    },
+    "PERMISSIONS": {
+      "NOT_FOUND": "Uma ou mais permissões informadas não existem."
     },
     "MEMBERS": {
       "NOT_FOUND": "Membro não encontrado.",

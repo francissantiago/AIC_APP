@@ -37,6 +37,15 @@ export class UserResponseDto {
   @ApiProperty({ type: RoleResponseDto, isArray: true })
   roles!: RoleResponseDto[];
 
+  @ApiProperty({
+    type: String,
+    isArray: true,
+    example: ['finance:read', 'members:write'],
+    description:
+      'Códigos de permissão deduplicados de todos os papéis do usuário',
+  })
+  permissions!: string[];
+
   static fromEntity(user: User): UserResponseDto {
     const dto = new UserResponseDto();
     dto.id = user.id;
@@ -51,6 +60,13 @@ export class UserResponseDto {
     dto.roles = (user.roles ?? []).map((role) =>
       RoleResponseDto.fromEntity(role),
     );
+    const permissionCodes = new Set<string>();
+    for (const role of user.roles ?? []) {
+      for (const permission of role.permissions ?? []) {
+        permissionCodes.add(permission.code);
+      }
+    }
+    dto.permissions = Array.from(permissionCodes);
     return dto;
   }
 }

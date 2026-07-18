@@ -26,9 +26,9 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../../common/decorators/api-error-responses.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { Roles } from '../../auth/decorators/roles.decorator';
+import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
+import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   AttendanceRecordResponseDto,
@@ -39,17 +39,14 @@ import {
 } from '../dto/secretariat.dto';
 import { AttendanceService } from './attendance.service';
 
-const READ_ROLES = ['ADMIN', 'PASTOR', 'SECRETARY'];
-const WRITE_ROLES = ['ADMIN', 'SECRETARY'];
-
 @ApiTags('Secretariat')
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(...READ_ROLES)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('secretariat:read')
 @Controller('secretariat/attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
@@ -74,7 +71,7 @@ export class AttendanceController {
   }
 
   @Post()
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('secretariat:write')
   @ApiOperation({ summary: 'Lançar registro agregado de presença' })
   @ApiCreatedResponse({ type: AttendanceRecordResponseDto })
   createRecord(
@@ -85,7 +82,7 @@ export class AttendanceController {
   }
 
   @Patch(':id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('secretariat:write')
   @ApiOperation({ summary: 'Atualizar registro de presença' })
   @ApiOkResponse({ type: AttendanceRecordResponseDto })
   @ApiNotFoundResponse({ description: 'Registro não encontrado' })
@@ -97,7 +94,7 @@ export class AttendanceController {
   }
 
   @Delete(':id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('secretariat:write')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remover registro de presença por soft delete' })
   @ApiNoContentResponse({ description: 'Registro removido' })

@@ -142,17 +142,50 @@
   "ROLES": {
     "TITLE": "Roles",
     "CATALOG_TITLE": "Access levels catalog",
+    "LIST_TITLE": "Role management",
+    "CREATE_TITLE": "Create role",
+    "EDIT_TITLE": "Edit role",
+    "ACTIONS": "Actions",
     "CODE": "Code",
     "NAME": "Name",
     "DESCRIPTION": "Description",
     "EMPTY": "No roles found",
     "LOAD_ERROR": "Failed to load roles",
+    "CONFIRM_DELETE": "Remove this role?",
+    "SAVE_SUCCESS": "Role saved successfully",
+    "SAVE_ERROR": "Failed to save role",
+    "DELETE_SUCCESS": "Role removed",
+    "DELETE_ERROR": "Failed to remove role",
+    "CONFLICT_ERROR": "Role code already in use",
+    "VALIDATION_REQUIRED": "Required field",
+    "VALIDATION_CODE": "Use 2–30 chars: A–Z, 0–9, underscore; start with a letter",
+    "CODE_HINT": "Stable code used by the system (cannot change later)",
+    "CODE_READONLY": "Code cannot be changed",
+    "SYSTEM_ROLE_HINT": "System role",
+    "DELETE_BLOCKED_SYSTEM": "System roles cannot be removed",
+    "DELETE_BLOCKED_ASSIGNED": "Cannot remove: users are assigned to this role",
     "CODE_ADMIN": "Administrator",
     "CODE_PASTOR": "Pastor / Leader",
     "CODE_TREASURER": "Treasurer",
     "CODE_SECRETARY": "Secretary",
     "CODE_LEADER": "Ministry leader",
-    "CODE_MEMBER": "Member"
+    "CODE_MEMBER": "Member",
+    "PERMISSIONS_TITLE": "Access permissions",
+    "PERMISSIONS_HINT": "Select which content this role can access",
+    "PERMISSIONS_LOAD_ERROR": "Failed to load permission catalog",
+    "PERMISSIONS_EMPTY_HINT": "No permission selected — this role won't unlock any protected module",
+    "ADMIN_LOCK_HINT": "The ADMIN role must always keep \"Manage roles\" to avoid losing access to this screen"
+  },
+  "PERMISSIONS": {
+    "ACTION_READ": "View",
+    "ACTION_WRITE": "Manage",
+    "RESOURCE_USERS": "Users",
+    "RESOURCE_ROLES": "Roles",
+    "RESOURCE_MEMBERS": "Members",
+    "RESOURCE_CONGREGATIONS": "Congregation",
+    "RESOURCE_FINANCE": "Finance",
+    "RESOURCE_ASSETS": "Assets",
+    "RESOURCE_SECRETARIAT": "Secretariat"
   },
   "AUTH": {
     "LOGIN_TITLE": "Sign in",
@@ -427,6 +460,16 @@
       "EMAIL_IN_USE": "This email is already registered.",
       "USERNAME_IN_USE": "This username is already in use.",
       "ROLES_NOT_FOUND": "One or more roles do not exist."
+    },
+    "ROLES": {
+      "NOT_FOUND": "Role not found.",
+      "CODE_IN_USE": "This role code is already in use.",
+      "SYSTEM_PROTECTED": "System roles cannot be removed.",
+      "IN_USE": "Cannot remove: users are assigned to this role.",
+      "ADMIN_REQUIRES_ROLES_WRITE": "The ADMIN role cannot lose the \"manage roles\" permission."
+    },
+    "PERMISSIONS": {
+      "NOT_FOUND": "One or more permissions do not exist."
     },
     "MEMBERS": {
       "NOT_FOUND": "Member not found.",

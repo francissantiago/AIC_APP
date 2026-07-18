@@ -10,7 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FINANCE_READ_ROLES, SECRETARIAT_READ_ROLES, hasAnyRole } from '@guards/role-guard';
+import { hasAnyPermission } from '@guards/role-guard';
 import { AuthService } from '@services/auth-service';
 import { filter } from 'rxjs';
 
@@ -36,13 +36,10 @@ export class SidebarNav {
   readonly financeOpen = signal(this.#router.url.startsWith('/finance'));
   readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
   readonly canViewFinance = computed(() =>
-    hasAnyRole(this.#auth.currentUser()?.roles.map((role) => role.code) ?? [], FINANCE_READ_ROLES),
+    hasAnyPermission(this.#auth.currentUser()?.permissions ?? [], ['finance:read']),
   );
   readonly canViewSecretariat = computed(() =>
-    hasAnyRole(
-      this.#auth.currentUser()?.roles.map((role) => role.code) ?? [],
-      SECRETARIAT_READ_ROLES,
-    ),
+    hasAnyPermission(this.#auth.currentUser()?.permissions ?? [], ['secretariat:read']),
   );
 
   readonly items: readonly SidebarNavItem[] = [

@@ -1,0 +1,166 @@
+<section class="w-full">
+  @if (feedbackKey(); as key) {
+    <p
+      class="mb-4 rounded-md px-3 py-2 text-sm"
+      [class.bg-emerald-50]="key === 'ROLES.SAVE_SUCCESS'"
+      [class.text-emerald-900]="key === 'ROLES.SAVE_SUCCESS'"
+      [class.bg-red-50]="key !== 'ROLES.SAVE_SUCCESS'"
+      [class.text-red-800]="key !== 'ROLES.SAVE_SUCCESS'"
+      role="alert"
+    >
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'ROLES.LOAD_ERROR' | translate }}</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ROLES.CODE' | translate }}</span>
+        <input
+          type="text"
+          formControlName="code"
+          autocomplete="off"
+          class="rounded-md border border-slate-200 px-3 py-2 uppercase focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+          [attr.aria-invalid]="fieldInvalid('code')"
+        />
+        @if (isEditMode()) {
+          <span class="text-xs text-slate-500">{{ 'ROLES.CODE_READONLY' | translate }}</span>
+        } @else {
+          <span class="text-xs text-slate-500">{{ 'ROLES.CODE_HINT' | translate }}</span>
+        }
+        @if (fieldInvalid('code')) {
+          <span class="text-xs text-red-700">
+            @if (form.controls.code.hasError('pattern')) {
+              {{ 'ROLES.VALIDATION_CODE' | translate }}
+            } @else {
+              {{ 'ROLES.VALIDATION_REQUIRED' | translate }}
+            }
+          </span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ROLES.NAME' | translate }}</span>
+        <input
+          type="text"
+          formControlName="name"
+          autocomplete="off"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('name')"
+        />
+        @if (fieldInvalid('name')) {
+          <span class="text-xs text-red-700">{{ 'ROLES.VALIDATION_REQUIRED' | translate }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'ROLES.DESCRIPTION' | translate }}</span>
+        <textarea
+          formControlName="description"
+          rows="3"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('description')"
+        ></textarea>
+        @if (fieldInvalid('description')) {
+          <span class="text-xs text-red-700">{{ 'ROLES.VALIDATION_REQUIRED' | translate }}</span>
+        }
+      </label>
+
+      <fieldset class="rounded-md border border-slate-200 p-3">
+        <legend class="px-1 text-sm font-medium text-slate-800">
+          {{ 'ROLES.PERMISSIONS_TITLE' | translate }}
+        </legend>
+        <p class="mb-3 text-xs text-slate-500">{{ 'ROLES.PERMISSIONS_HINT' | translate }}</p>
+
+        @if (permissionsLoadError()) {
+          <p class="text-sm text-red-700" role="alert">
+            {{ 'ROLES.PERMISSIONS_LOAD_ERROR' | translate }}
+          </p>
+        } @else if (resourceGroups().length === 0) {
+          <p class="text-sm text-slate-600">{{ 'ROLES.PERMISSIONS_EMPTY_HINT' | translate }}</p>
+        } @else {
+          <div class="grid gap-3 sm:grid-cols-2">
+            @for (group of resourceGroups(); track group.resource) {
+              <fieldset class="rounded-md border border-slate-100 p-3">
+                <legend class="text-sm font-medium text-slate-800">
+                  {{ resourceLabelKey(group.resource) | translate }}
+                </legend>
+                <div class="mt-2 flex flex-col gap-2">
+                  @if (group.read) {
+                    <label
+                      [attr.for]="'permission-' + group.read.id"
+                      class="flex items-center gap-2 text-sm text-slate-700"
+                    >
+                      <input
+                        type="checkbox"
+                        [id]="'permission-' + group.read.id"
+                        class="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-400"
+                        [checked]="isPermissionChecked(group.read)"
+                        [disabled]="isPermissionDisabled(group.read)"
+                        (change)="togglePermission(group.read)"
+                      />
+                      {{ actionLabelKey('read') | translate }}
+                    </label>
+                  }
+                  @if (group.write) {
+                    <div class="flex flex-col gap-1">
+                      <label
+                        [attr.for]="'permission-' + group.write.id"
+                        class="flex items-center gap-2 text-sm text-slate-700"
+                      >
+                        <input
+                          type="checkbox"
+                          [id]="'permission-' + group.write.id"
+                          class="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-400 disabled:opacity-60"
+                          [checked]="isPermissionChecked(group.write)"
+                          [disabled]="isPermissionDisabled(group.write)"
+                          (change)="togglePermission(group.write)"
+                        />
+                        {{ actionLabelKey('write') | translate }}
+                      </label>
+                      @if (isPermissionDisabled(group.write)) {
+                        <span class="text-xs text-amber-700">
+                          {{ 'ROLES.ADMIN_LOCK_HINT' | translate }}
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+              </fieldset>
+            }
+          </div>
+        }
+      </fieldset>
+
+      <div class="mt-2 flex flex-wrap gap-3">
+        <button
+          type="submit"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          (click)="cancelled.emit()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

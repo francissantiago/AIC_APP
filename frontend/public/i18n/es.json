@@ -142,17 +142,50 @@
   "ROLES": {
     "TITLE": "Roles",
     "CATALOG_TITLE": "Catálogo de niveles de acceso",
+    "LIST_TITLE": "Gestión de roles",
+    "CREATE_TITLE": "Crear rol",
+    "EDIT_TITLE": "Editar rol",
+    "ACTIONS": "Acciones",
     "CODE": "Código",
     "NAME": "Nombre",
     "DESCRIPTION": "Descripción",
     "EMPTY": "No se encontraron roles",
     "LOAD_ERROR": "Error al cargar roles",
+    "CONFIRM_DELETE": "¿Eliminar este rol?",
+    "SAVE_SUCCESS": "Rol guardado con éxito",
+    "SAVE_ERROR": "Error al guardar el rol",
+    "DELETE_SUCCESS": "Rol eliminado",
+    "DELETE_ERROR": "Error al eliminar el rol",
+    "CONFLICT_ERROR": "El código de rol ya está en uso",
+    "VALIDATION_REQUIRED": "Campo obligatorio",
+    "VALIDATION_CODE": "Use 2–30 caracteres: A–Z, 0–9, guion bajo; empiece con letra",
+    "CODE_HINT": "Código estable usado por el sistema (no se puede cambiar después)",
+    "CODE_READONLY": "El código no se puede cambiar",
+    "SYSTEM_ROLE_HINT": "Rol del sistema",
+    "DELETE_BLOCKED_SYSTEM": "Los roles del sistema no se pueden eliminar",
+    "DELETE_BLOCKED_ASSIGNED": "No se puede eliminar: hay usuarios con este rol",
     "CODE_ADMIN": "Administrador",
     "CODE_PASTOR": "Pastor / Líder",
     "CODE_TREASURER": "Tesorero",
     "CODE_SECRETARY": "Secretario/a",
     "CODE_LEADER": "Líder de ministerio",
-    "CODE_MEMBER": "Miembro"
+    "CODE_MEMBER": "Miembro",
+    "PERMISSIONS_TITLE": "Permisos de acceso",
+    "PERMISSIONS_HINT": "Seleccione a qué contenido este rol puede acceder",
+    "PERMISSIONS_LOAD_ERROR": "Error al cargar el catálogo de permisos",
+    "PERMISSIONS_EMPTY_HINT": "Ningún permiso seleccionado: este rol no desbloqueará ningún módulo protegido",
+    "ADMIN_LOCK_HINT": "El rol ADMIN siempre debe mantener \"Gestionar roles\" para no perder el acceso a esta pantalla"
+  },
+  "PERMISSIONS": {
+    "ACTION_READ": "Ver",
+    "ACTION_WRITE": "Gestionar",
+    "RESOURCE_USERS": "Usuarios",
+    "RESOURCE_ROLES": "Roles",
+    "RESOURCE_MEMBERS": "Miembros",
+    "RESOURCE_CONGREGATIONS": "Congregación",
+    "RESOURCE_FINANCE": "Finanzas",
+    "RESOURCE_ASSETS": "Bienes patrimoniales",
+    "RESOURCE_SECRETARIAT": "Secretaría"
   },
   "AUTH": {
     "LOGIN_TITLE": "Iniciar sesión",
@@ -427,6 +460,16 @@
       "EMAIL_IN_USE": "Este correo ya está registrado.",
       "USERNAME_IN_USE": "Este nombre de usuario ya está en uso.",
       "ROLES_NOT_FOUND": "Una o más roles informadas no existen."
+    },
+    "ROLES": {
+      "NOT_FOUND": "Rol no encontrado.",
+      "CODE_IN_USE": "Este código de rol ya está en uso.",
+      "SYSTEM_PROTECTED": "Los roles del sistema no se pueden eliminar.",
+      "IN_USE": "No se puede eliminar: hay usuarios con este rol.",
+      "ADMIN_REQUIRES_ROLES_WRITE": "El rol ADMIN no puede perder el permiso de \"gestionar roles\"."
+    },
+    "PERMISSIONS": {
+      "NOT_FOUND": "Uno o más permisos no existen."
     },
     "MEMBERS": {
       "NOT_FOUND": "Miembro no encontrado.",

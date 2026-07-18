@@ -58,4 +58,59 @@ describe('SidebarNav', () => {
     ]);
     expect(component.items.some((item) => item.route.includes('example'))).toBe(false);
   });
+
+  it('canViewFinance is false without finance:read permission', () => {
+    expect(component.canViewFinance()).toBe(false);
+  });
+
+  it('canViewSecretariat is false without secretariat:read permission', () => {
+    expect(component.canViewSecretariat()).toBe(false);
+  });
+});
+
+describe('SidebarNav with permissions', () => {
+  let component: SidebarNav;
+  let fixture: ComponentFixture<SidebarNav>;
+  let currentUser: ReturnType<typeof signal<{ permissions: string[] } | null>>;
+
+  beforeEach(async () => {
+    currentUser = signal({ permissions: ['finance:read', 'secretariat:read'] });
+
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [SidebarNav],
+      providers: [
+        {
+          provide: Router,
+          useValue: {
+            url: '/users',
+            events: new Subject().asObservable(),
+            navigateByUrl: vi.fn(),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: { currentUser },
+        },
+        { provide: TranslateService, useValue: translateServiceStub() },
+        { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
+      ],
+    })
+      .overrideComponent(SidebarNav, {
+        set: { template: '', imports: [] },
+      })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(SidebarNav);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('canViewFinance is true when user has finance:read', () => {
+    expect(component.canViewFinance()).toBe(true);
+  });
+
+  it('canViewSecretariat is true when user has secretariat:read', () => {
+    expect(component.canViewSecretariat()).toBe(true);
+  });
 });

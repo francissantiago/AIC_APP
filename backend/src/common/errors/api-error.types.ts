@@ -34,6 +34,14 @@ export const ApiErrorCode = {
   USERS_USERNAME_IN_USE: 'USERS.USERNAME_IN_USE',
   USERS_ROLES_NOT_FOUND: 'USERS.ROLES_NOT_FOUND',
 
+  ROLES_NOT_FOUND: 'ROLES.NOT_FOUND',
+  ROLES_CODE_IN_USE: 'ROLES.CODE_IN_USE',
+  ROLES_SYSTEM_PROTECTED: 'ROLES.SYSTEM_PROTECTED',
+  ROLES_IN_USE: 'ROLES.IN_USE',
+  ROLES_ADMIN_REQUIRES_ROLES_WRITE: 'ROLES.ADMIN_REQUIRES_ROLES_WRITE',
+
+  PERMISSIONS_NOT_FOUND: 'PERMISSIONS.NOT_FOUND',
+
   MEMBERS_NOT_FOUND: 'MEMBERS.NOT_FOUND',
   MEMBERS_EMAIL_IN_USE: 'MEMBERS.EMAIL_IN_USE',
   MEMBERS_DOCUMENT_IN_USE: 'MEMBERS.DOCUMENT_IN_USE',
@@ -84,6 +92,16 @@ export const ApiErrorMessage = {
   [ApiErrorCode.USERS_USERNAME_IN_USE]: 'Este nome de usuário já está em uso.',
   [ApiErrorCode.USERS_ROLES_NOT_FOUND]:
     'Uma ou mais roles informadas não existem.',
+  [ApiErrorCode.ROLES_NOT_FOUND]: 'Papel não encontrado.',
+  [ApiErrorCode.ROLES_CODE_IN_USE]: 'Este código de papel já está em uso.',
+  [ApiErrorCode.ROLES_SYSTEM_PROTECTED]:
+    'Papéis do sistema não podem ser removidos.',
+  [ApiErrorCode.ROLES_IN_USE]:
+    'Não é possível remover: há usuários vinculados a este papel.',
+  [ApiErrorCode.ROLES_ADMIN_REQUIRES_ROLES_WRITE]:
+    'O papel ADMIN não pode perder a permissão de gerenciar papéis (roles:write).',
+  [ApiErrorCode.PERMISSIONS_NOT_FOUND]:
+    'Uma ou mais permissões informadas não existem.',
   [ApiErrorCode.MEMBERS_NOT_FOUND]: 'Membro não encontrado.',
   [ApiErrorCode.MEMBERS_EMAIL_IN_USE]: 'Este e-mail já está cadastrado.',
   [ApiErrorCode.MEMBERS_DOCUMENT_IN_USE]: 'Este documento já está cadastrado.',

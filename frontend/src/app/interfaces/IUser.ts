@@ -16,4 +16,6 @@ export interface IUser {
   createdAt: string;
   updatedAt: string;
   roles: IRole[];
+  /** Códigos de permissão deduplicados de todos os papéis do usuário. */
+  permissions: string[];
 }

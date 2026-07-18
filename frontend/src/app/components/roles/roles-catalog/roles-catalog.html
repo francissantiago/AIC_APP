@@ -1,8 +1,67 @@
 <section class="w-full">
-  <div class="mb-4">
-    <h1 class="text-xl font-semibold text-slate-900">{{ 'ROLES.CATALOG_TITLE' | translate }}</h1>
-    <p class="text-sm text-slate-600">{{ 'ROLES.TITLE' | translate }}</p>
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">{{ 'ROLES.LIST_TITLE' | translate }}</h1>
+      <p class="text-sm text-slate-600">{{ 'ROLES.TITLE' | translate }}</p>
+    </div>
+    @if (canMutate()) {
+      <button
+        type="button"
+        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        (click)="openCreate()"
+      >
+        {{ 'COMMON.CREATE' | translate }}
+      </button>
+    }
   </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="(editingId() ? 'ROLES.EDIT_TITLE' : 'ROLES.CREATE_TITLE') | translate"
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-role-form [roleId]="editingId()" (saved)="afterSave()" (cancelled)="closeForm()" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'ROLES.CONFIRM_DELETE' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
 
   @if (loading()) {
     <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
@@ -18,14 +77,57 @@
             <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.CODE' | translate }}</th>
             <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.NAME' | translate }}</th>
             <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.DESCRIPTION' | translate }}</th>
+            @if (canMutate()) {
+              <th scope="col" class="px-3 py-2 font-medium">{{ 'ROLES.ACTIONS' | translate }}</th>
+            }
           </tr>
         </thead>
         <tbody>
           @for (role of roles(); track role.id) {
             <tr class="border-t border-slate-100">
-              <td class="px-3 py-2 font-medium text-slate-900">{{ role.code }}</td>
-              <td class="px-3 py-2 text-slate-800">{{ roleLabel(role) }}</td>
+              <td class="px-3 py-2 font-medium text-slate-900">
+                <span class="inline-flex flex-wrap items-center gap-2">
+                  {{ role.code }}
+                  @if (isSystem(role)) {
+                    <span
+                      class="rounded bg-slate-200 px-1.5 py-0.5 text-xs font-normal text-slate-700"
+                    >
+                      {{ 'ROLES.SYSTEM_ROLE_HINT' | translate }}
+                    </span>
+                  }
+                </span>
+              </td>
+              <td class="px-3 py-2 text-slate-800">
+                <span class="inline-flex flex-wrap items-center gap-2">
+                  {{ roleLabel(role) }}
+                  <span class="rounded bg-sky-100 px-1.5 py-0.5 text-xs font-medium text-sky-800">
+                    {{ role.permissions.length }} {{ 'ROLES.PERMISSIONS_TITLE' | translate }}
+                  </span>
+                </span>
+              </td>
               <td class="px-3 py-2 text-slate-600">{{ role.description || '' }}</td>
+              @if (canMutate()) {
+                <td class="px-3 py-2">
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openEdit(role.id)"
+                    >
+                      {{ 'COMMON.EDIT' | translate }}
+                    </button>
+                    @if (!isSystem(role)) {
+                      <button
+                        type="button"
+                        class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                        (click)="askDelete(role.id)"
+                      >
+                        {{ 'COMMON.DELETE' | translate }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              }
             </tr>
           }
         </tbody>

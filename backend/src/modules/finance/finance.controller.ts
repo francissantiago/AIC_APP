@@ -32,9 +32,9 @@ import {
 import type { Response } from 'express';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import {
   CashFlowCsvQueryDto,
@@ -54,17 +54,14 @@ import {
 } from './dto/finance.dto';
 import { FinanceService } from './finance.service';
 
-const READ_ROLES = ['ADMIN', 'TREASURER', 'PASTOR'];
-const WRITE_ROLES = ['ADMIN', 'TREASURER'];
-
 @ApiTags('finance')
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(...READ_ROLES)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('finance:read')
 @Controller('finance')
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
@@ -118,7 +115,7 @@ export class FinanceController {
   }
 
   @Post('categories')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('finance:write')
   @ApiOperation({ summary: 'Criar categoria financeira' })
   @ApiCreatedResponse({ type: FinancialCategoryResponseDto })
   @ApiConflictResponse({ description: 'Nome já existe para o mesmo tipo' })
@@ -129,7 +126,7 @@ export class FinanceController {
   }
 
   @Patch('categories/:id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('finance:write')
   @ApiOperation({ summary: 'Renomear, ativar ou desativar categoria' })
   @ApiOkResponse({ type: FinancialCategoryResponseDto })
   @ApiNotFoundResponse({ description: 'Categoria não encontrada' })
@@ -164,7 +161,7 @@ export class FinanceController {
   }
 
   @Post('entries')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('finance:write')
   @ApiOperation({ summary: 'Criar lançamento financeiro realizado' })
   @ApiCreatedResponse({ type: FinancialEntryResponseDto })
   @ApiNotFoundResponse({ description: 'Categoria não encontrada' })
@@ -179,7 +176,7 @@ export class FinanceController {
   }
 
   @Patch('entries/:id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('finance:write')
   @ApiOperation({ summary: 'Atualizar lançamento financeiro' })
   @ApiOkResponse({ type: FinancialEntryResponseDto })
   @ApiNotFoundResponse({
@@ -196,7 +193,7 @@ export class FinanceController {
   }
 
   @Delete('entries/:id')
-  @Roles(...WRITE_ROLES)
+  @RequirePermission('finance:write')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remover lançamento por soft delete' })
   @ApiNoContentResponse({ description: 'Lançamento removido' })

@@ -1,7 +1,11 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@guards/auth-guard';
 import { guestGuard } from '@guards/guest-guard';
-import { financeRoleGuard, secretariatRoleGuard } from '@guards/role-guard';
+import {
+  assetsPermissionGuard,
+  financePermissionGuard,
+  secretariatPermissionGuard,
+} from '@guards/role-guard';
 
 export const routes: Routes = [
   {
@@ -78,7 +82,7 @@ export const routes: Routes = [
       },
       {
         path: 'finance',
-        canActivate: [financeRoleGuard],
+        canActivate: [financePermissionGuard],
         loadComponent: () =>
           import('@components/finance/financial-dashboard/financial-dashboard').then(
             (m) => m.FinancialDashboard,
@@ -86,7 +90,7 @@ export const routes: Routes = [
       },
       {
         path: 'finance/entries',
-        canActivate: [financeRoleGuard],
+        canActivate: [financePermissionGuard],
         loadComponent: () =>
           import('@components/finance/financial-entries/financial-entries').then(
             (m) => m.FinancialEntries,
@@ -94,13 +98,13 @@ export const routes: Routes = [
       },
       {
         path: 'finance/assets',
-        canActivate: [financeRoleGuard],
+        canActivate: [assetsPermissionGuard],
         loadComponent: () =>
           import('@components/assets/assets-list/assets-list').then((m) => m.AssetsList),
       },
       {
         path: 'finance/reports',
-        canActivate: [financeRoleGuard],
+        canActivate: [financePermissionGuard],
         loadComponent: () =>
           import('@components/finance/financial-reports/financial-reports').then(
             (m) => m.FinancialReports,
@@ -108,7 +112,7 @@ export const routes: Routes = [
       },
       {
         path: 'secretariat',
-        canActivate: [secretariatRoleGuard],
+        canActivate: [secretariatPermissionGuard],
         loadComponent: () =>
           import('@components/secretariat/secretariat-dashboard/secretariat-dashboard').then(
             (m) => m.SecretariatDashboard,
@@ -116,7 +120,7 @@ export const routes: Routes = [
       },
       {
         path: 'secretariat/agenda',
-        canActivate: [secretariatRoleGuard],
+        canActivate: [secretariatPermissionGuard],
         loadComponent: () =>
           import('@components/secretariat/agenda-calendar/agenda-calendar').then(
             (m) => m.AgendaCalendar,
@@ -124,13 +128,13 @@ export const routes: Routes = [
       },
       {
         path: 'secretariat/visitors',
-        canActivate: [secretariatRoleGuard],
+        canActivate: [secretariatPermissionGuard],
         loadComponent: () =>
           import('@components/secretariat/visitors-list/visitors-list').then((m) => m.VisitorsList),
       },
       {
         path: 'secretariat/attendance',
-        canActivate: [secretariatRoleGuard],
+        canActivate: [secretariatPermissionGuard],
         loadComponent: () =>
           import('@components/secretariat/attendance-list/attendance-list').then(
             (m) => m.AttendanceList,
@@ -138,7 +142,7 @@ export const routes: Routes = [
       },
       {
         path: 'secretariat/documents',
-        canActivate: [secretariatRoleGuard],
+        canActivate: [secretariatPermissionGuard],
         loadComponent: () =>
           import('@components/secretariat/documents-list/documents-list').then(
             (m) => m.DocumentsList,
