@@ -7,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CalendarEventType } from '../../enums/secretariat.enums';
+import {
+  CalendarEventType,
+  CalendarRecurrenceFrequency,
+} from '../../enums/secretariat.enums';
 
 @Entity({ name: 'calendar_events' })
 @Index('IDX_calendar_events_congregation_starts_at', [
@@ -15,6 +18,11 @@ import { CalendarEventType } from '../../enums/secretariat.enums';
   'startsAt',
 ])
 @Index('IDX_calendar_events_congregation_type', ['congregationId', 'type'])
+@Index('IDX_calendar_events_congregation_recurrence', [
+  'congregationId',
+  'recurrenceFrequency',
+  'startsAt',
+])
 export class CalendarEvent {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -45,6 +53,20 @@ export class CalendarEvent {
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;
+
+  @Column({
+    name: 'recurrence_frequency',
+    type: 'enum',
+    enum: CalendarRecurrenceFrequency,
+    default: CalendarRecurrenceFrequency.NONE,
+  })
+  recurrenceFrequency!: CalendarRecurrenceFrequency;
+
+  @Column({ name: 'recurrence_interval', type: 'int', default: 1 })
+  recurrenceInterval!: number;
+
+  @Column({ name: 'recurrence_until', type: 'date', nullable: true })
+  recurrenceUntil!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;

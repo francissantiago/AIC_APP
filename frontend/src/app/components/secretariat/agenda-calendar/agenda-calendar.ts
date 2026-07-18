@@ -25,7 +25,12 @@ import {
   DateAdapter,
   provideCalendar,
 } from 'angular-calendar';
-import { CALENDAR_EVENT_TYPES, CalendarEventType } from '@enums/secretariat';
+import {
+  CALENDAR_EVENT_TYPES,
+  CALENDAR_RECURRENCE_FREQUENCIES,
+  CalendarEventType,
+  CalendarRecurrenceFrequency,
+} from '@enums/secretariat';
 import { SECRETARIAT_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
 import { ICalendarEvent } from '@interfaces/ISecretariat';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -178,6 +183,44 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
                 formControlName="description"
               ></textarea>
             </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.RECURRENCE' | translate }}</span>
+              <select
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="recurrenceFrequency"
+              >
+                @for (frequency of recurrenceFrequencies; track frequency) {
+                  <option [value]="frequency">
+                    {{ recurrenceLabel(frequency) | translate }}
+                  </option>
+                }
+              </select>
+            </label>
+            @if (form.controls.recurrenceFrequency.value !== recurrenceNone) {
+              <label class="flex flex-col gap-1 text-sm text-slate-700">
+                <span>{{ 'SECRETARIAT.RECURRENCE_INTERVAL' | translate }}</span>
+                <input
+                  class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                  type="number"
+                  min="1"
+                  max="30"
+                  formControlName="recurrenceInterval"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-sm text-slate-700">
+                <span>{{ 'SECRETARIAT.RECURRENCE_UNTIL' | translate }}</span>
+                <input
+                  class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                  type="date"
+                  formControlName="recurrenceUntil"
+                />
+              </label>
+            }
+            @if (editing()?.isRecurring) {
+              <p class="text-sm text-slate-600 md:col-span-2" role="status">
+                {{ 'SECRETARIAT.RECURRENCE_EDIT_HINT' | translate }}
+              </p>
+            }
             @if (saveError()) {
               <p role="alert" class="text-sm text-red-700 md:col-span-2">
                 {{ 'SECRETARIAT.SAVE_ERROR' | translate }}
@@ -195,7 +238,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
                 <button
                   class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                   type="button"
-                  (click)="pendingDelete.set(editing()!.id)"
+                  (click)="pendingDelete.set(editing()!.seriesId)"
                 >
                   {{ 'COMMON.DELETE' | translate }}
                 </button>
@@ -219,7 +262,12 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
           class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
         >
           <p id="event-delete-confirmation" class="font-medium">
-            {{ 'SECRETARIAT.CONFIRM_DELETE_EVENT' | translate }}
+            {{
+              (editing()?.isRecurring
+                ? 'SECRETARIAT.CONFIRM_DELETE_SERIES'
+                : 'SECRETARIAT.CONFIRM_DELETE_EVENT'
+              ) | translate
+            }}
           </p>
           <div class="mt-3 flex gap-2">
             <button
@@ -370,6 +418,8 @@ export class AgendaCalendar implements OnInit {
 
   readonly calendarView = CalendarView;
   readonly eventTypes = CALENDAR_EVENT_TYPES;
+  readonly recurrenceFrequencies = CALENDAR_RECURRENCE_FREQUENCIES;
+  readonly recurrenceNone = CalendarRecurrenceFrequency.NONE;
 
   readonly view = signal<CalendarView>(CalendarView.Month);
   readonly viewDate = signal(new Date());
@@ -407,6 +457,14 @@ export class AgendaCalendar implements OnInit {
     endsAt: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     location: new FormControl('', { nonNullable: true }),
     description: new FormControl('', { nonNullable: true }),
+    recurrenceFrequency: new FormControl(CalendarRecurrenceFrequency.NONE, {
+      nonNullable: true,
+    }),
+    recurrenceInterval: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.min(1), Validators.max(30)],
+    }),
+    recurrenceUntil: new FormControl('', { nonNullable: true }),
   });
 
   readonly rangeInvalid = computed(() => {
@@ -441,22 +499,52 @@ export class AgendaCalendar implements OnInit {
       endsAt: this.#toLocalInput(end),
       location: '',
       description: '',
+      recurrenceFrequency: CalendarRecurrenceFrequency.NONE,
+      recurrenceInterval: 1,
+      recurrenceUntil: '',
     });
     this.showForm.set(true);
   }
 
   openEdit(event: ICalendarEvent): void {
-    this.editing.set(event);
-    this.form.reset({
-      title: event.title,
-      type: event.type,
-      allDay: event.allDay,
-      startsAt: this.#toLocalInput(new Date(event.startsAt)),
-      endsAt: this.#toLocalInput(new Date(event.endsAt)),
-      location: event.location ?? '',
-      description: event.description ?? '',
-    });
-    this.showForm.set(true);
+    const seriesId = event.seriesId || event.id;
+    this.#secretariat
+      .calendarEvent(seriesId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (master) => {
+          this.editing.set(master);
+          this.form.reset({
+            title: master.title,
+            type: master.type,
+            allDay: master.allDay,
+            startsAt: this.#toLocalInput(new Date(master.startsAt)),
+            endsAt: this.#toLocalInput(new Date(master.endsAt)),
+            location: master.location ?? '',
+            description: master.description ?? '',
+            recurrenceFrequency: master.recurrenceFrequency,
+            recurrenceInterval: master.recurrenceInterval || 1,
+            recurrenceUntil: master.recurrenceUntil ?? '',
+          });
+          this.showForm.set(true);
+        },
+        error: () => {
+          this.editing.set(event);
+          this.form.reset({
+            title: event.title,
+            type: event.type,
+            allDay: event.allDay,
+            startsAt: this.#toLocalInput(new Date(event.startsAt)),
+            endsAt: this.#toLocalInput(new Date(event.endsAt)),
+            location: event.location ?? '',
+            description: event.description ?? '',
+            recurrenceFrequency: event.recurrenceFrequency,
+            recurrenceInterval: event.recurrenceInterval || 1,
+            recurrenceUntil: event.recurrenceUntil ?? '',
+          });
+          this.showForm.set(true);
+        },
+      });
   }
 
   closeForm(): void {
@@ -498,9 +586,16 @@ export class AgendaCalendar implements OnInit {
       endsAt: new Date(v.endsAt).toISOString(),
       location: v.location || null,
       description: v.description || null,
+      recurrenceFrequency: v.recurrenceFrequency,
+      recurrenceInterval: Number(v.recurrenceInterval) || 1,
+      recurrenceUntil:
+        v.recurrenceFrequency === CalendarRecurrenceFrequency.NONE
+          ? null
+          : v.recurrenceUntil || null,
     };
-    const request = this.editing()
-      ? this.#secretariat.updateCalendarEvent(this.editing()!.id, payload)
+    const seriesId = this.editing()?.seriesId ?? this.editing()?.id;
+    const request = seriesId
+      ? this.#secretariat.updateCalendarEvent(seriesId, payload)
       : this.#secretariat.createCalendarEvent(payload);
     this.saving.set(true);
     this.saveError.set(false);
@@ -518,8 +613,12 @@ export class AgendaCalendar implements OnInit {
   }
 
   confirmDelete(id: string): void {
+    const seriesId =
+      this.editing()?.seriesId ??
+      this.events().find((event) => event.id === id || event.seriesId === id)?.seriesId ??
+      id;
     this.#secretariat
-      .removeCalendarEvent(id)
+      .removeCalendarEvent(seriesId)
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: () => {
@@ -533,6 +632,10 @@ export class AgendaCalendar implements OnInit {
 
   typeLabel(type: CalendarEventType): string {
     return `SECRETARIAT.EVENT_TYPE_${type.toUpperCase()}`;
+  }
+
+  recurrenceLabel(frequency: CalendarRecurrenceFrequency): string {
+    return `SECRETARIAT.RECURRENCE_${frequency.toUpperCase()}`;
   }
 
   #load(view: CalendarView, date: Date): void {

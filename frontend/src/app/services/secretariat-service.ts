@@ -44,6 +44,10 @@ export class SecretariatService {
     return this.#get<IPaginatedCalendarEvents>('calendar-events', query);
   }
 
+  calendarEvent(id: string): Observable<ICalendarEvent> {
+    return this.#get<ICalendarEvent>(`calendar-events/${id}`, {});
+  }
+
   createCalendarEvent(body: ICreateCalendarEvent): Observable<ICalendarEvent> {
     return this.#request(this.#http.post<ICalendarEvent>(`${this.#apiUrl}/calendar-events`, body));
   }

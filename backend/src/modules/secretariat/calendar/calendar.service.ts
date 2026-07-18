@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { CongregationsService } from '../../congregations/congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
@@ -15,6 +15,11 @@ import {
   QueryCalendarEventsDto,
   UpdateCalendarEventDto,
 } from '../dto/secretariat.dto';
+import { CalendarRecurrenceFrequency } from '../enums/secretariat.enums';
+import {
+  expandCalendarEvent,
+  ExpandedCalendarOccurrence,
+} from './calendar-recurrence.util';
 import { CalendarEvent } from './entities/calendar-event.entity';
 
 @Injectable()
@@ -35,6 +40,7 @@ export class CalendarService {
     const startsAt = new Date(dto.startsAt);
     const endsAt = new Date(dto.endsAt);
     this.validateRange(startsAt, endsAt);
+    const recurrence = this.normalizeRecurrence(dto, startsAt);
     const event = this.calendarEventsRepository.create({
       congregationId,
       createdByUserId: user.id,
@@ -45,34 +51,69 @@ export class CalendarService {
       allDay: dto.allDay,
       location: this.nullableText(dto.location),
       description: this.nullableText(dto.description),
+      ...recurrence,
     });
     const saved = await this.calendarEventsRepository.save(event);
     this.logger.log(`Evento de agenda criado: ${saved.id}`);
-    return this.toDto(saved);
+    return this.toMasterDto(saved);
   }
 
   async findEvents(
     query: QueryCalendarEventsDto,
   ): Promise<PaginatedCalendarEventsResponseDto> {
     const congregationId = await this.getCongregationId();
+    const rangeFrom = query.from
+      ? new Date(query.from)
+      : new Date('1970-01-01T00:00:00.000Z');
+    const rangeTo = query.to
+      ? new Date(query.to)
+      : new Date('2999-12-31T23:59:59.999Z');
+
     const qb = this.calendarEventsRepository
       .createQueryBuilder('event')
       .where('event.congregationId = :congregationId', { congregationId });
-    if (query.from) {
-      qb.andWhere('event.endsAt >= :from', { from: query.from });
-    }
-    if (query.to) {
-      qb.andWhere('event.startsAt <= :to', { to: query.to });
-    }
+
+    qb.andWhere(
+      new Brackets((nested) => {
+        nested
+          .where(
+            `(event.recurrenceFrequency = :none
+              AND event.endsAt >= :from
+              AND event.startsAt <= :to)`,
+            {
+              none: CalendarRecurrenceFrequency.NONE,
+              from: rangeFrom.toISOString(),
+              to: rangeTo.toISOString(),
+            },
+          )
+          .orWhere(
+            `(event.recurrenceFrequency != :none
+              AND event.startsAt <= :to
+              AND (event.recurrenceUntil IS NULL OR event.recurrenceUntil >= :fromDate))`,
+            {
+              none: CalendarRecurrenceFrequency.NONE,
+              to: rangeTo.toISOString(),
+              fromDate: this.toIsoDate(rangeFrom),
+            },
+          );
+      }),
+    );
+
     if (query.type) {
       qb.andWhere('event.type = :type', { type: query.type });
     }
-    qb.orderBy('event.startsAt', 'ASC')
-      .skip((query.page - 1) * query.limit)
-      .take(query.limit);
-    const [events, total] = await qb.getManyAndCount();
+
+    const masters = await qb.orderBy('event.startsAt', 'ASC').getMany();
+    const expanded = masters
+      .flatMap((event) => expandCalendarEvent(event, rangeFrom, rangeTo))
+      .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+
+    const total = expanded.length;
+    const start = (query.page - 1) * query.limit;
+    const pageItems = expanded.slice(start, start + query.limit);
+
     return {
-      data: events.map(this.toDto),
+      data: pageItems.map((item) => this.toOccurrenceDto(item)),
       total,
       page: query.page,
       limit: query.limit,
@@ -81,7 +122,7 @@ export class CalendarService {
 
   async findEvent(id: string): Promise<CalendarEventResponseDto> {
     const congregationId = await this.getCongregationId();
-    return this.toDto(await this.getEventOrFail(id, congregationId));
+    return this.toMasterDto(await this.getEventOrFail(id, congregationId));
   }
 
   async updateEvent(
@@ -106,9 +147,31 @@ export class CalendarService {
     if (dto.description !== undefined) {
       event.description = this.nullableText(dto.description);
     }
+    if (
+      dto.recurrenceFrequency !== undefined ||
+      dto.recurrenceInterval !== undefined ||
+      dto.recurrenceUntil !== undefined
+    ) {
+      const recurrence = this.normalizeRecurrence(
+        {
+          recurrenceFrequency:
+            dto.recurrenceFrequency ?? event.recurrenceFrequency,
+          recurrenceInterval:
+            dto.recurrenceInterval ?? event.recurrenceInterval,
+          recurrenceUntil:
+            dto.recurrenceUntil === undefined
+              ? event.recurrenceUntil
+              : dto.recurrenceUntil,
+        },
+        event.startsAt,
+      );
+      event.recurrenceFrequency = recurrence.recurrenceFrequency;
+      event.recurrenceInterval = recurrence.recurrenceInterval;
+      event.recurrenceUntil = recurrence.recurrenceUntil;
+    }
     const saved = await this.calendarEventsRepository.save(event);
     this.logger.log(`Evento de agenda atualizado: ${saved.id}`);
-    return this.toDto(saved);
+    return this.toMasterDto(saved);
   }
 
   async removeEvent(id: string): Promise<void> {
@@ -142,25 +205,88 @@ export class CalendarService {
     }
   }
 
+  private normalizeRecurrence(
+    dto: {
+      recurrenceFrequency?: CalendarRecurrenceFrequency;
+      recurrenceInterval?: number;
+      recurrenceUntil?: string | null;
+    },
+    startsAt: Date,
+  ): {
+    recurrenceFrequency: CalendarRecurrenceFrequency;
+    recurrenceInterval: number;
+    recurrenceUntil: string | null;
+  } {
+    const frequency =
+      dto.recurrenceFrequency ?? CalendarRecurrenceFrequency.NONE;
+    if (frequency === CalendarRecurrenceFrequency.NONE) {
+      return {
+        recurrenceFrequency: CalendarRecurrenceFrequency.NONE,
+        recurrenceInterval: 1,
+        recurrenceUntil: null,
+      };
+    }
+
+    const interval = Math.max(1, dto.recurrenceInterval ?? 1);
+    const until = dto.recurrenceUntil?.trim() || null;
+    if (until && until < this.toIsoDate(startsAt)) {
+      throw new BadRequestException(
+        'recurrence_until deve ser posterior ou igual à data de início',
+      );
+    }
+    return {
+      recurrenceFrequency: frequency,
+      recurrenceInterval: interval,
+      recurrenceUntil: until,
+    };
+  }
+
   private nullableText(value: string | null | undefined): string | null {
     const normalized = value?.trim();
     return normalized ? normalized : null;
   }
 
-  private readonly toDto = (
-    event: CalendarEvent,
-  ): CalendarEventResponseDto => ({
-    id: event.id,
-    congregationId: event.congregationId,
-    createdByUserId: event.createdByUserId,
-    title: event.title,
-    type: event.type,
-    startsAt: event.startsAt,
-    endsAt: event.endsAt,
-    allDay: Boolean(event.allDay),
-    location: event.location,
-    description: event.description,
-    createdAt: event.createdAt,
-    updatedAt: event.updatedAt,
-  });
+  private toIsoDate(value: Date): string {
+    const year = value.getUTCFullYear();
+    const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(value.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private toMasterDto(event: CalendarEvent): CalendarEventResponseDto {
+    return this.toOccurrenceDto({
+      seriesId: event.id,
+      occurrenceId: event.id,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      event,
+    });
+  }
+
+  private toOccurrenceDto(
+    item: ExpandedCalendarOccurrence,
+  ): CalendarEventResponseDto {
+    const { event } = item;
+    const frequency =
+      event.recurrenceFrequency ?? CalendarRecurrenceFrequency.NONE;
+    return {
+      id: item.occurrenceId,
+      seriesId: item.seriesId,
+      congregationId: event.congregationId,
+      createdByUserId: event.createdByUserId,
+      title: event.title,
+      type: event.type,
+      startsAt: item.startsAt,
+      endsAt: item.endsAt,
+      allDay: Boolean(event.allDay),
+      location: event.location,
+      description: event.description,
+      recurrenceFrequency: frequency,
+      recurrenceInterval: event.recurrenceInterval ?? 1,
+      recurrenceUntil: event.recurrenceUntil,
+      isRecurring: frequency !== CalendarRecurrenceFrequency.NONE,
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
+    };
+  }
 }

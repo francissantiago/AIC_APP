@@ -6,6 +6,13 @@ export enum CalendarEventType {
   OTHER = 'other',
 }
 
+export enum CalendarRecurrenceFrequency {
+  NONE = 'none',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+}
+
 export enum AttendanceEventType {
   SERVICE = 'service',
   MEETING = 'meeting',

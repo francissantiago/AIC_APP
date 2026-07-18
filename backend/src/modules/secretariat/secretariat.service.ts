@@ -1,10 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { CongregationsService } from '../congregations/congregations.service';
 import { Member } from '../members/entities/member.entity';
 import { AttendanceService } from './attendance/attendance.service';
 import { AttendanceRecord } from './attendance/entities/attendance-record.entity';
+import {
+  expandCalendarEvent,
+  ExpandedCalendarOccurrence,
+} from './calendar/calendar-recurrence.util';
 import { CalendarEvent } from './calendar/entities/calendar-event.entity';
 import {
   BirthdayDto,
@@ -12,9 +16,11 @@ import {
   UpcomingEventDto,
 } from './dto/secretariat.dto';
 import { SecretariatDocument } from './documents/entities/secretariat-document.entity';
+import { CalendarRecurrenceFrequency } from './enums/secretariat.enums';
 import { Visitor } from './visitors/entities/visitor.entity';
 
 const UPCOMING_EVENTS_LIMIT = 5;
+const UPCOMING_WINDOW_DAYS = 60;
 const BIRTHDAY_WINDOW_DAYS = 7;
 const MONTHLY_SERIES_MONTHS = 6;
 
@@ -80,31 +86,65 @@ export class SecretariatService {
     congregationId: string,
     now: Date,
   ): Promise<number> {
-    return this.calendarEventsRepository
-      .createQueryBuilder('event')
-      .where('event.congregationId = :congregationId', { congregationId })
-      .andWhere('event.startsAt >= :now', { now })
-      .getCount();
+    return (await this.collectUpcomingOccurrences(congregationId, now)).length;
   }
 
   private async findUpcomingEvents(
     congregationId: string,
     now: Date,
   ): Promise<UpcomingEventDto[]> {
-    const events = await this.calendarEventsRepository
+    return (await this.collectUpcomingOccurrences(congregationId, now))
+      .slice(0, UPCOMING_EVENTS_LIMIT)
+      .map((item) => ({
+        id: item.occurrenceId,
+        title: item.event.title,
+        type: item.event.type,
+        startsAt: item.startsAt,
+        location: item.event.location,
+      }));
+  }
+
+  private async collectUpcomingOccurrences(
+    congregationId: string,
+    now: Date,
+  ): Promise<ExpandedCalendarOccurrence[]> {
+    const rangeTo = new Date(now.getTime());
+    rangeTo.setUTCDate(rangeTo.getUTCDate() + UPCOMING_WINDOW_DAYS);
+
+    const masters = await this.calendarEventsRepository
       .createQueryBuilder('event')
       .where('event.congregationId = :congregationId', { congregationId })
-      .andWhere('event.startsAt >= :now', { now })
-      .orderBy('event.startsAt', 'ASC')
-      .take(UPCOMING_EVENTS_LIMIT)
+      .andWhere(
+        new Brackets((nested) => {
+          nested
+            .where(
+              `(event.recurrenceFrequency = :none
+                AND event.startsAt >= :now
+                AND event.startsAt <= :to)`,
+              {
+                none: CalendarRecurrenceFrequency.NONE,
+                now,
+                to: rangeTo,
+              },
+            )
+            .orWhere(
+              `(event.recurrenceFrequency != :none
+                AND event.startsAt <= :to
+                AND (event.recurrenceUntil IS NULL OR event.recurrenceUntil >= :fromDate))`,
+              {
+                none: CalendarRecurrenceFrequency.NONE,
+                to: rangeTo,
+                fromDate: this.toIsoDate(now),
+              },
+            );
+        }),
+      )
       .getMany();
-    return events.map((event) => ({
-      id: event.id,
-      title: event.title,
-      type: event.type,
-      startsAt: event.startsAt,
-      location: event.location,
-    }));
+
+    return masters
+      .flatMap((event) => expandCalendarEvent(event, now, rangeTo))
+      .filter((item) => item.startsAt.getTime() >= now.getTime())
+      .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
   }
 
   private async countVisitorsThisMonth(

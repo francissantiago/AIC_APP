@@ -17,6 +17,7 @@ import {
 import {
   AttendanceEventType,
   CalendarEventType,
+  CalendarRecurrenceFrequency,
   SecretariatDocumentStatus,
   SecretariatDocumentType,
 } from '../enums/secretariat.enums';
@@ -94,6 +95,29 @@ export class CreateCalendarEventDto {
   @IsString()
   @MaxLength(65535)
   description?: string | null;
+
+  @ApiPropertyOptional({
+    enum: CalendarRecurrenceFrequency,
+    default: CalendarRecurrenceFrequency.NONE,
+  })
+  @IsOptional()
+  @IsEnum(CalendarRecurrenceFrequency)
+  recurrenceFrequency: CalendarRecurrenceFrequency =
+    CalendarRecurrenceFrequency.NONE;
+
+  @ApiPropertyOptional({ default: 1, minimum: 1, maximum: 30 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(30)
+  recurrenceInterval: number = 1;
+
+  @ApiPropertyOptional({ nullable: true, format: 'date' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  recurrenceUntil?: string | null;
 }
 
 export class UpdateCalendarEventDto extends PartialType(
@@ -126,8 +150,13 @@ export class QueryCalendarEventsDto extends PaginationDto {
 }
 
 export class CalendarEventResponseDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({
+    description:
+      'ID da ocorrência (igual ao seriesId quando não recorrente; senão seriesId_ISO)',
+  })
   id!: string;
+  @ApiProperty({ format: 'uuid', description: 'ID do evento mestre (série)' })
+  seriesId!: string;
   @ApiProperty({ format: 'uuid' })
   congregationId!: string;
   @ApiProperty({ format: 'uuid' })
@@ -146,6 +175,14 @@ export class CalendarEventResponseDto {
   location!: string | null;
   @ApiPropertyOptional({ nullable: true })
   description!: string | null;
+  @ApiProperty({ enum: CalendarRecurrenceFrequency })
+  recurrenceFrequency!: CalendarRecurrenceFrequency;
+  @ApiProperty()
+  recurrenceInterval!: number;
+  @ApiPropertyOptional({ nullable: true, format: 'date' })
+  recurrenceUntil!: string | null;
+  @ApiProperty()
+  isRecurring!: boolean;
   @ApiProperty({ format: 'date-time' })
   createdAt!: Date;
   @ApiProperty({ format: 'date-time' })

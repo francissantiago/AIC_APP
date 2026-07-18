@@ -6,6 +6,13 @@ export enum CalendarEventType {
   OTHER = 'other',
 }
 
+export enum CalendarRecurrenceFrequency {
+  NONE = 'none',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+}
+
 export enum AttendanceEventType {
   SERVICE = 'service',
   MEETING = 'meeting',
@@ -26,6 +33,7 @@ export enum SecretariatDocumentStatus {
 }
 
 export const CALENDAR_EVENT_TYPES = Object.values(CalendarEventType);
+export const CALENDAR_RECURRENCE_FREQUENCIES = Object.values(CalendarRecurrenceFrequency);
 export const ATTENDANCE_EVENT_TYPES = Object.values(AttendanceEventType);
 export const SECRETARIAT_DOCUMENT_TYPES = Object.values(SecretariatDocumentType);
 export const SECRETARIAT_DOCUMENT_STATUSES = Object.values(SecretariatDocumentStatus);

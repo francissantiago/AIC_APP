@@ -1,6 +1,7 @@
 import {
   AttendanceEventType,
   CalendarEventType,
+  CalendarRecurrenceFrequency,
   SecretariatDocumentStatus,
   SecretariatDocumentType,
 } from '@enums/secretariat';
@@ -16,6 +17,7 @@ export interface IPaginationQuery {
 
 export interface ICalendarEvent {
   id: string;
+  seriesId: string;
   congregationId: string;
   createdByUserId: string;
   title: string;
@@ -25,6 +27,10 @@ export interface ICalendarEvent {
   allDay: boolean;
   location: string | null;
   description: string | null;
+  recurrenceFrequency: CalendarRecurrenceFrequency;
+  recurrenceInterval: number;
+  recurrenceUntil: string | null;
+  isRecurring: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -37,6 +43,9 @@ export interface ICreateCalendarEvent {
   allDay?: boolean;
   location?: string | null;
   description?: string | null;
+  recurrenceFrequency?: CalendarRecurrenceFrequency;
+  recurrenceInterval?: number;
+  recurrenceUntil?: string | null;
 }
 
 export type IUpdateCalendarEvent = Partial<ICreateCalendarEvent>;

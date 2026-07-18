@@ -53,6 +53,9 @@ describe('CalendarService', () => {
       allDay: false,
       location: null,
       description: null,
+      recurrenceFrequency: 'none',
+      recurrenceInterval: 1,
+      recurrenceUntil: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
