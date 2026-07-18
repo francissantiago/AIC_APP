@@ -17,6 +17,7 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -26,7 +27,9 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
+import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
@@ -41,12 +44,15 @@ import { UsersService } from './users.service';
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
-@UseGuards(JwtAuthGuard)
+@ApiForbiddenResponse({ description: 'Perfil sem permissão' })
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('users:read')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @RequirePermission('users:write')
   @ApiOperation({
     summary: 'Criar usuário (senha armazenada como hash bcrypt)',
   })
@@ -75,6 +81,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @RequirePermission('users:write')
   @ApiOperation({ summary: 'Atualizar email, nome completo e/ou status' })
   @ApiOkResponse({ type: UserResponseDto })
   @ApiNotFoundResponse({ description: 'Usuário não encontrado' })
@@ -87,6 +94,7 @@ export class UsersController {
   }
 
   @Put(':id/roles')
+  @RequirePermission('users:write')
   @ApiOperation({ summary: 'Substituir o conjunto de roles do usuário' })
   @ApiOkResponse({ type: UserResponseDto })
   @ApiNotFoundResponse({ description: 'Usuário não encontrado' })
@@ -101,6 +109,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @RequirePermission('users:write')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remover usuário (soft delete via deleted_at)' })
   @ApiNoContentResponse({ description: 'Usuário removido' })

@@ -2,13 +2,16 @@ import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
+import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { CongregationResponseDto } from './dto/congregation-response.dto';
 import { UpdateCongregationDto } from './dto/update-congregation.dto';
 import { CongregationsService } from './congregations.service';
@@ -17,7 +20,9 @@ import { CongregationsService } from './congregations.service';
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
-@UseGuards(JwtAuthGuard)
+@ApiForbiddenResponse({ description: 'Perfil sem permissão' })
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('congregations:read')
 @Controller('congregation')
 export class CongregationsController {
   constructor(private readonly congregationsService: CongregationsService) {}
@@ -30,6 +35,7 @@ export class CongregationsController {
   }
 
   @Patch()
+  @RequirePermission('congregations:write')
   @ApiOperation({ summary: 'Atualizar a congregação-base (parcial)' })
   @ApiOkResponse({ type: CongregationResponseDto })
   @ApiConflictResponse({ description: 'email ou document já em uso' })

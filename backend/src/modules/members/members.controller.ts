@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -25,7 +26,9 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
+import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { CreateMemberDto } from './dto/create-member.dto';
 import {
   MemberResponseDto,
@@ -39,12 +42,15 @@ import { MembersService } from './members.service';
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
-@UseGuards(JwtAuthGuard)
+@ApiForbiddenResponse({ description: 'Perfil sem permissão' })
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('members:read')
 @Controller('members')
 export class MembersController {
   constructor(private readonly membersService: MembersService) {}
 
   @Post()
+  @RequirePermission('members:write')
   @ApiOperation({ summary: 'Criar membro' })
   @ApiCreatedResponse({ type: MemberResponseDto })
   @ApiConflictResponse({ description: 'email ou document já em uso' })
@@ -73,6 +79,7 @@ export class MembersController {
   }
 
   @Patch(':id')
+  @RequirePermission('members:write')
   @ApiOperation({ summary: 'Atualizar membro (parcial)' })
   @ApiOkResponse({ type: MemberResponseDto })
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
@@ -88,6 +95,7 @@ export class MembersController {
   }
 
   @Delete(':id')
+  @RequirePermission('members:write')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remover membro (soft delete via deleted_at)' })
   @ApiNoContentResponse({ description: 'Membro removido' })
