@@ -20,19 +20,7 @@ import { FinanceService } from '@services/finance-service';
   selector: 'app-financial-category-manager',
   imports: [ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="mb-5 w-full max-w-7xl" aria-labelledby="categories-title">
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 id="categories-title" class="text-xl font-semibold text-slate-900">
-          {{ 'FINANCE.CATEGORIES' | translate }}
-        </h2>
-        <button
-          type="button"
-          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          (click)="closed.emit()"
-        >
-          {{ 'COMMON.CANCEL' | translate }}
-        </button>
-      </div>
+    <section class="w-full" [attr.aria-label]="'FINANCE.CATEGORIES' | translate">
       <form
         [formGroup]="form"
         (ngSubmit)="save()"
@@ -42,7 +30,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'FINANCE.CATEGORY_NAME' | translate }}</span>
           <input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="name"
             maxlength="100"
             [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
@@ -61,7 +49,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'FINANCE.TYPE' | translate }}</span>
           <select
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
           >
             @for (type of types; track type) {

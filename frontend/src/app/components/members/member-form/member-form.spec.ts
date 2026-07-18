@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { MembersService } from '@services/members-service';
@@ -16,11 +15,6 @@ describe('MemberForm', () => {
       imports: [MemberForm],
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
-        { provide: Router, useValue: { navigate: vi.fn() } },
-        {
-          provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: { get: () => null } } },
-        },
         {
           provide: MembersService,
           useValue: {

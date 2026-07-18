@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { AppDialog } from '@components/app-dialog/app-dialog';
+import { MemberForm } from '@components/members/member-form/member-form';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
 import { IMember } from '@interfaces/IMember';
@@ -18,7 +19,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-members-list',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [AppDialog, MemberForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './members-list.html',
   styleUrl: './members-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,6 +39,8 @@ export class MembersList implements OnInit {
   readonly deleting = signal(false);
   readonly pendingDeleteId = signal<string | null>(null);
   readonly feedback = signal<string | null>(null);
+  readonly showForm = signal(false);
+  readonly editingId = signal<string | null>(null);
 
   readonly totalPages = computed(() => {
     const pages = Math.ceil(this.total() / this.limit());
@@ -68,6 +71,28 @@ export class MembersList implements OnInit {
     return `MEMBERS.STATUS_${status.toUpperCase()}`;
   }
 
+  openCreate(): void {
+    this.editingId.set(null);
+    this.pendingDeleteId.set(null);
+    this.showForm.set(true);
+  }
+
+  openEdit(id: string): void {
+    this.editingId.set(id);
+    this.pendingDeleteId.set(null);
+    this.showForm.set(true);
+  }
+
+  closeForm(): void {
+    this.showForm.set(false);
+    this.editingId.set(null);
+  }
+
+  afterSave(): void {
+    this.closeForm();
+    this.#loadMembers();
+  }
+
   previousPage(): void {
     if (this.page() <= 1) {
       return;
@@ -85,6 +110,7 @@ export class MembersList implements OnInit {
   }
 
   askDelete(memberId: string): void {
+    this.closeForm();
     this.pendingDeleteId.set(memberId);
     this.feedback.set(null);
   }

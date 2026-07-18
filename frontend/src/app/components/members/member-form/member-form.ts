@@ -4,12 +4,13 @@ import {
   Component,
   DestroyRef,
   inject,
+  input,
   OnInit,
+  output,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
 import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
@@ -21,7 +22,7 @@ import { MembersService } from '@services/members-service';
 
 @Component({
   selector: 'app-member-form',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe],
   templateUrl: './member-form.html',
   styleUrl: './member-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,16 +30,17 @@ import { MembersService } from '@services/members-service';
 export class MemberForm implements OnInit {
   readonly #membersService = inject(MembersService);
   readonly #apiError = inject(ApiErrorService);
-  readonly #route = inject(ActivatedRoute);
-  readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
+
+  readonly memberId = input<string | null>(null);
+  readonly saved = output<void>();
+  readonly cancelled = output<void>();
 
   readonly statuses = MEMBER_STATUSES;
   readonly genders = MEMBER_GENDERS;
   readonly maritalStatuses = MEMBER_MARITAL_STATUSES;
 
   readonly isEditMode = signal(false);
-  readonly memberId = signal<string | null>(null);
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly loadError = signal(false);
@@ -99,10 +101,9 @@ export class MemberForm implements OnInit {
   });
 
   ngOnInit(): void {
-    const id = this.#route.snapshot.paramMap.get('id');
+    const id = this.memberId();
     if (id) {
       this.isEditMode.set(true);
-      this.memberId.set(id);
       this.#loadMember(id);
     }
   }
@@ -187,7 +188,7 @@ export class MemberForm implements OnInit {
       .subscribe({
         next: () => {
           this.saving.set(false);
-          void this.#router.navigate(['/members']);
+          this.saved.emit();
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
@@ -212,7 +213,7 @@ export class MemberForm implements OnInit {
         next: () => {
           this.saving.set(false);
           this.feedbackKey.set('MEMBERS.SAVE_SUCCESS');
-          void this.#router.navigate(['/members']);
+          this.saved.emit();
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);

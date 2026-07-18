@@ -34,7 +34,7 @@ import { ChartData } from 'chart.js';
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'FINANCE.FROM' | translate }}</span>
             <input
-              class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="from"
               [attr.aria-invalid]="periodInvalid()"
@@ -44,7 +44,7 @@ import { ChartData } from 'chart.js';
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'FINANCE.TO' | translate }}</span>
             <input
-              class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="to"
               [attr.aria-invalid]="periodInvalid()"

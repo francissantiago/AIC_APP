@@ -25,6 +25,7 @@ import {
   DateAdapter,
   provideCalendar,
 } from 'angular-calendar';
+import { AppDialog } from '@components/app-dialog/app-dialog';
 import {
   CALENDAR_EVENT_TYPES,
   CALENDAR_RECURRENCE_FREQUENCIES,
@@ -50,6 +51,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
 @Component({
   selector: 'app-agenda-calendar',
   imports: [
+    AppDialog,
     CalendarDatePipe,
     CalendarDayViewComponent,
     CalendarMonthViewComponent,
@@ -78,219 +80,209 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
         }
       </div>
 
-      @if (showForm()) {
-        <section class="mb-5 w-full max-w-7xl" aria-labelledby="event-form-title">
-          <h2 id="event-form-title" class="mb-4 text-xl font-semibold text-slate-900">
-            {{ (editing() ? 'SECRETARIAT.EVENT_EDIT' : 'SECRETARIAT.EVENT_NEW') | translate }}
-          </h2>
-          <form
-            [formGroup]="form"
-            (ngSubmit)="submit()"
-            class="grid gap-4 md:grid-cols-2"
-            novalidate
-          >
-            <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
-              <span>{{ 'SECRETARIAT.EVENT_TITLE' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="title"
-                maxlength="150"
-                [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
-                [attr.aria-describedby]="
-                  form.controls.title.touched && form.controls.title.invalid
-                    ? 'event-title-error'
-                    : null
-                "
-              />
-              @if (form.controls.title.touched && form.controls.title.invalid) {
-                <span id="event-title-error" class="text-xs text-red-700">
-                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
-                </span>
-              }
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.EVENT_TYPE' | translate }}</span>
-              <select
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="type"
-              >
-                @for (type of eventTypes; track type) {
-                  <option [value]="type">{{ typeLabel(type) | translate }}</option>
-                }
-              </select>
-            </label>
-            <label class="flex items-center gap-2 self-end text-sm text-slate-700">
-              <input type="checkbox" formControlName="allDay" class="size-4" />
-              <span>{{ 'SECRETARIAT.ALL_DAY' | translate }}</span>
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.STARTS_AT' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                type="datetime-local"
-                formControlName="startsAt"
-                [attr.aria-invalid]="
-                  form.controls.startsAt.touched && form.controls.startsAt.invalid
-                "
-                [attr.aria-describedby]="
-                  form.controls.startsAt.touched && form.controls.startsAt.invalid
-                    ? 'event-starts-error'
-                    : null
-                "
-              />
-              @if (form.controls.startsAt.touched && form.controls.startsAt.invalid) {
-                <span id="event-starts-error" class="text-xs text-red-700">
-                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
-                </span>
-              }
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.ENDS_AT' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                type="datetime-local"
-                formControlName="endsAt"
-                [attr.aria-invalid]="form.controls.endsAt.touched && form.controls.endsAt.invalid"
-                [attr.aria-describedby]="
-                  form.controls.endsAt.touched && form.controls.endsAt.invalid
-                    ? 'event-ends-error'
-                    : null
-                "
-              />
-              @if (form.controls.endsAt.touched && form.controls.endsAt.invalid) {
-                <span id="event-ends-error" class="text-xs text-red-700">
-                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
-                </span>
-              }
-              @if (rangeInvalid()) {
-                <span class="text-xs text-red-700">
-                  {{ 'SECRETARIAT.INVALID_EVENT_RANGE' | translate }}
-                </span>
-              }
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.LOCATION' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="location"
-                maxlength="150"
-              />
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
-              <span>{{ 'SECRETARIAT.DESCRIPTION' | translate }}</span>
-              <textarea
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                rows="3"
-                formControlName="description"
-              ></textarea>
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.RECURRENCE' | translate }}</span>
-              <select
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="recurrenceFrequency"
-              >
-                @for (frequency of recurrenceFrequencies; track frequency) {
-                  <option [value]="frequency">
-                    {{ recurrenceLabel(frequency) | translate }}
-                  </option>
-                }
-              </select>
-            </label>
-            @if (form.controls.recurrenceFrequency.value !== recurrenceNone) {
-              <label class="flex flex-col gap-1 text-sm text-slate-700">
-                <span>{{ 'SECRETARIAT.RECURRENCE_INTERVAL' | translate }}</span>
-                <input
-                  class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                  type="number"
-                  min="1"
-                  max="30"
-                  formControlName="recurrenceInterval"
-                />
-              </label>
-              <label class="flex flex-col gap-1 text-sm text-slate-700">
-                <span>{{ 'SECRETARIAT.RECURRENCE_UNTIL' | translate }}</span>
-                <input
-                  class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                  type="date"
-                  formControlName="recurrenceUntil"
-                />
-              </label>
+      <app-dialog
+        [(open)]="showForm"
+        [title]="(editing() ? 'SECRETARIAT.EVENT_EDIT' : 'SECRETARIAT.EVENT_NEW') | translate"
+        (closed)="closeForm()"
+      >
+        <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+          <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+            <span>{{ 'SECRETARIAT.EVENT_TITLE' | translate }}</span>
+            <input
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="title"
+              maxlength="150"
+              [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
+              [attr.aria-describedby]="
+                form.controls.title.touched && form.controls.title.invalid
+                  ? 'event-title-error'
+                  : null
+              "
+            />
+            @if (form.controls.title.touched && form.controls.title.invalid) {
+              <span id="event-title-error" class="text-xs text-red-700">
+                {{ 'COMMON.REQUIRED_FIELD' | translate }}
+              </span>
             }
-            @if (editing()?.isRecurring) {
-              <p class="text-sm text-slate-600 md:col-span-2" role="status">
-                {{ 'SECRETARIAT.RECURRENCE_EDIT_HINT' | translate }}
-              </p>
-            }
-            @if (errorMessage(); as message) {
-              <p role="alert" class="text-sm text-red-700 md:col-span-2">
-                {{ message }}
-                @if (supportHint(); as hint) {
-                  <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
-                }
-              </p>
-            }
-            <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
-              <button
-                class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
-                type="submit"
-                [disabled]="saving()"
-              >
-                {{ 'COMMON.SAVE' | translate }}
-              </button>
-              @if (editing()) {
-                <button
-                  class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                  type="button"
-                  (click)="pendingDelete.set(editing()!.seriesId)"
-                >
-                  {{ 'COMMON.DELETE' | translate }}
-                </button>
-              }
-              <button
-                class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                type="button"
-                (click)="closeForm()"
-              >
-                {{ 'COMMON.CANCEL' | translate }}
-              </button>
-            </div>
-          </form>
-        </section>
-      }
-
-      @if (pendingDelete(); as id) {
-        <div
-          role="alertdialog"
-          aria-labelledby="event-delete-confirmation"
-          class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-        >
-          <p id="event-delete-confirmation" class="font-medium">
-            {{
-              (editing()?.isRecurring
-                ? 'SECRETARIAT.CONFIRM_DELETE_SERIES'
-                : 'SECRETARIAT.CONFIRM_DELETE_EVENT'
-              ) | translate
-            }}
-          </p>
-          <div class="mt-3 flex gap-2">
-            <button
-              class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              type="button"
-              (click)="confirmDelete(id)"
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.EVENT_TYPE' | translate }}</span>
+            <select
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="type"
             >
-              {{ 'COMMON.YES' | translate }}
+              @for (type of eventTypes; track type) {
+                <option [value]="type">{{ typeLabel(type) | translate }}</option>
+              }
+            </select>
+          </label>
+          <label class="flex items-center gap-2 self-end text-sm text-slate-700">
+            <input type="checkbox" formControlName="allDay" class="size-4" />
+            <span>{{ 'SECRETARIAT.ALL_DAY' | translate }}</span>
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.STARTS_AT' | translate }}</span>
+            <input
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              type="datetime-local"
+              formControlName="startsAt"
+              [attr.aria-invalid]="form.controls.startsAt.touched && form.controls.startsAt.invalid"
+              [attr.aria-describedby]="
+                form.controls.startsAt.touched && form.controls.startsAt.invalid
+                  ? 'event-starts-error'
+                  : null
+              "
+            />
+            @if (form.controls.startsAt.touched && form.controls.startsAt.invalid) {
+              <span id="event-starts-error" class="text-xs text-red-700">
+                {{ 'COMMON.REQUIRED_FIELD' | translate }}
+              </span>
+            }
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.ENDS_AT' | translate }}</span>
+            <input
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              type="datetime-local"
+              formControlName="endsAt"
+              [attr.aria-invalid]="form.controls.endsAt.touched && form.controls.endsAt.invalid"
+              [attr.aria-describedby]="
+                form.controls.endsAt.touched && form.controls.endsAt.invalid
+                  ? 'event-ends-error'
+                  : null
+              "
+            />
+            @if (form.controls.endsAt.touched && form.controls.endsAt.invalid) {
+              <span id="event-ends-error" class="text-xs text-red-700">
+                {{ 'COMMON.REQUIRED_FIELD' | translate }}
+              </span>
+            }
+            @if (rangeInvalid()) {
+              <span class="text-xs text-red-700">
+                {{ 'SECRETARIAT.INVALID_EVENT_RANGE' | translate }}
+              </span>
+            }
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.LOCATION' | translate }}</span>
+            <input
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="location"
+              maxlength="150"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+            <span>{{ 'SECRETARIAT.DESCRIPTION' | translate }}</span>
+            <textarea
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              rows="3"
+              formControlName="description"
+            ></textarea>
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.RECURRENCE' | translate }}</span>
+            <select
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="recurrenceFrequency"
+            >
+              @for (frequency of recurrenceFrequencies; track frequency) {
+                <option [value]="frequency">
+                  {{ recurrenceLabel(frequency) | translate }}
+                </option>
+              }
+            </select>
+          </label>
+          @if (form.controls.recurrenceFrequency.value !== recurrenceNone) {
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.RECURRENCE_INTERVAL' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                type="number"
+                min="1"
+                max="30"
+                formControlName="recurrenceInterval"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.RECURRENCE_UNTIL' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                type="date"
+                formControlName="recurrenceUntil"
+              />
+            </label>
+          }
+          @if (editing()?.isRecurring) {
+            <p class="text-sm text-slate-600 md:col-span-2" role="status">
+              {{ 'SECRETARIAT.RECURRENCE_EDIT_HINT' | translate }}
+            </p>
+          }
+          @if (errorMessage(); as message) {
+            <p role="alert" class="text-sm text-red-700 md:col-span-2">
+              {{ message }}
+              @if (supportHint(); as hint) {
+                <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+              }
+            </p>
+          }
+          <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
+            <button
+              class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+              type="submit"
+              [disabled]="saving()"
+            >
+              {{ 'COMMON.SAVE' | translate }}
             </button>
+            @if (editing()) {
+              <button
+                class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                type="button"
+                (click)="pendingDelete.set(editing()!.seriesId)"
+              >
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            }
             <button
-              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               type="button"
-              (click)="pendingDelete.set(null)"
+              (click)="closeForm()"
             >
-              {{ 'COMMON.NO' | translate }}
+              {{ 'COMMON.CANCEL' | translate }}
             </button>
           </div>
+        </form>
+      </app-dialog>
+
+      <app-dialog
+        [open]="pendingDelete() !== null"
+        [title]="'COMMON.CONFIRM_DELETE' | translate"
+        (closed)="pendingDelete.set(null)"
+      >
+        <p>
+          {{
+            (editing()?.isRecurring
+              ? 'SECRETARIAT.CONFIRM_DELETE_SERIES'
+              : 'SECRETARIAT.CONFIRM_DELETE_EVENT'
+            ) | translate
+          }}
+        </p>
+        <div class="mt-4 flex gap-2">
+          <button
+            class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+            (click)="confirmDelete(pendingDelete()!)"
+          >
+            {{ 'COMMON.YES' | translate }}
+          </button>
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            (click)="pendingDelete.set(null)"
+          >
+            {{ 'COMMON.NO' | translate }}
+          </button>
         </div>
-      }
+      </app-dialog>
 
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div
@@ -337,7 +329,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
           [attr.aria-label]="'SECRETARIAT.AGENDA_TITLE' | translate"
         >
           <button
-            class="rounded-md border px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [class.bg-slate-600]="view() === calendarView.Month"
             [class.text-white]="view() === calendarView.Month"
             [class.border-slate-300]="view() !== calendarView.Month"
@@ -348,7 +340,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             {{ 'SECRETARIAT.VIEW_MONTH' | translate }}
           </button>
           <button
-            class="rounded-md border px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [class.bg-slate-600]="view() === calendarView.Week"
             [class.text-white]="view() === calendarView.Week"
             [class.border-slate-300]="view() !== calendarView.Week"
@@ -359,7 +351,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             {{ 'SECRETARIAT.VIEW_WEEK' | translate }}
           </button>
           <button
-            class="rounded-md border px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [class.bg-slate-600]="view() === calendarView.Day"
             [class.text-white]="view() === calendarView.Day"
             [class.border-slate-300]="view() !== calendarView.Day"

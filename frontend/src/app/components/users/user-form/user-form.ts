@@ -4,7 +4,9 @@ import {
   Component,
   DestroyRef,
   inject,
+  input,
   OnInit,
+  output,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,7 +18,6 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { USER_STATUSES, UserStatus } from '@enums/user-status';
 import { ICreateUser } from '@interfaces/ICreateUser';
@@ -44,7 +45,7 @@ function minRolesValidator(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-user-form',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe],
   templateUrl: './user-form.html',
   styleUrl: './user-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,14 +54,15 @@ export class UserForm implements OnInit {
   readonly #usersService = inject(UsersService);
   readonly #rolesService = inject(RolesService);
   readonly #apiError = inject(ApiErrorService);
-  readonly #route = inject(ActivatedRoute);
-  readonly #router = inject(Router);
   readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
 
+  readonly userId = input<string | null>(null);
+  readonly saved = output<void>();
+  readonly cancelled = output<void>();
+
   readonly statuses = USER_STATUSES;
   readonly isEditMode = signal(false);
-  readonly userId = signal<string | null>(null);
   readonly roles = signal<IRole[]>([]);
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -113,10 +115,9 @@ export class UserForm implements OnInit {
   ngOnInit(): void {
     this.#loadRoles();
 
-    const id = this.#route.snapshot.paramMap.get('id');
+    const id = this.userId();
     if (id) {
       this.isEditMode.set(true);
-      this.userId.set(id);
       this.#configureEditValidators();
       this.#loadUser(id);
     }
@@ -245,7 +246,7 @@ export class UserForm implements OnInit {
       .subscribe({
         next: () => {
           this.saving.set(false);
-          void this.#router.navigate(['/users']);
+          this.saved.emit();
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
@@ -284,7 +285,7 @@ export class UserForm implements OnInit {
       next: () => {
         this.saving.set(false);
         this.feedbackKey.set('USERS.SAVE_SUCCESS');
-        void this.#router.navigate(['/users']);
+        this.saved.emit();
       },
       error: (error: HttpErrorResponse) => {
         this.saving.set(false);

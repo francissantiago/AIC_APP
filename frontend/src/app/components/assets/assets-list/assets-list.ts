@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AppDialog } from '@components/app-dialog/app-dialog';
 import { AssetForm } from '@components/assets/asset-form/asset-form';
 import { ASSET_STATUSES, ASSET_TYPES, AssetStatus, AssetType } from '@enums/finance';
 import { FINANCE_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
@@ -19,7 +20,7 @@ import { FinanceService } from '@services/finance-service';
 
 @Component({
   selector: 'app-assets-list',
-  imports: [AssetForm, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDialog, AssetForm, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -34,9 +35,13 @@ import { FinanceService } from '@services/finance-service';
           </button>
         }
       </div>
-      @if (showForm()) {
+      <app-dialog
+        [(open)]="showForm"
+        [title]="(editing() ? 'ASSETS.EDIT' : 'ASSETS.NEW') | translate"
+        (closed)="closeForm()"
+      >
         <app-asset-form [asset]="editing()" (saved)="afterSave()" (cancelled)="closeForm()" />
-      }
+      </app-dialog>
       <form
         [formGroup]="filterForm"
         (ngSubmit)="applyFilters()"
@@ -46,14 +51,14 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'COMMON.SEARCH' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="search"
             formControlName="q"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.TYPE' | translate }}</span
           ><select
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
           >
             <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -65,7 +70,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.STATUS' | translate }}</span
           ><select
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="status"
           >
             <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -81,32 +86,29 @@ import { FinanceService } from '@services/finance-service';
           {{ 'COMMON.FILTER' | translate }}
         </button>
       </form>
-      @if (pendingDelete(); as id) {
-        <div
-          class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-          role="alertdialog"
-          aria-labelledby="asset-delete-confirmation"
-        >
-          <p id="asset-delete-confirmation" class="font-medium">
-            {{ 'ASSETS.CONFIRM_DELETE' | translate }}
-          </p>
-          <div class="mt-3 flex gap-2">
-            <button
-              class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              type="button"
-              (click)="confirmDelete(id)"
-            >
-              {{ 'COMMON.YES' | translate }}</button
-            ><button
-              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-              type="button"
-              (click)="pendingDelete.set(null)"
-            >
-              {{ 'COMMON.NO' | translate }}
-            </button>
-          </div>
+      <app-dialog
+        [open]="pendingDelete() !== null"
+        [title]="'COMMON.CONFIRM_DELETE' | translate"
+        (closed)="pendingDelete.set(null)"
+      >
+        <p>{{ 'ASSETS.CONFIRM_DELETE' | translate }}</p>
+        <div class="mt-4 flex gap-2">
+          <button
+            class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+            (click)="confirmDelete(pendingDelete()!)"
+          >
+            {{ 'COMMON.YES' | translate }}
+          </button>
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            (click)="pendingDelete.set(null)"
+          >
+            {{ 'COMMON.NO' | translate }}
+          </button>
         </div>
-      }
+      </app-dialog>
       @if (loading()) {
         <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
       } @else if (error()) {

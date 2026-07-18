@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AppDialog } from '@components/app-dialog/app-dialog';
 import { FinancialCategoryManager } from '@components/finance/financial-category-manager/financial-category-manager';
 import { FinancialEntryForm } from '@components/finance/financial-entry-form/financial-entry-form';
 import { FINANCIAL_TYPES, FinancialType } from '@enums/finance';
@@ -20,7 +21,13 @@ import { FinanceService } from '@services/finance-service';
 
 @Component({
   selector: 'app-financial-entries',
-  imports: [FinancialCategoryManager, FinancialEntryForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    AppDialog,
+    FinancialCategoryManager,
+    FinancialEntryForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   template: `
     <section class="w-full">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -44,21 +51,29 @@ import { FinanceService } from '@services/finance-service';
           </div>
         }
       </div>
-      @if (showCategories()) {
+      <app-dialog
+        [(open)]="showCategories"
+        [title]="'FINANCE.CATEGORIES' | translate"
+        (closed)="showCategories.set(false)"
+      >
         <app-financial-category-manager
           [categories]="categories()"
           (changed)="loadCategories()"
           (closed)="showCategories.set(false)"
         />
-      }
-      @if (showForm()) {
+      </app-dialog>
+      <app-dialog
+        [(open)]="showForm"
+        [title]="(editing() ? 'FINANCE.EDIT_ENTRY' : 'FINANCE.NEW_ENTRY') | translate"
+        (closed)="closeForm()"
+      >
         <app-financial-entry-form
           [entry]="editing()"
           [categories]="categories()"
           (saved)="afterSave()"
           (cancelled)="closeForm()"
         />
-      }
+      </app-dialog>
       <form
         [formGroup]="filterForm"
         class="mb-4 grid min-w-0 gap-3 md:grid-cols-6"
@@ -68,21 +83,21 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.FROM' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="date"
             formControlName="from"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.TO' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="date"
             formControlName="to"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.TYPE' | translate }}</span
           ><select
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
           >
             <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -94,7 +109,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.CATEGORY' | translate }}</span
           ><select
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="categoryId"
           >
             <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -106,7 +121,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'COMMON.SEARCH' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="search"
             formControlName="q"
         /></label>
@@ -117,32 +132,29 @@ import { FinanceService } from '@services/finance-service';
           {{ 'COMMON.FILTER' | translate }}
         </button>
       </form>
-      @if (pendingDelete(); as id) {
-        <div
-          role="alertdialog"
-          aria-labelledby="entry-delete-confirmation"
-          class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-        >
-          <p id="entry-delete-confirmation" class="font-medium">
-            {{ 'FINANCE.CONFIRM_DELETE_ENTRY' | translate }}
-          </p>
-          <div class="mt-3 flex gap-2">
-            <button
-              class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              type="button"
-              (click)="confirmDelete(id)"
-            >
-              {{ 'COMMON.YES' | translate }}</button
-            ><button
-              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-              type="button"
-              (click)="pendingDelete.set(null)"
-            >
-              {{ 'COMMON.NO' | translate }}
-            </button>
-          </div>
+      <app-dialog
+        [open]="pendingDelete() !== null"
+        [title]="'COMMON.CONFIRM_DELETE' | translate"
+        (closed)="pendingDelete.set(null)"
+      >
+        <p>{{ 'FINANCE.CONFIRM_DELETE_ENTRY' | translate }}</p>
+        <div class="mt-4 flex gap-2">
+          <button
+            class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+            (click)="confirmDelete(pendingDelete()!)"
+          >
+            {{ 'COMMON.YES' | translate }}
+          </button>
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            (click)="pendingDelete.set(null)"
+          >
+            {{ 'COMMON.NO' | translate }}
+          </button>
         </div>
-      }
+      </app-dialog>
       @if (loading()) {
         <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
       } @else if (error()) {
@@ -274,6 +286,9 @@ export class FinancialEntries implements OnInit {
     this.load();
   }
   toggleCategories(): void {
+    if (!this.showCategories()) {
+      this.closeForm();
+    }
     this.showCategories.update((value) => !value);
   }
   loadCategories(): void {
@@ -291,10 +306,12 @@ export class FinancialEntries implements OnInit {
     this.load();
   }
   openCreate(): void {
+    this.showCategories.set(false);
     this.editing.set(null);
     this.showForm.set(true);
   }
   openEdit(entry: IFinancialEntry): void {
+    this.showCategories.set(false);
     this.editing.set(entry);
     this.showForm.set(true);
   }

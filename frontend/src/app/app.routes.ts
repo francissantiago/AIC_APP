@@ -22,13 +22,12 @@ export const routes: Routes = [
       },
       {
         path: 'users/new',
-        loadComponent: () =>
-          import('@components/users/user-form/user-form').then((m) => m.UserForm),
+        pathMatch: 'full',
+        redirectTo: 'users',
       },
       {
         path: 'users/:id/edit',
-        loadComponent: () =>
-          import('@components/users/user-form/user-form').then((m) => m.UserForm),
+        redirectTo: 'users',
       },
       {
         path: 'roles',
@@ -42,13 +41,12 @@ export const routes: Routes = [
       },
       {
         path: 'members/new',
-        loadComponent: () =>
-          import('@components/members/member-form/member-form').then((m) => m.MemberForm),
+        pathMatch: 'full',
+        redirectTo: 'members',
       },
       {
         path: 'members/:id/edit',
-        loadComponent: () =>
-          import('@components/members/member-form/member-form').then((m) => m.MemberForm),
+        redirectTo: 'members',
       },
       {
         path: 'congregation',

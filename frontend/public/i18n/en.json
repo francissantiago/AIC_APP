@@ -65,7 +65,11 @@
     "YES": "Yes",
     "NO": "No",
     "REQUIRED_FIELD": "Required field",
-    "NOT_AVAILABLE": "Not available"
+    "NOT_AVAILABLE": "Not available",
+    "DIALOG": {
+      "CLOSE": "Close",
+      "CLOSE_ARIA": "Close dialog"
+    }
   },
   "EXAMPLE": {
     "TITLE": "Example",

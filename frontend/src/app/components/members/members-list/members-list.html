@@ -4,13 +4,50 @@
       <h1 class="text-xl font-semibold text-slate-900">{{ 'MEMBERS.LIST_TITLE' | translate }}</h1>
       <p class="text-sm text-slate-600">{{ 'MEMBERS.TITLE' | translate }}</p>
     </div>
-    <a
-      routerLink="/members/new"
+    <button
+      type="button"
       class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+      (click)="openCreate()"
     >
       {{ 'COMMON.CREATE' | translate }}
-    </a>
+    </button>
   </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="(editingId() ? 'MEMBERS.EDIT_TITLE' : 'MEMBERS.CREATE_TITLE') | translate"
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-member-form [memberId]="editingId()" (saved)="afterSave()" (cancelled)="closeForm()" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'MEMBERS.CONFIRM_DELETE' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
 
   <form
     [formGroup]="filterForm"
@@ -22,7 +59,7 @@
       <input
         type="search"
         formControlName="q"
-        class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       />
     </label>
 
@@ -30,7 +67,7 @@
       <span>{{ 'MEMBERS.FILTER_STATUS' | translate }}</span>
       <select
         formControlName="status"
-        class="rounded-md border px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         <option value="">{{ 'COMMON.FILTER' | translate }}</option>
         @for (status of statuses; track status) {
@@ -44,38 +81,6 @@
     <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
       {{ messageKey | translate }}
     </p>
-  }
-
-  @if (pendingDeleteId()) {
-    <div
-      class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-      role="alertdialog"
-      aria-labelledby="member-delete-confirm-title"
-      aria-describedby="member-delete-confirm-desc"
-    >
-      <p id="member-delete-confirm-title" class="font-medium">
-        {{ 'COMMON.CONFIRM_DELETE' | translate }}
-      </p>
-      <p id="member-delete-confirm-desc" class="mt-1">{{ 'MEMBERS.CONFIRM_DELETE' | translate }}</p>
-      <div class="mt-3 flex gap-2">
-        <button
-          type="button"
-          class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-          [disabled]="deleting()"
-          (click)="confirmDelete()"
-        >
-          {{ 'COMMON.YES' | translate }}
-        </button>
-        <button
-          type="button"
-          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [disabled]="deleting()"
-          (click)="cancelDelete()"
-        >
-          {{ 'COMMON.NO' | translate }}
-        </button>
-      </div>
-    </div>
   }
 
   @if (loading()) {
@@ -111,12 +116,13 @@
               <td class="px-3 py-2 text-slate-700">{{ member.membershipDate || '' }}</td>
               <td class="px-3 py-2">
                 <div class="flex flex-wrap gap-2">
-                  <a
-                    [routerLink]="['/members', member.id, 'edit']"
+                  <button
+                    type="button"
                     class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openEdit(member.id)"
                   >
                     {{ 'COMMON.EDIT' | translate }}
-                  </a>
+                  </button>
                   <button
                     type="button"
                     class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"

@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { AppDialog } from '@components/app-dialog/app-dialog';
+import { UserForm } from '@components/users/user-form/user-form';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { USER_STATUSES, UserStatus } from '@enums/user-status';
 import { IRole } from '@interfaces/IRole';
@@ -20,7 +21,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-users-list',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [AppDialog, UserForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './users-list.html',
   styleUrl: './users-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +44,8 @@ export class UsersList implements OnInit {
   readonly deleting = signal(false);
   readonly pendingDeleteId = signal<string | null>(null);
   readonly feedback = signal<string | null>(null);
+  readonly showForm = signal(false);
+  readonly editingId = signal<string | null>(null);
 
   readonly totalPages = computed(() => {
     const pages = Math.ceil(this.total() / this.limit());
@@ -88,6 +91,28 @@ export class UsersList implements OnInit {
     return user.roles.map((role) => this.roleLabel(role)).join(', ');
   }
 
+  openCreate(): void {
+    this.editingId.set(null);
+    this.pendingDeleteId.set(null);
+    this.showForm.set(true);
+  }
+
+  openEdit(id: string): void {
+    this.editingId.set(id);
+    this.pendingDeleteId.set(null);
+    this.showForm.set(true);
+  }
+
+  closeForm(): void {
+    this.showForm.set(false);
+    this.editingId.set(null);
+  }
+
+  afterSave(): void {
+    this.closeForm();
+    this.#loadUsers();
+  }
+
   previousPage(): void {
     if (this.page() <= 1) {
       return;
@@ -105,6 +130,7 @@ export class UsersList implements OnInit {
   }
 
   askDelete(userId: string): void {
+    this.closeForm();
     this.pendingDeleteId.set(userId);
     this.feedback.set(null);
   }

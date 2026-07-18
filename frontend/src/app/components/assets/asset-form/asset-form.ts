@@ -21,15 +21,15 @@ import { FinanceService } from '@services/finance-service';
   selector: 'app-asset-form',
   imports: [ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="mb-5 w-full max-w-7xl" aria-labelledby="asset-form-title">
-      <h2 id="asset-form-title" class="mb-4 text-xl font-semibold text-slate-900">
-        {{ (asset() ? 'ASSETS.EDIT' : 'ASSETS.NEW') | translate }}
-      </h2>
+    <section
+      class="w-full"
+      [attr.aria-label]="(asset() ? 'ASSETS.EDIT' : 'ASSETS.NEW') | translate"
+    >
       <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.NAME' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="name"
             maxlength="150"
             [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
@@ -46,14 +46,14 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.TAG' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="assetTag"
             maxlength="50"
         /></label>
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.TYPE' | translate }}</span
           ><select
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
           >
             @for (type of types; track type) {
@@ -64,7 +64,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.STATUS' | translate }}</span
           ><select
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="status"
           >
             @for (status of statuses; track status) {
@@ -75,21 +75,21 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.ACQUISITION_DATE' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="date"
             formControlName="acquisitionDate"
         /></label>
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.LOCATION' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="location"
             maxlength="150"
         /></label>
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.ACQUISITION_VALUE' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="number"
             min="0.01"
             step="0.01"
@@ -112,7 +112,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.CURRENT_VALUE' | translate }}</span
           ><input
-            class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="number"
             min="0.01"
             step="0.01"
@@ -135,7 +135,7 @@ import { FinanceService } from '@services/finance-service';
         <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2"
           ><span>{{ 'FINANCE.NOTES' | translate }}</span
           ><textarea
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             rows="3"
             formControlName="notes"
           ></textarea>

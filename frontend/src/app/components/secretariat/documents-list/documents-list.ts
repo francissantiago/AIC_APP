@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AppDialog } from '@components/app-dialog/app-dialog';
 import {
   SECRETARIAT_DOCUMENT_STATUSES,
   SECRETARIAT_DOCUMENT_TYPES,
@@ -27,7 +28,7 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-documents-list',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -45,114 +46,108 @@ const PAGE_SIZE = 20;
         }
       </div>
 
-      @if (showForm()) {
-        <section class="mb-5 w-full max-w-7xl" aria-labelledby="document-form-title">
-          <h2 id="document-form-title" class="mb-4 text-xl font-semibold text-slate-900">
-            {{ (editing() ? 'SECRETARIAT.EDIT' : 'SECRETARIAT.NEW') | translate }}
-          </h2>
-          <form
-            [formGroup]="form"
-            (ngSubmit)="submit()"
-            class="grid gap-4 md:grid-cols-2"
-            novalidate
-          >
-            <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
-              <span>{{ 'SECRETARIAT.DOC_TITLE' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="title"
-                maxlength="200"
-                [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
-                [attr.aria-describedby]="
-                  form.controls.title.touched && form.controls.title.invalid
-                    ? 'document-title-error'
-                    : null
-                "
-              />
-              @if (form.controls.title.touched && form.controls.title.invalid) {
-                <span id="document-title-error" class="text-xs text-red-700">
-                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
-                </span>
-              }
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.DOC_TYPE' | translate }}</span>
-              <select
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="type"
-              >
-                @for (type of documentTypes; track type) {
-                  <option [value]="type">{{ typeLabel(type) | translate }}</option>
-                }
-              </select>
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.DOCUMENT_DATE' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                type="date"
-                formControlName="documentDate"
-                [attr.aria-invalid]="
-                  form.controls.documentDate.touched && form.controls.documentDate.invalid
-                "
-                [attr.aria-describedby]="
-                  form.controls.documentDate.touched && form.controls.documentDate.invalid
-                    ? 'document-date-error'
-                    : null
-                "
-              />
-              @if (form.controls.documentDate.touched && form.controls.documentDate.invalid) {
-                <span id="document-date-error" class="text-xs text-red-700">
-                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
-                </span>
-              }
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'SECRETARIAT.STATUS' | translate }}</span>
-              <select
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                formControlName="status"
-              >
-                @for (status of documentStatuses; track status) {
-                  <option [value]="status">{{ statusLabel(status) | translate }}</option>
-                }
-              </select>
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
-              <span>{{ 'SECRETARIAT.SUMMARY' | translate }}</span>
-              <textarea
-                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                rows="5"
-                formControlName="summary"
-              ></textarea>
-            </label>
-            @if (errorMessage(); as message) {
-              <p role="alert" class="text-sm text-red-700 md:col-span-2">
-                {{ message }}
-                @if (supportHint(); as hint) {
-                  <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
-                }
-              </p>
+      <app-dialog
+        [(open)]="showForm"
+        [title]="(editing() ? 'SECRETARIAT.EDIT' : 'SECRETARIAT.NEW') | translate"
+        (closed)="closeForm()"
+      >
+        <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+          <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+            <span>{{ 'SECRETARIAT.DOC_TITLE' | translate }}</span>
+            <input
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="title"
+              maxlength="200"
+              [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
+              [attr.aria-describedby]="
+                form.controls.title.touched && form.controls.title.invalid
+                  ? 'document-title-error'
+                  : null
+              "
+            />
+            @if (form.controls.title.touched && form.controls.title.invalid) {
+              <span id="document-title-error" class="text-xs text-red-700">
+                {{ 'COMMON.REQUIRED_FIELD' | translate }}
+              </span>
             }
-            <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
-              <button
-                class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
-                type="submit"
-                [disabled]="saving()"
-              >
-                {{ 'COMMON.SAVE' | translate }}
-              </button>
-              <button
-                class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                type="button"
-                (click)="closeForm()"
-              >
-                {{ 'COMMON.CANCEL' | translate }}
-              </button>
-            </div>
-          </form>
-        </section>
-      }
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.DOC_TYPE' | translate }}</span>
+            <select
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="type"
+            >
+              @for (type of documentTypes; track type) {
+                <option [value]="type">{{ typeLabel(type) | translate }}</option>
+              }
+            </select>
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.DOCUMENT_DATE' | translate }}</span>
+            <input
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              type="date"
+              formControlName="documentDate"
+              [attr.aria-invalid]="
+                form.controls.documentDate.touched && form.controls.documentDate.invalid
+              "
+              [attr.aria-describedby]="
+                form.controls.documentDate.touched && form.controls.documentDate.invalid
+                  ? 'document-date-error'
+                  : null
+              "
+            />
+            @if (form.controls.documentDate.touched && form.controls.documentDate.invalid) {
+              <span id="document-date-error" class="text-xs text-red-700">
+                {{ 'COMMON.REQUIRED_FIELD' | translate }}
+              </span>
+            }
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'SECRETARIAT.STATUS' | translate }}</span>
+            <select
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              formControlName="status"
+            >
+              @for (status of documentStatuses; track status) {
+                <option [value]="status">{{ statusLabel(status) | translate }}</option>
+              }
+            </select>
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+            <span>{{ 'SECRETARIAT.SUMMARY' | translate }}</span>
+            <textarea
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              rows="5"
+              formControlName="summary"
+            ></textarea>
+          </label>
+          @if (errorMessage(); as message) {
+            <p role="alert" class="text-sm text-red-700 md:col-span-2">
+              {{ message }}
+              @if (supportHint(); as hint) {
+                <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+              }
+            </p>
+          }
+          <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
+            <button
+              class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+              type="submit"
+              [disabled]="saving()"
+            >
+              {{ 'COMMON.SAVE' | translate }}
+            </button>
+            <button
+              class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              type="button"
+              (click)="closeForm()"
+            >
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+          </div>
+        </form>
+      </app-dialog>
 
       <form
         [formGroup]="filterForm"
@@ -163,7 +158,7 @@ const PAGE_SIZE = 20;
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'COMMON.SEARCH' | translate }}</span>
           <input
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="search"
             formControlName="search"
           />
@@ -171,7 +166,7 @@ const PAGE_SIZE = 20;
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.DOC_TYPE' | translate }}</span>
           <select
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
           >
             <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -183,7 +178,7 @@ const PAGE_SIZE = 20;
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.STATUS' | translate }}</span>
           <select
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="status"
           >
             <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -195,7 +190,7 @@ const PAGE_SIZE = 20;
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.FROM' | translate }}</span>
           <input
-            class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             type="date"
             formControlName="from"
           />
@@ -204,7 +199,7 @@ const PAGE_SIZE = 20;
           <label class="flex min-w-0 flex-1 flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.TO' | translate }}</span>
             <input
-              class="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="to"
             />
@@ -218,33 +213,29 @@ const PAGE_SIZE = 20;
         </div>
       </form>
 
-      @if (pendingDelete(); as id) {
-        <div
-          role="alertdialog"
-          aria-labelledby="document-delete-confirmation"
-          class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-        >
-          <p id="document-delete-confirmation" class="font-medium">
-            {{ 'SECRETARIAT.CONFIRM_DELETE' | translate }}
-          </p>
-          <div class="mt-3 flex gap-2">
-            <button
-              class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              type="button"
-              (click)="confirmDelete(id)"
-            >
-              {{ 'COMMON.YES' | translate }}
-            </button>
-            <button
-              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-              type="button"
-              (click)="pendingDelete.set(null)"
-            >
-              {{ 'COMMON.NO' | translate }}
-            </button>
-          </div>
+      <app-dialog
+        [open]="pendingDelete() !== null"
+        [title]="'COMMON.CONFIRM_DELETE' | translate"
+        (closed)="pendingDelete.set(null)"
+      >
+        <p>{{ 'SECRETARIAT.CONFIRM_DELETE' | translate }}</p>
+        <div class="mt-4 flex gap-2">
+          <button
+            class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+            (click)="confirmDelete(pendingDelete()!)"
+          >
+            {{ 'COMMON.YES' | translate }}
+          </button>
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            (click)="pendingDelete.set(null)"
+          >
+            {{ 'COMMON.NO' | translate }}
+          </button>
         </div>
-      }
+      </app-dialog>
 
       @if (loading()) {
         <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>

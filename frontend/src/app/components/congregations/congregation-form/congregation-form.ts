@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AppDialog } from '@components/app-dialog/app-dialog';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-status';
 import { CONGREGATION_TYPES, CongregationType } from '@enums/congregation-type';
@@ -18,7 +19,7 @@ import { CongregationService } from '@services/congregation-service';
 
 @Component({
   selector: 'app-congregation-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
   templateUrl: './congregation-form.html',
   styleUrl: './congregation-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,7 @@ export class CongregationForm implements OnInit {
   readonly statuses = CONGREGATION_STATUSES;
   readonly types = CONGREGATION_TYPES;
 
+  readonly showForm = signal(true);
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly loadError = signal(false);
