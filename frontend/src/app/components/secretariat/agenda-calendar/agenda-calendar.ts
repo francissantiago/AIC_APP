@@ -1,0 +1,585 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
+import {
+  CalendarDatePipe,
+  CalendarEvent,
+  CalendarMonthViewComponent,
+  CalendarNextViewDirective,
+  CalendarPreviousViewDirective,
+  CalendarTodayDirective,
+  CalendarView,
+  CalendarWeekViewComponent,
+  CalendarDayViewComponent,
+  DateAdapter,
+  provideCalendar,
+} from 'angular-calendar';
+import { CALENDAR_EVENT_TYPES, CalendarEventType } from '@enums/secretariat';
+import { SECRETARIAT_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
+import { ICalendarEvent } from '@interfaces/ISecretariat';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { AuthService } from '@services/auth-service';
+import { SecretariatService } from '@services/secretariat-service';
+import { endOfDay, endOfMonth, endOfWeek, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
+
+const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: string }> = {
+  [CalendarEventType.SERVICE]: { primary: '#0369a1', secondary: '#e0f2fe' },
+  [CalendarEventType.MEETING]: { primary: '#9a3412', secondary: '#ffedd5' },
+  [CalendarEventType.REHEARSAL]: { primary: '#6b21a8', secondary: '#f3e8ff' },
+  [CalendarEventType.WEDDING]: { primary: '#be123c', secondary: '#ffe4e6' },
+  [CalendarEventType.OTHER]: { primary: '#334155', secondary: '#e2e8f0' },
+};
+
+@Component({
+  selector: 'app-agenda-calendar',
+  imports: [
+    CalendarDatePipe,
+    CalendarDayViewComponent,
+    CalendarMonthViewComponent,
+    CalendarNextViewDirective,
+    CalendarPreviousViewDirective,
+    CalendarTodayDirective,
+    CalendarWeekViewComponent,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
+  providers: [provideCalendar({ provide: DateAdapter, useFactory: adapterFactory })],
+  template: `
+    <section class="w-full">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-xl font-semibold text-slate-900">
+          {{ 'SECRETARIAT.AGENDA_TITLE' | translate }}
+        </h1>
+        @if (canWrite()) {
+          <button
+            class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+            type="button"
+            (click)="openCreate()"
+          >
+            {{ 'SECRETARIAT.EVENT_NEW' | translate }}
+          </button>
+        }
+      </div>
+
+      @if (showForm()) {
+        <section class="mb-5 w-full max-w-7xl" aria-labelledby="event-form-title">
+          <h2 id="event-form-title" class="mb-4 text-xl font-semibold text-slate-900">
+            {{ (editing() ? 'SECRETARIAT.EVENT_EDIT' : 'SECRETARIAT.EVENT_NEW') | translate }}
+          </h2>
+          <form
+            [formGroup]="form"
+            (ngSubmit)="submit()"
+            class="grid gap-4 md:grid-cols-2"
+            novalidate
+          >
+            <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+              <span>{{ 'SECRETARIAT.EVENT_TITLE' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="title"
+                maxlength="150"
+                [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
+                [attr.aria-describedby]="
+                  form.controls.title.touched && form.controls.title.invalid
+                    ? 'event-title-error'
+                    : null
+                "
+              />
+              @if (form.controls.title.touched && form.controls.title.invalid) {
+                <span id="event-title-error" class="text-xs text-red-700">
+                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
+                </span>
+              }
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.EVENT_TYPE' | translate }}</span>
+              <select
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="type"
+              >
+                @for (type of eventTypes; track type) {
+                  <option [value]="type">{{ typeLabel(type) | translate }}</option>
+                }
+              </select>
+            </label>
+            <label class="flex items-center gap-2 self-end text-sm text-slate-700">
+              <input type="checkbox" formControlName="allDay" class="size-4" />
+              <span>{{ 'SECRETARIAT.ALL_DAY' | translate }}</span>
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.STARTS_AT' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                type="datetime-local"
+                formControlName="startsAt"
+                [attr.aria-invalid]="
+                  form.controls.startsAt.touched && form.controls.startsAt.invalid
+                "
+                [attr.aria-describedby]="
+                  form.controls.startsAt.touched && form.controls.startsAt.invalid
+                    ? 'event-starts-error'
+                    : null
+                "
+              />
+              @if (form.controls.startsAt.touched && form.controls.startsAt.invalid) {
+                <span id="event-starts-error" class="text-xs text-red-700">
+                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
+                </span>
+              }
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.ENDS_AT' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                type="datetime-local"
+                formControlName="endsAt"
+                [attr.aria-invalid]="form.controls.endsAt.touched && form.controls.endsAt.invalid"
+                [attr.aria-describedby]="
+                  form.controls.endsAt.touched && form.controls.endsAt.invalid
+                    ? 'event-ends-error'
+                    : null
+                "
+              />
+              @if (form.controls.endsAt.touched && form.controls.endsAt.invalid) {
+                <span id="event-ends-error" class="text-xs text-red-700">
+                  {{ 'COMMON.REQUIRED_FIELD' | translate }}
+                </span>
+              }
+              @if (rangeInvalid()) {
+                <span class="text-xs text-red-700">
+                  {{ 'SECRETARIAT.INVALID_EVENT_RANGE' | translate }}
+                </span>
+              }
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'SECRETARIAT.LOCATION' | translate }}</span>
+              <input
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                formControlName="location"
+                maxlength="150"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+              <span>{{ 'SECRETARIAT.DESCRIPTION' | translate }}</span>
+              <textarea
+                class="w-full min-w-0 rounded-md border px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                rows="3"
+                formControlName="description"
+              ></textarea>
+            </label>
+            @if (saveError()) {
+              <p role="alert" class="text-sm text-red-700 md:col-span-2">
+                {{ 'SECRETARIAT.SAVE_ERROR' | translate }}
+              </p>
+            }
+            <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
+              <button
+                class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+                type="submit"
+                [disabled]="saving()"
+              >
+                {{ 'COMMON.SAVE' | translate }}
+              </button>
+              @if (editing()) {
+                <button
+                  class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  type="button"
+                  (click)="pendingDelete.set(editing()!.id)"
+                >
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              }
+              <button
+                class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                type="button"
+                (click)="closeForm()"
+              >
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      @if (pendingDelete(); as id) {
+        <div
+          role="alertdialog"
+          aria-labelledby="event-delete-confirmation"
+          class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+        >
+          <p id="event-delete-confirmation" class="font-medium">
+            {{ 'SECRETARIAT.CONFIRM_DELETE_EVENT' | translate }}
+          </p>
+          <div class="mt-3 flex gap-2">
+            <button
+              class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              type="button"
+              (click)="confirmDelete(id)"
+            >
+              {{ 'COMMON.YES' | translate }}
+            </button>
+            <button
+              class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              type="button"
+              (click)="pendingDelete.set(null)"
+            >
+              {{ 'COMMON.NO' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div
+          class="flex gap-2"
+          role="group"
+          [attr.aria-label]="'SECRETARIAT.AGENDA_TITLE' | translate"
+        >
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            mwlCalendarPreviousView
+            [view]="view()"
+            [viewDate]="viewDate()"
+            (viewDateChange)="viewDate.set($event)"
+          >
+            {{ 'COMMON.PREVIOUS' | translate }}
+          </button>
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            mwlCalendarToday
+            [viewDate]="viewDate()"
+            (viewDateChange)="viewDate.set($event)"
+          >
+            {{ 'SECRETARIAT.TODAY' | translate }}
+          </button>
+          <button
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            type="button"
+            mwlCalendarNextView
+            [view]="view()"
+            [viewDate]="viewDate()"
+            (viewDateChange)="viewDate.set($event)"
+          >
+            {{ 'COMMON.NEXT' | translate }}
+          </button>
+        </div>
+        <h2 class="text-lg font-medium text-slate-900">
+          {{ viewDate() | calendarDate: view() + 'ViewTitle' : locale() }}
+        </h2>
+        <div
+          class="flex gap-2"
+          role="group"
+          [attr.aria-label]="'SECRETARIAT.AGENDA_TITLE' | translate"
+        >
+          <button
+            class="rounded-md border px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-600]="view() === calendarView.Month"
+            [class.text-white]="view() === calendarView.Month"
+            [class.border-slate-300]="view() !== calendarView.Month"
+            [class.bg-white]="view() !== calendarView.Month"
+            type="button"
+            (click)="view.set(calendarView.Month)"
+          >
+            {{ 'SECRETARIAT.VIEW_MONTH' | translate }}
+          </button>
+          <button
+            class="rounded-md border px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-600]="view() === calendarView.Week"
+            [class.text-white]="view() === calendarView.Week"
+            [class.border-slate-300]="view() !== calendarView.Week"
+            [class.bg-white]="view() !== calendarView.Week"
+            type="button"
+            (click)="view.set(calendarView.Week)"
+          >
+            {{ 'SECRETARIAT.VIEW_WEEK' | translate }}
+          </button>
+          <button
+            class="rounded-md border px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-600]="view() === calendarView.Day"
+            [class.text-white]="view() === calendarView.Day"
+            [class.border-slate-300]="view() !== calendarView.Day"
+            [class.bg-white]="view() !== calendarView.Day"
+            type="button"
+            (click)="view.set(calendarView.Day)"
+          >
+            {{ 'SECRETARIAT.VIEW_DAY' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+      } @else if (error()) {
+        <p role="alert" class="text-sm text-red-700">{{ 'SECRETARIAT.LOAD_ERROR' | translate }}</p>
+      }
+
+      <div class="rounded-md border border-slate-200 p-2">
+        @switch (view()) {
+          @case (calendarView.Month) {
+            <mwl-calendar-month-view
+              [viewDate]="viewDate()"
+              [events]="calendarEvents()"
+              [locale]="locale()"
+              (dayClicked)="onDayClicked($event.day.date)"
+              (eventClicked)="onEventClicked($event.event)"
+            />
+          }
+          @case (calendarView.Week) {
+            <mwl-calendar-week-view
+              [viewDate]="viewDate()"
+              [events]="calendarEvents()"
+              [locale]="locale()"
+              (eventClicked)="onEventClicked($event.event)"
+              (hourSegmentClicked)="onSlotClicked($event.date)"
+            />
+          }
+          @case (calendarView.Day) {
+            <mwl-calendar-day-view
+              [viewDate]="viewDate()"
+              [events]="calendarEvents()"
+              [locale]="locale()"
+              (eventClicked)="onEventClicked($event.event)"
+              (hourSegmentClicked)="onSlotClicked($event.date)"
+            />
+          }
+        }
+      </div>
+    </section>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class AgendaCalendar implements OnInit {
+  readonly #secretariat = inject(SecretariatService);
+  readonly #auth = inject(AuthService);
+  readonly #destroyRef = inject(DestroyRef);
+  readonly #translate = inject(TranslateService);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  readonly calendarView = CalendarView;
+  readonly eventTypes = CALENDAR_EVENT_TYPES;
+
+  readonly view = signal<CalendarView>(CalendarView.Month);
+  readonly viewDate = signal(new Date());
+  readonly events = signal<ICalendarEvent[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal(false);
+  readonly showForm = signal(false);
+  readonly editing = signal<ICalendarEvent | null>(null);
+  readonly saving = signal(false);
+  readonly saveError = signal(false);
+  readonly pendingDelete = signal<string | null>(null);
+
+  readonly canWrite = computed(() =>
+    hasAnyRole(this.#auth.currentUser()?.roles.map((r) => r.code) ?? [], SECRETARIAT_WRITE_ROLES),
+  );
+  readonly locale = computed(() => this.#translate.currentLang() || 'en');
+
+  readonly calendarEvents = computed<CalendarEvent<ICalendarEvent>[]>(() =>
+    this.events().map((event) => ({
+      id: event.id,
+      title: event.title,
+      start: new Date(event.startsAt),
+      end: new Date(event.endsAt),
+      allDay: event.allDay,
+      meta: event,
+      color: EVENT_COLORS[event.type],
+    })),
+  );
+
+  readonly form = new FormGroup({
+    title: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    type: new FormControl(CalendarEventType.SERVICE, { nonNullable: true }),
+    allDay: new FormControl(false, { nonNullable: true }),
+    startsAt: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    endsAt: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    location: new FormControl('', { nonNullable: true }),
+    description: new FormControl('', { nonNullable: true }),
+  });
+
+  readonly rangeInvalid = computed(() => {
+    const v = this.form.getRawValue();
+    return Boolean(v.startsAt && v.endsAt && v.endsAt < v.startsAt);
+  });
+
+  constructor() {
+    effect(() => {
+      const view = this.view();
+      const date = this.viewDate();
+      this.#load(view, date);
+    });
+  }
+
+  ngOnInit(): void {
+    this.#load(this.view(), this.viewDate());
+  }
+
+  openCreate(date?: Date): void {
+    this.editing.set(null);
+    const start = date ? new Date(date) : new Date();
+    if (date) {
+      start.setHours(19, 0, 0, 0);
+    }
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    this.form.reset({
+      title: '',
+      type: CalendarEventType.SERVICE,
+      allDay: false,
+      startsAt: this.#toLocalInput(start),
+      endsAt: this.#toLocalInput(end),
+      location: '',
+      description: '',
+    });
+    this.showForm.set(true);
+  }
+
+  openEdit(event: ICalendarEvent): void {
+    this.editing.set(event);
+    this.form.reset({
+      title: event.title,
+      type: event.type,
+      allDay: event.allDay,
+      startsAt: this.#toLocalInput(new Date(event.startsAt)),
+      endsAt: this.#toLocalInput(new Date(event.endsAt)),
+      location: event.location ?? '',
+      description: event.description ?? '',
+    });
+    this.showForm.set(true);
+  }
+
+  closeForm(): void {
+    this.showForm.set(false);
+    this.editing.set(null);
+    this.saveError.set(false);
+  }
+
+  onDayClicked(date: Date): void {
+    if (this.canWrite()) {
+      this.openCreate(date);
+    }
+  }
+
+  onSlotClicked(date: Date): void {
+    if (this.canWrite()) {
+      this.openCreate(date);
+    }
+  }
+
+  onEventClicked(event: CalendarEvent<ICalendarEvent>): void {
+    if (this.canWrite() && event.meta) {
+      this.openEdit(event.meta);
+    }
+  }
+
+  submit(): void {
+    if (this.form.invalid || this.rangeInvalid()) {
+      this.form.markAllAsTouched();
+      this.#focusFirstInvalid();
+      return;
+    }
+    const v = this.form.getRawValue();
+    const payload = {
+      title: v.title,
+      type: v.type,
+      allDay: v.allDay,
+      startsAt: new Date(v.startsAt).toISOString(),
+      endsAt: new Date(v.endsAt).toISOString(),
+      location: v.location || null,
+      description: v.description || null,
+    };
+    const request = this.editing()
+      ? this.#secretariat.updateCalendarEvent(this.editing()!.id, payload)
+      : this.#secretariat.createCalendarEvent(payload);
+    this.saving.set(true);
+    this.saveError.set(false);
+    request.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.closeForm();
+        this.#load(this.view(), this.viewDate());
+      },
+      error: () => {
+        this.saving.set(false);
+        this.saveError.set(true);
+      },
+    });
+  }
+
+  confirmDelete(id: string): void {
+    this.#secretariat
+      .removeCalendarEvent(id)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: () => {
+          this.pendingDelete.set(null);
+          this.closeForm();
+          this.#load(this.view(), this.viewDate());
+        },
+        error: () => this.error.set(true),
+      });
+  }
+
+  typeLabel(type: CalendarEventType): string {
+    return `SECRETARIAT.EVENT_TYPE_${type.toUpperCase()}`;
+  }
+
+  #load(view: CalendarView, date: Date): void {
+    const { from, to } = this.#rangeFor(view, date);
+    this.loading.set(true);
+    this.error.set(false);
+    this.#secretariat
+      .calendarEvents({ from: from.toISOString(), to: to.toISOString(), page: 1, limit: 100 })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.events.set(result.data);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.events.set([]);
+          this.loading.set(false);
+          this.error.set(true);
+        },
+      });
+  }
+
+  #rangeFor(view: CalendarView, date: Date): { from: Date; to: Date } {
+    switch (view) {
+      case CalendarView.Week:
+        return { from: startOfWeek(date), to: endOfWeek(date) };
+      case CalendarView.Day:
+        return { from: startOfDay(date), to: endOfDay(date) };
+      default:
+        return { from: startOfMonth(date), to: endOfMonth(date) };
+    }
+  }
+
+  #toLocalInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  #focusFirstInvalid(): void {
+    queueMicrotask(() => {
+      this.#host.nativeElement
+        .querySelector<HTMLElement>('input.ng-invalid, select.ng-invalid, textarea.ng-invalid')
+        ?.focus();
+    });
+  }
+}

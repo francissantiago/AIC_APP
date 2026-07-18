@@ -1,3 +1,4 @@
+import { registerLocaleData } from '@angular/common';
 import {
   ApplicationConfig,
   inject,
@@ -8,11 +9,16 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+import localeEs from '@angular/common/locales/es';
+import localePt from '@angular/common/locales/pt';
 import { DEFAULT_APP_LANGUAGE } from '@enums/app-language';
 import { authInterceptor } from '@interceptors/auth-interceptor';
 import { AuthService } from '@services/auth-service';
 import { I18nService } from '@services/i18n-service';
 import { routes } from './app.routes';
+
+registerLocaleData(localePt, 'pt-BR');
+registerLocaleData(localeEs, 'es');
 
 export const appConfig: ApplicationConfig = {
   providers: [

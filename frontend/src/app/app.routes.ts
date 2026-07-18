@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@guards/auth-guard';
 import { guestGuard } from '@guards/guest-guard';
-import { financeRoleGuard } from '@guards/role-guard';
+import { financeRoleGuard, secretariatRoleGuard } from '@guards/role-guard';
 
 export const routes: Routes = [
   {
@@ -76,8 +76,7 @@ export const routes: Routes = [
       },
       {
         path: 'example',
-        loadComponent: () =>
-          import('@components/example/example/example').then((m) => m.Example),
+        loadComponent: () => import('@components/example/example/example').then((m) => m.Example),
       },
       {
         path: 'finance',
@@ -107,6 +106,44 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@components/finance/financial-reports/financial-reports').then(
             (m) => m.FinancialReports,
+          ),
+      },
+      {
+        path: 'secretariat',
+        canActivate: [secretariatRoleGuard],
+        loadComponent: () =>
+          import('@components/secretariat/secretariat-dashboard/secretariat-dashboard').then(
+            (m) => m.SecretariatDashboard,
+          ),
+      },
+      {
+        path: 'secretariat/agenda',
+        canActivate: [secretariatRoleGuard],
+        loadComponent: () =>
+          import('@components/secretariat/agenda-calendar/agenda-calendar').then(
+            (m) => m.AgendaCalendar,
+          ),
+      },
+      {
+        path: 'secretariat/visitors',
+        canActivate: [secretariatRoleGuard],
+        loadComponent: () =>
+          import('@components/secretariat/visitors-list/visitors-list').then((m) => m.VisitorsList),
+      },
+      {
+        path: 'secretariat/attendance',
+        canActivate: [secretariatRoleGuard],
+        loadComponent: () =>
+          import('@components/secretariat/attendance-list/attendance-list').then(
+            (m) => m.AttendanceList,
+          ),
+      },
+      {
+        path: 'secretariat/documents',
+        canActivate: [secretariatRoleGuard],
+        loadComponent: () =>
+          import('@components/secretariat/documents-list/documents-list').then(
+            (m) => m.DocumentsList,
           ),
       },
     ],

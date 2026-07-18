@@ -11,6 +11,7 @@ import { CongregationsModule } from './modules/congregations/congregations.modul
 import { FinanceModule } from './modules/finance/finance.module';
 import { MembersModule } from './modules/members/members.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { SecretariatModule } from './modules/secretariat/secretariat.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -41,6 +42,7 @@ import { UsersModule } from './modules/users/users.module';
     CongregationsModule,
     FinanceModule,
     AssetsModule,
+    SecretariatModule,
   ],
 })
 export class AppModule {}

@@ -10,7 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FINANCE_READ_ROLES, hasAnyRole } from '@guards/role-guard';
+import { FINANCE_READ_ROLES, SECRETARIAT_READ_ROLES, hasAnyRole } from '@guards/role-guard';
 import { AuthService } from '@services/auth-service';
 import { filter } from 'rxjs';
 
@@ -34,8 +34,15 @@ export class SidebarNav {
   readonly expanded = input(true);
   readonly currentUrl = signal(this.#router.url);
   readonly financeOpen = signal(this.#router.url.startsWith('/finance'));
+  readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
   readonly canViewFinance = computed(() =>
     hasAnyRole(this.#auth.currentUser()?.roles.map((role) => role.code) ?? [], FINANCE_READ_ROLES),
+  );
+  readonly canViewSecretariat = computed(() =>
+    hasAnyRole(
+      this.#auth.currentUser()?.roles.map((role) => role.code) ?? [],
+      SECRETARIAT_READ_ROLES,
+    ),
   );
 
   readonly items: readonly SidebarNavItem[] = [
@@ -52,6 +59,14 @@ export class SidebarNav {
     { route: '/finance/reports', labelKey: 'NAV.FINANCIAL_REPORTS' },
   ] as const;
 
+  readonly secretariatItems = [
+    { route: '/secretariat', labelKey: 'NAV.SECRETARIAT_DASHBOARD' },
+    { route: '/secretariat/agenda', labelKey: 'NAV.SECRETARIAT_AGENDA' },
+    { route: '/secretariat/visitors', labelKey: 'NAV.SECRETARIAT_VISITORS' },
+    { route: '/secretariat/attendance', labelKey: 'NAV.SECRETARIAT_ATTENDANCE' },
+    { route: '/secretariat/documents', labelKey: 'NAV.SECRETARIAT_DOCUMENTS' },
+  ] as const;
+
   constructor() {
     this.#router.events
       .pipe(
@@ -63,6 +78,9 @@ export class SidebarNav {
         if (event.urlAfterRedirects.startsWith('/finance')) {
           this.financeOpen.set(true);
         }
+        if (event.urlAfterRedirects.startsWith('/secretariat')) {
+          this.secretariatOpen.set(true);
+        }
       });
   }
 
@@ -72,5 +90,13 @@ export class SidebarNav {
       return;
     }
     this.financeOpen.update((value) => !value);
+  }
+
+  toggleSecretariat(): void {
+    if (!this.expanded()) {
+      void this.#router.navigateByUrl('/secretariat');
+      return;
+    }
+    this.secretariatOpen.update((value) => !value);
   }
 }

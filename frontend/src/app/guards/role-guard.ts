@@ -5,6 +5,9 @@ import { AuthService } from '@services/auth-service';
 export const FINANCE_READ_ROLES = ['ADMIN', 'TREASURER', 'PASTOR'] as const;
 export const FINANCE_WRITE_ROLES = ['ADMIN', 'TREASURER'] as const;
 
+export const SECRETARIAT_READ_ROLES = ['ADMIN', 'PASTOR', 'SECRETARY'] as const;
+export const SECRETARIAT_WRITE_ROLES = ['ADMIN', 'SECRETARY'] as const;
+
 export function hasAnyRole(
   roleCodes: readonly string[],
   acceptedRoles: readonly string[],
@@ -18,4 +21,12 @@ export const financeRoleGuard: CanActivateFn = () => {
   const roles = authService.currentUser()?.roles.map((role) => role.code) ?? [];
 
   return hasAnyRole(roles, FINANCE_READ_ROLES) || router.createUrlTree(['/users']);
+};
+
+export const secretariatRoleGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const roles = authService.currentUser()?.roles.map((role) => role.code) ?? [];
+
+  return hasAnyRole(roles, SECRETARIAT_READ_ROLES) || router.createUrlTree(['/users']);
 };

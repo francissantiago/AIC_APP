@@ -104,6 +104,21 @@ export class AppShell {
     if (path.startsWith('/finance')) {
       return 'APP_SHELL.PAGE_FINANCE';
     }
+    if (path.startsWith('/secretariat/agenda')) {
+      return 'APP_SHELL.PAGE_SECRETARIAT_AGENDA';
+    }
+    if (path.startsWith('/secretariat/visitors')) {
+      return 'APP_SHELL.PAGE_SECRETARIAT_VISITORS';
+    }
+    if (path.startsWith('/secretariat/attendance')) {
+      return 'APP_SHELL.PAGE_SECRETARIAT_ATTENDANCE';
+    }
+    if (path.startsWith('/secretariat/documents')) {
+      return 'APP_SHELL.PAGE_SECRETARIAT_DOCUMENTS';
+    }
+    if (path.startsWith('/secretariat')) {
+      return 'APP_SHELL.PAGE_SECRETARIAT';
+    }
     if (path.startsWith('/roles')) {
       return 'APP_SHELL.PAGE_ROLES';
     }
