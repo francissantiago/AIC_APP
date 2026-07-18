@@ -5,6 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
+import { isTwoFactorChallenge } from '@interfaces/ILoginResult';
 import { AuthService } from '@services/auth-service';
 
 @Component({
@@ -22,6 +23,8 @@ export class Login {
   readonly loginLoading = this.#authService.loginLoading;
   readonly loginError = this.#authService.loginError;
   readonly submitted = signal(false);
+  readonly totpSubmitted = signal(false);
+  readonly step = signal<'credentials' | 'totp'>('credentials');
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -34,9 +37,21 @@ export class Login {
     }),
   });
 
+  readonly totpForm = new FormGroup({
+    code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
+    }),
+  });
+
   fieldInvalid(controlName: 'email' | 'password'): boolean {
     const control = this.form.controls[controlName];
     return control.invalid && (control.dirty || control.touched || this.submitted());
+  }
+
+  totpFieldInvalid(): boolean {
+    const control = this.totpForm.controls.code;
+    return control.invalid && (control.dirty || control.touched || this.totpSubmitted());
   }
 
   submit(): void {
@@ -53,6 +68,41 @@ export class Login {
       .login({ email: email.trim(), password })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
+        next: (result) => {
+          if (isTwoFactorChallenge(result)) {
+            this.step.set('totp');
+            this.totpForm.reset();
+            this.totpSubmitted.set(false);
+            return;
+          }
+          void this.#router.navigateByUrl('/users');
+        },
+        error: (_error: HttpErrorResponse) => {
+          // Mensagem já mapeada em AuthService.loginError
+        },
+      });
+  }
+
+  submitTotp(): void {
+    this.totpSubmitted.set(true);
+
+    if (this.totpForm.invalid) {
+      this.totpForm.markAllAsTouched();
+      return;
+    }
+
+    const preAuthToken = this.#authService.preAuthToken();
+    if (!preAuthToken) {
+      this.backToCredentials();
+      return;
+    }
+
+    const { code } = this.totpForm.getRawValue();
+
+    this.#authService
+      .loginTwoFactor({ preAuthToken, code })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
         next: () => {
           void this.#router.navigateByUrl('/users');
         },
@@ -60,5 +110,12 @@ export class Login {
           // Mensagem já mapeada em AuthService.loginError
         },
       });
+  }
+
+  backToCredentials(): void {
+    this.#authService.clearPreAuthChallenge();
+    this.step.set('credentials');
+    this.totpForm.reset();
+    this.totpSubmitted.set(false);
   }
 }

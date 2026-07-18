@@ -13,7 +13,10 @@ describe('Login', () => {
   let authService: {
     loginLoading: ReturnType<typeof signal<boolean>>;
     loginError: ReturnType<typeof signal<string | null>>;
+    preAuthToken: ReturnType<typeof signal<string | null>>;
     login: ReturnType<typeof vi.fn>;
+    loginTwoFactor: ReturnType<typeof vi.fn>;
+    clearPreAuthChallenge: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
@@ -21,7 +24,10 @@ describe('Login', () => {
     authService = {
       loginLoading: signal(false),
       loginError: signal<string | null>(null),
+      preAuthToken: signal<string | null>(null),
       login: vi.fn().mockReturnValue(of({})),
+      loginTwoFactor: vi.fn().mockReturnValue(of({})),
+      clearPreAuthChallenge: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
@@ -66,5 +72,32 @@ describe('Login', () => {
     component.submit();
 
     expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('should show TOTP step after 2FA challenge and submit loginTwoFactor', () => {
+    authService.login.mockReturnValue(
+      of({
+        requiresTwoFactor: true as const,
+        preAuthToken: 'preauth-token',
+        expiresIn: '5m',
+      }),
+    );
+    authService.preAuthToken.set('preauth-token');
+
+    component.form.setValue({
+      email: 'admin@admin.com',
+      password: 'secret',
+    });
+    component.submit();
+
+    expect(component.step()).toBe('totp');
+
+    component.totpForm.setValue({ code: '123456' });
+    component.submitTotp();
+
+    expect(authService.loginTwoFactor).toHaveBeenCalledWith({
+      preAuthToken: 'preauth-token',
+      code: '123456',
+    });
   });
 });

@@ -18,6 +18,40 @@
     "EMAIL_REQUIRED": "Email is required",
     "PASSWORD_REQUIRED": "Password is required"
   },
+  "PROFILE": {
+    "TITLE": "My profile",
+    "DESCRIPTION": "Manage your account, password and two-factor authentication.",
+    "MENU_LINK": "Profile",
+    "FULL_NAME": "Full name",
+    "EMAIL": "Email",
+    "USERNAME": "Username",
+    "USERNAME_HINT": "Username cannot be changed here.",
+    "SAVE": "Save profile",
+    "PASSWORD_SECTION": "Change password",
+    "CURRENT_PASSWORD": "Current password",
+    "NEW_PASSWORD": "New password",
+    "CONFIRM_PASSWORD": "Confirm new password",
+    "CHANGE_PASSWORD": "Update password",
+    "PASSWORD_MISMATCH": "Passwords do not match",
+    "TWO_FA_SECTION": "Two-factor authentication",
+    "TWO_FA_STATUS_ENABLED": "2FA is enabled",
+    "TWO_FA_STATUS_DISABLED": "2FA is disabled",
+    "TWO_FA_SETUP": "Set up 2FA",
+    "TWO_FA_VERIFY": "Verify and enable",
+    "TWO_FA_DISABLE": "Disable 2FA",
+    "TWO_FA_CODE": "Authentication code",
+    "TWO_FA_SCAN_QR": "Scan this QR code with your authenticator app",
+    "TWO_FA_MANUAL_SECRET": "Or enter this secret manually",
+    "LOGIN_TOTP_TITLE": "Two-factor authentication",
+    "LOGIN_TOTP_HINT": "Enter the 6-digit code from your authenticator app",
+    "LOGIN_TOTP_SUBMIT": "Verify",
+    "LOGIN_TOTP_BACK": "Back to login",
+    "SUCCESS_PROFILE": "Profile updated",
+    "SUCCESS_PASSWORD": "Password updated",
+    "SUCCESS_2FA_ENABLED": "Two-factor authentication enabled",
+    "SUCCESS_2FA_DISABLED": "Two-factor authentication disabled",
+    "ERROR_GENERIC": "Could not complete the request"
+  },
   "NAV": {
     "MAIN_NAV": "Main navigation",
     "USERS": "Users",
@@ -72,7 +106,8 @@
     "PAGE_SECRETARIAT_DOCUMENTS": "Minutes & documents",
     "PAGE_SECRETARIAT_SCHEDULES": "Volunteer schedules",
     "PAGE_SMALL_GROUPS": "Small groups",
-    "PAGE_SMALL_GROUPS_REPORTS": "Small groups frequency"
+    "PAGE_SMALL_GROUPS_REPORTS": "Small groups frequency",
+    "PAGE_PROFILE": "Profile"
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -731,7 +766,14 @@
     },
     "AUTH": {
       "INVALID_CREDENTIALS": "Invalid credentials.",
-      "FORBIDDEN": "You do not have permission for this action."
+      "FORBIDDEN": "You do not have permission for this action.",
+      "INVALID_CURRENT_PASSWORD": "Current password is incorrect.",
+      "PASSWORD_SAME_AS_CURRENT": "New password must be different from the current one.",
+      "2FA_ALREADY_ENABLED": "Two-factor authentication is already enabled.",
+      "2FA_NOT_ENABLED": "Two-factor authentication is not enabled.",
+      "2FA_NOT_PENDING": "Set up 2FA before verifying the code.",
+      "2FA_INVALID_CODE": "Invalid verification code.",
+      "2FA_PREAUTH_INVALID": "Two-factor challenge is invalid or expired."
     },
     "USERS": {
       "NOT_FOUND": "User not found.",

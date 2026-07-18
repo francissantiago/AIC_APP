@@ -147,17 +147,90 @@ export class UsersService {
   }
 
   /**
-   * Busca usuário para autenticação (inclui passwordHash).
+   * Busca usuário para autenticação (inclui passwordHash e twoFactorSecret).
    * Soft-deleted não é retornado (sem withDeleted).
    */
   async findByEmailForAuth(email: string): Promise<User | null> {
     return this.usersRepository
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')
+      .addSelect('user.twoFactorSecret')
       .leftJoinAndSelect('user.roles', 'role')
       .leftJoinAndSelect('role.permissions', 'permission')
       .where('user.email = :email', { email })
       .getOne();
+  }
+
+  /**
+   * Carrega passwordHash + twoFactorSecret para self-service (senha / 2FA).
+   */
+  async findOneForAuthSecrets(userId: string): Promise<User> {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .addSelect('user.twoFactorSecret')
+      .leftJoinAndSelect('user.roles', 'role')
+      .leftJoinAndSelect('role.permissions', 'permission')
+      .where('user.id = :userId', { userId })
+      .getOne();
+    if (!user) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.USERS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.USERS_NOT_FOUND],
+      });
+    }
+    return user;
+  }
+
+  async updateProfile(
+    userId: string,
+    data: { fullName?: string; email?: string },
+  ): Promise<UserResponseDto> {
+    const user = await this.getUserOrFail(userId);
+
+    if (data.email !== undefined && data.email !== user.email) {
+      const conflict = await this.usersRepository.findOne({
+        where: { email: data.email },
+        withDeleted: true,
+      });
+      if (conflict && conflict.id !== userId) {
+        throw new ApiException(HttpStatus.CONFLICT, {
+          code: ApiErrorCode.USERS_EMAIL_IN_USE,
+          message: ApiErrorMessage[ApiErrorCode.USERS_EMAIL_IN_USE],
+          details: [
+            {
+              field: 'email',
+              code: ApiErrorCode.USERS_EMAIL_IN_USE,
+              message: ApiErrorMessage[ApiErrorCode.USERS_EMAIL_IN_USE],
+            },
+          ],
+        });
+      }
+      user.email = data.email;
+    }
+    if (data.fullName !== undefined) {
+      user.fullName = data.fullName;
+    }
+
+    const saved = await this.usersRepository.save(user);
+    this.logger.log(`Perfil atualizado (self-service): ${saved.id}`);
+    return UserResponseDto.fromEntity(saved);
+  }
+
+  async updatePasswordHash(userId: string, hash: string): Promise<void> {
+    await this.usersRepository.update(userId, { passwordHash: hash });
+    this.logger.log(`Senha atualizada (self-service): ${userId}`);
+  }
+
+  async setTwoFactorSecret(
+    userId: string,
+    secret: string | null,
+  ): Promise<void> {
+    await this.usersRepository.update(userId, { twoFactorSecret: secret });
+  }
+
+  async setTwoFactorEnabled(userId: string, enabled: boolean): Promise<void> {
+    await this.usersRepository.update(userId, { twoFactorEnabled: enabled });
   }
 
   async touchLastLogin(userId: string): Promise<void> {

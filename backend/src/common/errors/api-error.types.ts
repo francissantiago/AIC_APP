@@ -28,6 +28,13 @@ export const ApiErrorCode = {
 
   AUTH_INVALID_CREDENTIALS: 'AUTH.INVALID_CREDENTIALS',
   AUTH_FORBIDDEN: 'AUTH.FORBIDDEN',
+  AUTH_INVALID_CURRENT_PASSWORD: 'AUTH.INVALID_CURRENT_PASSWORD',
+  AUTH_PASSWORD_SAME_AS_CURRENT: 'AUTH.PASSWORD_SAME_AS_CURRENT',
+  AUTH_2FA_ALREADY_ENABLED: 'AUTH.2FA_ALREADY_ENABLED',
+  AUTH_2FA_NOT_ENABLED: 'AUTH.2FA_NOT_ENABLED',
+  AUTH_2FA_NOT_PENDING: 'AUTH.2FA_NOT_PENDING',
+  AUTH_2FA_INVALID_CODE: 'AUTH.2FA_INVALID_CODE',
+  AUTH_2FA_PREAUTH_INVALID: 'AUTH.2FA_PREAUTH_INVALID',
 
   USERS_NOT_FOUND: 'USERS.NOT_FOUND',
   USERS_EMAIL_IN_USE: 'USERS.EMAIL_IN_USE',
@@ -168,6 +175,16 @@ export const ApiErrorMessage = {
   [ApiErrorCode.SYS_NOT_FOUND]: 'Recurso não encontrado.',
   [ApiErrorCode.AUTH_INVALID_CREDENTIALS]: 'Credenciais inválidas',
   [ApiErrorCode.AUTH_FORBIDDEN]: 'Perfil sem permissão para esta operação',
+  [ApiErrorCode.AUTH_INVALID_CURRENT_PASSWORD]: 'Senha atual inválida',
+  [ApiErrorCode.AUTH_PASSWORD_SAME_AS_CURRENT]:
+    'A nova senha deve ser diferente da atual',
+  [ApiErrorCode.AUTH_2FA_ALREADY_ENABLED]:
+    'Autenticação em dois fatores já está ativa',
+  [ApiErrorCode.AUTH_2FA_NOT_ENABLED]:
+    'Autenticação em dois fatores não está ativa',
+  [ApiErrorCode.AUTH_2FA_NOT_PENDING]: 'Configure o 2FA antes de verificar',
+  [ApiErrorCode.AUTH_2FA_INVALID_CODE]: 'Código de verificação inválido',
+  [ApiErrorCode.AUTH_2FA_PREAUTH_INVALID]: 'Desafio 2FA inválido ou expirado',
   [ApiErrorCode.USERS_NOT_FOUND]: 'Usuário não encontrado.',
   [ApiErrorCode.USERS_EMAIL_IN_USE]: 'Este e-mail já está cadastrado.',
   [ApiErrorCode.USERS_USERNAME_IN_USE]: 'Este nome de usuário já está em uso.',

@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
 import { SidebarNav } from '@components/layout/sidebar-nav/sidebar-nav';
@@ -20,7 +20,14 @@ const SIDEBAR_ID = 'app-sidebar';
 
 @Component({
   selector: 'app-app-shell',
-  imports: [RouterOutlet, TranslatePipe, LanguageSwitcher, SidebarNav, NotificationsBell],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    TranslatePipe,
+    LanguageSwitcher,
+    SidebarNav,
+    NotificationsBell,
+  ],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -158,6 +165,9 @@ export class AppShell {
     }
     if (path.startsWith('/users')) {
       return 'APP_SHELL.PAGE_USERS';
+    }
+    if (path.startsWith('/profile')) {
+      return 'APP_SHELL.PAGE_PROFILE';
     }
 
     return 'APP_SHELL.APP_NAME';

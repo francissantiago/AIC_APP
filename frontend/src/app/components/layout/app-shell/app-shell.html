@@ -107,6 +107,27 @@
       <div class="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-3">
         <app-notifications-bell />
         <app-language-switcher />
+        <a
+          routerLink="/profile"
+          class="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:h-9 sm:w-auto sm:gap-2 sm:px-3"
+          [attr.aria-label]="'PROFILE.MENU_LINK' | translate"
+        >
+          <svg
+            class="size-4 text-slate-500"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+            />
+          </svg>
+          <span class="hidden sm:inline">{{ 'PROFILE.MENU_LINK' | translate }}</span>
+        </a>
         <button
           type="button"
           class="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:h-9 sm:w-auto sm:gap-2 sm:px-3"

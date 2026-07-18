@@ -18,6 +18,40 @@
     "EMAIL_REQUIRED": "El correo es obligatorio",
     "PASSWORD_REQUIRED": "La contraseña es obligatoria"
   },
+  "PROFILE": {
+    "TITLE": "Mi perfil",
+    "DESCRIPTION": "Administra tu cuenta, contraseña y autenticación en dos pasos.",
+    "MENU_LINK": "Perfil",
+    "FULL_NAME": "Nombre completo",
+    "EMAIL": "Correo electrónico",
+    "USERNAME": "Usuario",
+    "USERNAME_HINT": "El usuario no se puede cambiar aquí.",
+    "SAVE": "Guardar perfil",
+    "PASSWORD_SECTION": "Cambiar contraseña",
+    "CURRENT_PASSWORD": "Contraseña actual",
+    "NEW_PASSWORD": "Nueva contraseña",
+    "CONFIRM_PASSWORD": "Confirmar nueva contraseña",
+    "CHANGE_PASSWORD": "Actualizar contraseña",
+    "PASSWORD_MISMATCH": "Las contraseñas no coinciden",
+    "TWO_FA_SECTION": "Autenticación en dos pasos",
+    "TWO_FA_STATUS_ENABLED": "El 2FA está activado",
+    "TWO_FA_STATUS_DISABLED": "El 2FA está desactivado",
+    "TWO_FA_SETUP": "Configurar 2FA",
+    "TWO_FA_VERIFY": "Verificar y activar",
+    "TWO_FA_DISABLE": "Desactivar 2FA",
+    "TWO_FA_CODE": "Código de autenticación",
+    "TWO_FA_SCAN_QR": "Escanea este código QR con tu app de autenticación",
+    "TWO_FA_MANUAL_SECRET": "O introduce este secreto manualmente",
+    "LOGIN_TOTP_TITLE": "Autenticación en dos pasos",
+    "LOGIN_TOTP_HINT": "Introduce el código de 6 dígitos de tu app de autenticación",
+    "LOGIN_TOTP_SUBMIT": "Verificar",
+    "LOGIN_TOTP_BACK": "Volver al inicio de sesión",
+    "SUCCESS_PROFILE": "Perfil actualizado",
+    "SUCCESS_PASSWORD": "Contraseña actualizada",
+    "SUCCESS_2FA_ENABLED": "Autenticación en dos pasos activada",
+    "SUCCESS_2FA_DISABLED": "Autenticación en dos pasos desactivada",
+    "ERROR_GENERIC": "No se pudo completar la solicitud"
+  },
   "NAV": {
     "MAIN_NAV": "Navegación principal",
     "USERS": "Usuarios",
@@ -72,7 +106,8 @@
     "PAGE_SECRETARIAT_DOCUMENTS": "Actas y documentos",
     "PAGE_SECRETARIAT_SCHEDULES": "Escalas de voluntariado",
     "PAGE_SMALL_GROUPS": "Grupos pequeños",
-    "PAGE_SMALL_GROUPS_REPORTS": "Frecuencia de grupos pequeños"
+    "PAGE_SMALL_GROUPS_REPORTS": "Frecuencia de grupos pequeños",
+    "PAGE_PROFILE": "Perfil"
   },
   "COMMON": {
     "LOADING": "Cargando...",
@@ -731,7 +766,14 @@
     },
     "AUTH": {
       "INVALID_CREDENTIALS": "Credenciales inválidas.",
-      "FORBIDDEN": "No tienes permiso para esta operación."
+      "FORBIDDEN": "No tienes permiso para esta operación.",
+      "INVALID_CURRENT_PASSWORD": "La contraseña actual es incorrecta.",
+      "PASSWORD_SAME_AS_CURRENT": "La nueva contraseña debe ser distinta de la actual.",
+      "2FA_ALREADY_ENABLED": "La autenticación en dos pasos ya está activada.",
+      "2FA_NOT_ENABLED": "La autenticación en dos pasos no está activada.",
+      "2FA_NOT_PENDING": "Configura el 2FA antes de verificar el código.",
+      "2FA_INVALID_CODE": "Código de verificación inválido.",
+      "2FA_PREAUTH_INVALID": "El desafío 2FA es inválido o expiró."
     },
     "USERS": {
       "NOT_FOUND": "Usuario no encontrado.",

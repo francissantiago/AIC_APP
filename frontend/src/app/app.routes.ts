@@ -39,6 +39,11 @@ export const routes: Routes = [
         loadComponent: () => import('@components/auth/no-access/no-access').then((m) => m.NoAccess),
       },
       {
+        path: 'profile',
+        loadComponent: () =>
+          import('@components/profile/profile-page/profile-page').then((m) => m.ProfilePage),
+      },
+      {
         path: 'announcements',
         canActivate: [announcementsPermissionGuard],
         loadComponent: () =>

@@ -14,6 +14,7 @@ describe('AuthService', () => {
   let http: {
     get: ReturnType<typeof vi.fn>;
     post: ReturnType<typeof vi.fn>;
+    patch: ReturnType<typeof vi.fn>;
   };
   let router: { navigateByUrl: ReturnType<typeof vi.fn> };
   let service: AuthService;
@@ -45,6 +46,7 @@ describe('AuthService', () => {
     http = {
       get: vi.fn(),
       post: vi.fn(),
+      patch: vi.fn(),
     };
     router = {
       navigateByUrl: vi.fn().mockResolvedValue(true),
@@ -89,6 +91,63 @@ describe('AuthService', () => {
     expect(service.accessToken()).toBe('jwt-token');
     expect(service.currentUser()?.email).toBe('admin@admin.com');
     expect(service.isAuthenticated()).toBe(true);
+  });
+
+  it('login with 2FA challenge should not persist token', () => {
+    http.post.mockReturnValue(
+      of({
+        requiresTwoFactor: true,
+        preAuthToken: 'preauth-token',
+        expiresIn: '5m',
+      }),
+    );
+
+    service.login({ email: 'admin@admin.com', password: 'secret' }).subscribe();
+
+    expect(sessionStorage.getItem('aic.accessToken')).toBeNull();
+    expect(service.accessToken()).toBeNull();
+    expect(service.preAuthToken()).toBe('preauth-token');
+    expect(service.isAuthenticated()).toBe(false);
+  });
+
+  it('loginTwoFactor should persist session', () => {
+    http.post.mockReturnValue(of(authResponse));
+
+    service.loginTwoFactor({ preAuthToken: 'preauth', code: '123456' }).subscribe();
+
+    expect(http.post).toHaveBeenCalledWith(
+      `${baseUrl}/login/2fa`,
+      { preAuthToken: 'preauth', code: '123456' },
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+    expect(sessionStorage.getItem('aic.accessToken')).toBe('jwt-token');
+    expect(service.preAuthToken()).toBeNull();
+  });
+
+  it('updateMe should PATCH /auth/me and update currentUser', () => {
+    const updated = { ...user, fullName: 'Novo Nome' };
+    http.patch.mockReturnValue(of(updated));
+
+    service.updateMe({ fullName: 'Novo Nome' }).subscribe();
+
+    expect(http.patch).toHaveBeenCalledWith(
+      `${baseUrl}/me`,
+      { fullName: 'Novo Nome' },
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+    expect(service.currentUser()?.fullName).toBe('Novo Nome');
+  });
+
+  it('changePassword should PATCH /auth/me/password', () => {
+    http.patch.mockReturnValue(of(undefined));
+
+    service.changePassword({ currentPassword: 'old', newPassword: 'newpassword' }).subscribe();
+
+    expect(http.patch).toHaveBeenCalledWith(
+      `${baseUrl}/me/password`,
+      { currentPassword: 'old', newPassword: 'newpassword' },
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
   });
 
   it('login should map 401 to translated invalid credentials without retry', () => {

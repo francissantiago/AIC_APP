@@ -1,0 +1,299 @@
+<section class="space-y-8" [attr.aria-label]="'PROFILE.TITLE' | translate">
+  <header class="space-y-1">
+    <h2 class="text-xl font-semibold tracking-tight text-slate-900">
+      {{ 'PROFILE.TITLE' | translate }}
+    </h2>
+    <p class="text-sm text-slate-600">{{ 'PROFILE.DESCRIPTION' | translate }}</p>
+  </header>
+
+  @if (errorMessage(); as err) {
+    <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ err }}
+    </p>
+  }
+
+  <section class="space-y-4 border-t border-slate-200 pt-6" aria-labelledby="profile-section-title">
+    <h3 id="profile-section-title" class="text-base font-semibold text-slate-900">
+      {{ 'PROFILE.TITLE' | translate }}
+    </h3>
+
+    @if (profileFeedbackKey(); as key) {
+      <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+        {{ key | translate }}
+      </p>
+    }
+
+    <form
+      [formGroup]="profileForm"
+      (ngSubmit)="saveProfile()"
+      class="grid max-w-xl gap-4"
+      novalidate
+    >
+      <div class="flex flex-col gap-1">
+        <label for="profile-username" class="text-sm font-medium text-slate-700">
+          {{ 'PROFILE.USERNAME' | translate }}
+        </label>
+        <input
+          id="profile-username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700"
+        />
+        <p class="text-xs text-slate-500">{{ 'PROFILE.USERNAME_HINT' | translate }}</p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="profile-full-name" class="text-sm font-medium text-slate-700">
+          {{ 'PROFILE.FULL_NAME' | translate }}
+        </label>
+        <input
+          id="profile-full-name"
+          type="text"
+          formControlName="fullName"
+          autocomplete="name"
+          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="profileFieldInvalid('fullName')"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="profile-email" class="text-sm font-medium text-slate-700">
+          {{ 'PROFILE.EMAIL' | translate }}
+        </label>
+        <input
+          id="profile-email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="profileFieldInvalid('email')"
+        />
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="profileSaving()"
+        >
+          @if (profileSaving()) {
+            {{ 'COMMON.LOADING' | translate }}
+          } @else {
+            {{ 'PROFILE.SAVE' | translate }}
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section
+    class="space-y-4 border-t border-slate-200 pt-6"
+    aria-labelledby="password-section-title"
+  >
+    <h3 id="password-section-title" class="text-base font-semibold text-slate-900">
+      {{ 'PROFILE.PASSWORD_SECTION' | translate }}
+    </h3>
+
+    @if (passwordFeedbackKey(); as key) {
+      <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+        {{ key | translate }}
+      </p>
+    }
+
+    <form
+      [formGroup]="passwordForm"
+      (ngSubmit)="changePassword()"
+      class="grid max-w-xl gap-4"
+      novalidate
+    >
+      <div class="flex flex-col gap-1">
+        <label for="profile-current-password" class="text-sm font-medium text-slate-700">
+          {{ 'PROFILE.CURRENT_PASSWORD' | translate }}
+        </label>
+        <input
+          id="profile-current-password"
+          type="password"
+          formControlName="currentPassword"
+          autocomplete="current-password"
+          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="passwordFieldInvalid('currentPassword')"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="profile-new-password" class="text-sm font-medium text-slate-700">
+          {{ 'PROFILE.NEW_PASSWORD' | translate }}
+        </label>
+        <input
+          id="profile-new-password"
+          type="password"
+          formControlName="newPassword"
+          autocomplete="new-password"
+          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="passwordFieldInvalid('newPassword')"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="profile-confirm-password" class="text-sm font-medium text-slate-700">
+          {{ 'PROFILE.CONFIRM_PASSWORD' | translate }}
+        </label>
+        <input
+          id="profile-confirm-password"
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="passwordFieldInvalid('confirmPassword') || passwordMismatch()"
+        />
+        @if (passwordMismatch()) {
+          <p class="text-sm text-red-700" role="alert">
+            {{ 'PROFILE.PASSWORD_MISMATCH' | translate }}
+          </p>
+        }
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="passwordSaving()"
+        >
+          @if (passwordSaving()) {
+            {{ 'COMMON.LOADING' | translate }}
+          } @else {
+            {{ 'PROFILE.CHANGE_PASSWORD' | translate }}
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="space-y-4 border-t border-slate-200 pt-6" aria-labelledby="twofa-section-title">
+    <h3 id="twofa-section-title" class="text-base font-semibold text-slate-900">
+      {{ 'PROFILE.TWO_FA_SECTION' | translate }}
+    </h3>
+
+    @if (twoFaFeedbackKey(); as key) {
+      <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+        {{ key | translate }}
+      </p>
+    }
+
+    <p class="text-sm text-slate-700">
+      @if (twoFactorEnabled()) {
+        {{ 'PROFILE.TWO_FA_STATUS_ENABLED' | translate }}
+      } @else {
+        {{ 'PROFILE.TWO_FA_STATUS_DISABLED' | translate }}
+      }
+    </p>
+
+    @if (!twoFactorEnabled()) {
+      @if (!setupData()) {
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="twoFaLoading()"
+          (click)="startTwoFactorSetup()"
+        >
+          @if (twoFaLoading()) {
+            {{ 'COMMON.LOADING' | translate }}
+          } @else {
+            {{ 'PROFILE.TWO_FA_SETUP' | translate }}
+          }
+        </button>
+      } @else {
+        <div class="space-y-4 max-w-xl">
+          <p class="text-sm text-slate-700">{{ 'PROFILE.TWO_FA_SCAN_QR' | translate }}</p>
+          <img
+            [src]="setupData()!.qrCodeDataUrl"
+            [alt]="'PROFILE.TWO_FA_SCAN_QR' | translate"
+            class="size-48 rounded-md border border-slate-200 bg-white p-2"
+          />
+          <div class="space-y-1">
+            <p class="text-sm font-medium text-slate-700">
+              {{ 'PROFILE.TWO_FA_MANUAL_SECRET' | translate }}
+            </p>
+            <code
+              class="block break-all rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800"
+              >{{ setupData()!.secret }}</code
+            >
+          </div>
+
+          <form
+            [formGroup]="verifyForm"
+            (ngSubmit)="verifyTwoFactor()"
+            class="space-y-3"
+            novalidate
+          >
+            <div class="flex flex-col gap-1">
+              <label for="profile-2fa-verify-code" class="text-sm font-medium text-slate-700">
+                {{ 'PROFILE.TWO_FA_CODE' | translate }}
+              </label>
+              <input
+                id="profile-2fa-verify-code"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                formControlName="code"
+                class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              />
+            </div>
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
+              [disabled]="twoFaLoading()"
+            >
+              {{ 'PROFILE.TWO_FA_VERIFY' | translate }}
+            </button>
+          </form>
+        </div>
+      }
+    } @else {
+      <form
+        [formGroup]="disableForm"
+        (ngSubmit)="disableTwoFactor()"
+        class="grid max-w-xl gap-4"
+        novalidate
+      >
+        <div class="flex flex-col gap-1">
+          <label for="profile-2fa-disable-password" class="text-sm font-medium text-slate-700">
+            {{ 'PROFILE.CURRENT_PASSWORD' | translate }}
+          </label>
+          <input
+            id="profile-2fa-disable-password"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="profile-2fa-disable-code" class="text-sm font-medium text-slate-700">
+            {{ 'PROFILE.TWO_FA_CODE' | translate }}
+          </label>
+          <input
+            id="profile-2fa-disable-code"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            formControlName="code"
+            class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </div>
+        <div>
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+            [disabled]="twoFaLoading()"
+          >
+            {{ 'PROFILE.TWO_FA_DISABLE' | translate }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+</section>

@@ -26,6 +26,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<UserResponseDto> {
+    if (payload.purpose === '2fa') {
+      throw this.invalidCredentials();
+    }
+
     try {
       const user = await this.usersService.findOne(payload.sub);
       if (user.status !== UserStatus.ACTIVE) {

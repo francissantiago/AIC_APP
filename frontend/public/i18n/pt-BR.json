@@ -18,6 +18,40 @@
     "EMAIL_REQUIRED": "E-mail é obrigatório",
     "PASSWORD_REQUIRED": "Senha é obrigatória"
   },
+  "PROFILE": {
+    "TITLE": "Meu perfil",
+    "DESCRIPTION": "Gerencie sua conta, senha e autenticação em dois fatores.",
+    "MENU_LINK": "Perfil",
+    "FULL_NAME": "Nome completo",
+    "EMAIL": "E-mail",
+    "USERNAME": "Nome de usuário",
+    "USERNAME_HINT": "O nome de usuário não pode ser alterado aqui.",
+    "SAVE": "Salvar perfil",
+    "PASSWORD_SECTION": "Alterar senha",
+    "CURRENT_PASSWORD": "Senha atual",
+    "NEW_PASSWORD": "Nova senha",
+    "CONFIRM_PASSWORD": "Confirmar nova senha",
+    "CHANGE_PASSWORD": "Atualizar senha",
+    "PASSWORD_MISMATCH": "As senhas não coincidem",
+    "TWO_FA_SECTION": "Autenticação em dois fatores",
+    "TWO_FA_STATUS_ENABLED": "O 2FA está ativado",
+    "TWO_FA_STATUS_DISABLED": "O 2FA está desativado",
+    "TWO_FA_SETUP": "Configurar 2FA",
+    "TWO_FA_VERIFY": "Verificar e ativar",
+    "TWO_FA_DISABLE": "Desativar 2FA",
+    "TWO_FA_CODE": "Código de autenticação",
+    "TWO_FA_SCAN_QR": "Escaneie este QR com seu aplicativo autenticador",
+    "TWO_FA_MANUAL_SECRET": "Ou digite este segredo manualmente",
+    "LOGIN_TOTP_TITLE": "Autenticação em dois fatores",
+    "LOGIN_TOTP_HINT": "Digite o código de 6 dígitos do seu aplicativo autenticador",
+    "LOGIN_TOTP_SUBMIT": "Verificar",
+    "LOGIN_TOTP_BACK": "Voltar ao login",
+    "SUCCESS_PROFILE": "Perfil atualizado",
+    "SUCCESS_PASSWORD": "Senha atualizada",
+    "SUCCESS_2FA_ENABLED": "Autenticação em dois fatores ativada",
+    "SUCCESS_2FA_DISABLED": "Autenticação em dois fatores desativada",
+    "ERROR_GENERIC": "Não foi possível concluir a solicitação"
+  },
   "NAV": {
     "MAIN_NAV": "Navegação principal",
     "USERS": "Usuários",
@@ -72,7 +106,8 @@
     "PAGE_SECRETARIAT_DOCUMENTS": "Atas e documentos",
     "PAGE_SECRETARIAT_SCHEDULES": "Escalas de voluntariado",
     "PAGE_SMALL_GROUPS": "Pequenos grupos",
-    "PAGE_SMALL_GROUPS_REPORTS": "Frequência dos pequenos grupos"
+    "PAGE_SMALL_GROUPS_REPORTS": "Frequência dos pequenos grupos",
+    "PAGE_PROFILE": "Perfil"
   },
   "COMMON": {
     "LOADING": "Carregando...",
@@ -731,7 +766,14 @@
     },
     "AUTH": {
       "INVALID_CREDENTIALS": "Credenciais inválidas.",
-      "FORBIDDEN": "Você não tem permissão para esta operação."
+      "FORBIDDEN": "Você não tem permissão para esta operação.",
+      "INVALID_CURRENT_PASSWORD": "Senha atual incorreta.",
+      "PASSWORD_SAME_AS_CURRENT": "A nova senha deve ser diferente da atual.",
+      "2FA_ALREADY_ENABLED": "A autenticação em dois fatores já está ativa.",
+      "2FA_NOT_ENABLED": "A autenticação em dois fatores não está ativa.",
+      "2FA_NOT_PENDING": "Configure o 2FA antes de verificar o código.",
+      "2FA_INVALID_CODE": "Código de verificação inválido.",
+      "2FA_PREAUTH_INVALID": "Desafio 2FA inválido ou expirado."
     },
     "USERS": {
       "NOT_FOUND": "Usuário não encontrado.",
