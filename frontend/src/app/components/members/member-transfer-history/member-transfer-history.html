@@ -1,0 +1,143 @@
+<section [attr.aria-label]="'MEMBER_TRANSFERS.HISTORY_TITLE' | translate">
+  <h3 class="mb-2 text-sm font-medium text-slate-900">
+    {{ 'MEMBER_TRANSFERS.HISTORY_TITLE' | translate }}
+  </h3>
+
+  @if (feedbackKey(); as key) {
+    <p
+      class="mb-3 rounded-md px-3 py-2 text-sm"
+      [class.bg-emerald-50]="key !== 'MEMBER_TRANSFERS.LOAD_ERROR'"
+      [class.text-emerald-900]="key !== 'MEMBER_TRANSFERS.LOAD_ERROR'"
+      [class.bg-red-50]="key === 'MEMBER_TRANSFERS.LOAD_ERROR'"
+      [class.text-red-800]="key === 'MEMBER_TRANSFERS.LOAD_ERROR'"
+      role="status"
+    >
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  @if (pendingCompleteId()) {
+    <div class="mb-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-3">
+      <p class="text-sm text-slate-800">{{ 'MEMBER_TRANSFERS.CONFIRM_COMPLETE' | translate }}</p>
+      <div class="mt-3 flex gap-2">
+        <button
+          type="button"
+          class="rounded-md bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
+          [disabled]="actionLoading()"
+          (click)="confirmComplete()"
+        >
+          {{ 'COMMON.YES' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [disabled]="actionLoading()"
+          (click)="clearPendingActions()"
+        >
+          {{ 'COMMON.NO' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (pendingCancelId()) {
+    <div class="mb-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-3">
+      <p class="text-sm text-slate-800">{{ 'MEMBER_TRANSFERS.CONFIRM_CANCEL' | translate }}</p>
+      <div class="mt-3 flex gap-2">
+        <button
+          type="button"
+          class="rounded-md bg-red-700 px-3 py-1.5 text-sm text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+          [disabled]="actionLoading()"
+          (click)="confirmCancel()"
+        >
+          {{ 'COMMON.YES' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [disabled]="actionLoading()"
+          (click)="clearPendingActions()"
+        >
+          {{ 'COMMON.NO' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (transfers().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'MEMBER_TRANSFERS.HISTORY_EMPTY' | translate }}</p>
+  } @else {
+    <ul class="divide-y divide-slate-100 rounded-md border border-slate-200">
+      @for (transfer of transfers(); track transfer.id) {
+        <li class="px-3 py-3 text-sm">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p class="font-medium text-slate-900">
+                {{ transfer.destinationChurchName }} — {{ transfer.destinationCity }}
+              </p>
+              <p class="mt-1 text-slate-600">
+                {{ 'MEMBER_TRANSFERS.STATUS' | translate }}:
+                {{ statusLabelKey(transfer.status) | translate }}
+              </p>
+              <p class="text-slate-600">
+                {{ 'MEMBER_TRANSFERS.REQUESTED_AT' | translate }}:
+                {{ formatDate(transfer.requestedAt) }}
+              </p>
+              @if (transfer.approvedAt) {
+                <p class="text-slate-600">
+                  {{ 'MEMBER_TRANSFERS.APPROVED_AT' | translate }}:
+                  {{ formatDate(transfer.approvedAt) }}
+                </p>
+              }
+              @if (transfer.document) {
+                <p class="mt-1 text-slate-600">
+                  {{ 'MEMBER_TRANSFERS.DOCUMENT_LINK' | translate }}:
+                  {{ transfer.document.title }}
+                </p>
+              }
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              @if (canReadSecretariat() && transfer.document?.hasFile) {
+                @if (transfer.documentId; as documentId) {
+                  <button
+                    type="button"
+                    class="text-slate-800 underline underline-offset-2 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="downloadDocument(documentId)"
+                  >
+                    {{ 'SECRETARIAT.DOCUMENTS.DOWNLOAD' | translate }}
+                  </button>
+                }
+              }
+
+              @if (canWrite() && transfer.status === MemberTransferStatus.PENDING) {
+                <button
+                  type="button"
+                  class="text-slate-800 underline underline-offset-2 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  (click)="askComplete(transfer.id)"
+                >
+                  {{ 'MEMBER_TRANSFERS.COMPLETE' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  (click)="askCancel(transfer.id)"
+                >
+                  {{ 'MEMBER_TRANSFERS.CANCEL' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

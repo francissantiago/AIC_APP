@@ -7,8 +7,7 @@ const chartSpies = vi.hoisted(() => ({
   destroy: vi.fn(),
 }));
 
-vi.mock('chart.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('chart.js')>();
+vi.mock('chart.js', () => {
   class ChartMock {
     static register(): void {}
 
@@ -21,7 +20,18 @@ vi.mock('chart.js', async (importOriginal) => {
     }
   }
 
-  return { ...actual, Chart: ChartMock };
+  const stub = {};
+  return {
+    Chart: ChartMock,
+    ArcElement: stub,
+    BarController: stub,
+    BarElement: stub,
+    CategoryScale: stub,
+    DoughnutController: stub,
+    Legend: stub,
+    LinearScale: stub,
+    Tooltip: stub,
+  };
 });
 
 describe('ChartCanvas', () => {

@@ -54,6 +54,10 @@ export const ApiErrorCode = {
   MEMBERS_DOCUMENT_IN_USE: 'MEMBERS.DOCUMENT_IN_USE',
   MEMBERS_USER_ALREADY_LINKED: 'MEMBERS.USER_ALREADY_LINKED',
   MEMBERS_USER_NOT_FOUND: 'MEMBERS.USER_NOT_FOUND',
+  MEMBERS_TRANSFER_NOT_FOUND: 'MEMBERS.TRANSFER_NOT_FOUND',
+  MEMBERS_TRANSFER_MEMBER_NOT_ELIGIBLE: 'MEMBERS.TRANSFER_MEMBER_NOT_ELIGIBLE',
+  MEMBERS_TRANSFER_PENDING_EXISTS: 'MEMBERS.TRANSFER_PENDING_EXISTS',
+  MEMBERS_TRANSFER_INVALID_STATUS: 'MEMBERS.TRANSFER_INVALID_STATUS',
 
   CONGREGATIONS_EMAIL_IN_USE: 'CONGREGATIONS.EMAIL_IN_USE',
   CONGREGATIONS_DOCUMENT_IN_USE: 'CONGREGATIONS.DOCUMENT_IN_USE',
@@ -206,6 +210,13 @@ export const ApiErrorMessage = {
   [ApiErrorCode.MEMBERS_USER_ALREADY_LINKED]:
     'Este usuário já está vinculado a outro membro.',
   [ApiErrorCode.MEMBERS_USER_NOT_FOUND]: 'Usuário vinculado não encontrado.',
+  [ApiErrorCode.MEMBERS_TRANSFER_NOT_FOUND]: 'Transferência não encontrada.',
+  [ApiErrorCode.MEMBERS_TRANSFER_MEMBER_NOT_ELIGIBLE]:
+    'Membro não elegível para transferência.',
+  [ApiErrorCode.MEMBERS_TRANSFER_PENDING_EXISTS]:
+    'Já existe uma transferência pendente para este membro.',
+  [ApiErrorCode.MEMBERS_TRANSFER_INVALID_STATUS]:
+    'Operação inválida para o status atual da transferência.',
   [ApiErrorCode.CONGREGATIONS_EMAIL_IN_USE]: 'Este e-mail já está cadastrado.',
   [ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE]:
     'Este documento já está cadastrado.',

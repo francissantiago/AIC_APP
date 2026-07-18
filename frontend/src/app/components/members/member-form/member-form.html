@@ -90,10 +90,83 @@
             {{ 'FAMILIES.MEMBER_SECTION' | translate }}
           </button>
         }
+        @if (showTransfersTab()) {
+          <button
+            type="button"
+            role="tab"
+            class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-500]="activeTab() === 'transfers'"
+            [class.text-white]="activeTab() === 'transfers'"
+            [class.border]="activeTab() !== 'transfers'"
+            [class.border-slate-300]="activeTab() !== 'transfers'"
+            [class.bg-white]="activeTab() !== 'transfers'"
+            [attr.aria-selected]="activeTab() === 'transfers'"
+            (click)="selectTab('transfers')"
+          >
+            {{ 'MEMBER_TRANSFERS.TAB_TRANSFERS' | translate }}
+          </button>
+        }
       </div>
     }
 
-    @if (activeTab() === 'family' && showFamilyTab()) {
+    @if (activeTab() === 'transfers' && showTransfersTab()) {
+      <section [attr.aria-label]="'MEMBER_TRANSFERS.TITLE' | translate">
+        <p class="mb-3 text-sm text-slate-600">
+          {{ 'MEMBER_TRANSFERS.DESCRIPTION' | translate }}
+        </p>
+
+        @if (!canStartTransfer() && memberStatus() !== MemberStatus.ACTIVE) {
+          <p class="mb-3 text-sm text-slate-600">
+            {{ 'MEMBER_TRANSFERS.MEMBER_NOT_ELIGIBLE' | translate }}
+          </p>
+        } @else if (hasPendingTransfer()) {
+          <p class="mb-3 text-sm text-slate-600">
+            {{ 'MEMBER_TRANSFERS.PENDING_EXISTS' | translate }}
+          </p>
+        }
+
+        @if (canStartTransfer() && !showTransferWizard()) {
+          <button
+            type="button"
+            class="mb-4 rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+            (click)="openTransferWizard()"
+          >
+            {{ 'MEMBER_TRANSFERS.START_TRANSFER' | translate }}
+          </button>
+        }
+
+        @if (showTransferWizard() && memberId(); as transferMemberId) {
+          <div class="mb-4">
+            <app-member-transfer-wizard
+              [memberId]="transferMemberId"
+              [memberFullName]="memberFullName()"
+              (completed)="onTransferWizardCompleted()"
+              (cancelled)="closeTransferWizard()"
+            />
+          </div>
+        }
+
+        @if (memberId(); as historyMemberId) {
+          <app-member-transfer-history
+            [memberId]="historyMemberId"
+            [canWrite]="canWriteMembers()"
+            [canReadSecretariat]="canReadSecretariat()"
+            [reloadToken]="transfersReloadToken()"
+            (changed)="onTransfersChanged()"
+          />
+        }
+
+        <div class="mt-4">
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="cancelled.emit()"
+          >
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </section>
+    } @else if (activeTab() === 'family' && showFamilyTab()) {
       <section [attr.aria-label]="'FAMILIES.MEMBER_SECTION' | translate">
         @if (familyLoading()) {
           <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>

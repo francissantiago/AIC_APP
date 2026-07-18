@@ -17,6 +17,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
 import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
+import { MemberTransferStatus } from '@enums/member-transfer-status';
 import { ClassAgeGroup } from '@enums/class-age-group';
 import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { ClassStatus } from '@enums/class-status';
@@ -24,20 +25,30 @@ import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-membe
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IFamily } from '@interfaces/IFamily';
 import { IMemberClassSummary } from '@interfaces/IMemberClassSummary';
+import { IMemberTransfer } from '@interfaces/IMemberTransfer';
 import { IMinistry } from '@interfaces/IMinistry';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
 import { FamiliesService } from '@services/families-service';
+import { MemberTransfersService } from '@services/member-transfers-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
+import { MemberTransferHistory } from '../member-transfer-history/member-transfer-history';
+import { MemberTransferWizard } from '../member-transfer-wizard/member-transfer-wizard';
 
-type MemberFormTab = 'details' | 'ministries' | 'ebd' | 'family';
+type MemberFormTab = 'details' | 'ministries' | 'ebd' | 'family' | 'transfers';
 
 @Component({
   selector: 'app-member-form',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+    MemberTransferHistory,
+    MemberTransferWizard,
+  ],
   templateUrl: './member-form.html',
   styleUrl: './member-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,6 +58,7 @@ export class MemberForm implements OnInit {
   readonly #ministriesService = inject(MinistriesService);
   readonly #classesService = inject(ClassesService);
   readonly #familiesService = inject(FamiliesService);
+  readonly #transfersService = inject(MemberTransfersService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
@@ -56,6 +68,7 @@ export class MemberForm implements OnInit {
   readonly cancelled = output<void>();
 
   readonly statuses = MEMBER_STATUSES;
+  readonly MemberStatus = MemberStatus;
   readonly genders = MEMBER_GENDERS;
   readonly maritalStatuses = MEMBER_MARITAL_STATUSES;
   readonly ministryRoles = MINISTRY_MEMBER_ROLES;
@@ -83,11 +96,17 @@ export class MemberForm implements OnInit {
   readonly canReadClasses = computed(() => this.#auth.hasPermission('classes:read'));
   readonly canReadMembers = computed(() => this.#auth.hasPermission('members:read'));
   readonly canWriteMembers = computed(() => this.#auth.hasPermission('members:write'));
+  readonly canReadSecretariat = computed(() => this.#auth.hasPermission('secretariat:read'));
   readonly showMinistriesTab = computed(() => this.isEditMode() && this.canReadMinistries());
   readonly showEbdTab = computed(() => this.isEditMode() && this.canReadClasses());
   readonly showFamilyTab = computed(() => this.isEditMode() && this.canReadMembers());
+  readonly showTransfersTab = computed(() => this.isEditMode() && this.canReadMembers());
   readonly showSideTabs = computed(
-    () => this.showMinistriesTab() || this.showEbdTab() || this.showFamilyTab(),
+    () =>
+      this.showMinistriesTab() ||
+      this.showEbdTab() ||
+      this.showFamilyTab() ||
+      this.showTransfersTab(),
   );
 
   readonly memberClasses = signal<IMemberClassSummary[]>([]);
@@ -98,6 +117,23 @@ export class MemberForm implements OnInit {
   readonly familyLoading = signal(false);
   readonly familyError = signal(false);
   readonly familyErrorMessage = signal<string | null>(null);
+
+  readonly memberStatus = signal<MemberStatus>(MemberStatus.ACTIVE);
+  readonly memberFullName = signal('');
+  readonly transfers = signal<IMemberTransfer[]>([]);
+  readonly transfersLoading = signal(false);
+  readonly showTransferWizard = signal(false);
+  readonly transfersReloadToken = signal(0);
+
+  readonly hasPendingTransfer = computed(() =>
+    this.transfers().some((item) => item.status === MemberTransferStatus.PENDING),
+  );
+  readonly canStartTransfer = computed(
+    () =>
+      this.canWriteMembers() &&
+      this.memberStatus() === MemberStatus.ACTIVE &&
+      !this.hasPendingTransfer(),
+  );
 
   readonly availableMinistries = computed(() => {
     const linkedIds = new Set(this.memberMinistries().map((item) => item.id));
@@ -180,6 +216,7 @@ export class MemberForm implements OnInit {
       }
       if (this.canReadMembers()) {
         this.#loadMemberFamily(id);
+        this.#loadTransfers(id);
       }
     }
   }
@@ -216,6 +253,36 @@ export class MemberForm implements OnInit {
     this.activeTab.set(tab);
     if (tab === 'ministries' && this.canWriteMinistries() && this.allMinistries().length === 0) {
       this.#loadAllMinistries();
+    }
+  }
+
+  openTransferWizard(): void {
+    if (!this.canStartTransfer()) {
+      return;
+    }
+    this.showTransferWizard.set(true);
+  }
+
+  closeTransferWizard(): void {
+    this.showTransferWizard.set(false);
+  }
+
+  onTransferWizardCompleted(): void {
+    this.showTransferWizard.set(false);
+    const id = this.memberId();
+    if (id) {
+      this.#loadMember(id);
+      this.#loadTransfers(id);
+      this.transfersReloadToken.update((value) => value + 1);
+    }
+  }
+
+  onTransfersChanged(): void {
+    const id = this.memberId();
+    if (id) {
+      this.#loadMember(id);
+      this.#loadTransfers(id);
+      this.transfersReloadToken.update((value) => value + 1);
     }
   }
 
@@ -333,6 +400,8 @@ export class MemberForm implements OnInit {
             notes: member.notes ?? '',
             userId: member.userId ?? '',
           });
+          this.memberStatus.set(member.status);
+          this.memberFullName.set(member.fullName);
           this.loading.set(false);
         },
         error: () => {
@@ -528,6 +597,23 @@ export class MemberForm implements OnInit {
           this.memberFamily.set(null);
           this.familyError.set(true);
           this.familyErrorMessage.set(resolved.displayMessage);
+        },
+      });
+  }
+
+  #loadTransfers(memberId: string): void {
+    this.transfersLoading.set(true);
+    this.#transfersService
+      .list(memberId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (items) => {
+          this.transfers.set(items);
+          this.transfersLoading.set(false);
+        },
+        error: () => {
+          this.transfers.set([]);
+          this.transfersLoading.set(false);
         },
       });
   }

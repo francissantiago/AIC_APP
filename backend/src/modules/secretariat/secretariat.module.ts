@@ -48,6 +48,6 @@ import { VisitorsService } from './visitors/visitors.service';
     DocumentsService,
     FileStorageService,
   ],
-  exports: [SecretariatService],
+  exports: [SecretariatService, DocumentsService],
 })
 export class SecretariatModule {}

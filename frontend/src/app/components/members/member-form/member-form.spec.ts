@@ -7,6 +7,7 @@ import { ClassStatus } from '@enums/class-status';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
 import { FamiliesService } from '@services/families-service';
+import { MemberTransfersService } from '@services/member-transfers-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
 import { of } from 'rxjs';
@@ -55,8 +56,11 @@ describe('MemberForm', () => {
         {
           provide: AuthService,
           useValue: {
-            currentUser: signal({ permissions: ['ministries:read', 'classes:read'] }),
-            hasPermission: (code: string) => code === 'ministries:read' || code === 'classes:read',
+            currentUser: signal({
+              permissions: ['ministries:read', 'classes:read', 'members:read'],
+            }),
+            hasPermission: (code: string) =>
+              code === 'ministries:read' || code === 'classes:read' || code === 'members:read',
           },
         },
         {
@@ -110,6 +114,15 @@ describe('MemberForm', () => {
             getByMember: () => of(null),
           },
         },
+        {
+          provide: MemberTransfersService,
+          useValue: {
+            list: () => of([]),
+            create: () => of({}),
+            complete: () => of({}),
+            cancel: () => of({}),
+          },
+        },
       ],
     })
       .overrideComponent(MemberForm, {
@@ -137,5 +150,9 @@ describe('MemberForm', () => {
     expect(listClassesByMember).toHaveBeenCalledWith('mem1');
     expect(component.memberClasses().length).toBe(1);
     expect(component.showEbdTab()).toBe(true);
+  });
+
+  it('shows transfers tab in edit mode when members:read', () => {
+    expect(component.showTransfersTab()).toBe(true);
   });
 });

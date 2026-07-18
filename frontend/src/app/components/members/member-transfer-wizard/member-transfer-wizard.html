@@ -1,0 +1,183 @@
+<section
+  class="rounded-md border border-slate-200 px-3 py-4"
+  [attr.aria-label]="'MEMBER_TRANSFERS.WIZARD_TITLE' | translate"
+>
+  <h3 class="text-sm font-medium text-slate-900">
+    {{ 'MEMBER_TRANSFERS.WIZARD_TITLE' | translate }}
+  </h3>
+
+  <ol class="mt-3 flex flex-wrap gap-2 text-xs text-slate-600" aria-label="steps">
+    <li [class.font-semibold]="step() === 1" [class.text-slate-900]="step() === 1">
+      1. {{ 'MEMBER_TRANSFERS.WIZARD_STEP_DESTINATION' | translate }}
+    </li>
+    <li [class.font-semibold]="step() === 2" [class.text-slate-900]="step() === 2">
+      2. {{ 'MEMBER_TRANSFERS.WIZARD_STEP_PREVIEW' | translate }}
+    </li>
+    <li [class.font-semibold]="step() === 3" [class.text-slate-900]="step() === 3">
+      3. {{ 'MEMBER_TRANSFERS.WIZARD_STEP_CONFIRM' | translate }}
+    </li>
+  </ol>
+
+  @if (errorMessage(); as message) {
+    <p class="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  @if (successDone()) {
+    <div class="mt-4">
+      <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
+        {{ 'MEMBER_TRANSFERS.SAVE_SUCCESS' | translate }}
+      </p>
+
+      @if (uploadWarning(); as warning) {
+        <p class="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status">
+          {{ warning }}
+        </p>
+      }
+
+      @if (canWriteSecretariat() && createdDocumentId()) {
+        <label class="mt-3 flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBER_TRANSFERS.UPLOAD_OPTIONAL' | translate }}</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            class="text-sm"
+            [disabled]="uploading()"
+            (change)="onFileSelected($event)"
+          />
+        </label>
+        <button
+          type="button"
+          class="mt-3 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [disabled]="uploading()"
+          (click)="finishWithoutUpload()"
+        >
+          {{ 'COMMON.DIALOG.CLOSE' | translate }}
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="mt-3 rounded-md bg-slate-500 px-4 py-2 text-sm text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+          (click)="finishWithoutUpload()"
+        >
+          {{ 'COMMON.DIALOG.CLOSE' | translate }}
+        </button>
+      }
+    </div>
+  } @else if (step() === 1) {
+    <form [formGroup]="form" class="mt-4 grid gap-3" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MEMBER_TRANSFERS.DESTINATION_CHURCH' | translate }}</span>
+        <input
+          type="text"
+          formControlName="destinationChurchName"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('destinationChurchName')"
+        />
+        @if (fieldInvalid('destinationChurchName')) {
+          <span class="text-xs text-red-700">{{
+            'MEMBER_TRANSFERS.VALIDATION_REQUIRED' | translate
+          }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MEMBER_TRANSFERS.DESTINATION_CITY' | translate }}</span>
+        <input
+          type="text"
+          formControlName="destinationCity"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('destinationCity')"
+        />
+        @if (fieldInvalid('destinationCity')) {
+          <span class="text-xs text-red-700">{{
+            'MEMBER_TRANSFERS.VALIDATION_REQUIRED' | translate
+          }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MEMBER_TRANSFERS.NOTES' | translate }}</span>
+        <textarea
+          formControlName="notes"
+          rows="3"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        ></textarea>
+      </label>
+
+      <div class="mt-2 flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+          (click)="goPreview()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          (click)="cancelled.emit()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  } @else if (step() === 2) {
+    <div class="mt-4">
+      <h4 class="text-sm font-medium text-slate-900">
+        {{ 'MEMBER_TRANSFERS.LETTER_PREVIEW' | translate }}
+      </h4>
+      <p class="mt-2 text-sm font-medium text-slate-800">
+        {{ 'MEMBER_TRANSFERS.LETTER_TITLE' | translate: { name: memberFullName() } }}
+      </p>
+      <pre
+        class="mt-2 whitespace-pre-wrap rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"
+        >{{ letterSummaryPreview() }}</pre>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          (click)="goDestination()"
+        >
+          {{ 'COMMON.BACK' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+          (click)="goConfirm()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="mt-4">
+      <p class="text-sm text-slate-800">{{ 'MEMBER_TRANSFERS.CONFIRM_COMPLETE' | translate }}</p>
+      <p class="mt-2 text-sm text-slate-600">
+        {{ form.controls.destinationChurchName.value }} —
+        {{ form.controls.destinationCity.value }}
+      </p>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          (click)="goPreview()"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.BACK' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="saving()"
+          (click)="submit()"
+        >
+          {{ 'MEMBER_TRANSFERS.WIZARD_STEP_CONFIRM' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</section>
