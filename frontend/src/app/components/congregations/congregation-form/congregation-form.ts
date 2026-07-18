@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   OnInit,
@@ -15,6 +16,7 @@ import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-s
 import { CONGREGATION_TYPES, CongregationType } from '@enums/congregation-type';
 import { IUpdateCongregation } from '@interfaces/IUpdateCongregation';
 import { ApiErrorService } from '@services/api-error.service';
+import { AuthService } from '@services/auth-service';
 import { CongregationService } from '@services/congregation-service';
 
 @Component({
@@ -27,6 +29,7 @@ import { CongregationService } from '@services/congregation-service';
 export class CongregationForm implements OnInit {
   readonly #congregationService = inject(CongregationService);
   readonly #apiError = inject(ApiErrorService);
+  readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly statuses = CONGREGATION_STATUSES;
@@ -39,6 +42,8 @@ export class CongregationForm implements OnInit {
   readonly feedbackKey = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly supportHint = signal<string | null>(null);
+
+  readonly canWrite = computed(() => this.#auth.hasPermission('congregations:write'));
 
   readonly form = new FormGroup({
     name: new FormControl('', {

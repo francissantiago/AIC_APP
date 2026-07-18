@@ -14,6 +14,7 @@ import { MemberForm } from '@components/members/member-form/member-form';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
 import { IMember } from '@interfaces/IMember';
+import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
@@ -26,6 +27,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 })
 export class MembersList implements OnInit {
   readonly #membersService = inject(MembersService);
+  readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly statuses = MEMBER_STATUSES;
@@ -46,6 +48,8 @@ export class MembersList implements OnInit {
     const pages = Math.ceil(this.total() / this.limit());
     return pages > 0 ? pages : 1;
   });
+
+  readonly canWrite = computed(() => this.#auth.hasPermission('members:write'));
 
   readonly filterForm = new FormGroup({
     q: new FormControl('', { nonNullable: true }),

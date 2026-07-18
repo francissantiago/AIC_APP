@@ -3,6 +3,10 @@
     "NAME": "AIC",
     "TITLE": "AIC — Administración de Iglesias"
   },
+  "AUTH": {
+    "NO_ACCESSIBLE_ROUTES": "No hay módulos disponibles",
+    "NO_ACCESSIBLE_ROUTES_HINT": "Su cuenta no tiene permisos de lectura. Contacte a un administrador."
+  },
   "NAV": {
     "MAIN_NAV": "Navegación principal",
     "USERS": "Usuarios",

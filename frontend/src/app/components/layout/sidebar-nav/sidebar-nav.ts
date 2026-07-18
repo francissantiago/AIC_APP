@@ -10,7 +10,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { hasAnyPermission } from '@guards/role-guard';
 import { AuthService } from '@services/auth-service';
 import { filter } from 'rxjs';
 
@@ -18,6 +17,13 @@ export type SidebarNavItem = {
   route: string;
   labelKey: string;
   icon: 'users' | 'roles' | 'members' | 'congregation';
+  permission: string;
+};
+
+export type SidebarFinanceItem = {
+  route: string;
+  labelKey: string;
+  permission: string;
 };
 
 @Component({
@@ -35,26 +41,43 @@ export class SidebarNav {
   readonly currentUrl = signal(this.#router.url);
   readonly financeOpen = signal(this.#router.url.startsWith('/finance'));
   readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
-  readonly canViewFinance = computed(() =>
-    hasAnyPermission(this.#auth.currentUser()?.permissions ?? [], ['finance:read']),
-  );
-  readonly canViewSecretariat = computed(() =>
-    hasAnyPermission(this.#auth.currentUser()?.permissions ?? [], ['secretariat:read']),
-  );
 
-  readonly items: readonly SidebarNavItem[] = [
-    { route: '/users', labelKey: 'NAV.USERS', icon: 'users' },
-    { route: '/roles', labelKey: 'NAV.ROLES', icon: 'roles' },
-    { route: '/members', labelKey: 'NAV.MEMBERS', icon: 'members' },
-    { route: '/congregation', labelKey: 'NAV.CONGREGATIONS', icon: 'congregation' },
+  readonly canViewFinanceSection = computed(() =>
+    this.#auth.hasAnyPermission('finance:read', 'assets:read'),
+  );
+  readonly canViewSecretariat = computed(() => this.#auth.hasPermission('secretariat:read'));
+
+  readonly allItems: readonly SidebarNavItem[] = [
+    { route: '/users', labelKey: 'NAV.USERS', icon: 'users', permission: 'users:read' },
+    { route: '/roles', labelKey: 'NAV.ROLES', icon: 'roles', permission: 'roles:read' },
+    {
+      route: '/members',
+      labelKey: 'NAV.MEMBERS',
+      icon: 'members',
+      permission: 'members:read',
+    },
+    {
+      route: '/congregation',
+      labelKey: 'NAV.CONGREGATIONS',
+      icon: 'congregation',
+      permission: 'congregations:read',
+    },
   ];
 
-  readonly financeItems = [
-    { route: '/finance', labelKey: 'NAV.FINANCE_DASHBOARD' },
-    { route: '/finance/entries', labelKey: 'NAV.FINANCIAL_ENTRIES' },
-    { route: '/finance/assets', labelKey: 'NAV.ASSETS' },
-    { route: '/finance/reports', labelKey: 'NAV.FINANCIAL_REPORTS' },
-  ] as const;
+  readonly items = computed(() =>
+    this.allItems.filter((item) => this.#auth.hasPermission(item.permission)),
+  );
+
+  readonly allFinanceItems: readonly SidebarFinanceItem[] = [
+    { route: '/finance', labelKey: 'NAV.FINANCE_DASHBOARD', permission: 'finance:read' },
+    { route: '/finance/entries', labelKey: 'NAV.FINANCIAL_ENTRIES', permission: 'finance:read' },
+    { route: '/finance/assets', labelKey: 'NAV.ASSETS', permission: 'assets:read' },
+    { route: '/finance/reports', labelKey: 'NAV.FINANCIAL_REPORTS', permission: 'finance:read' },
+  ];
+
+  readonly financeItems = computed(() =>
+    this.allFinanceItems.filter((item) => this.#auth.hasPermission(item.permission)),
+  );
 
   readonly secretariatItems = [
     { route: '/secretariat', labelKey: 'NAV.SECRETARIAT_DASHBOARD' },
@@ -82,8 +105,9 @@ export class SidebarNav {
   }
 
   toggleFinance(): void {
+    const firstRoute = this.financeItems()[0]?.route ?? '/finance';
     if (!this.expanded()) {
-      void this.#router.navigateByUrl('/finance');
+      void this.#router.navigateByUrl(firstRoute);
       return;
     }
     this.financeOpen.update((value) => !value);

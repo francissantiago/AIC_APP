@@ -13,7 +13,6 @@ import { AppDialog } from '@components/app-dialog/app-dialog';
 import { FinancialCategoryManager } from '@components/finance/financial-category-manager/financial-category-manager';
 import { FinancialEntryForm } from '@components/finance/financial-entry-form/financial-entry-form';
 import { FINANCIAL_TYPES, FinancialType } from '@enums/finance';
-import { FINANCE_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
 import { IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
@@ -270,9 +269,7 @@ export class FinancialEntries implements OnInit {
   readonly pendingDelete = signal<string | null>(null);
   readonly types = FINANCIAL_TYPES;
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / 20)));
-  readonly canWrite = computed(() =>
-    hasAnyRole(this.#auth.currentUser()?.roles.map((r) => r.code) ?? [], FINANCE_WRITE_ROLES),
-  );
+  readonly canWrite = computed(() => this.#auth.hasPermission('finance:write'));
   readonly filterForm = new FormGroup({
     from: new FormControl('', { nonNullable: true }),
     to: new FormControl('', { nonNullable: true }),

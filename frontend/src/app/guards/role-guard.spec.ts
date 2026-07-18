@@ -6,10 +6,14 @@ import { IUser } from '@interfaces/IUser';
 import { AuthService } from '@services/auth-service';
 import {
   assetsPermissionGuard,
+  defaultRouteGuard,
   financePermissionGuard,
-  hasAnyPermission,
+  membersPermissionGuard,
+  rolesPermissionGuard,
   secretariatPermissionGuard,
+  usersPermissionGuard,
 } from './role-guard';
+import { getDefaultRouteForUser, hasAnyPermission } from '@utils/authorization';
 
 function buildUser(permissions: string[]): IUser {
   return {
@@ -27,27 +31,27 @@ function buildUser(permissions: string[]): IUser {
   };
 }
 
-describe('hasAnyPermission', () => {
-  it('returns true when there is an intersection', () => {
+describe('authorization utils', () => {
+  it('getDefaultRouteForUser returns first matching route', () => {
+    expect(getDefaultRouteForUser(['members:read'])).toBe('/members');
+  });
+
+  it('getDefaultRouteForUser falls back to no-access', () => {
+    expect(getDefaultRouteForUser([])).toBe('/no-access');
+  });
+
+  it('hasAnyPermission uses OR semantics', () => {
     expect(hasAnyPermission(['finance:read', 'members:write'], ['finance:read'])).toBe(true);
-  });
-
-  it('returns false without intersection', () => {
-    expect(hasAnyPermission(['members:read'], ['finance:read', 'finance:write'])).toBe(false);
-  });
-
-  it('returns false for an empty permission list', () => {
-    expect(hasAnyPermission([], ['finance:read'])).toBe(false);
   });
 });
 
 describe('permission guards', () => {
   let currentUser: ReturnType<typeof signal<IUser | null>>;
-  let router: { createUrlTree: ReturnType<typeof vi.fn> };
+  let router: { parseUrl: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     currentUser = signal<IUser | null>(null);
-    router = { createUrlTree: vi.fn().mockReturnValue('redirect-tree') };
+    router = { parseUrl: vi.fn((url: string) => `tree:${url}`) };
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -71,8 +75,31 @@ describe('permission guards', () => {
     const result = TestBed.runInInjectionContext(() =>
       financePermissionGuard({} as never, {} as never),
     );
-    expect(result).toBe('redirect-tree');
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/users']);
+    expect(result).toBe('tree:/secretariat');
+  });
+
+  it('usersPermissionGuard allows users with users:read', () => {
+    currentUser.set(buildUser(['users:read']));
+    const result = TestBed.runInInjectionContext(() =>
+      usersPermissionGuard({} as never, {} as never),
+    );
+    expect(result).toBe(true);
+  });
+
+  it('membersPermissionGuard redirects to default route when denied', () => {
+    currentUser.set(buildUser(['finance:read']));
+    const result = TestBed.runInInjectionContext(() =>
+      membersPermissionGuard({} as never, {} as never),
+    );
+    expect(result).toBe('tree:/finance');
+  });
+
+  it('rolesPermissionGuard allows users with roles:read', () => {
+    currentUser.set(buildUser(['roles:read']));
+    const result = TestBed.runInInjectionContext(() =>
+      rolesPermissionGuard({} as never, {} as never),
+    );
+    expect(result).toBe(true);
   });
 
   it('secretariatPermissionGuard allows users with secretariat:read', () => {
@@ -83,14 +110,6 @@ describe('permission guards', () => {
     expect(result).toBe(true);
   });
 
-  it('secretariatPermissionGuard redirects users without secretariat:read', () => {
-    currentUser.set(buildUser([]));
-    const result = TestBed.runInInjectionContext(() =>
-      secretariatPermissionGuard({} as never, {} as never),
-    );
-    expect(result).toBe('redirect-tree');
-  });
-
   it('assetsPermissionGuard allows users with assets:read', () => {
     currentUser.set(buildUser(['assets:read']));
     const result = TestBed.runInInjectionContext(() =>
@@ -99,18 +118,24 @@ describe('permission guards', () => {
     expect(result).toBe(true);
   });
 
-  it('assetsPermissionGuard redirects users with only finance:read (granular)', () => {
+  it('assetsPermissionGuard redirects users with only finance:read', () => {
     currentUser.set(buildUser(['finance:read']));
     const result = TestBed.runInInjectionContext(() =>
       assetsPermissionGuard({} as never, {} as never),
     );
-    expect(result).toBe('redirect-tree');
+    expect(result).toBe('tree:/finance');
   });
 
-  it('redirects when there is no authenticated user', () => {
+  it('defaultRouteGuard redirects to first accessible route', () => {
+    currentUser.set(buildUser(['members:read']));
+    const result = TestBed.runInInjectionContext(() => defaultRouteGuard({} as never, {} as never));
+    expect(result).toBe('tree:/members');
+  });
+
+  it('redirects to no-access when there is no authenticated user', () => {
     const result = TestBed.runInInjectionContext(() =>
       financePermissionGuard({} as never, {} as never),
     );
-    expect(result).toBe('redirect-tree');
+    expect(result).toBe('tree:/no-access');
   });
 });

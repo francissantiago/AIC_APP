@@ -3,6 +3,10 @@
     "NAME": "AIC",
     "TITLE": "AIC — Church Administration"
   },
+  "AUTH": {
+    "NO_ACCESSIBLE_ROUTES": "No modules available",
+    "NO_ACCESSIBLE_ROUTES_HINT": "Your account has no read permissions. Contact an administrator."
+  },
   "NAV": {
     "MAIN_NAV": "Main navigation",
     "USERS": "Users",

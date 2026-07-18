@@ -12,9 +12,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { ATTENDANCE_EVENT_TYPES, AttendanceEventType } from '@enums/secretariat';
-import { SECRETARIAT_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
-import { IAttendanceRecord } from '@interfaces/ISecretariat';
 import { TranslatePipe } from '@ngx-translate/core';
+import { IAttendanceRecord } from '@interfaces/ISecretariat';
 import { AuthService } from '@services/auth-service';
 import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
@@ -348,9 +347,7 @@ export class AttendanceList implements OnInit {
   readonly supportHint = signal<string | null>(null);
   readonly pendingDelete = signal<string | null>(null);
 
-  readonly canWrite = computed(() =>
-    hasAnyRole(this.#auth.currentUser()?.roles.map((r) => r.code) ?? [], SECRETARIAT_WRITE_ROLES),
-  );
+  readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
 
   readonly filterForm = new FormGroup({

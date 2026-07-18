@@ -4,13 +4,15 @@
       <h1 class="text-xl font-semibold text-slate-900">{{ 'MEMBERS.LIST_TITLE' | translate }}</h1>
       <p class="text-sm text-slate-600">{{ 'MEMBERS.TITLE' | translate }}</p>
     </div>
-    <button
-      type="button"
-      class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
-      (click)="openCreate()"
-    >
-      {{ 'COMMON.CREATE' | translate }}
-    </button>
+    @if (canWrite()) {
+      <button
+        type="button"
+        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        (click)="openCreate()"
+      >
+        {{ 'COMMON.CREATE' | translate }}
+      </button>
+    }
   </div>
 
   <app-dialog
@@ -115,22 +117,24 @@
               </td>
               <td class="px-3 py-2 text-slate-700">{{ member.membershipDate || '' }}</td>
               <td class="px-3 py-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    (click)="openEdit(member.id)"
-                  >
-                    {{ 'COMMON.EDIT' | translate }}
-                  </button>
-                  <button
-                    type="button"
-                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    (click)="askDelete(member.id)"
-                  >
-                    {{ 'COMMON.DELETE' | translate }}
-                  </button>
-                </div>
+                @if (canWrite()) {
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openEdit(member.id)"
+                    >
+                      {{ 'COMMON.EDIT' | translate }}
+                    </button>
+                    <button
+                      type="button"
+                      class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      (click)="askDelete(member.id)"
+                    >
+                      {{ 'COMMON.DELETE' | translate }}
+                    </button>
+                  </div>
+                }
               </td>
             </tr>
           }

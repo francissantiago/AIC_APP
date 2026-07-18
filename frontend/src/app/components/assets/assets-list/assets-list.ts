@@ -12,7 +12,6 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { AssetForm } from '@components/assets/asset-form/asset-form';
 import { ASSET_STATUSES, ASSET_TYPES, AssetStatus, AssetType } from '@enums/finance';
-import { FINANCE_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
 import { IAsset } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
@@ -226,9 +225,7 @@ export class AssetsList implements OnInit {
   readonly pendingDelete = signal<string | null>(null);
   readonly types = ASSET_TYPES;
   readonly statuses = ASSET_STATUSES;
-  readonly canWrite = computed(() =>
-    hasAnyRole(this.#auth.currentUser()?.roles.map((r) => r.code) ?? [], FINANCE_WRITE_ROLES),
-  );
+  readonly canWrite = computed(() => this.#auth.hasPermission('assets:write'));
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / 20)));
   readonly filterForm = new FormGroup({
     q: new FormControl('', { nonNullable: true }),

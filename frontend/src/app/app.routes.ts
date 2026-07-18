@@ -3,8 +3,13 @@ import { authGuard } from '@guards/auth-guard';
 import { guestGuard } from '@guards/guest-guard';
 import {
   assetsPermissionGuard,
+  congregationsPermissionGuard,
+  defaultRouteGuard,
   financePermissionGuard,
+  membersPermissionGuard,
+  rolesPermissionGuard,
   secretariatPermissionGuard,
+  usersPermissionGuard,
 } from '@guards/role-guard';
 
 export const routes: Routes = [
@@ -18,9 +23,19 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('@components/layout/app-shell/app-shell').then((m) => m.AppShell),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'users' },
+      {
+        path: '',
+        pathMatch: 'full',
+        canActivate: [defaultRouteGuard],
+        loadComponent: () => import('@components/auth/no-access/no-access').then((m) => m.NoAccess),
+      },
+      {
+        path: 'no-access',
+        loadComponent: () => import('@components/auth/no-access/no-access').then((m) => m.NoAccess),
+      },
       {
         path: 'users',
+        canActivate: [usersPermissionGuard],
         loadComponent: () =>
           import('@components/users/users-list/users-list').then((m) => m.UsersList),
       },
@@ -35,11 +50,13 @@ export const routes: Routes = [
       },
       {
         path: 'roles',
+        canActivate: [rolesPermissionGuard],
         loadComponent: () =>
           import('@components/roles/roles-catalog/roles-catalog').then((m) => m.RolesCatalog),
       },
       {
         path: 'members',
+        canActivate: [membersPermissionGuard],
         loadComponent: () =>
           import('@components/members/members-list/members-list').then((m) => m.MembersList),
       },
@@ -54,6 +71,7 @@ export const routes: Routes = [
       },
       {
         path: 'congregation',
+        canActivate: [congregationsPermissionGuard],
         loadComponent: () =>
           import('@components/congregations/congregation-form/congregation-form').then(
             (m) => m.CongregationForm,

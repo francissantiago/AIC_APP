@@ -26,16 +26,11 @@ describe('RolesCatalog', () => {
           useValue: {
             currentUser: signal({
               id: '1',
-              roles: [
-                {
-                  id: 1,
-                  code: 'ADMIN',
-                  name: 'Administrador',
-                  description: null,
-                  permissions: [],
-                },
-              ],
+              permissions: ['roles:write'],
+              roles: [],
             }),
+            hasPermission: (code: string) => code === 'roles:write',
+            hasAnyPermission: (...codes: string[]) => codes.includes('roles:write'),
           },
         },
       ],

@@ -6,6 +6,10 @@ import { ILoginRequest } from '@interfaces/ILoginRequest';
 import { IUser } from '@interfaces/IUser';
 import { ApiErrorService } from '@services/api-error.service';
 import { environment } from 'environments/environment';
+import {
+  hasAnyPermission as checkAnyPermission,
+  hasPermission as checkPermission,
+} from '@utils/authorization';
 import { catchError, finalize, Observable, of, tap, throwError } from 'rxjs';
 
 const TOKEN_STORAGE_KEY = 'aic.accessToken';
@@ -30,6 +34,16 @@ export class AuthService {
   readonly isAuthenticated = computed(() => !!this.accessToken());
   readonly loginLoading = signal(false);
   readonly loginError = signal<string | null>(null);
+
+  hasPermission(code: string): boolean {
+    const permissions = this.currentUser()?.permissions ?? [];
+    return checkPermission(permissions, code);
+  }
+
+  hasAnyPermission(...codes: string[]): boolean {
+    const permissions = this.currentUser()?.permissions ?? [];
+    return checkAnyPermission(permissions, codes);
+  }
 
   login(payload: ILoginRequest): Observable<IAuthResponse> {
     this.loginLoading.set(true);

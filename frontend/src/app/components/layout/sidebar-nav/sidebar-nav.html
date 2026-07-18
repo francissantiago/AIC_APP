@@ -1,6 +1,6 @@
 <nav [attr.aria-label]="'NAV.MAIN_NAV' | translate">
   <ul class="flex flex-col gap-2 px-2 py-4">
-    @for (item of items; track item.route) {
+    @for (item of items(); track item.route) {
       <li>
         <a
           [routerLink]="item.route"
@@ -96,7 +96,7 @@
         </a>
       </li>
     }
-    @if (canViewFinance()) {
+    @if (canViewFinanceSection()) {
       <li>
         <button
           type="button"
@@ -132,7 +132,7 @@
         </button>
         @if (expanded() && financeOpen()) {
           <ul id="finance-submenu" class="ml-5 mt-1 border-l border-slate-400 pl-3">
-            @for (item of financeItems; track item.route) {
+            @for (item of financeItems(); track item.route) {
               <li>
                 <a
                   [routerLink]="item.route"

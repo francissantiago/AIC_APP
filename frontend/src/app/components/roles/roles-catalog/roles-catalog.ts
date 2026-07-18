@@ -41,10 +41,7 @@ export class RolesCatalog implements OnInit {
   readonly showForm = signal(false);
   readonly editingId = signal<number | null>(null);
 
-  readonly canMutate = computed(() => {
-    const user = this.#authService.currentUser();
-    return !!user?.roles.some((role) => role.code === 'ADMIN');
-  });
+  readonly canWrite = computed(() => this.#authService.hasPermission('roles:write'));
 
   ngOnInit(): void {
     this.#loadRoles();

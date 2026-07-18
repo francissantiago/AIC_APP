@@ -15,6 +15,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { USER_STATUSES, UserStatus } from '@enums/user-status';
 import { IRole } from '@interfaces/IRole';
 import { IUser } from '@interfaces/IUser';
+import { AuthService } from '@services/auth-service';
 import { RolesService } from '@services/roles-service';
 import { UsersService } from '@services/users-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -29,6 +30,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 export class UsersList implements OnInit {
   readonly #usersService = inject(UsersService);
   readonly #rolesService = inject(RolesService);
+  readonly #auth = inject(AuthService);
   readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
 
@@ -51,6 +53,8 @@ export class UsersList implements OnInit {
     const pages = Math.ceil(this.total() / this.limit());
     return pages > 0 ? pages : 1;
   });
+
+  readonly canWrite = computed(() => this.#auth.hasPermission('users:write'));
 
   readonly filterForm = new FormGroup({
     q: new FormControl('', { nonNullable: true }),

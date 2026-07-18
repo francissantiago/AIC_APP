@@ -32,7 +32,6 @@ import {
   CalendarEventType,
   CalendarRecurrenceFrequency,
 } from '@enums/secretariat';
-import { SECRETARIAT_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
 import { ICalendarEvent } from '@interfaces/ISecretariat';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
@@ -430,9 +429,7 @@ export class AgendaCalendar implements OnInit {
   readonly supportHint = signal<string | null>(null);
   readonly pendingDelete = signal<string | null>(null);
 
-  readonly canWrite = computed(() =>
-    hasAnyRole(this.#auth.currentUser()?.roles.map((r) => r.code) ?? [], SECRETARIAT_WRITE_ROLES),
-  );
+  readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly locale = computed(() => this.#translate.currentLang() || 'en');
 
   readonly calendarEvents = computed<CalendarEvent<ICalendarEvent>[]>(() =>

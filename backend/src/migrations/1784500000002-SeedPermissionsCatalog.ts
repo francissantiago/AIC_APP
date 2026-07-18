@@ -169,24 +169,18 @@ const ROLE_PERMISSION_CODES: ReadonlyArray<{
     roleCode: 'LEADER',
     permissionCodes: [
       'users:read',
-      'users:write',
       'roles:read',
       'members:read',
-      'members:write',
       'congregations:read',
-      'congregations:write',
     ],
   },
   {
     roleCode: 'MEMBER',
     permissionCodes: [
       'users:read',
-      'users:write',
       'roles:read',
       'members:read',
-      'members:write',
       'congregations:read',
-      'congregations:write',
     ],
   },
 ];

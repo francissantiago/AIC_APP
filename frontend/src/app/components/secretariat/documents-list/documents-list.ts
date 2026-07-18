@@ -17,7 +17,6 @@ import {
   SecretariatDocumentStatus,
   SecretariatDocumentType,
 } from '@enums/secretariat';
-import { SECRETARIAT_WRITE_ROLES, hasAnyRole } from '@guards/role-guard';
 import { ISecretariatDocument } from '@interfaces/ISecretariat';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
@@ -353,9 +352,7 @@ export class DocumentsList implements OnInit {
   readonly supportHint = signal<string | null>(null);
   readonly pendingDelete = signal<string | null>(null);
 
-  readonly canWrite = computed(() =>
-    hasAnyRole(this.#auth.currentUser()?.roles.map((r) => r.code) ?? [], SECRETARIAT_WRITE_ROLES),
-  );
+  readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
 
   readonly filterForm = new FormGroup({
