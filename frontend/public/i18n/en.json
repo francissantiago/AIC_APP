@@ -610,7 +610,23 @@
     "SUMMARY": "Summary",
     "STATUS": "Status",
     "STATUS_DRAFT": "Draft",
-    "STATUS_FINAL": "Final"
+    "STATUS_FINAL": "Final",
+    "DOCUMENTS": {
+      "ATTACHMENT": "Attachment",
+      "UPLOAD": "Upload",
+      "DOWNLOAD": "Download",
+      "REPLACE": "Replace file",
+      "REMOVE_FILE": "Remove attachment",
+      "NO_FILE": "No file attached",
+      "UPLOADING": "Uploading…",
+      "UPLOAD_SUCCESS": "File uploaded successfully",
+      "UPLOAD_ERROR": "Failed to upload file",
+      "FILE_TOO_LARGE": "File is too large",
+      "INVALID_TYPE": "File type not allowed",
+      "HAS_ATTACHMENT": "Has attachment",
+      "CHOOSE_FILE": "Choose file",
+      "MAX_SIZE_HINT": "Max size: {{maxMb}} MB. Allowed: PDF, DOCX, PNG, JPEG."
+    }
   },
   "ERRORS": {
     "GENERIC": "Something went wrong. Please try again.",
@@ -704,6 +720,10 @@
       "VISITOR_NOT_FOUND": "Visitor not found.",
       "VISITOR_ALREADY_CONVERTED": "This visitor has already been integrated as a member.",
       "DOCUMENT_NOT_FOUND": "Document not found.",
+      "DOCUMENT_FILE_REQUIRED": "A file is required.",
+      "DOCUMENT_FILE_TYPE_INVALID": "File type is not allowed.",
+      "DOCUMENT_FILE_TOO_LARGE": "File exceeds the maximum allowed size.",
+      "DOCUMENT_FILE_NOT_FOUND": "Document file not found.",
       "EVENT_NOT_FOUND": "Event not found.",
       "EVENT_ENDS_BEFORE_START": "Event end must be after or equal to the start.",
       "EVENT_RECURRENCE_UNTIL_INVALID": "Recurrence end date must be after or equal to the start date."

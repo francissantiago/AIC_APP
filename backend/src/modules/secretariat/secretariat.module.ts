@@ -15,6 +15,7 @@ import { DocumentsService } from './documents/documents.service';
 import { SecretariatDocument } from './documents/entities/secretariat-document.entity';
 import { SecretariatController } from './secretariat.controller';
 import { SecretariatService } from './secretariat.service';
+import { FileStorageService } from './storage/file-storage.service';
 import { Visitor } from './visitors/entities/visitor.entity';
 import { VisitorsController } from './visitors/visitors.controller';
 import { VisitorsService } from './visitors/visitors.service';
@@ -45,6 +46,7 @@ import { VisitorsService } from './visitors/visitors.service';
     VisitorsService,
     AttendanceService,
     DocumentsService,
+    FileStorageService,
   ],
   exports: [SecretariatService],
 })

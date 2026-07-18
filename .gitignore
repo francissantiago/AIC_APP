@@ -22,6 +22,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Local file uploads
+backend/uploads/
+
 # MCP
 mcp/dist/
 .cursor/agents/

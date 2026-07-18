@@ -128,6 +128,28 @@ export class SecretariatService {
     return this.#request(this.#http.delete<void>(`${this.#apiUrl}/documents/${id}`));
   }
 
+  uploadDocumentFile(id: string, file: File): Observable<ISecretariatDocument> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.#request(
+      this.#http.post<ISecretariatDocument>(`${this.#apiUrl}/documents/${id}/upload`, formData),
+    );
+  }
+
+  downloadDocumentFile(id: string): Observable<Blob> {
+    return this.#request(
+      this.#http.get(`${this.#apiUrl}/documents/${id}/download`, {
+        responseType: 'blob',
+      }),
+    );
+  }
+
+  removeDocumentFile(id: string): Observable<ISecretariatDocument> {
+    return this.#request(
+      this.#http.delete<ISecretariatDocument>(`${this.#apiUrl}/documents/${id}/file`),
+    );
+  }
+
   #get<T>(path: string, query: object): Observable<T> {
     return this.#request(
       this.#http.get<T>(`${this.#apiUrl}/${path}`, { params: this.#params(query) }),

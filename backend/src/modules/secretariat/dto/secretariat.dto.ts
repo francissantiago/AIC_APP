@@ -567,6 +567,14 @@ export class SecretariatDocumentResponseDto {
   summary!: string | null;
   @ApiProperty({ enum: SecretariatDocumentStatus })
   status!: SecretariatDocumentStatus;
+  @ApiProperty({ description: 'Indica se o documento possui arquivo anexado' })
+  hasAttachment!: boolean;
+  @ApiPropertyOptional({ nullable: true })
+  originalFilename!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  mimeType!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  sizeBytes!: number | null;
   @ApiProperty({ format: 'date-time' })
   createdAt!: Date;
   @ApiProperty({ format: 'date-time' })

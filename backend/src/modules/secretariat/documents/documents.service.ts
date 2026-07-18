@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ReadStream } from 'fs';
 import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   ApiErrorCode,
@@ -15,7 +16,16 @@ import {
   SecretariatDocumentResponseDto,
   UpdateSecretariatDocumentDto,
 } from '../dto/secretariat.dto';
+import { FileStorageService } from '../storage/file-storage.service';
+import { UploadedFile } from '../storage/uploaded-file.interface';
 import { SecretariatDocument } from './entities/secretariat-document.entity';
+
+export type DocumentFileDownload = {
+  stream: ReadStream;
+  mimeType: string;
+  originalFilename: string;
+  sizeBytes: number;
+};
 
 @Injectable()
 export class DocumentsService {
@@ -25,6 +35,7 @@ export class DocumentsService {
     @InjectRepository(SecretariatDocument)
     private readonly documentsRepository: Repository<SecretariatDocument>,
     private readonly congregationsService: CongregationsService,
+    private readonly fileStorageService: FileStorageService,
   ) {}
 
   async createDocument(
@@ -100,6 +111,102 @@ export class DocumentsService {
     this.logger.log(`Documento de secretaria removido (soft delete): ${id}`);
   }
 
+  async uploadFile(
+    id: string,
+    file: UploadedFile | undefined,
+  ): Promise<SecretariatDocumentResponseDto> {
+    const congregationId = await this.getCongregationId();
+    const document = await this.getDocumentOrFail(id, congregationId);
+    const previousPath = document.filePath;
+
+    if (!file) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_REQUIRED,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_REQUIRED],
+      });
+    }
+
+    const savedFile = await this.fileStorageService.saveSecretariatDocument(
+      document.id,
+      file,
+    );
+
+    document.filePath = savedFile.relativePath;
+    document.originalFilename = savedFile.originalFilename;
+    document.mimeType = savedFile.mimeType;
+    document.sizeBytes = savedFile.sizeBytes;
+
+    const saved = await this.documentsRepository.save(document);
+
+    if (previousPath && previousPath !== savedFile.relativePath) {
+      await this.fileStorageService.deleteIfExists(previousPath);
+    }
+
+    this.logger.log(`Arquivo anexado ao documento ${saved.id}`);
+    return this.toDto(saved);
+  }
+
+  async downloadFile(id: string): Promise<DocumentFileDownload> {
+    const congregationId = await this.getCongregationId();
+    const document = await this.getDocumentOrFail(id, congregationId);
+
+    if (
+      !document.filePath ||
+      !document.originalFilename ||
+      !document.mimeType ||
+      document.sizeBytes == null
+    ) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+      });
+    }
+
+    try {
+      const { stream } = await this.fileStorageService.openReadStream(
+        document.filePath,
+      );
+      return {
+        stream,
+        mimeType: document.mimeType,
+        originalFilename: document.originalFilename,
+        sizeBytes: document.sizeBytes,
+      };
+    } catch (error) {
+      if (error instanceof ApiException) {
+        this.logger.warn(
+          `Arquivo ausente no disco para documento ${id}: ${document.filePath}`,
+        );
+        throw error;
+      }
+      throw error;
+    }
+  }
+
+  async removeFile(id: string): Promise<void> {
+    const congregationId = await this.getCongregationId();
+    const document = await this.getDocumentOrFail(id, congregationId);
+
+    if (!document.filePath) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+      });
+    }
+
+    const pathToDelete = document.filePath;
+    document.filePath = null;
+    document.originalFilename = null;
+    document.mimeType = null;
+    document.sizeBytes = null;
+    await this.documentsRepository.save(document);
+    await this.fileStorageService.deleteIfExists(pathToDelete);
+    this.logger.log(`Anexo removido do documento ${id}`);
+  }
+
   private async getCongregationId(): Promise<string> {
     return (await this.congregationsService.getOrCreateBase()).id;
   }
@@ -165,6 +272,10 @@ export class DocumentsService {
     documentDate: document.documentDate,
     summary: document.summary,
     status: document.status,
+    hasAttachment: Boolean(document.filePath),
+    originalFilename: document.originalFilename ?? null,
+    mimeType: document.mimeType ?? null,
+    sizeBytes: document.sizeBytes ?? null,
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
   });

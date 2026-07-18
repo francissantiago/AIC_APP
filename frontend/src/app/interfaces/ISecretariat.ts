@@ -179,6 +179,10 @@ export interface ISecretariatDocument {
   documentDate: string;
   summary: string | null;
   status: SecretariatDocumentStatus;
+  hasAttachment: boolean;
+  originalFilename: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
   createdAt: string;
   updatedAt: string;
 }

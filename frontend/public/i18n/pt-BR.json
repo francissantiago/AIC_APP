@@ -610,7 +610,23 @@
     "SUMMARY": "Resumo",
     "STATUS": "Status",
     "STATUS_DRAFT": "Rascunho",
-    "STATUS_FINAL": "Final"
+    "STATUS_FINAL": "Final",
+    "DOCUMENTS": {
+      "ATTACHMENT": "Anexo",
+      "UPLOAD": "Enviar arquivo",
+      "DOWNLOAD": "Baixar",
+      "REPLACE": "Substituir arquivo",
+      "REMOVE_FILE": "Remover anexo",
+      "NO_FILE": "Sem arquivo anexado",
+      "UPLOADING": "Enviando…",
+      "UPLOAD_SUCCESS": "Arquivo enviado com sucesso",
+      "UPLOAD_ERROR": "Falha ao enviar o arquivo",
+      "FILE_TOO_LARGE": "Arquivo muito grande",
+      "INVALID_TYPE": "Tipo de arquivo não permitido",
+      "HAS_ATTACHMENT": "Possui anexo",
+      "CHOOSE_FILE": "Escolher arquivo",
+      "MAX_SIZE_HINT": "Tamanho máx.: {{maxMb}} MB. Permitidos: PDF, DOCX, PNG, JPEG."
+    }
   },
   "ERRORS": {
     "GENERIC": "Algo deu errado. Tente novamente.",
@@ -704,6 +720,10 @@
       "VISITOR_NOT_FOUND": "Visitante não encontrado.",
       "VISITOR_ALREADY_CONVERTED": "Este visitante já foi integrado como membro.",
       "DOCUMENT_NOT_FOUND": "Documento não encontrado.",
+      "DOCUMENT_FILE_REQUIRED": "Arquivo é obrigatório.",
+      "DOCUMENT_FILE_TYPE_INVALID": "Tipo de arquivo não permitido.",
+      "DOCUMENT_FILE_TOO_LARGE": "Arquivo excede o tamanho máximo permitido.",
+      "DOCUMENT_FILE_NOT_FOUND": "Arquivo do documento não encontrado.",
       "EVENT_NOT_FOUND": "Evento não encontrado.",
       "EVENT_ENDS_BEFORE_START": "O fim do evento deve ser posterior ou igual ao início.",
       "EVENT_RECURRENCE_UNTIL_INVALID": "A data final da recorrência deve ser posterior ou igual à data de início."

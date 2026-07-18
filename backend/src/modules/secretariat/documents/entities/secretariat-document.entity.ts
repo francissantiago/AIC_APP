@@ -51,6 +51,28 @@ export class SecretariatDocument {
   })
   status!: SecretariatDocumentStatus;
 
+  @Column({ name: 'file_path', type: 'varchar', length: 500, nullable: true })
+  filePath!: string | null;
+
+  @Column({
+    name: 'original_filename',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  originalFilename!: string | null;
+
+  @Column({ name: 'mime_type', type: 'varchar', length: 120, nullable: true })
+  mimeType!: string | null;
+
+  @Column({
+    name: 'size_bytes',
+    type: 'int',
+    unsigned: true,
+    nullable: true,
+  })
+  sizeBytes!: number | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;
 

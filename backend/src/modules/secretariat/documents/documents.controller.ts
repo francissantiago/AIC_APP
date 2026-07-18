@@ -10,20 +10,28 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProduces,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { ApiErrorResponses } from '../../../common/decorators/api-error-responses.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
@@ -37,7 +45,17 @@ import {
   SecretariatDocumentResponseDto,
   UpdateSecretariatDocumentDto,
 } from '../dto/secretariat.dto';
+import { UploadedFile as SecretariatUploadedFile } from '../storage/uploaded-file.interface';
 import { DocumentsService } from './documents.service';
+
+const DEFAULT_UPLOAD_MAX_BYTES = 10_485_760;
+
+function resolveUploadMaxBytes(): number {
+  const parsed = Number(process.env.UPLOAD_MAX_BYTES);
+  return Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_UPLOAD_MAX_BYTES;
+}
 
 @ApiTags('Secretariat')
 @ApiBearerAuth()
@@ -58,6 +76,29 @@ export class DocumentsController {
     @Query() query: QuerySecretariatDocumentsDto,
   ): Promise<PaginatedSecretariatDocumentsResponseDto> {
     return this.documentsService.findDocuments(query);
+  }
+
+  @Get(':id/download')
+  @ApiOperation({ summary: 'Baixar arquivo anexado ao documento' })
+  @ApiProduces('application/octet-stream')
+  @ApiOkResponse({
+    description: 'Stream binário do arquivo anexado',
+    schema: { type: 'string', format: 'binary' },
+  })
+  @ApiNotFoundResponse({
+    description: 'Documento ou arquivo não encontrado',
+  })
+  async downloadFile(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() response: Response,
+  ): Promise<void> {
+    const file = await this.documentsService.downloadFile(id);
+    const safeName = file.originalFilename.replace(/"/g, '');
+    response
+      .setHeader('Content-Type', file.mimeType)
+      .setHeader('Content-Disposition', `attachment; filename="${safeName}"`)
+      .setHeader('Content-Length', String(file.sizeBytes));
+    file.stream.pipe(response);
   }
 
   @Get(':id')
@@ -81,6 +122,43 @@ export class DocumentsController {
     return this.documentsService.createDocument(dto, user);
   }
 
+  @Post(':id/upload')
+  @RequirePermission('secretariat:write')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: resolveUploadMaxBytes() },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description:
+            'Arquivo anexado (PDF, DOCX, PNG ou JPEG). Campo multipart: file.',
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: 'Enviar ou substituir arquivo anexado ao documento',
+  })
+  @ApiOkResponse({ type: SecretariatDocumentResponseDto })
+  @ApiNotFoundResponse({ description: 'Documento não encontrado' })
+  @ApiBadRequestResponse({
+    description: 'Arquivo ausente, tipo inválido ou tamanho excedido',
+  })
+  uploadFile(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: SecretariatUploadedFile | undefined,
+  ): Promise<SecretariatDocumentResponseDto> {
+    return this.documentsService.uploadFile(id, file);
+  }
+
   @Patch(':id')
   @RequirePermission('secretariat:write')
   @ApiOperation({ summary: 'Atualizar documento de secretaria' })
@@ -91,6 +169,18 @@ export class DocumentsController {
     @Body() dto: UpdateSecretariatDocumentDto,
   ): Promise<SecretariatDocumentResponseDto> {
     return this.documentsService.updateDocument(id, dto);
+  }
+
+  @Delete(':id/file')
+  @RequirePermission('secretariat:write')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remover arquivo anexado ao documento' })
+  @ApiNoContentResponse({ description: 'Anexo removido' })
+  @ApiNotFoundResponse({
+    description: 'Documento ou arquivo não encontrado',
+  })
+  removeFile(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.documentsService.removeFile(id);
   }
 
   @Delete(':id')
