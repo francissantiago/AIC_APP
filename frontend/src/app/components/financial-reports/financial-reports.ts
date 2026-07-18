@@ -57,7 +57,7 @@ import { FinanceService } from '@services/finance-service';
           [class]="
             'rounded-md border px-4 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ' +
             (tab() === 'cash'
-              ? 'border-slate-900 bg-slate-500 font-medium text-white hover:bg-slate-600'
+              ? 'border-slate-500 bg-slate-500 font-medium text-white hover:bg-slate-600'
               : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')
           "
           [attr.aria-pressed]="tab() === 'cash'"
@@ -70,7 +70,7 @@ import { FinanceService } from '@services/finance-service';
           [class]="
             'rounded-md border px-4 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ' +
             (tab() === 'assets'
-              ? 'border-slate-900 bg-slate-500 font-medium text-white hover:bg-slate-600'
+              ? 'border-slate-500 bg-slate-500 font-medium text-white hover:bg-slate-600'
               : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')
           "
           [attr.aria-pressed]="tab() === 'assets'"
