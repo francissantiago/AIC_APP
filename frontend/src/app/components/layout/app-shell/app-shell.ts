@@ -128,6 +128,12 @@ export class AppShell {
     if (path.startsWith('/members')) {
       return 'APP_SHELL.PAGE_MEMBERS';
     }
+    if (path.startsWith('/families/birthdays')) {
+      return 'APP_SHELL.PAGE_FAMILIES_BIRTHDAYS';
+    }
+    if (path.startsWith('/families')) {
+      return 'APP_SHELL.PAGE_FAMILIES';
+    }
     if (path.startsWith('/ministries')) {
       return 'APP_SHELL.PAGE_MINISTRIES';
     }

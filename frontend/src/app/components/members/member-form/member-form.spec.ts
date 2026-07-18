@@ -6,6 +6,7 @@ import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { ClassStatus } from '@enums/class-status';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
+import { FamiliesService } from '@services/families-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
 import { of } from 'rxjs';
@@ -101,6 +102,12 @@ describe('MemberForm', () => {
           provide: ClassesService,
           useValue: {
             listByMember: listClassesByMember,
+          },
+        },
+        {
+          provide: FamiliesService,
+          useValue: {
+            getByMember: () => of(null),
           },
         },
       ],

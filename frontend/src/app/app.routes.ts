@@ -65,6 +65,20 @@ export const routes: Routes = [
           import('@components/members/members-list/members-list').then((m) => m.MembersList),
       },
       {
+        path: 'families/birthdays',
+        canActivate: [membersPermissionGuard],
+        loadComponent: () =>
+          import('@components/families/family-birthdays-report/family-birthdays-report').then(
+            (m) => m.FamilyBirthdaysReport,
+          ),
+      },
+      {
+        path: 'families',
+        canActivate: [membersPermissionGuard],
+        loadComponent: () =>
+          import('@components/families/families-list/families-list').then((m) => m.FamiliesList),
+      },
+      {
         path: 'members/new',
         pathMatch: 'full',
         redirectTo: 'members',

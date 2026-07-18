@@ -1,0 +1,104 @@
+<section class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">
+        {{ 'FAMILIES.BIRTHDAYS_REPORT' | translate }}
+      </h1>
+      <p class="text-sm text-slate-600">{{ 'FAMILIES.DESCRIPTION' | translate }}</p>
+    </div>
+    <a
+      routerLink="/families"
+      class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'FAMILIES.TITLE' | translate }}
+    </a>
+  </div>
+
+  <form
+    [formGroup]="filterForm"
+    (ngSubmit)="loadReport()"
+    class="mb-4 grid gap-3 md:grid-cols-3"
+    novalidate
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'FAMILIES.BIRTHDAYS_MONTH' | translate }}</span>
+      <select
+        formControlName="month"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        @for (month of months; track month) {
+          <option [value]="month">{{ month }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'FAMILIES.BIRTHDAYS_FAMILY_FILTER' | translate }}</span>
+      <select
+        formControlName="familyId"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (family of families(); track family.id) {
+          <option [value]="family.id">{{ family.name }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="flex items-end">
+      <button
+        type="submit"
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+        [disabled]="loading()"
+      >
+        {{ 'COMMON.FILTER' | translate }}
+      </button>
+    </div>
+  </form>
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'ERRORS.LOAD_FAILED' | translate }}</p>
+  } @else if (loaded() && items().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'FAMILIES.NO_BIRTHDAYS' | translate }}</p>
+  } @else if (items().length > 0) {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'FAMILIES.BIRTHDAYS_DAY' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'FAMILIES.NAME' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'FAMILIES.TITLE' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'FAMILIES.RELATION' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.memberId + item.familyId) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ item.day }}</td>
+              <td class="px-3 py-2 text-slate-900">
+                {{ item.fullName }}
+                @if (ageFromBirthDate(item.birthDate); as age) {
+                  <span class="text-slate-500">({{ age }})</span>
+                }
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ item.familyName }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ relationLabelKey(item.relation) | translate }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

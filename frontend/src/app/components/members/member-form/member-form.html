@@ -74,10 +74,71 @@
             {{ 'MEMBERS.EBD_CLASSES' | translate }}
           </button>
         }
+        @if (showFamilyTab()) {
+          <button
+            type="button"
+            role="tab"
+            class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-500]="activeTab() === 'family'"
+            [class.text-white]="activeTab() === 'family'"
+            [class.border]="activeTab() !== 'family'"
+            [class.border-slate-300]="activeTab() !== 'family'"
+            [class.bg-white]="activeTab() !== 'family'"
+            [attr.aria-selected]="activeTab() === 'family'"
+            (click)="selectTab('family')"
+          >
+            {{ 'FAMILIES.MEMBER_SECTION' | translate }}
+          </button>
+        }
       </div>
     }
 
-    @if (activeTab() === 'ebd' && showEbdTab()) {
+    @if (activeTab() === 'family' && showFamilyTab()) {
+      <section [attr.aria-label]="'FAMILIES.MEMBER_SECTION' | translate">
+        @if (familyLoading()) {
+          <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (familyError()) {
+          <p class="text-sm text-red-700" role="alert">
+            {{ familyErrorMessage() || ('ERRORS.LOAD_FAILED' | translate) }}
+          </p>
+        } @else if (memberFamily(); as family) {
+          <div class="rounded-md border border-slate-200 px-3 py-3">
+            <p class="text-sm font-medium text-slate-900">{{ family.name }}</p>
+            @if (family.headMemberName) {
+              <p class="mt-1 text-sm text-slate-600">
+                {{ 'FAMILIES.HEAD_MEMBER' | translate }}: {{ family.headMemberName }}
+              </p>
+            }
+            <a
+              routerLink="/families"
+              class="mt-3 inline-flex text-sm text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              {{ 'FAMILIES.VIEW_FAMILY' | translate }}
+            </a>
+          </div>
+        } @else {
+          <p class="text-sm text-slate-600">{{ 'FAMILIES.NO_FAMILY' | translate }}</p>
+          @if (canWriteMembers()) {
+            <a
+              routerLink="/families"
+              class="mt-3 inline-flex text-sm text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              {{ 'FAMILIES.LINK_TO_FAMILY' | translate }}
+            </a>
+          }
+        }
+
+        <div class="mt-4">
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="cancelled.emit()"
+          >
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </section>
+    } @else if (activeTab() === 'ebd' && showEbdTab()) {
       <section [attr.aria-label]="'MEMBERS.EBD_CLASSES' | translate">
         @if (ebdClassesLoading()) {
           <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>

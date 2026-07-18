@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
 import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
@@ -21,20 +22,22 @@ import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { ClassStatus } from '@enums/class-status';
 import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
 import { ICreateMember } from '@interfaces/ICreateMember';
+import { IFamily } from '@interfaces/IFamily';
 import { IMemberClassSummary } from '@interfaces/IMemberClassSummary';
 import { IMinistry } from '@interfaces/IMinistry';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
+import { FamiliesService } from '@services/families-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
 
-type MemberFormTab = 'details' | 'ministries' | 'ebd';
+type MemberFormTab = 'details' | 'ministries' | 'ebd' | 'family';
 
 @Component({
   selector: 'app-member-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './member-form.html',
   styleUrl: './member-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +46,7 @@ export class MemberForm implements OnInit {
   readonly #membersService = inject(MembersService);
   readonly #ministriesService = inject(MinistriesService);
   readonly #classesService = inject(ClassesService);
+  readonly #familiesService = inject(FamiliesService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
@@ -77,13 +81,23 @@ export class MemberForm implements OnInit {
   readonly canReadMinistries = computed(() => this.#auth.hasPermission('ministries:read'));
   readonly canWriteMinistries = computed(() => this.#auth.hasPermission('ministries:write'));
   readonly canReadClasses = computed(() => this.#auth.hasPermission('classes:read'));
+  readonly canReadMembers = computed(() => this.#auth.hasPermission('members:read'));
+  readonly canWriteMembers = computed(() => this.#auth.hasPermission('members:write'));
   readonly showMinistriesTab = computed(() => this.isEditMode() && this.canReadMinistries());
   readonly showEbdTab = computed(() => this.isEditMode() && this.canReadClasses());
-  readonly showSideTabs = computed(() => this.showMinistriesTab() || this.showEbdTab());
+  readonly showFamilyTab = computed(() => this.isEditMode() && this.canReadMembers());
+  readonly showSideTabs = computed(
+    () => this.showMinistriesTab() || this.showEbdTab() || this.showFamilyTab(),
+  );
 
   readonly memberClasses = signal<IMemberClassSummary[]>([]);
   readonly ebdClassesLoading = signal(false);
   readonly ebdClassesError = signal(false);
+
+  readonly memberFamily = signal<IFamily | null>(null);
+  readonly familyLoading = signal(false);
+  readonly familyError = signal(false);
+  readonly familyErrorMessage = signal<string | null>(null);
 
   readonly availableMinistries = computed(() => {
     const linkedIds = new Set(this.memberMinistries().map((item) => item.id));
@@ -163,6 +177,9 @@ export class MemberForm implements OnInit {
       }
       if (this.canReadClasses()) {
         this.#loadMemberClasses(id);
+      }
+      if (this.canReadMembers()) {
+        this.#loadMemberFamily(id);
       }
     }
   }
@@ -481,6 +498,36 @@ export class MemberForm implements OnInit {
           this.memberClasses.set([]);
           this.ebdClassesLoading.set(false);
           this.ebdClassesError.set(true);
+        },
+      });
+  }
+
+  #loadMemberFamily(memberId: string): void {
+    this.familyLoading.set(true);
+    this.familyError.set(false);
+    this.familyErrorMessage.set(null);
+    this.memberFamily.set(null);
+
+    this.#familiesService
+      .getByMember(memberId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (family) => {
+          this.memberFamily.set(family);
+          this.familyLoading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.familyLoading.set(false);
+          const resolved = this.#apiError.resolve(error);
+          if (error.status === 404 && resolved.code === 'FAMILIES.MEMBER_FAMILY_NOT_FOUND') {
+            this.memberFamily.set(null);
+            this.familyError.set(false);
+            return;
+          }
+
+          this.memberFamily.set(null);
+          this.familyError.set(true);
+          this.familyErrorMessage.set(resolved.displayMessage);
         },
       });
   }
