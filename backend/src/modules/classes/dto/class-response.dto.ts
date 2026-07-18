@@ -51,13 +51,22 @@ export class ClassResponseDto {
   @ApiProperty({ enum: ClassStatus, example: ClassStatus.ACTIVE })
   status!: ClassStatus;
 
+  @ApiPropertyOptional({
+    example: 12,
+    description: 'Quantidade de matrículas com status active',
+  })
+  enrollmentsCount?: number;
+
   @ApiProperty()
   createdAt!: Date;
 
   @ApiProperty()
   updatedAt!: Date;
 
-  static fromEntity(ebdClass: EbdClass): ClassResponseDto {
+  static fromEntity(
+    ebdClass: EbdClass,
+    options?: { enrollmentsCount?: number },
+  ): ClassResponseDto {
     const dto = new ClassResponseDto();
     dto.id = ebdClass.id;
     dto.congregationId = ebdClass.congregationId;
@@ -77,6 +86,9 @@ export class ClassResponseDto {
     dto.status = ebdClass.status;
     dto.createdAt = ebdClass.createdAt;
     dto.updatedAt = ebdClass.updatedAt;
+    if (options?.enrollmentsCount !== undefined) {
+      dto.enrollmentsCount = options.enrollmentsCount;
+    }
     return dto;
   }
 }

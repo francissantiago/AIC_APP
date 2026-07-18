@@ -1,0 +1,128 @@
+<section class="w-full" [attr.aria-label]="'EBD_ATTENDANCE.REPORT_TITLE' | translate">
+  <div class="mb-4">
+    <h1 class="text-xl font-semibold text-slate-900">
+      {{ 'EBD_ATTENDANCE.REPORT_TITLE' | translate }}
+    </h1>
+    <p class="text-sm text-slate-600">{{ 'EBD_ATTENDANCE.SUMMARY_CLASS' | translate }}</p>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  <form
+    [formGroup]="filterForm"
+    class="mb-4 grid gap-3 md:grid-cols-4"
+    [attr.aria-label]="'EBD_ATTENDANCE.FILTER_CLASS' | translate"
+    (ngSubmit)="loadReport()"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-1">
+      <span>{{ 'EBD_ATTENDANCE.FILTER_CLASS' | translate }}</span>
+      <select
+        formControlName="classId"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (ebdClass of classes(); track ebdClass.id) {
+          <option [value]="ebdClass.id">{{ ebdClass.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'EBD_ATTENDANCE.FROM' | translate }}</span>
+      <input
+        type="date"
+        formControlName="from"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'EBD_ATTENDANCE.TO' | translate }}</span>
+      <input
+        type="date"
+        formControlName="to"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <div class="flex flex-wrap items-end gap-2">
+      <button
+        type="submit"
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+        [disabled]="loading()"
+      >
+        {{ 'COMMON.SEARCH' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="exporting() || !report()"
+        (click)="exportCsv()"
+      >
+        {{ 'EBD_ATTENDANCE.EXPORT_CSV' | translate }}
+      </button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error() && !errorMessage()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'EBD_ATTENDANCE.LOAD_ERROR' | translate }}</p>
+  } @else if (!report()) {
+    <p class="text-sm text-slate-600">{{ 'EBD_ATTENDANCE.NO_DATA' | translate }}</p>
+  } @else {
+    <div class="mb-4 flex flex-wrap gap-4 text-sm text-slate-700">
+      <p>
+        <span class="font-medium">{{ 'EBD_ATTENDANCE.SUMMARY_CLASS' | translate }}:</span>
+        {{ report()!.className }}
+      </p>
+      <p>
+        <span class="font-medium">{{ 'EBD_ATTENDANCE.SESSIONS' | translate }}:</span>
+        {{ report()!.sessionsCount }}
+      </p>
+      <p>
+        <span class="font-medium">{{ 'EBD_ATTENDANCE.FREQUENCY_PCT' | translate }}:</span>
+        {{ report()!.classAveragePct }}%
+      </p>
+    </div>
+
+    @if (report()!.members.length === 0) {
+      <p class="text-sm text-slate-600">{{ 'EBD_ATTENDANCE.NO_DATA' | translate }}</p>
+    } @else {
+      <div class="overflow-x-auto rounded-md border border-slate-200">
+        <table class="min-w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'EBD_ATTENDANCE.SUMMARY_MEMBER' | translate }}
+              </th>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'EBD_ATTENDANCE.PRESENT_COUNT' | translate }}
+              </th>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'EBD_ATTENDANCE.ABSENT_COUNT' | translate }}
+              </th>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'EBD_ATTENDANCE.FREQUENCY_PCT' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (member of report()!.members; track member.memberId) {
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 text-slate-900">{{ member.memberFullName }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ member.presentCount }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ member.absentCount }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ member.frequencyPct }}%</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</section>

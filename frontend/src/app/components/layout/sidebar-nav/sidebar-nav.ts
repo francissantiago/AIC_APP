@@ -16,7 +16,7 @@ import { filter } from 'rxjs';
 export type SidebarNavItem = {
   route: string;
   labelKey: string;
-  icon: 'users' | 'roles' | 'members' | 'ministries' | 'ebd' | 'congregation';
+  icon: 'users' | 'roles' | 'members' | 'ministries' | 'congregation';
   permission: string;
 };
 
@@ -41,11 +41,13 @@ export class SidebarNav {
   readonly currentUrl = signal(this.#router.url);
   readonly financeOpen = signal(this.#router.url.startsWith('/finance'));
   readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
+  readonly ebdOpen = signal(this.#router.url.startsWith('/ebd'));
 
   readonly canViewFinanceSection = computed(() =>
     this.#auth.hasAnyPermission('finance:read', 'assets:read'),
   );
   readonly canViewSecretariat = computed(() => this.#auth.hasPermission('secretariat:read'));
+  readonly canViewEbd = computed(() => this.#auth.hasPermission('classes:read'));
 
   readonly allItems: readonly SidebarNavItem[] = [
     { route: '/users', labelKey: 'NAV.USERS', icon: 'users', permission: 'users:read' },
@@ -63,18 +65,17 @@ export class SidebarNav {
       permission: 'ministries:read',
     },
     {
-      route: '/ebd',
-      labelKey: 'NAV.EBD',
-      icon: 'ebd',
-      permission: 'classes:read',
-    },
-    {
       route: '/congregation',
       labelKey: 'NAV.CONGREGATIONS',
       icon: 'congregation',
       permission: 'congregations:read',
     },
   ];
+
+  readonly ebdItems = [
+    { route: '/ebd', labelKey: 'NAV.EBD' },
+    { route: '/ebd/reports', labelKey: 'NAV.EBD_REPORTS' },
+  ] as const;
 
   readonly items = computed(() =>
     this.allItems.filter((item) => this.#auth.hasPermission(item.permission)),
@@ -113,6 +114,9 @@ export class SidebarNav {
         if (event.urlAfterRedirects.startsWith('/secretariat')) {
           this.secretariatOpen.set(true);
         }
+        if (event.urlAfterRedirects.startsWith('/ebd')) {
+          this.ebdOpen.set(true);
+        }
       });
   }
 
@@ -131,5 +135,13 @@ export class SidebarNav {
       return;
     }
     this.secretariatOpen.update((value) => !value);
+  }
+
+  toggleEbd(): void {
+    if (!this.expanded()) {
+      void this.#router.navigateByUrl('/ebd');
+      return;
+    }
+    this.ebdOpen.update((value) => !value);
   }
 }

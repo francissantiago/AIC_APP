@@ -6,15 +6,23 @@
       </h1>
       <p class="text-sm text-slate-600">{{ 'EBD_CLASSES.TITLE' | translate }}</p>
     </div>
-    @if (canWrite()) {
-      <button
-        type="button"
-        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
-        (click)="openCreate()"
+    <div class="flex flex-wrap gap-2">
+      <a
+        routerLink="/ebd/reports"
+        class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
-        {{ 'COMMON.CREATE' | translate }}
-      </button>
-    }
+        {{ 'EBD_ATTENDANCE.REPORT_TITLE' | translate }}
+      </a>
+      @if (canWrite()) {
+        <button
+          type="button"
+          class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+          (click)="openCreate()"
+        >
+          {{ 'COMMON.CREATE' | translate }}
+        </button>
+      }
+    </div>
   </div>
 
   <app-dialog
@@ -24,6 +32,26 @@
   >
     @if (showForm()) {
       <app-class-form [classId]="editingId()" (saved)="afterSave()" (cancelled)="closeForm()" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="managingEnrollmentsId() !== null"
+    [title]="'EBD_ENROLLMENTS.TITLE' | translate"
+    (closed)="closeEnrollments()"
+  >
+    @if (managingEnrollmentsId(); as classId) {
+      <app-class-enrollments-panel [classId]="classId" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="takingAttendanceId() !== null"
+    [title]="'EBD_ATTENDANCE.TAKE_ROLL' | translate"
+    (closed)="closeAttendance()"
+  >
+    @if (takingAttendanceId(); as classId) {
+      <app-class-attendance [classId]="classId" />
     }
   </app-dialog>
 
@@ -128,6 +156,9 @@
             <th scope="col" class="px-3 py-2 font-medium">
               {{ 'EBD_CLASSES.STATUS' | translate }}
             </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'EBD_ENROLLMENTS.STUDENTS' | translate }}
+            </th>
             <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -147,8 +178,35 @@
               <td class="px-3 py-2 text-slate-700">
                 {{ statusLabelKey(ebdClass.status) | translate }}
               </td>
+              <td class="px-3 py-2 text-slate-700">
+                {{
+                  'EBD_ENROLLMENTS.COUNT_LABEL'
+                    | translate: { count: ebdClass.enrollmentsCount ?? 0 }
+                }}
+              </td>
               <td class="px-3 py-2">
                 <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openEnrollments(ebdClass.id)"
+                  >
+                    {{ 'EBD_ENROLLMENTS.OPEN' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openAttendance(ebdClass.id)"
+                  >
+                    {{ 'EBD_ATTENDANCE.TAKE_ROLL' | translate }}
+                  </button>
+                  <a
+                    [routerLink]="['/ebd/reports']"
+                    [queryParams]="{ classId: ebdClass.id }"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  >
+                    {{ 'NAV.EBD_REPORTS' | translate }}
+                  </a>
                   @if (canWrite()) {
                     <button
                       type="button"

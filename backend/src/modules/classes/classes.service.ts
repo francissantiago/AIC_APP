@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   ApiErrorCode,
   ApiErrorMessage,
@@ -9,17 +9,44 @@ import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
+import { AddClassEnrollmentDto } from './dto/add-class-enrollment.dto';
+import {
+  ClassAttendanceEntryDto,
+  ClassSessionAttendanceDto,
+} from './dto/class-attendance-response.dto';
+import {
+  ClassEnrollmentOptionDto,
+  ClassEnrollmentResponseDto,
+  MemberClassSummaryDto,
+  PaginatedClassEnrollmentsResponseDto,
+} from './dto/class-enrollment-response.dto';
+import {
+  ClassFrequencyMemberDto,
+  ClassFrequencyReportDto,
+} from './dto/class-frequency-response.dto';
 import {
   ClassResponseDto,
   ClassTeacherOptionDto,
   PaginatedClassesResponseDto,
 } from './dto/class-response.dto';
 import { CreateClassDto } from './dto/create-class.dto';
+import { QueryClassEnrollmentsDto } from './dto/query-class-enrollments.dto';
+import { QueryClassFrequencyDto } from './dto/query-class-frequency.dto';
 import { QueryClassesDto } from './dto/query-classes.dto';
+import { QueryEnrollmentOptionsDto } from './dto/query-enrollment-options.dto';
+import { QuerySessionAttendanceDto } from './dto/query-session-attendance.dto';
 import { QueryTeacherOptionsDto } from './dto/query-teacher-options.dto';
+import { UpdateClassEnrollmentDto } from './dto/update-class-enrollment.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import {
+  UpsertClassAttendanceDto,
+  UpsertClassAttendanceEntryDto,
+} from './dto/upsert-class-attendance.dto';
+import { ClassAttendance } from './entities/class-attendance.entity';
+import { ClassEnrollment } from './entities/class-enrollment.entity';
 import { EbdClass } from './entities/class.entity';
 import { ClassAgeGroup } from './enums/class-age-group.enum';
+import { ClassEnrollmentStatus } from './enums/class-enrollment-status.enum';
 import { ClassStatus } from './enums/class-status.enum';
 
 @Injectable()
@@ -29,6 +56,10 @@ export class ClassesService {
   constructor(
     @InjectRepository(EbdClass)
     private readonly classesRepository: Repository<EbdClass>,
+    @InjectRepository(ClassEnrollment)
+    private readonly enrollmentsRepository: Repository<ClassEnrollment>,
+    @InjectRepository(ClassAttendance)
+    private readonly attendanceRepository: Repository<ClassAttendance>,
     @InjectRepository(Member)
     private readonly membersRepository: Repository<Member>,
     private readonly congregationsService: CongregationsService,
@@ -59,7 +90,7 @@ export class ClassesService {
     const saved = await this.classesRepository.save(ebdClass);
 
     this.logger.log(`Turma EBD criada: ${saved.id} (${saved.name})`);
-    return this.toResponse(await this.getClassOrFail(saved.id));
+    return this.toResponse(await this.getClassOrFail(saved.id), 0);
   }
 
   async findAll(query: QueryClassesDto): Promise<PaginatedClassesResponseDto> {
@@ -70,6 +101,15 @@ export class ClassesService {
     const qb = this.classesRepository
       .createQueryBuilder('ebdClass')
       .leftJoinAndSelect('ebdClass.teacherMember', 'teacherMember')
+      .loadRelationCountAndMap(
+        'ebdClass.enrollmentsCount',
+        'ebdClass.enrollments',
+        'enrollment',
+        (subQb) =>
+          subQb.andWhere('enrollment.status = :activeStatus', {
+            activeStatus: ClassEnrollmentStatus.ACTIVE,
+          }),
+      )
       .where('ebdClass.congregationId = :congregationId', { congregationId })
       .orderBy('ebdClass.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -95,7 +135,12 @@ export class ClassesService {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      data: items.map((item) => ClassResponseDto.fromEntity(item)),
+      data: items.map((item) =>
+        ClassResponseDto.fromEntity(item, {
+          enrollmentsCount: (item as EbdClass & { enrollmentsCount?: number })
+            .enrollmentsCount,
+        }),
+      ),
       total,
       page,
       limit,
@@ -103,7 +148,11 @@ export class ClassesService {
   }
 
   async findOne(id: string): Promise<ClassResponseDto> {
-    return this.toResponse(await this.getClassOrFail(id));
+    const ebdClass = await this.getClassOrFail(id);
+    const enrollmentsCount = await this.enrollmentsRepository.count({
+      where: { classId: id, status: ClassEnrollmentStatus.ACTIVE },
+    });
+    return this.toResponse(ebdClass, enrollmentsCount);
   }
 
   async update(id: string, dto: UpdateClassDto): Promise<ClassResponseDto> {
@@ -149,7 +198,7 @@ export class ClassesService {
 
     const saved = await this.classesRepository.save(ebdClass);
     this.logger.log(`Turma EBD atualizada: ${saved.id}`);
-    return this.toResponse(await this.getClassOrFail(saved.id));
+    return this.findOne(saved.id);
   }
 
   async remove(id: string): Promise<void> {
@@ -178,6 +227,430 @@ export class ClassesService {
     }));
   }
 
+  async findEnrollments(
+    classId: string,
+    query: QueryClassEnrollmentsDto,
+  ): Promise<PaginatedClassEnrollmentsResponseDto> {
+    await this.getClassOrFail(classId);
+    const { page, limit, status, q } = query;
+
+    const qb = this.enrollmentsRepository
+      .createQueryBuilder('enrollment')
+      .leftJoinAndSelect('enrollment.member', 'member')
+      .where('enrollment.classId = :classId', { classId })
+      .orderBy('enrollment.enrolledAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (status) {
+      qb.andWhere('enrollment.status = :status', { status });
+    }
+    if (q) {
+      qb.andWhere('member.fullName LIKE :q', { q: `%${q}%` });
+    }
+
+    const [links, total] = await qb.getManyAndCount();
+    return {
+      data: links.map((link) => ClassEnrollmentResponseDto.fromEntity(link)),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  async addEnrollment(
+    classId: string,
+    dto: AddClassEnrollmentDto,
+  ): Promise<ClassEnrollmentResponseDto> {
+    const ebdClass = await this.getClassOrFail(classId);
+    const member = await this.assertEnrollmentMemberEligible(
+      dto.memberId,
+      ebdClass.congregationId,
+    );
+
+    const existing = await this.enrollmentsRepository.findOne({
+      where: { classId, memberId: dto.memberId },
+    });
+    if (existing) {
+      throw new ApiException(HttpStatus.CONFLICT, {
+        code: ApiErrorCode.CLASSES_ENROLLMENT_ALREADY_EXISTS,
+        message:
+          ApiErrorMessage[ApiErrorCode.CLASSES_ENROLLMENT_ALREADY_EXISTS],
+      });
+    }
+
+    const link = this.enrollmentsRepository.create({
+      classId,
+      memberId: dto.memberId,
+      status: dto.status ?? ClassEnrollmentStatus.ACTIVE,
+      enrolledAt: dto.enrolledAt ? new Date(dto.enrolledAt) : new Date(),
+    });
+    const saved = await this.enrollmentsRepository.save(link);
+    saved.member = member;
+
+    this.logger.log(
+      `Membro ${dto.memberId} matriculado na turma EBD ${classId}`,
+    );
+    return ClassEnrollmentResponseDto.fromEntity(saved);
+  }
+
+  async updateEnrollmentStatus(
+    classId: string,
+    memberId: string,
+    dto: UpdateClassEnrollmentDto,
+  ): Promise<ClassEnrollmentResponseDto> {
+    await this.getClassOrFail(classId);
+    const link = await this.getEnrollmentOrFail(classId, memberId);
+
+    link.status = dto.status;
+    const saved = await this.enrollmentsRepository.save(link);
+
+    if (!saved.member) {
+      saved.member = await this.membersRepository.findOneOrFail({
+        where: { id: memberId },
+      });
+    }
+
+    return ClassEnrollmentResponseDto.fromEntity(saved);
+  }
+
+  async removeEnrollment(classId: string, memberId: string): Promise<void> {
+    await this.getClassOrFail(classId);
+    const link = await this.getEnrollmentOrFail(classId, memberId);
+    await this.enrollmentsRepository.remove(link);
+    this.logger.log(
+      `Membro ${memberId} desmatriculado da turma EBD ${classId}`,
+    );
+  }
+
+  async listEnrollmentOptions(
+    classId: string,
+    query: QueryEnrollmentOptionsDto,
+  ): Promise<ClassEnrollmentOptionDto[]> {
+    const ebdClass = await this.getClassOrFail(classId);
+    const qb = this.membersRepository
+      .createQueryBuilder('member')
+      .select(['member.id', 'member.fullName'])
+      .where('member.congregationId = :congregationId', {
+        congregationId: ebdClass.congregationId,
+      })
+      .andWhere('member.status = :status', { status: MemberStatus.ACTIVE })
+      .andWhere(
+        `NOT EXISTS (
+          SELECT 1 FROM class_enrollments ce
+          WHERE ce.member_id = member.id AND ce.class_id = :classId
+        )`,
+        { classId },
+      )
+      .orderBy('member.fullName', 'ASC')
+      .take(query.limit);
+    if (query.q) {
+      qb.andWhere('member.fullName LIKE :q', { q: `%${query.q}%` });
+    }
+    return (await qb.getMany()).map((member) => ({
+      id: member.id,
+      fullName: member.fullName,
+    }));
+  }
+
+  async findByMemberId(memberId: string): Promise<MemberClassSummaryDto[]> {
+    const congregationId = await this.getCongregationId();
+    const member = await this.membersRepository.findOne({
+      where: { id: memberId, congregationId },
+    });
+    if (!member) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.MEMBERS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MEMBERS_NOT_FOUND],
+      });
+    }
+
+    const enrollments = await this.enrollmentsRepository
+      .createQueryBuilder('enrollment')
+      .innerJoinAndSelect('enrollment.ebdClass', 'ebdClass')
+      .where('enrollment.memberId = :memberId', { memberId })
+      .andWhere('ebdClass.congregationId = :congregationId', { congregationId })
+      .orderBy('ebdClass.name', 'ASC')
+      .getMany();
+
+    return enrollments.map((enrollment) => {
+      const dto = new MemberClassSummaryDto();
+      dto.id = enrollment.ebdClass.id;
+      dto.name = enrollment.ebdClass.name;
+      dto.ageGroup = enrollment.ebdClass.ageGroup;
+      dto.status = enrollment.ebdClass.status;
+      dto.enrollmentStatus = enrollment.status;
+      dto.enrolledAt = enrollment.enrolledAt;
+      return dto;
+    });
+  }
+
+  async getSessionAttendance(
+    classId: string,
+    query: QuerySessionAttendanceDto,
+  ): Promise<ClassSessionAttendanceDto> {
+    const ebdClass = await this.getClassOrFail(classId);
+    const sessionDate = query.sessionDate;
+    const enrollments = await this.enrollmentsRepository
+      .createQueryBuilder('enrollment')
+      .leftJoinAndSelect('enrollment.member', 'member')
+      .where('enrollment.classId = :classId', { classId })
+      .andWhere('enrollment.status = :status', {
+        status: ClassEnrollmentStatus.ACTIVE,
+      })
+      .orderBy('member.fullName', 'ASC')
+      .getMany();
+
+    const attendanceRows = await this.attendanceRepository.find({
+      where: { classId, sessionDate },
+    });
+    const attendanceByMember = new Map(
+      attendanceRows.map((row) => [row.memberId, row]),
+    );
+
+    const entries: ClassAttendanceEntryDto[] = enrollments.map((enrollment) => {
+      const attendance = attendanceByMember.get(enrollment.memberId);
+      return {
+        memberId: enrollment.memberId,
+        memberFullName: enrollment.member?.fullName ?? '',
+        enrollmentStatus: ClassEnrollmentStatus.ACTIVE,
+        attendanceId: attendance?.id ?? null,
+        present: attendance ? attendance.present : null,
+        notes: attendance?.notes ?? null,
+      };
+    });
+
+    return {
+      classId: ebdClass.id,
+      className: ebdClass.name,
+      sessionDate,
+      entries,
+    };
+  }
+
+  async upsertSessionAttendance(
+    classId: string,
+    dto: UpsertClassAttendanceDto,
+  ): Promise<ClassSessionAttendanceDto> {
+    await this.getClassOrFail(classId);
+
+    if (!dto.entries?.length) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.CLASSES_ATTENDANCE_EMPTY_ENTRIES,
+        message: ApiErrorMessage[ApiErrorCode.CLASSES_ATTENDANCE_EMPTY_ENTRIES],
+      });
+    }
+
+    const memberIds = [...new Set(dto.entries.map((entry) => entry.memberId))];
+    const activeLinks = await this.enrollmentsRepository.find({
+      where: {
+        classId,
+        memberId: In(memberIds),
+        status: ClassEnrollmentStatus.ACTIVE,
+      },
+    });
+    const activeMemberIds = new Set(activeLinks.map((link) => link.memberId));
+    const notEnrolled = memberIds.find((id) => !activeMemberIds.has(id));
+    if (notEnrolled) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.CLASSES_ATTENDANCE_MEMBER_NOT_ENROLLED,
+        message:
+          ApiErrorMessage[ApiErrorCode.CLASSES_ATTENDANCE_MEMBER_NOT_ENROLLED],
+        details: [
+          {
+            field: 'entries',
+            code: ApiErrorCode.CLASSES_ATTENDANCE_MEMBER_NOT_ENROLLED,
+            message:
+              ApiErrorMessage[
+                ApiErrorCode.CLASSES_ATTENDANCE_MEMBER_NOT_ENROLLED
+              ],
+          },
+        ],
+      });
+    }
+
+    for (const entry of dto.entries) {
+      await this.upsertAttendanceEntry(classId, dto.sessionDate, entry);
+    }
+
+    this.logger.log(
+      `Chamada EBD salva: turma ${classId}, sessão ${dto.sessionDate}, ${dto.entries.length} entradas`,
+    );
+
+    return this.getSessionAttendance(classId, {
+      sessionDate: dto.sessionDate,
+    });
+  }
+
+  async getFrequencyReport(
+    classId: string,
+    query: QueryClassFrequencyDto,
+  ): Promise<ClassFrequencyReportDto> {
+    this.validateAttendancePeriod(query.from, query.to);
+    const ebdClass = await this.getClassOrFail(classId);
+
+    const attendanceRows = await this.attendanceRepository
+      .createQueryBuilder('attendance')
+      .where('attendance.classId = :classId', { classId })
+      .andWhere('attendance.sessionDate >= :from', { from: query.from })
+      .andWhere('attendance.sessionDate <= :to', { to: query.to })
+      .getMany();
+
+    const sessionDates = new Set(
+      attendanceRows.map((row) => this.toDateString(row.sessionDate)),
+    );
+    const sessionsCount = sessionDates.size;
+
+    const enrollments = await this.enrollmentsRepository
+      .createQueryBuilder('enrollment')
+      .leftJoinAndSelect('enrollment.member', 'member')
+      .where('enrollment.classId = :classId', { classId })
+      .andWhere('enrollment.status = :status', {
+        status: ClassEnrollmentStatus.ACTIVE,
+      })
+      .orderBy('member.fullName', 'ASC')
+      .getMany();
+
+    const presentByMember = new Map<string, number>();
+    for (const row of attendanceRows) {
+      if (!row.present) {
+        continue;
+      }
+      presentByMember.set(
+        row.memberId,
+        (presentByMember.get(row.memberId) ?? 0) + 1,
+      );
+    }
+
+    const members: ClassFrequencyMemberDto[] = enrollments.map((enrollment) => {
+      const presentCount = presentByMember.get(enrollment.memberId) ?? 0;
+      const absentCount = sessionsCount - presentCount;
+      return {
+        memberId: enrollment.memberId,
+        memberFullName: enrollment.member?.fullName ?? '',
+        presentCount,
+        absentCount,
+        frequencyPct: this.frequencyPct(presentCount, sessionsCount),
+      };
+    });
+
+    const classAveragePct =
+      members.length === 0
+        ? 0
+        : this.roundOneDecimal(
+            members.reduce((sum, member) => sum + member.frequencyPct, 0) /
+              members.length,
+          );
+
+    return {
+      classId: ebdClass.id,
+      className: ebdClass.name,
+      from: query.from,
+      to: query.to,
+      sessionsCount,
+      members,
+      classAveragePct,
+    };
+  }
+
+  async exportFrequencyCsv(
+    classId: string,
+    query: QueryClassFrequencyDto,
+  ): Promise<string> {
+    const report = await this.getFrequencyReport(classId, query);
+    const rows = [
+      [
+        'Membro',
+        'Presenças',
+        'Faltas',
+        'Frequência %',
+        'Sessões',
+        'Turma',
+        'De',
+        'Até',
+        'Média da turma %',
+      ],
+      ...report.members.map((member) => [
+        member.memberFullName,
+        String(member.presentCount),
+        String(member.absentCount),
+        String(member.frequencyPct),
+        String(report.sessionsCount),
+        report.className,
+        report.from,
+        report.to,
+        String(report.classAveragePct),
+      ]),
+    ];
+    return `\uFEFF${rows.map((row) => row.map(this.csvCell).join(';')).join('\r\n')}`;
+  }
+
+  private async upsertAttendanceEntry(
+    classId: string,
+    sessionDate: string,
+    entry: UpsertClassAttendanceEntryDto,
+  ): Promise<void> {
+    const existing = await this.attendanceRepository.findOne({
+      where: { classId, memberId: entry.memberId, sessionDate },
+    });
+    if (existing) {
+      existing.present = entry.present;
+      if (entry.notes !== undefined) {
+        existing.notes = this.nullableText(entry.notes);
+      }
+      await this.attendanceRepository.save(existing);
+      return;
+    }
+    const row = this.attendanceRepository.create({
+      classId,
+      memberId: entry.memberId,
+      sessionDate,
+      present: entry.present,
+      notes: this.nullableText(entry.notes),
+    });
+    await this.attendanceRepository.save(row);
+  }
+
+  private validateAttendancePeriod(from: string, to: string): void {
+    if (from > to) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.CLASSES_ATTENDANCE_PERIOD_INVALID,
+        message:
+          ApiErrorMessage[ApiErrorCode.CLASSES_ATTENDANCE_PERIOD_INVALID],
+      });
+    }
+    const max = new Date(`${from}T00:00:00.000Z`);
+    max.setUTCMonth(max.getUTCMonth() + 24);
+    if (new Date(`${to}T00:00:00.000Z`) > max) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.CLASSES_ATTENDANCE_PERIOD_INVALID,
+        message:
+          ApiErrorMessage[ApiErrorCode.CLASSES_ATTENDANCE_PERIOD_INVALID],
+      });
+    }
+  }
+
+  private frequencyPct(presentCount: number, sessionsCount: number): number {
+    if (sessionsCount === 0) {
+      return 0;
+    }
+    return this.roundOneDecimal((presentCount / sessionsCount) * 100);
+  }
+
+  private roundOneDecimal(value: number): number {
+    return Math.round(value * 10) / 10;
+  }
+
+  private toDateString(value: string | Date): string {
+    if (typeof value === 'string') {
+      return value.slice(0, 10);
+    }
+    return value.toISOString().slice(0, 10);
+  }
+
+  private readonly csvCell = (value: string): string =>
+    `"${value.replaceAll('"', '""')}"`;
+
   private async getCongregationId(): Promise<string> {
     return (await this.congregationsService.getOrCreateBase()).id;
   }
@@ -195,6 +668,23 @@ export class ClassesService {
       });
     }
     return ebdClass;
+  }
+
+  private async getEnrollmentOrFail(
+    classId: string,
+    memberId: string,
+  ): Promise<ClassEnrollment> {
+    const link = await this.enrollmentsRepository.findOne({
+      where: { classId, memberId },
+      relations: { member: true },
+    });
+    if (!link) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.CLASSES_ENROLLMENT_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.CLASSES_ENROLLMENT_NOT_FOUND],
+      });
+    }
+    return link;
   }
 
   private async assertNameAvailable(
@@ -259,8 +749,47 @@ export class ClassesService {
     return member;
   }
 
-  private toResponse(ebdClass: EbdClass): ClassResponseDto {
-    return ClassResponseDto.fromEntity(ebdClass);
+  private async assertEnrollmentMemberEligible(
+    memberId: string,
+    congregationId: string,
+  ): Promise<Member> {
+    const member = await this.membersRepository.findOne({
+      where: { id: memberId },
+    });
+    if (!member) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_NOT_FOUND],
+      });
+    }
+    if (member.congregationId !== congregationId) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_WRONG_CONGREGATION,
+        message:
+          ApiErrorMessage[
+            ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_WRONG_CONGREGATION
+          ],
+        details: [
+          {
+            field: 'memberId',
+            code: ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_WRONG_CONGREGATION,
+            message:
+              ApiErrorMessage[
+                ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_WRONG_CONGREGATION
+              ],
+          },
+        ],
+      });
+    }
+    return member;
+  }
+
+  private toResponse(
+    ebdClass: EbdClass,
+    enrollmentsCount?: number,
+  ): ClassResponseDto {
+    return ClassResponseDto.fromEntity(ebdClass, { enrollmentsCount });
   }
 
   private nullableText(value: string | null | undefined): string | null {

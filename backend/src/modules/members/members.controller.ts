@@ -29,6 +29,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { MemberClassSummaryDto } from '../classes/dto/class-enrollment-response.dto';
+import { ClassesService } from '../classes/classes.service';
 import { MinistryResponseDto } from '../ministries/dto/ministry-response.dto';
 import { MinistriesService } from '../ministries/ministries.service';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -52,6 +54,7 @@ export class MembersController {
   constructor(
     private readonly membersService: MembersService,
     private readonly ministriesService: MinistriesService,
+    private readonly classesService: ClassesService,
   ) {}
 
   @Post()
@@ -84,6 +87,17 @@ export class MembersController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<MinistryResponseDto[]> {
     return this.ministriesService.findByMemberId(id);
+  }
+
+  @Get(':id/classes')
+  @RequirePermission('classes:read')
+  @ApiOperation({ summary: 'Listar turmas EBD do membro' })
+  @ApiOkResponse({ type: MemberClassSummaryDto, isArray: true })
+  @ApiNotFoundResponse({ description: 'Membro não encontrado' })
+  findClasses(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<MemberClassSummaryDto[]> {
+    return this.classesService.findByMemberId(id);
   }
 
   @Get(':id')

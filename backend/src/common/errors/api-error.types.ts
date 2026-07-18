@@ -93,6 +93,15 @@ export const ApiErrorCode = {
   CLASSES_NAME_IN_USE: 'CLASSES.NAME_IN_USE',
   CLASSES_TEACHER_NOT_FOUND: 'CLASSES.TEACHER_NOT_FOUND',
   CLASSES_TEACHER_WRONG_CONGREGATION: 'CLASSES.TEACHER_WRONG_CONGREGATION',
+  CLASSES_ENROLLMENT_NOT_FOUND: 'CLASSES.ENROLLMENT_NOT_FOUND',
+  CLASSES_ENROLLMENT_ALREADY_EXISTS: 'CLASSES.ENROLLMENT_ALREADY_EXISTS',
+  CLASSES_ENROLLMENT_MEMBER_NOT_FOUND: 'CLASSES.ENROLLMENT_MEMBER_NOT_FOUND',
+  CLASSES_ENROLLMENT_MEMBER_WRONG_CONGREGATION:
+    'CLASSES.ENROLLMENT_MEMBER_WRONG_CONGREGATION',
+  CLASSES_ATTENDANCE_MEMBER_NOT_ENROLLED:
+    'CLASSES.ATTENDANCE_MEMBER_NOT_ENROLLED',
+  CLASSES_ATTENDANCE_PERIOD_INVALID: 'CLASSES.ATTENDANCE_PERIOD_INVALID',
+  CLASSES_ATTENDANCE_EMPTY_ENTRIES: 'CLASSES.ATTENDANCE_EMPTY_ENTRIES',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -188,4 +197,16 @@ export const ApiErrorMessage = {
     'Professor selecionado não encontrado.',
   [ApiErrorCode.CLASSES_TEACHER_WRONG_CONGREGATION]:
     'O professor deve pertencer a esta congregação.',
+  [ApiErrorCode.CLASSES_ENROLLMENT_NOT_FOUND]: 'Matrícula não encontrada.',
+  [ApiErrorCode.CLASSES_ENROLLMENT_ALREADY_EXISTS]:
+    'Membro já matriculado nesta turma.',
+  [ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_NOT_FOUND]: 'Membro não encontrado.',
+  [ApiErrorCode.CLASSES_ENROLLMENT_MEMBER_WRONG_CONGREGATION]:
+    'O membro deve pertencer a esta congregação.',
+  [ApiErrorCode.CLASSES_ATTENDANCE_MEMBER_NOT_ENROLLED]:
+    'O membro não possui matrícula ativa nesta turma.',
+  [ApiErrorCode.CLASSES_ATTENDANCE_PERIOD_INVALID]:
+    'Período inválido: from deve ser ≤ to e o intervalo máximo é de 24 meses.',
+  [ApiErrorCode.CLASSES_ATTENDANCE_EMPTY_ENTRIES]:
+    'Informe ao menos um aluno na chamada.',
 } as const;

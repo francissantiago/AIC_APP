@@ -26,7 +26,7 @@
   } @else if (loadError()) {
     <p class="text-sm text-red-700" role="alert">{{ 'MEMBERS.LOAD_ERROR' | translate }}</p>
   } @else {
-    @if (showMinistriesTab()) {
+    @if (showSideTabs()) {
       <div class="mb-4 flex flex-wrap gap-2" role="tablist">
         <button
           type="button"
@@ -42,24 +42,79 @@
         >
           {{ 'MEMBERS.EDIT_TITLE' | translate }}
         </button>
-        <button
-          type="button"
-          role="tab"
-          class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [class.bg-slate-500]="activeTab() === 'ministries'"
-          [class.text-white]="activeTab() === 'ministries'"
-          [class.border]="activeTab() !== 'ministries'"
-          [class.border-slate-300]="activeTab() !== 'ministries'"
-          [class.bg-white]="activeTab() !== 'ministries'"
-          [attr.aria-selected]="activeTab() === 'ministries'"
-          (click)="selectTab('ministries')"
-        >
-          {{ 'MINISTRIES.TAB_TITLE' | translate }}
-        </button>
+        @if (showMinistriesTab()) {
+          <button
+            type="button"
+            role="tab"
+            class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-500]="activeTab() === 'ministries'"
+            [class.text-white]="activeTab() === 'ministries'"
+            [class.border]="activeTab() !== 'ministries'"
+            [class.border-slate-300]="activeTab() !== 'ministries'"
+            [class.bg-white]="activeTab() !== 'ministries'"
+            [attr.aria-selected]="activeTab() === 'ministries'"
+            (click)="selectTab('ministries')"
+          >
+            {{ 'MINISTRIES.TAB_TITLE' | translate }}
+          </button>
+        }
+        @if (showEbdTab()) {
+          <button
+            type="button"
+            role="tab"
+            class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-500]="activeTab() === 'ebd'"
+            [class.text-white]="activeTab() === 'ebd'"
+            [class.border]="activeTab() !== 'ebd'"
+            [class.border-slate-300]="activeTab() !== 'ebd'"
+            [class.bg-white]="activeTab() !== 'ebd'"
+            [attr.aria-selected]="activeTab() === 'ebd'"
+            (click)="selectTab('ebd')"
+          >
+            {{ 'MEMBERS.EBD_CLASSES' | translate }}
+          </button>
+        }
       </div>
     }
 
-    @if (activeTab() === 'ministries' && showMinistriesTab()) {
+    @if (activeTab() === 'ebd' && showEbdTab()) {
+      <section [attr.aria-label]="'MEMBERS.EBD_CLASSES' | translate">
+        @if (ebdClassesLoading()) {
+          <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (ebdClassesError()) {
+          <p class="text-sm text-red-700" role="alert">
+            {{ 'EBD_ENROLLMENTS.LOAD_ERROR' | translate }}
+          </p>
+        } @else if (memberClasses().length === 0) {
+          <p class="text-sm text-slate-600">{{ 'MEMBERS.EBD_CLASSES_EMPTY' | translate }}</p>
+        } @else {
+          <ul class="divide-y divide-slate-100 rounded-md border border-slate-200">
+            @for (ebdClass of memberClasses(); track ebdClass.id) {
+              <li class="px-3 py-2 text-sm">
+                <p class="font-medium text-slate-900">{{ ebdClass.name }}</p>
+                <p class="text-slate-600">
+                  {{ ageGroupLabelKey(ebdClass.ageGroup) | translate }}
+                  ·
+                  {{ classStatusLabelKey(ebdClass.status) | translate }}
+                  ·
+                  {{ enrollmentStatusLabelKey(ebdClass.enrollmentStatus) | translate }}
+                </p>
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="mt-4">
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="cancelled.emit()"
+          >
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </section>
+    } @else if (activeTab() === 'ministries' && showMinistriesTab()) {
       <section [attr.aria-label]="'MINISTRIES.TAB_TITLE' | translate">
         @if (ministriesFeedback(); as messageKey) {
           <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">

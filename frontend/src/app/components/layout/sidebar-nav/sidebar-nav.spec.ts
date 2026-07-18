@@ -65,6 +65,10 @@ describe('SidebarNav', () => {
   it('canViewSecretariat is false without secretariat:read permission', () => {
     expect(component.canViewSecretariat()).toBe(false);
   });
+
+  it('canViewEbd is false without classes:read permission', () => {
+    expect(component.canViewEbd()).toBe(false);
+  });
 });
 
 describe('SidebarNav with permissions', () => {
@@ -112,16 +116,20 @@ describe('SidebarNav with permissions', () => {
     fixture.detectChanges();
   });
 
-  it('shows six cadastro items when user has all read permissions', () => {
-    expect(component.items().length).toBe(6);
+  it('shows five cadastro items when user has all read permissions', () => {
+    expect(component.items().length).toBe(5);
     expect(component.items().map((item) => item.route)).toEqual([
       '/users',
       '/roles',
       '/members',
       '/ministries',
-      '/ebd',
       '/congregation',
     ]);
+  });
+
+  it('canViewEbd is true when user has classes:read', () => {
+    expect(component.canViewEbd()).toBe(true);
+    expect(component.ebdItems.map((item) => item.route)).toEqual(['/ebd', '/ebd/reports']);
   });
 
   it('canViewFinanceSection is true when user has finance:read', () => {

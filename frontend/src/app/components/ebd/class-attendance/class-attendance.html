@@ -1,0 +1,128 @@
+<section class="w-full" [attr.aria-label]="'EBD_ATTENDANCE.TITLE' | translate">
+  <div class="mb-4">
+    <h2 class="text-lg font-semibold text-slate-900">{{ 'EBD_ATTENDANCE.TITLE' | translate }}</h2>
+    @if (className()) {
+      <p class="text-sm text-slate-600">{{ className() }}</p>
+    }
+  </div>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  <form
+    [formGroup]="sessionForm"
+    class="mb-4 flex flex-wrap items-end gap-3"
+    [attr.aria-label]="'EBD_ATTENDANCE.SESSION_DATE' | translate"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'EBD_ATTENDANCE.SESSION_DATE' | translate }}</span>
+      <input
+        type="date"
+        formControlName="sessionDate"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+    <button
+      type="button"
+      class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      (click)="reload()"
+    >
+      {{ 'COMMON.SEARCH' | translate }}
+    </button>
+  </form>
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'EBD_ATTENDANCE.LOAD_ERROR' | translate }}</p>
+  } @else if (isEmpty()) {
+    <p class="text-sm text-slate-600">{{ 'EBD_ATTENDANCE.EMPTY_ENROLLMENTS' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'EBD_ATTENDANCE.SUMMARY_MEMBER' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'EBD_ATTENDANCE.PRESENT' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'EBD_ATTENDANCE.ABSENT' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'EBD_ATTENDANCE.NOTES' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of drafts(); track entry.memberId) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ entry.memberFullName }}</td>
+              <td class="px-3 py-2">
+                <label class="inline-flex items-center gap-2 text-slate-800">
+                  <input
+                    type="radio"
+                    class="size-4 accent-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [name]="'present-' + entry.memberId"
+                    [checked]="entry.present === true"
+                    [disabled]="!canWrite()"
+                    (change)="setPresent(entry.memberId, true)"
+                  />
+                  <span class="sr-only">{{ 'EBD_ATTENDANCE.PRESENT' | translate }}</span>
+                </label>
+              </td>
+              <td class="px-3 py-2">
+                <label class="inline-flex items-center gap-2 text-slate-800">
+                  <input
+                    type="radio"
+                    class="size-4 accent-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [name]="'present-' + entry.memberId"
+                    [checked]="entry.present === false"
+                    [disabled]="!canWrite()"
+                    (change)="setPresent(entry.memberId, false)"
+                  />
+                  <span class="sr-only">{{ 'EBD_ATTENDANCE.ABSENT' | translate }}</span>
+                </label>
+              </td>
+              <td class="px-3 py-2">
+                <input
+                  type="text"
+                  maxlength="255"
+                  class="w-full min-w-40 rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-50"
+                  [value]="entry.notes"
+                  [disabled]="!canWrite()"
+                  [attr.aria-label]="'EBD_ATTENDANCE.NOTES' | translate"
+                  (input)="onNotesChange(entry.memberId, $event)"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (canWrite()) {
+      <div class="mt-4">
+        <button
+          type="button"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="saving()"
+          (click)="save()"
+        >
+          {{ 'EBD_ATTENDANCE.SAVE' | translate }}
+        </button>
+      </div>
+    }
+  }
+</section>

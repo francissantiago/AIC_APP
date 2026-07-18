@@ -1,7 +1,11 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
+import { ClassAgeGroup } from '@enums/class-age-group';
+import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
+import { ClassStatus } from '@enums/class-status';
 import { AuthService } from '@services/auth-service';
+import { ClassesService } from '@services/classes-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
 import { of } from 'rxjs';
@@ -26,10 +30,23 @@ describe('MemberForm', () => {
       },
     ]),
   );
+  const listClassesByMember = vi.fn(() =>
+    of([
+      {
+        id: 'c1',
+        name: 'Classe de Jovens',
+        ageGroup: ClassAgeGroup.YOUTH,
+        status: ClassStatus.ACTIVE,
+        enrollmentStatus: ClassEnrollmentStatus.ACTIVE,
+        enrolledAt: '2026-07-18T00:00:00.000Z',
+      },
+    ]),
+  );
 
   beforeEach(async () => {
     TestBed.resetTestingModule();
     listByMember.mockClear();
+    listClassesByMember.mockClear();
     await TestBed.configureTestingModule({
       imports: [MemberForm],
       providers: [
@@ -37,8 +54,8 @@ describe('MemberForm', () => {
         {
           provide: AuthService,
           useValue: {
-            currentUser: signal({ permissions: ['ministries:read'] }),
-            hasPermission: (code: string) => code === 'ministries:read',
+            currentUser: signal({ permissions: ['ministries:read', 'classes:read'] }),
+            hasPermission: (code: string) => code === 'ministries:read' || code === 'classes:read',
           },
         },
         {
@@ -80,6 +97,12 @@ describe('MemberForm', () => {
             removeMember: () => of(undefined),
           },
         },
+        {
+          provide: ClassesService,
+          useValue: {
+            listByMember: listClassesByMember,
+          },
+        },
       ],
     })
       .overrideComponent(MemberForm, {
@@ -101,5 +124,11 @@ describe('MemberForm', () => {
     expect(listByMember).toHaveBeenCalledWith('mem1');
     expect(component.memberMinistries().length).toBe(1);
     expect(component.showMinistriesTab()).toBe(true);
+  });
+
+  it('loads EBD classes for member when classes:read', () => {
+    expect(listClassesByMember).toHaveBeenCalledWith('mem1');
+    expect(component.memberClasses().length).toBe(1);
+    expect(component.showEbdTab()).toBe(true);
   });
 });

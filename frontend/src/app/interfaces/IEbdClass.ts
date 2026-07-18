@@ -15,6 +15,7 @@ export interface IEbdClass {
   startTime: string | null;
   room: string | null;
   status: ClassStatus;
+  enrollmentsCount?: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -9,7 +9,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ClassAttendance } from '@components/ebd/class-attendance/class-attendance';
+import { ClassEnrollmentsPanel } from '@components/ebd/class-enrollments-panel/class-enrollments-panel';
 import { ClassForm } from '@components/ebd/class-form/class-form';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CLASS_AGE_GROUPS, ClassAgeGroup } from '@enums/class-age-group';
@@ -33,7 +36,15 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 
 @Component({
   selector: 'app-classes-list',
-  imports: [AppDialog, ClassForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    AppDialog,
+    ClassAttendance,
+    ClassEnrollmentsPanel,
+    ClassForm,
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+  ],
   templateUrl: './classes-list.html',
   styleUrl: './classes-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +68,8 @@ export class ClassesList implements OnInit {
   readonly feedback = signal<string | null>(null);
   readonly showForm = signal(false);
   readonly editingId = signal<string | null>(null);
+  readonly managingEnrollmentsId = signal<string | null>(null);
+  readonly takingAttendanceId = signal<string | null>(null);
 
   readonly totalPages = computed(() => {
     const pages = Math.ceil(this.total() / this.limit());
@@ -107,12 +120,16 @@ export class ClassesList implements OnInit {
   openCreate(): void {
     this.editingId.set(null);
     this.pendingDeleteId.set(null);
+    this.managingEnrollmentsId.set(null);
+    this.takingAttendanceId.set(null);
     this.showForm.set(true);
   }
 
   openEdit(id: string): void {
     this.editingId.set(id);
     this.pendingDeleteId.set(null);
+    this.managingEnrollmentsId.set(null);
+    this.takingAttendanceId.set(null);
     this.showForm.set(true);
   }
 
@@ -125,6 +142,29 @@ export class ClassesList implements OnInit {
     this.closeForm();
     this.feedback.set('EBD_CLASSES.SAVE_SUCCESS');
     this.#loadClasses();
+  }
+
+  openEnrollments(id: string): void {
+    this.showForm.set(false);
+    this.pendingDeleteId.set(null);
+    this.takingAttendanceId.set(null);
+    this.managingEnrollmentsId.set(id);
+  }
+
+  closeEnrollments(): void {
+    this.managingEnrollmentsId.set(null);
+    this.#loadClasses();
+  }
+
+  openAttendance(id: string): void {
+    this.showForm.set(false);
+    this.pendingDeleteId.set(null);
+    this.managingEnrollmentsId.set(null);
+    this.takingAttendanceId.set(id);
+  }
+
+  closeAttendance(): void {
+    this.takingAttendanceId.set(null);
   }
 
   previousPage(): void {
@@ -145,6 +185,8 @@ export class ClassesList implements OnInit {
 
   askDelete(classId: string): void {
     this.closeForm();
+    this.managingEnrollmentsId.set(null);
+    this.takingAttendanceId.set(null);
     this.pendingDeleteId.set(classId);
     this.feedback.set(null);
   }

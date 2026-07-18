@@ -16,16 +16,21 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
 import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
+import { ClassAgeGroup } from '@enums/class-age-group';
+import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
+import { ClassStatus } from '@enums/class-status';
 import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
 import { ICreateMember } from '@interfaces/ICreateMember';
+import { IMemberClassSummary } from '@interfaces/IMemberClassSummary';
 import { IMinistry } from '@interfaces/IMinistry';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
+import { ClassesService } from '@services/classes-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
 
-type MemberFormTab = 'details' | 'ministries';
+type MemberFormTab = 'details' | 'ministries' | 'ebd';
 
 @Component({
   selector: 'app-member-form',
@@ -37,6 +42,7 @@ type MemberFormTab = 'details' | 'ministries';
 export class MemberForm implements OnInit {
   readonly #membersService = inject(MembersService);
   readonly #ministriesService = inject(MinistriesService);
+  readonly #classesService = inject(ClassesService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
@@ -70,7 +76,14 @@ export class MemberForm implements OnInit {
 
   readonly canReadMinistries = computed(() => this.#auth.hasPermission('ministries:read'));
   readonly canWriteMinistries = computed(() => this.#auth.hasPermission('ministries:write'));
+  readonly canReadClasses = computed(() => this.#auth.hasPermission('classes:read'));
   readonly showMinistriesTab = computed(() => this.isEditMode() && this.canReadMinistries());
+  readonly showEbdTab = computed(() => this.isEditMode() && this.canReadClasses());
+  readonly showSideTabs = computed(() => this.showMinistriesTab() || this.showEbdTab());
+
+  readonly memberClasses = signal<IMemberClassSummary[]>([]);
+  readonly ebdClassesLoading = signal(false);
+  readonly ebdClassesError = signal(false);
 
   readonly availableMinistries = computed(() => {
     const linkedIds = new Set(this.memberMinistries().map((item) => item.id));
@@ -148,6 +161,9 @@ export class MemberForm implements OnInit {
       if (this.canReadMinistries()) {
         this.#loadMemberMinistries(id);
       }
+      if (this.canReadClasses()) {
+        this.#loadMemberClasses(id);
+      }
     }
   }
 
@@ -165,6 +181,18 @@ export class MemberForm implements OnInit {
 
   ministryRoleLabelKey(role: MinistryMemberRole): string {
     return `MINISTRIES.ROLE_${role.toUpperCase()}`;
+  }
+
+  ageGroupLabelKey(ageGroup: ClassAgeGroup): string {
+    return `EBD_CLASSES.AGE_GROUP_${ageGroup.toUpperCase()}`;
+  }
+
+  classStatusLabelKey(status: ClassStatus): string {
+    return status === ClassStatus.ACTIVE ? 'EBD_CLASSES.ACTIVE' : 'EBD_CLASSES.INACTIVE';
+  }
+
+  enrollmentStatusLabelKey(status: ClassEnrollmentStatus): string {
+    return `EBD_ENROLLMENTS.STATUS_${status.toUpperCase()}`;
   }
 
   selectTab(tab: MemberFormTab): void {
@@ -434,6 +462,26 @@ export class MemberForm implements OnInit {
       .subscribe({
         next: (response) => this.allMinistries.set(response.data),
         error: () => this.allMinistries.set([]),
+      });
+  }
+
+  #loadMemberClasses(memberId: string): void {
+    this.ebdClassesLoading.set(true);
+    this.ebdClassesError.set(false);
+
+    this.#classesService
+      .listByMember(memberId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (classes) => {
+          this.memberClasses.set(classes);
+          this.ebdClassesLoading.set(false);
+        },
+        error: () => {
+          this.memberClasses.set([]);
+          this.ebdClassesLoading.set(false);
+          this.ebdClassesError.set(true);
+        },
       });
   }
 }

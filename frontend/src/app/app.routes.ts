@@ -80,6 +80,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'ebd/reports',
+        canActivate: [classesPermissionGuard],
+        loadComponent: () =>
+          import('@components/ebd/class-frequency-report/class-frequency-report').then(
+            (m) => m.ClassFrequencyReport,
+          ),
+      },
+      {
         path: 'ebd',
         canActivate: [classesPermissionGuard],
         loadComponent: () =>

@@ -6,6 +6,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -14,6 +15,7 @@ import { Congregation } from '../../congregations/entities/congregation.entity';
 import { Member } from '../../members/entities/member.entity';
 import { ClassAgeGroup } from '../enums/class-age-group.enum';
 import { ClassStatus } from '../enums/class-status.enum';
+import { ClassEnrollment } from './class-enrollment.entity';
 
 @Entity({ name: 'classes' })
 @Unique('UQ_classes_congregation_name', ['congregationId', 'name'])
@@ -76,6 +78,9 @@ export class EbdClass {
     default: ClassStatus.ACTIVE,
   })
   status!: ClassStatus;
+
+  @OneToMany(() => ClassEnrollment, (enrollment) => enrollment.ebdClass)
+  enrollments!: ClassEnrollment[];
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;

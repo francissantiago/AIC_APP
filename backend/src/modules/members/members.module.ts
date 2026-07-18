@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClassesModule } from '../classes/classes.module';
 import { CongregationsModule } from '../congregations/congregations.module';
 import { MinistriesModule } from '../ministries/ministries.module';
 import { User } from '../users/entities/user.entity';
@@ -12,6 +13,7 @@ import { MembersService } from './members.service';
     TypeOrmModule.forFeature([Member, User]),
     CongregationsModule,
     MinistriesModule,
+    ClassesModule,
   ],
   controllers: [MembersController],
   providers: [MembersService],
