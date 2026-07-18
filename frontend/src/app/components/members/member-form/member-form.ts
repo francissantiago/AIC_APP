@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   input,
@@ -15,10 +16,16 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
 import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
+import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
 import { ICreateMember } from '@interfaces/ICreateMember';
+import { IMinistry } from '@interfaces/IMinistry';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
 import { ApiErrorService } from '@services/api-error.service';
+import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
+import { MinistriesService } from '@services/ministries-service';
+
+type MemberFormTab = 'details' | 'ministries';
 
 @Component({
   selector: 'app-member-form',
@@ -29,6 +36,8 @@ import { MembersService } from '@services/members-service';
 })
 export class MemberForm implements OnInit {
   readonly #membersService = inject(MembersService);
+  readonly #ministriesService = inject(MinistriesService);
+  readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
 
@@ -39,6 +48,7 @@ export class MemberForm implements OnInit {
   readonly statuses = MEMBER_STATUSES;
   readonly genders = MEMBER_GENDERS;
   readonly maritalStatuses = MEMBER_MARITAL_STATUSES;
+  readonly ministryRoles = MINISTRY_MEMBER_ROLES;
 
   readonly isEditMode = signal(false);
   readonly loading = signal(false);
@@ -47,6 +57,36 @@ export class MemberForm implements OnInit {
   readonly feedbackKey = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly supportHint = signal<string | null>(null);
+
+  readonly activeTab = signal<MemberFormTab>('details');
+  readonly memberMinistries = signal<IMinistry[]>([]);
+  readonly allMinistries = signal<IMinistry[]>([]);
+  readonly ministriesLoading = signal(false);
+  readonly ministriesError = signal(false);
+  readonly ministriesFeedback = signal<string | null>(null);
+  readonly ministriesErrorMessage = signal<string | null>(null);
+  readonly linkingMinistry = signal(false);
+  readonly pendingUnlinkMinistryId = signal<string | null>(null);
+
+  readonly canReadMinistries = computed(() => this.#auth.hasPermission('ministries:read'));
+  readonly canWriteMinistries = computed(() => this.#auth.hasPermission('ministries:write'));
+  readonly showMinistriesTab = computed(() => this.isEditMode() && this.canReadMinistries());
+
+  readonly availableMinistries = computed(() => {
+    const linkedIds = new Set(this.memberMinistries().map((item) => item.id));
+    return this.allMinistries().filter((ministry) => !linkedIds.has(ministry.id));
+  });
+
+  readonly linkMinistryForm = new FormGroup({
+    ministryId: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    role: new FormControl<MinistryMemberRole>(MinistryMemberRole.MEMBER, {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+  });
 
   readonly form = new FormGroup({
     fullName: new FormControl('', {
@@ -105,6 +145,9 @@ export class MemberForm implements OnInit {
     if (id) {
       this.isEditMode.set(true);
       this.#loadMember(id);
+      if (this.canReadMinistries()) {
+        this.#loadMemberMinistries(id);
+      }
     }
   }
 
@@ -120,9 +163,86 @@ export class MemberForm implements OnInit {
     return `MEMBERS.MARITAL_${status.toUpperCase()}`;
   }
 
+  ministryRoleLabelKey(role: MinistryMemberRole): string {
+    return `MINISTRIES.ROLE_${role.toUpperCase()}`;
+  }
+
+  selectTab(tab: MemberFormTab): void {
+    this.activeTab.set(tab);
+    if (tab === 'ministries' && this.canWriteMinistries() && this.allMinistries().length === 0) {
+      this.#loadAllMinistries();
+    }
+  }
+
   fieldInvalid(controlName: keyof typeof this.form.controls): boolean {
     const control = this.form.controls[controlName];
     return control.invalid && (control.dirty || control.touched);
+  }
+
+  linkMinistry(): void {
+    const memberId = this.memberId();
+    if (!memberId || !this.canWriteMinistries() || this.linkMinistryForm.invalid) {
+      this.linkMinistryForm.markAllAsTouched();
+      return;
+    }
+
+    const { ministryId, role } = this.linkMinistryForm.getRawValue();
+    this.linkingMinistry.set(true);
+    this.ministriesFeedback.set(null);
+    this.ministriesErrorMessage.set(null);
+
+    this.#ministriesService
+      .addMember(ministryId, { memberId, role })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: () => {
+          this.linkingMinistry.set(false);
+          this.linkMinistryForm.reset({
+            ministryId: '',
+            role: MinistryMemberRole.MEMBER,
+          });
+          this.ministriesFeedback.set('MINISTRIES.LINK_SUCCESS');
+          this.#loadMemberMinistries(memberId);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.linkingMinistry.set(false);
+          const resolved = this.#apiError.resolve(error);
+          this.ministriesErrorMessage.set(resolved.displayMessage);
+        },
+      });
+  }
+
+  askUnlinkMinistry(ministryId: string): void {
+    this.pendingUnlinkMinistryId.set(ministryId);
+  }
+
+  cancelUnlinkMinistry(): void {
+    this.pendingUnlinkMinistryId.set(null);
+  }
+
+  confirmUnlinkMinistry(): void {
+    const memberId = this.memberId();
+    const ministryId = this.pendingUnlinkMinistryId();
+    if (!memberId || !ministryId || !this.canWriteMinistries()) {
+      return;
+    }
+
+    this.ministriesErrorMessage.set(null);
+
+    this.#ministriesService
+      .removeMember(ministryId, memberId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: () => {
+          this.pendingUnlinkMinistryId.set(null);
+          this.ministriesFeedback.set('MINISTRIES.UNLINK_SUCCESS');
+          this.#loadMemberMinistries(memberId);
+        },
+        error: (error: HttpErrorResponse) => {
+          const resolved = this.#apiError.resolve(error);
+          this.ministriesErrorMessage.set(resolved.displayMessage);
+        },
+      });
   }
 
   submit(): void {
@@ -285,5 +405,35 @@ export class MemberForm implements OnInit {
     this.feedbackKey.set(null);
     this.errorMessage.set(resolved.displayMessage);
     this.supportHint.set(resolved.supportHint ?? null);
+  }
+
+  #loadMemberMinistries(memberId: string): void {
+    this.ministriesLoading.set(true);
+    this.ministriesError.set(false);
+
+    this.#ministriesService
+      .listByMember(memberId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (ministries) => {
+          this.memberMinistries.set(ministries);
+          this.ministriesLoading.set(false);
+        },
+        error: () => {
+          this.memberMinistries.set([]);
+          this.ministriesLoading.set(false);
+          this.ministriesError.set(true);
+        },
+      });
+  }
+
+  #loadAllMinistries(): void {
+    this.#ministriesService
+      .list({ page: 1, limit: 100 })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (response) => this.allMinistries.set(response.data),
+        error: () => this.allMinistries.set([]),
+      });
   }
 }

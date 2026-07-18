@@ -34,3 +34,4 @@ export const congregationsPermissionGuard = createReadPermissionGuard('congregat
 export const financePermissionGuard = createReadPermissionGuard('finance:read');
 export const secretariatPermissionGuard = createReadPermissionGuard('secretariat:read');
 export const assetsPermissionGuard = createReadPermissionGuard('assets:read');
+export const ministriesPermissionGuard = createReadPermissionGuard('ministries:read');

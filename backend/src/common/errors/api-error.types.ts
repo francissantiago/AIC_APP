@@ -75,6 +75,15 @@ export const ApiErrorCode = {
   SECRETARIAT_EVENT_ENDS_BEFORE_START: 'SECRETARIAT.EVENT_ENDS_BEFORE_START',
   SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID:
     'SECRETARIAT.EVENT_RECURRENCE_UNTIL_INVALID',
+
+  MINISTRIES_NOT_FOUND: 'MINISTRIES.NOT_FOUND',
+  MINISTRIES_NAME_IN_USE: 'MINISTRIES.NAME_IN_USE',
+  MINISTRIES_LEADER_NOT_FOUND: 'MINISTRIES.LEADER_NOT_FOUND',
+  MINISTRIES_LEADER_WRONG_CONGREGATION: 'MINISTRIES.LEADER_WRONG_CONGREGATION',
+  MINISTRIES_MEMBER_NOT_FOUND: 'MINISTRIES.MEMBER_NOT_FOUND',
+  MINISTRIES_MEMBER_WRONG_CONGREGATION: 'MINISTRIES.MEMBER_WRONG_CONGREGATION',
+  MINISTRIES_MEMBER_ALREADY_LINKED: 'MINISTRIES.MEMBER_ALREADY_LINKED',
+  MINISTRIES_MEMBER_LINK_NOT_FOUND: 'MINISTRIES.MEMBER_LINK_NOT_FOUND',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -144,4 +153,17 @@ export const ApiErrorMessage = {
     'O fim do evento deve ser posterior ou igual ao início.',
   [ApiErrorCode.SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID]:
     'A data final da recorrência deve ser posterior ou igual à data de início.',
+  [ApiErrorCode.MINISTRIES_NOT_FOUND]: 'Ministério não encontrado.',
+  [ApiErrorCode.MINISTRIES_NAME_IN_USE]:
+    'Já existe um ministério com este nome.',
+  [ApiErrorCode.MINISTRIES_LEADER_NOT_FOUND]:
+    'Líder selecionado não encontrado.',
+  [ApiErrorCode.MINISTRIES_LEADER_WRONG_CONGREGATION]:
+    'O líder deve pertencer a esta congregação.',
+  [ApiErrorCode.MINISTRIES_MEMBER_NOT_FOUND]: 'Membro não encontrado.',
+  [ApiErrorCode.MINISTRIES_MEMBER_WRONG_CONGREGATION]:
+    'O membro deve pertencer a esta congregação.',
+  [ApiErrorCode.MINISTRIES_MEMBER_ALREADY_LINKED]:
+    'Membro já vinculado a este ministério.',
+  [ApiErrorCode.MINISTRIES_MEMBER_LINK_NOT_FOUND]: 'Vínculo não encontrado.',
 } as const;

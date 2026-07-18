@@ -59,6 +59,16 @@ describe('MembersController (PermissionsGuard aplicado)', () => {
     });
   });
 
+  describe('GET /members/:id/ministries exige ministries:read', () => {
+    it('permite com ministries:read (override da classe)', () => {
+      expectAllowed('findMinistries', ['ministries:read']);
+    });
+
+    it('nega com apenas members:read', () => {
+      expectForbidden('findMinistries', ['members:read']);
+    });
+  });
+
   describe('POST /members, PATCH /members/:id e DELETE /members/:id exigem members:write', () => {
     it('permite com members:write', () => {
       expectAllowed('create', ['members:write']);

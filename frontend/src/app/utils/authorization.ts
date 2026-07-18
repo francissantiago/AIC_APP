@@ -12,6 +12,7 @@ export function hasPermission(permissionCodes: readonly string[], code: string):
 const DEFAULT_ROUTE_CANDIDATES: readonly { route: string; permission: string }[] = [
   { route: '/users', permission: 'users:read' },
   { route: '/members', permission: 'members:read' },
+  { route: '/ministries', permission: 'ministries:read' },
   { route: '/congregation', permission: 'congregations:read' },
   { route: '/roles', permission: 'roles:read' },
   { route: '/finance', permission: 'finance:read' },

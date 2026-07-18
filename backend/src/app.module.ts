@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CongregationsModule } from './modules/congregations/congregations.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { MembersModule } from './modules/members/members.module';
+import { MinistriesModule } from './modules/ministries/ministries.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { SecretariatModule } from './modules/secretariat/secretariat.module';
@@ -41,6 +42,7 @@ import { UsersModule } from './modules/users/users.module';
     RolesModule,
     UsersModule,
     MembersModule,
+    MinistriesModule,
     CongregationsModule,
     FinanceModule,
     AssetsModule,

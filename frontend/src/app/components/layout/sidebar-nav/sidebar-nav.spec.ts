@@ -90,6 +90,7 @@ describe('SidebarNav with permissions', () => {
             'users:read',
             'roles:read',
             'members:read',
+            'ministries:read',
             'congregations:read',
             'finance:read',
             'assets:read',
@@ -110,12 +111,13 @@ describe('SidebarNav with permissions', () => {
     fixture.detectChanges();
   });
 
-  it('shows four cadastro items when user has all read permissions', () => {
-    expect(component.items().length).toBe(4);
+  it('shows five cadastro items when user has all read permissions', () => {
+    expect(component.items().length).toBe(5);
     expect(component.items().map((item) => item.route)).toEqual([
       '/users',
       '/roles',
       '/members',
+      '/ministries',
       '/congregation',
     ]);
   });

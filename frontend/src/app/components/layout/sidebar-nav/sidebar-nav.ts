@@ -16,7 +16,7 @@ import { filter } from 'rxjs';
 export type SidebarNavItem = {
   route: string;
   labelKey: string;
-  icon: 'users' | 'roles' | 'members' | 'congregation';
+  icon: 'users' | 'roles' | 'members' | 'ministries' | 'congregation';
   permission: string;
 };
 
@@ -55,6 +55,12 @@ export class SidebarNav {
       labelKey: 'NAV.MEMBERS',
       icon: 'members',
       permission: 'members:read',
+    },
+    {
+      route: '/ministries',
+      labelKey: 'NAV.MINISTRIES',
+      icon: 'ministries',
+      permission: 'ministries:read',
     },
     {
       route: '/congregation',

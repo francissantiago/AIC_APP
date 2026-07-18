@@ -7,6 +7,7 @@ import {
   defaultRouteGuard,
   financePermissionGuard,
   membersPermissionGuard,
+  ministriesPermissionGuard,
   rolesPermissionGuard,
   secretariatPermissionGuard,
   usersPermissionGuard,
@@ -68,6 +69,14 @@ export const routes: Routes = [
       {
         path: 'members/:id/edit',
         redirectTo: 'members',
+      },
+      {
+        path: 'ministries',
+        canActivate: [ministriesPermissionGuard],
+        loadComponent: () =>
+          import('@components/ministries/ministries-list/ministries-list').then(
+            (m) => m.MinistriesList,
+          ),
       },
       {
         path: 'congregation',

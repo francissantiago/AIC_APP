@@ -125,6 +125,9 @@ export class AppShell {
     if (path.startsWith('/members')) {
       return 'APP_SHELL.PAGE_MEMBERS';
     }
+    if (path.startsWith('/ministries')) {
+      return 'APP_SHELL.PAGE_MINISTRIES';
+    }
     if (path.startsWith('/congregation') || path.startsWith('/congregations')) {
       return 'APP_SHELL.PAGE_CONGREGATION';
     }

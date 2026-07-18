@@ -26,199 +26,357 @@
   } @else if (loadError()) {
     <p class="text-sm text-red-700" role="alert">{{ 'MEMBERS.LOAD_ERROR' | translate }}</p>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MEMBERS.FULL_NAME' | translate }}</span>
-        <input
-          type="text"
-          formControlName="fullName"
-          autocomplete="name"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [attr.aria-invalid]="fieldInvalid('fullName')"
-        />
-        @if (fieldInvalid('fullName')) {
-          <span class="text-xs text-red-700">{{ 'MEMBERS.VALIDATION_REQUIRED' | translate }}</span>
-        }
-      </label>
-
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MEMBERS.EMAIL' | translate }}</span>
-        <input
-          type="email"
-          formControlName="email"
-          autocomplete="email"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [attr.aria-invalid]="fieldInvalid('email')"
-        />
-        @if (fieldInvalid('email')) {
-          <span class="text-xs text-red-700">{{ 'MEMBERS.VALIDATION_EMAIL' | translate }}</span>
-        }
-      </label>
-
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.PHONE' | translate }}</span>
-          <input
-            type="tel"
-            formControlName="phone"
-            autocomplete="tel"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.DOCUMENT' | translate }}</span>
-          <input
-            type="text"
-            formControlName="document"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-      </div>
-
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MEMBERS.BIRTH_DATE' | translate }}</span>
-        <input
-          type="date"
-          formControlName="birthDate"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        />
-      </label>
-
-      <div class="grid gap-4 md:grid-cols-3">
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.GENDER' | translate }}</span>
-          <select
-            formControlName="gender"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          >
-            @for (gender of genders; track gender) {
-              <option [value]="gender">{{ genderLabelKey(gender) | translate }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.MARITAL_STATUS' | translate }}</span>
-          <select
-            formControlName="maritalStatus"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          >
-            @for (status of maritalStatuses; track status) {
-              <option [value]="status">{{ maritalLabelKey(status) | translate }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.STATUS' | translate }}</span>
-          <select
-            formControlName="status"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          >
-            @for (status of statuses; track status) {
-              <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
-            }
-          </select>
-        </label>
-      </div>
-
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.BAPTISM_DATE' | translate }}</span>
-          <input
-            type="date"
-            formControlName="baptismDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.MEMBERSHIP_DATE' | translate }}</span>
-          <input
-            type="date"
-            formControlName="membershipDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-      </div>
-
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MEMBERS.ADDRESS' | translate }}</span>
-        <input
-          type="text"
-          formControlName="address"
-          autocomplete="street-address"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        />
-      </label>
-
-      <div class="grid gap-4 md:grid-cols-3">
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.CITY' | translate }}</span>
-          <input
-            type="text"
-            formControlName="city"
-            autocomplete="address-level2"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.STATE' | translate }}</span>
-          <input
-            type="text"
-            formControlName="state"
-            autocomplete="address-level1"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.ZIP_CODE' | translate }}</span>
-          <input
-            type="text"
-            formControlName="zipCode"
-            autocomplete="postal-code"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-      </div>
-
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MEMBERS.NOTES' | translate }}</span>
-        <textarea
-          formControlName="notes"
-          rows="3"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        ></textarea>
-      </label>
-
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MEMBERS.USER_ID' | translate }}</span>
-        <input
-          type="text"
-          formControlName="userId"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        />
-      </label>
-
-      <div class="mt-2 flex flex-wrap gap-3">
+    @if (showMinistriesTab()) {
+      <div class="mb-4 flex flex-wrap gap-2" role="tablist">
         <button
-          type="submit"
-          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
-          [disabled]="saving()"
+          type="button"
+          role="tab"
+          class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.bg-slate-500]="activeTab() === 'details'"
+          [class.text-white]="activeTab() === 'details'"
+          [class.border]="activeTab() !== 'details'"
+          [class.border-slate-300]="activeTab() !== 'details'"
+          [class.bg-white]="activeTab() !== 'details'"
+          [attr.aria-selected]="activeTab() === 'details'"
+          (click)="selectTab('details')"
         >
-          {{ 'COMMON.SAVE' | translate }}
+          {{ 'MEMBERS.EDIT_TITLE' | translate }}
         </button>
         <button
           type="button"
-          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          (click)="cancelled.emit()"
+          role="tab"
+          class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.bg-slate-500]="activeTab() === 'ministries'"
+          [class.text-white]="activeTab() === 'ministries'"
+          [class.border]="activeTab() !== 'ministries'"
+          [class.border-slate-300]="activeTab() !== 'ministries'"
+          [class.bg-white]="activeTab() !== 'ministries'"
+          [attr.aria-selected]="activeTab() === 'ministries'"
+          (click)="selectTab('ministries')"
         >
-          {{ 'COMMON.CANCEL' | translate }}
+          {{ 'MINISTRIES.TAB_TITLE' | translate }}
         </button>
       </div>
-    </form>
+    }
+
+    @if (activeTab() === 'ministries' && showMinistriesTab()) {
+      <section [attr.aria-label]="'MINISTRIES.TAB_TITLE' | translate">
+        @if (ministriesFeedback(); as messageKey) {
+          <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+            {{ messageKey | translate }}
+          </p>
+        }
+
+        @if (ministriesErrorMessage(); as message) {
+          <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+            {{ message }}
+          </p>
+        }
+
+        @if (canWriteMinistries()) {
+          <form
+            [formGroup]="linkMinistryForm"
+            (ngSubmit)="linkMinistry()"
+            class="mb-4 grid gap-3 md:grid-cols-3"
+            novalidate
+          >
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'MINISTRIES.TITLE' | translate }}</span>
+              <select
+                formControlName="ministryId"
+                class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              >
+                <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+                @for (ministry of availableMinistries(); track ministry.id) {
+                  <option [value]="ministry.id">{{ ministry.name }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'MINISTRIES.ROLE' | translate }}</span>
+              <select
+                formControlName="role"
+                class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              >
+                @for (role of ministryRoles; track role) {
+                  <option [value]="role">{{ ministryRoleLabelKey(role) | translate }}</option>
+                }
+              </select>
+            </label>
+
+            <div class="flex items-end">
+              <button
+                type="submit"
+                class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+                [disabled]="linkingMinistry()"
+              >
+                {{ 'MINISTRIES.ADD_MEMBER' | translate }}
+              </button>
+            </div>
+          </form>
+        }
+
+        @if (pendingUnlinkMinistryId(); as unlinkId) {
+          <div class="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-3">
+            <p class="text-sm text-slate-800">{{ 'MINISTRIES.CONFIRM_UNLINK' | translate }}</p>
+            <div class="mt-3 flex gap-2">
+              <button
+                type="button"
+                class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                (click)="confirmUnlinkMinistry()"
+              >
+                {{ 'COMMON.YES' | translate }}
+              </button>
+              <button
+                type="button"
+                class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                (click)="cancelUnlinkMinistry()"
+              >
+                {{ 'COMMON.NO' | translate }}
+              </button>
+            </div>
+            <span class="sr-only">{{ unlinkId }}</span>
+          </div>
+        }
+
+        @if (ministriesLoading()) {
+          <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (ministriesError()) {
+          <p class="text-sm text-red-700" role="alert">{{ 'MINISTRIES.LOAD_ERROR' | translate }}</p>
+        } @else if (memberMinistries().length === 0) {
+          <p class="text-sm text-slate-600">{{ 'MINISTRIES.EMPTY' | translate }}</p>
+        } @else {
+          <ul class="divide-y divide-slate-100 rounded-md border border-slate-200">
+            @for (ministry of memberMinistries(); track ministry.id) {
+              <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                <div>
+                  <p class="font-medium text-slate-900">{{ ministry.name }}</p>
+                  <p class="text-slate-600">
+                    {{ ministry.leaderFullName || ('COMMON.NOT_AVAILABLE' | translate) }}
+                  </p>
+                </div>
+                @if (canWriteMinistries()) {
+                  <button
+                    type="button"
+                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                    (click)="askUnlinkMinistry(ministry.id)"
+                  >
+                    {{ 'MINISTRIES.REMOVE_MEMBER' | translate }}
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="mt-4">
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="cancelled.emit()"
+          >
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </section>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.FULL_NAME' | translate }}</span>
+          <input
+            type="text"
+            formControlName="fullName"
+            autocomplete="name"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.aria-invalid]="fieldInvalid('fullName')"
+          />
+          @if (fieldInvalid('fullName')) {
+            <span class="text-xs text-red-700">{{
+              'MEMBERS.VALIDATION_REQUIRED' | translate
+            }}</span>
+          }
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.EMAIL' | translate }}</span>
+          <input
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.aria-invalid]="fieldInvalid('email')"
+          />
+          @if (fieldInvalid('email')) {
+            <span class="text-xs text-red-700">{{ 'MEMBERS.VALIDATION_EMAIL' | translate }}</span>
+          }
+        </label>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.PHONE' | translate }}</span>
+            <input
+              type="tel"
+              formControlName="phone"
+              autocomplete="tel"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.DOCUMENT' | translate }}</span>
+            <input
+              type="text"
+              formControlName="document"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+        </div>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.BIRTH_DATE' | translate }}</span>
+          <input
+            type="date"
+            formControlName="birthDate"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.GENDER' | translate }}</span>
+            <select
+              formControlName="gender"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              @for (gender of genders; track gender) {
+                <option [value]="gender">{{ genderLabelKey(gender) | translate }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.MARITAL_STATUS' | translate }}</span>
+            <select
+              formControlName="maritalStatus"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              @for (status of maritalStatuses; track status) {
+                <option [value]="status">{{ maritalLabelKey(status) | translate }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.STATUS' | translate }}</span>
+            <select
+              formControlName="status"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.BAPTISM_DATE' | translate }}</span>
+            <input
+              type="date"
+              formControlName="baptismDate"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.MEMBERSHIP_DATE' | translate }}</span>
+            <input
+              type="date"
+              formControlName="membershipDate"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+        </div>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.ADDRESS' | translate }}</span>
+          <input
+            type="text"
+            formControlName="address"
+            autocomplete="street-address"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.CITY' | translate }}</span>
+            <input
+              type="text"
+              formControlName="city"
+              autocomplete="address-level2"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.STATE' | translate }}</span>
+            <input
+              type="text"
+              formControlName="state"
+              autocomplete="address-level1"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.ZIP_CODE' | translate }}</span>
+            <input
+              type="text"
+              formControlName="zipCode"
+              autocomplete="postal-code"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+        </div>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.NOTES' | translate }}</span>
+          <textarea
+            formControlName="notes"
+            rows="3"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          ></textarea>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.USER_ID' | translate }}</span>
+          <input
+            type="text"
+            formControlName="userId"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <div class="mt-2 flex flex-wrap gap-3">
+          <button
+            type="submit"
+            class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+            [disabled]="saving()"
+          >
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="cancelled.emit()"
+          >
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </form>
+    }
   }
 </section>

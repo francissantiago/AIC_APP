@@ -29,6 +29,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { MinistryResponseDto } from '../ministries/dto/ministry-response.dto';
+import { MinistriesService } from '../ministries/ministries.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import {
   MemberResponseDto,
@@ -47,7 +49,10 @@ import { MembersService } from './members.service';
 @RequirePermission('members:read')
 @Controller('members')
 export class MembersController {
-  constructor(private readonly membersService: MembersService) {}
+  constructor(
+    private readonly membersService: MembersService,
+    private readonly ministriesService: MinistriesService,
+  ) {}
 
   @Post()
   @RequirePermission('members:write')
@@ -68,6 +73,17 @@ export class MembersController {
     @Query() query: QueryMembersDto,
   ): Promise<PaginatedMembersResponseDto> {
     return this.membersService.findAll(query);
+  }
+
+  @Get(':id/ministries')
+  @RequirePermission('ministries:read')
+  @ApiOperation({ summary: 'Listar ministérios do membro' })
+  @ApiOkResponse({ type: MinistryResponseDto, isArray: true })
+  @ApiNotFoundResponse({ description: 'Membro não encontrado' })
+  findMinistries(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<MinistryResponseDto[]> {
+    return this.ministriesService.findByMemberId(id);
   }
 
   @Get(':id')
