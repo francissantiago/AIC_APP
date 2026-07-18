@@ -14,6 +14,7 @@ const DEFAULT_ROUTE_CANDIDATES: readonly { route: string; permission: string }[]
   { route: '/members', permission: 'members:read' },
   { route: '/ministries', permission: 'ministries:read' },
   { route: '/ebd', permission: 'classes:read' },
+  { route: '/small-groups', permission: 'small-groups:read' },
   { route: '/congregation', permission: 'congregations:read' },
   { route: '/roles', permission: 'roles:read' },
   { route: '/finance', permission: 'finance:read' },

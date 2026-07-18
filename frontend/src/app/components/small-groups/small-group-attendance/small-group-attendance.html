@@ -1,0 +1,111 @@
+<section class="w-full" [attr.aria-label]="'SMALL_GROUPS.ATTENDANCE' | translate">
+  <div class="mb-4">
+    <h2 class="text-lg font-semibold text-slate-900">
+      {{ 'SMALL_GROUPS.ATTENDANCE' | translate }}
+    </h2>
+    @if (groupName()) {
+      <p class="text-sm text-slate-600">{{ groupName() }}</p>
+    }
+    @if (meetingDate()) {
+      <p class="text-sm text-slate-600">{{ meetingDate() }}</p>
+    }
+  </div>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'SMALL_GROUPS.LOAD_ERROR' | translate }}</p>
+  } @else if (isEmpty()) {
+    <p class="text-sm text-slate-600">{{ 'SMALL_GROUPS.EMPTY_ATTENDANCE' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.MEMBERS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.PRESENT' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.ABSENT' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.NOTES' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of drafts(); track entry.memberId) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ entry.memberFullName }}</td>
+              <td class="px-3 py-2">
+                <label class="inline-flex items-center gap-2 text-slate-800">
+                  <input
+                    type="radio"
+                    class="size-4 accent-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [name]="'sg-present-' + entry.memberId"
+                    [checked]="entry.present === true"
+                    [disabled]="!canWrite()"
+                    (change)="setPresent(entry.memberId, true)"
+                  />
+                  <span class="sr-only">{{ 'SMALL_GROUPS.PRESENT' | translate }}</span>
+                </label>
+              </td>
+              <td class="px-3 py-2">
+                <label class="inline-flex items-center gap-2 text-slate-800">
+                  <input
+                    type="radio"
+                    class="size-4 accent-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [name]="'sg-present-' + entry.memberId"
+                    [checked]="entry.present === false"
+                    [disabled]="!canWrite()"
+                    (change)="setPresent(entry.memberId, false)"
+                  />
+                  <span class="sr-only">{{ 'SMALL_GROUPS.ABSENT' | translate }}</span>
+                </label>
+              </td>
+              <td class="px-3 py-2">
+                <input
+                  type="text"
+                  maxlength="255"
+                  class="w-full min-w-40 rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-50"
+                  [value]="entry.notes"
+                  [disabled]="!canWrite()"
+                  [attr.aria-label]="'SMALL_GROUPS.NOTES' | translate"
+                  (input)="onNotesChange(entry.memberId, $event)"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (canWrite()) {
+      <div class="mt-4">
+        <button
+          type="button"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="saving()"
+          (click)="save()"
+        >
+          {{ 'SMALL_GROUPS.SAVE_ATTENDANCE' | translate }}
+        </button>
+      </div>
+    }
+  }
+</section>

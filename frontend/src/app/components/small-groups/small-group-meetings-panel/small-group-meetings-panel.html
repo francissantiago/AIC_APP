@@ -1,0 +1,176 @@
+<section class="w-full" [attr.aria-label]="'SMALL_GROUPS.MEETINGS' | translate">
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  @if (takingAttendanceId(); as meetingId) {
+    <div class="mb-4">
+      <button
+        type="button"
+        class="mb-3 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        (click)="closeAttendance()"
+      >
+        {{ 'COMMON.BACK' | translate }}
+      </button>
+      <app-small-group-attendance [groupId]="groupId()" [meetingId]="meetingId" />
+    </div>
+  } @else {
+    @if (canWrite()) {
+      <form
+        [formGroup]="meetingForm"
+        (ngSubmit)="submitMeeting()"
+        class="mb-4 grid gap-3 md:grid-cols-4"
+        novalidate
+      >
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SMALL_GROUPS.MEETING_DATE' | translate }}</span>
+          <input
+            type="date"
+            formControlName="meetingDate"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SMALL_GROUPS.THEME' | translate }}</span>
+          <input
+            type="text"
+            formControlName="theme"
+            maxlength="255"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SMALL_GROUPS.NOTES' | translate }}</span>
+          <input
+            type="text"
+            formControlName="notes"
+            maxlength="500"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <div class="flex flex-wrap items-end gap-2">
+          <button
+            type="submit"
+            class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+            [disabled]="saving()"
+          >
+            {{
+              (editingMeetingId() ? 'SMALL_GROUPS.EDIT_MEETING' : 'SMALL_GROUPS.ADD_MEETING')
+                | translate
+            }}
+          </button>
+          @if (editingMeetingId()) {
+            <button
+              type="button"
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              (click)="cancelEdit()"
+            >
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+          }
+        </div>
+      </form>
+    }
+
+    @if (pendingDeleteId(); as deleteId) {
+      <div class="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-3" role="alertdialog">
+        <p class="text-sm text-slate-800">
+          {{ 'SMALL_GROUPS.CONFIRM_DELETE_MEETING' | translate }}
+        </p>
+        <div class="mt-3 flex gap-2">
+          <button
+            type="button"
+            class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+            [disabled]="deleting()"
+            (click)="confirmDelete()"
+          >
+            {{ 'COMMON.YES' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+            [disabled]="deleting()"
+            (click)="cancelDelete()"
+          >
+            {{ 'COMMON.NO' | translate }}
+          </button>
+        </div>
+        <span class="sr-only">{{ deleteId }}</span>
+      </div>
+    }
+
+    @if (loading()) {
+      <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+    } @else if (error()) {
+      <p class="text-sm text-red-700" role="alert">{{ 'SMALL_GROUPS.LOAD_ERROR' | translate }}</p>
+    } @else if (meetings().length === 0) {
+      <p class="text-sm text-slate-600">{{ 'SMALL_GROUPS.NO_MEETINGS' | translate }}</p>
+    } @else {
+      <div class="overflow-x-auto rounded-md border border-slate-200">
+        <table class="min-w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'SMALL_GROUPS.MEETING_DATE' | translate }}
+              </th>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'SMALL_GROUPS.THEME' | translate }}
+              </th>
+              <th scope="col" class="px-3 py-2 font-medium">
+                {{ 'SMALL_GROUPS.NOTES' | translate }}
+              </th>
+              <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (meeting of meetings(); track meeting.id) {
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 text-slate-900">{{ meeting.meetingDate }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ meeting.theme || '' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ meeting.notes || '' }}</td>
+                <td class="px-3 py-2">
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openAttendance(meeting.id)"
+                    >
+                      {{ 'SMALL_GROUPS.TAKE_ROLL' | translate }}
+                    </button>
+                    @if (canWrite()) {
+                      <button
+                        type="button"
+                        class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                        (click)="startEdit(meeting)"
+                      >
+                        {{ 'COMMON.EDIT' | translate }}
+                      </button>
+                      <button
+                        type="button"
+                        class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                        (click)="askDelete(meeting.id)"
+                      >
+                        {{ 'COMMON.DELETE' | translate }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</section>

@@ -1,0 +1,163 @@
+<section class="w-full" [attr.aria-label]="'SMALL_GROUPS.MEMBERS' | translate">
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
+  }
+
+  @if (canWrite()) {
+    <form
+      [formGroup]="linkForm"
+      (ngSubmit)="linkMember()"
+      class="mb-4 grid gap-3 md:grid-cols-3"
+      novalidate
+    >
+      <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-1">
+        <span>{{ 'SMALL_GROUPS.ADD_MEMBER' | translate }}</span>
+        <select
+          formControlName="memberId"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+          @for (member of memberOptions(); track member.id) {
+            <option [value]="member.id">{{ member.fullName }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'SMALL_GROUPS.ROLE' | translate }}</span>
+        <select
+          formControlName="role"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          @for (role of roles; track role) {
+            <option [value]="role">{{ roleLabelKey(role) | translate }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="flex items-end">
+        <button
+          type="submit"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="linking()"
+        >
+          {{ 'SMALL_GROUPS.ADD_MEMBER' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (pendingUnlinkId(); as unlinkId) {
+    <div class="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-3" role="alertdialog">
+      <p class="text-sm text-slate-800">{{ 'SMALL_GROUPS.CONFIRM_UNLINK' | translate }}</p>
+      <div class="mt-3 flex gap-2">
+        <button
+          type="button"
+          class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+          [disabled]="unlinking()"
+          (click)="confirmUnlink()"
+        >
+          {{ 'COMMON.YES' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="unlinking()"
+          (click)="cancelUnlink()"
+        >
+          {{ 'COMMON.NO' | translate }}
+        </button>
+      </div>
+      <span class="sr-only">{{ unlinkId }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'SMALL_GROUPS.LOAD_ERROR' | translate }}</p>
+  } @else if (members().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'SMALL_GROUPS.NO_MEMBERS' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.MEMBERS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'SMALL_GROUPS.ROLE' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.MEMBER_STATUS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.JOINED_AT' | translate }}
+            </th>
+            @if (canWrite()) {
+              <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (member of members(); track member.memberId) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ member.memberFullName }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                @if (canWrite()) {
+                  <select
+                    class="rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [value]="member.role"
+                    (change)="onRoleSelect(member.memberId, $event)"
+                    [attr.aria-label]="'SMALL_GROUPS.ROLE' | translate"
+                  >
+                    @for (role of roles; track role) {
+                      <option [value]="role">{{ roleLabelKey(role) | translate }}</option>
+                    }
+                  </select>
+                } @else {
+                  {{ roleLabelKey(member.role) | translate }}
+                }
+              </td>
+              <td class="px-3 py-2 text-slate-700">
+                @if (canWrite()) {
+                  <select
+                    class="rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [value]="member.status"
+                    (change)="onStatusSelect(member.memberId, $event)"
+                    [attr.aria-label]="'SMALL_GROUPS.MEMBER_STATUS' | translate"
+                  >
+                    @for (status of statuses; track status) {
+                      <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+                    }
+                  </select>
+                } @else {
+                  {{ statusLabelKey(member.status) | translate }}
+                }
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ member.joinedAt }}</td>
+              @if (canWrite()) {
+                <td class="px-3 py-2">
+                  <button
+                    type="button"
+                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                    (click)="askUnlink(member.memberId)"
+                  >
+                    {{ 'SMALL_GROUPS.REMOVE_MEMBER' | translate }}
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -42,12 +42,14 @@ export class SidebarNav {
   readonly financeOpen = signal(this.#router.url.startsWith('/finance'));
   readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
   readonly ebdOpen = signal(this.#router.url.startsWith('/ebd'));
+  readonly smallGroupsOpen = signal(this.#router.url.startsWith('/small-groups'));
 
   readonly canViewFinanceSection = computed(() =>
     this.#auth.hasAnyPermission('finance:read', 'assets:read'),
   );
   readonly canViewSecretariat = computed(() => this.#auth.hasPermission('secretariat:read'));
   readonly canViewEbd = computed(() => this.#auth.hasPermission('classes:read'));
+  readonly canViewSmallGroups = computed(() => this.#auth.hasPermission('small-groups:read'));
 
   readonly allItems: readonly SidebarNavItem[] = [
     { route: '/users', labelKey: 'NAV.USERS', icon: 'users', permission: 'users:read' },
@@ -75,6 +77,11 @@ export class SidebarNav {
   readonly ebdItems = [
     { route: '/ebd', labelKey: 'NAV.EBD' },
     { route: '/ebd/reports', labelKey: 'NAV.EBD_REPORTS' },
+  ] as const;
+
+  readonly smallGroupsItems = [
+    { route: '/small-groups', labelKey: 'NAV.SMALL_GROUPS' },
+    { route: '/small-groups/reports', labelKey: 'NAV.SMALL_GROUPS_REPORTS' },
   ] as const;
 
   readonly items = computed(() =>
@@ -117,6 +124,9 @@ export class SidebarNav {
         if (event.urlAfterRedirects.startsWith('/ebd')) {
           this.ebdOpen.set(true);
         }
+        if (event.urlAfterRedirects.startsWith('/small-groups')) {
+          this.smallGroupsOpen.set(true);
+        }
       });
   }
 
@@ -143,5 +153,13 @@ export class SidebarNav {
       return;
     }
     this.ebdOpen.update((value) => !value);
+  }
+
+  toggleSmallGroups(): void {
+    if (!this.expanded()) {
+      void this.#router.navigateByUrl('/small-groups');
+      return;
+    }
+    this.smallGroupsOpen.update((value) => !value);
   }
 }

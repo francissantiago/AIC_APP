@@ -36,3 +36,4 @@ export const secretariatPermissionGuard = createReadPermissionGuard('secretariat
 export const assetsPermissionGuard = createReadPermissionGuard('assets:read');
 export const ministriesPermissionGuard = createReadPermissionGuard('ministries:read');
 export const classesPermissionGuard = createReadPermissionGuard('classes:read');
+export const smallGroupsPermissionGuard = createReadPermissionGuard('small-groups:read');

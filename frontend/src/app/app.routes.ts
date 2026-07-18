@@ -11,6 +11,7 @@ import {
   ministriesPermissionGuard,
   rolesPermissionGuard,
   secretariatPermissionGuard,
+  smallGroupsPermissionGuard,
   usersPermissionGuard,
 } from '@guards/role-guard';
 
@@ -92,6 +93,22 @@ export const routes: Routes = [
         canActivate: [classesPermissionGuard],
         loadComponent: () =>
           import('@components/ebd/classes-list/classes-list').then((m) => m.ClassesList),
+      },
+      {
+        path: 'small-groups/reports',
+        canActivate: [smallGroupsPermissionGuard],
+        loadComponent: () =>
+          import('@components/small-groups/small-group-frequency-report/small-group-frequency-report').then(
+            (m) => m.SmallGroupFrequencyReport,
+          ),
+      },
+      {
+        path: 'small-groups',
+        canActivate: [smallGroupsPermissionGuard],
+        loadComponent: () =>
+          import('@components/small-groups/small-groups-list/small-groups-list').then(
+            (m) => m.SmallGroupsList,
+          ),
       },
       {
         path: 'congregation',

@@ -134,6 +134,12 @@ export class AppShell {
     if (path.startsWith('/ebd')) {
       return 'APP_SHELL.PAGE_EBD';
     }
+    if (path.startsWith('/small-groups/reports')) {
+      return 'APP_SHELL.PAGE_SMALL_GROUPS_REPORTS';
+    }
+    if (path.startsWith('/small-groups')) {
+      return 'APP_SHELL.PAGE_SMALL_GROUPS';
+    }
     if (path.startsWith('/congregation') || path.startsWith('/congregations')) {
       return 'APP_SHELL.PAGE_CONGREGATION';
     }

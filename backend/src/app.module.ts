@@ -15,6 +15,7 @@ import { MinistriesModule } from './modules/ministries/ministries.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { SecretariatModule } from './modules/secretariat/secretariat.module';
+import { SmallGroupsModule } from './modules/small-groups/small-groups.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -45,6 +46,7 @@ import { UsersModule } from './modules/users/users.module';
     MembersModule,
     MinistriesModule,
     ClassesModule,
+    SmallGroupsModule,
     CongregationsModule,
     FinanceModule,
     AssetsModule,

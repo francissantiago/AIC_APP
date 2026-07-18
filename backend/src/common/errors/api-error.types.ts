@@ -102,6 +102,23 @@ export const ApiErrorCode = {
     'CLASSES.ATTENDANCE_MEMBER_NOT_ENROLLED',
   CLASSES_ATTENDANCE_PERIOD_INVALID: 'CLASSES.ATTENDANCE_PERIOD_INVALID',
   CLASSES_ATTENDANCE_EMPTY_ENTRIES: 'CLASSES.ATTENDANCE_EMPTY_ENTRIES',
+
+  SMALL_GROUPS_NOT_FOUND: 'SMALL_GROUPS.NOT_FOUND',
+  SMALL_GROUPS_NAME_CONFLICT: 'SMALL_GROUPS.NAME_CONFLICT',
+  SMALL_GROUPS_LEADER_NOT_FOUND: 'SMALL_GROUPS.LEADER_NOT_FOUND',
+  SMALL_GROUPS_LEADER_WRONG_CONGREGATION:
+    'SMALL_GROUPS.LEADER_WRONG_CONGREGATION',
+  SMALL_GROUPS_LEADER_INACTIVE: 'SMALL_GROUPS.LEADER_INACTIVE',
+  SMALL_GROUPS_MEMBER_NOT_FOUND: 'SMALL_GROUPS.MEMBER_NOT_FOUND',
+  SMALL_GROUPS_MEMBER_WRONG_CONGREGATION:
+    'SMALL_GROUPS.MEMBER_WRONG_CONGREGATION',
+  SMALL_GROUPS_MEMBER_INACTIVE: 'SMALL_GROUPS.MEMBER_INACTIVE',
+  SMALL_GROUPS_MEMBER_ALREADY_LINKED: 'SMALL_GROUPS.MEMBER_ALREADY_LINKED',
+  SMALL_GROUPS_MEETING_NOT_FOUND: 'SMALL_GROUPS.MEETING_NOT_FOUND',
+  SMALL_GROUPS_MEETING_DATE_CONFLICT: 'SMALL_GROUPS.MEETING_DATE_CONFLICT',
+  SMALL_GROUPS_ATTENDANCE_MEMBER_NOT_ACTIVE:
+    'SMALL_GROUPS.ATTENDANCE_MEMBER_NOT_ACTIVE',
+  SMALL_GROUPS_INVALID_PERIOD: 'SMALL_GROUPS.INVALID_PERIOD',
 } as const;
 
 export type ApiErrorCodeValue =
@@ -209,4 +226,27 @@ export const ApiErrorMessage = {
     'Período inválido: from deve ser ≤ to e o intervalo máximo é de 24 meses.',
   [ApiErrorCode.CLASSES_ATTENDANCE_EMPTY_ENTRIES]:
     'Informe ao menos um aluno na chamada.',
+  [ApiErrorCode.SMALL_GROUPS_NOT_FOUND]: 'Pequeno grupo não encontrado.',
+  [ApiErrorCode.SMALL_GROUPS_NAME_CONFLICT]:
+    'Já existe um pequeno grupo com este nome.',
+  [ApiErrorCode.SMALL_GROUPS_LEADER_NOT_FOUND]:
+    'Líder selecionado não encontrado.',
+  [ApiErrorCode.SMALL_GROUPS_LEADER_WRONG_CONGREGATION]:
+    'O líder deve pertencer a esta congregação.',
+  [ApiErrorCode.SMALL_GROUPS_LEADER_INACTIVE]:
+    'O líder selecionado não está ativo.',
+  [ApiErrorCode.SMALL_GROUPS_MEMBER_NOT_FOUND]: 'Membro não encontrado.',
+  [ApiErrorCode.SMALL_GROUPS_MEMBER_WRONG_CONGREGATION]:
+    'O membro deve pertencer a esta congregação.',
+  [ApiErrorCode.SMALL_GROUPS_MEMBER_INACTIVE]:
+    'O membro selecionado não está ativo.',
+  [ApiErrorCode.SMALL_GROUPS_MEMBER_ALREADY_LINKED]:
+    'Membro já vinculado a este pequeno grupo.',
+  [ApiErrorCode.SMALL_GROUPS_MEETING_NOT_FOUND]: 'Reunião não encontrada.',
+  [ApiErrorCode.SMALL_GROUPS_MEETING_DATE_CONFLICT]:
+    'Já existe uma reunião nesta data para o grupo.',
+  [ApiErrorCode.SMALL_GROUPS_ATTENDANCE_MEMBER_NOT_ACTIVE]:
+    'O membro não possui vínculo ativo neste pequeno grupo.',
+  [ApiErrorCode.SMALL_GROUPS_INVALID_PERIOD]:
+    'Período inválido: from deve ser ≤ to e o intervalo máximo é de 24 meses.',
 } as const;

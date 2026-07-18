@@ -1,0 +1,241 @@
+<section class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">
+        {{ 'SMALL_GROUPS.LIST_TITLE' | translate }}
+      </h1>
+      <p class="text-sm text-slate-600">{{ 'SMALL_GROUPS.DESCRIPTION' | translate }}</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a
+        routerLink="/small-groups/reports"
+        class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        {{ 'SMALL_GROUPS.REPORT_TITLE' | translate }}
+      </a>
+      @if (canWrite()) {
+        <button
+          type="button"
+          class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+          (click)="openCreate()"
+        >
+          {{ 'COMMON.CREATE' | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="(editingId() ? 'SMALL_GROUPS.EDIT_TITLE' : 'SMALL_GROUPS.CREATE_TITLE') | translate"
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-small-group-form
+        [groupId]="editingId()"
+        (saved)="afterSave()"
+        (cancelled)="closeForm()"
+      />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="managingMembersId() !== null"
+    [title]="'SMALL_GROUPS.MANAGE_MEMBERS' | translate"
+    (closed)="closeMembers()"
+  >
+    @if (managingMembersId(); as groupId) {
+      <app-small-group-members-panel [groupId]="groupId" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="managingMeetingsId() !== null"
+    [title]="'SMALL_GROUPS.MANAGE_MEETINGS' | translate"
+    (closed)="closeMeetings()"
+  >
+    @if (managingMeetingsId(); as groupId) {
+      <app-small-group-meetings-panel [groupId]="groupId" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'SMALL_GROUPS.CONFIRM_DELETE' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <form
+    [formGroup]="filterForm"
+    class="mb-4 grid gap-3 md:grid-cols-2"
+    [attr.aria-label]="'COMMON.FILTER' | translate"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SMALL_GROUPS.SEARCH' | translate }}</span>
+      <input
+        type="search"
+        formControlName="q"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SMALL_GROUPS.FILTER_STATUS' | translate }}</span>
+      <select
+        formControlName="status"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+        }
+      </select>
+    </label>
+  </form>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'SMALL_GROUPS.LOAD_ERROR' | translate }}</p>
+  } @else if (groups().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'SMALL_GROUPS.EMPTY' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'SMALL_GROUPS.NAME' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.LEADER' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.DAY_OF_WEEK' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.START_TIME' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.STATUS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SMALL_GROUPS.MEMBERS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of groups(); track group.id) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ group.name }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ group.leader?.fullName || '' }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ dayLabelKey(group.dayOfWeek) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ group.startTime || '' }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ statusLabelKey(group.status) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ 'SMALL_GROUPS.MEMBERS_COUNT' | translate: { count: group.membersCount ?? 0 } }}
+              </td>
+              <td class="px-3 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openMembers(group.id)"
+                  >
+                    {{ 'SMALL_GROUPS.MANAGE_MEMBERS' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openMeetings(group.id)"
+                  >
+                    {{ 'SMALL_GROUPS.MANAGE_MEETINGS' | translate }}
+                  </button>
+                  <a
+                    [routerLink]="['/small-groups/reports']"
+                    [queryParams]="{ groupId: group.id }"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  >
+                    {{ 'SMALL_GROUPS.REPORT_TITLE' | translate }}
+                  </a>
+                  @if (canWrite()) {
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openEdit(group.id)"
+                    >
+                      {{ 'COMMON.EDIT' | translate }}
+                    </button>
+                    <button
+                      type="button"
+                      class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      (click)="askDelete(group.id)"
+                    >
+                      {{ 'COMMON.DELETE' | translate }}
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+      <p>
+        {{ 'COMMON.PAGE' | translate }}
+        {{ page() }}
+        /
+        {{ totalPages() }}
+      </p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() <= 1"
+          (click)="previousPage()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() >= totalPages()"
+          (click)="nextPage()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</section>

@@ -69,6 +69,10 @@ describe('SidebarNav', () => {
   it('canViewEbd is false without classes:read permission', () => {
     expect(component.canViewEbd()).toBe(false);
   });
+
+  it('canViewSmallGroups is false without small-groups:read permission', () => {
+    expect(component.canViewSmallGroups()).toBe(false);
+  });
 });
 
 describe('SidebarNav with permissions', () => {
@@ -96,6 +100,7 @@ describe('SidebarNav with permissions', () => {
             'members:read',
             'ministries:read',
             'classes:read',
+            'small-groups:read',
             'congregations:read',
             'finance:read',
             'assets:read',
@@ -130,6 +135,14 @@ describe('SidebarNav with permissions', () => {
   it('canViewEbd is true when user has classes:read', () => {
     expect(component.canViewEbd()).toBe(true);
     expect(component.ebdItems.map((item) => item.route)).toEqual(['/ebd', '/ebd/reports']);
+  });
+
+  it('canViewSmallGroups is true when user has small-groups:read', () => {
+    expect(component.canViewSmallGroups()).toBe(true);
+    expect(component.smallGroupsItems.map((item) => item.route)).toEqual([
+      '/small-groups',
+      '/small-groups/reports',
+    ]);
   });
 
   it('canViewFinanceSection is true when user has finance:read', () => {
