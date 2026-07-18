@@ -11,6 +11,7 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
 import { SidebarNav } from '@components/layout/sidebar-nav/sidebar-nav';
+import { NotificationsBell } from '@components/notifications-bell/notifications-bell';
 import { AuthService } from '@services/auth-service';
 import { filter, startWith } from 'rxjs';
 
@@ -19,7 +20,7 @@ const SIDEBAR_ID = 'app-sidebar';
 
 @Component({
   selector: 'app-app-shell',
-  imports: [RouterOutlet, TranslatePipe, LanguageSwitcher, SidebarNav],
+  imports: [RouterOutlet, TranslatePipe, LanguageSwitcher, SidebarNav, NotificationsBell],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

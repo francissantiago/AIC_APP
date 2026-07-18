@@ -269,6 +269,23 @@
     "EBD_CLASSES": "Clases de la EBD",
     "EBD_CLASSES_EMPTY": "Sin matrícula en ninguna clase de la EBD"
   },
+  "NOTIFICATIONS": {
+    "TITLE": "Notificaciones",
+    "PANEL_TITLE": "Notificaciones",
+    "BELL_ARIA": "Abrir notificaciones",
+    "UNREAD_COUNT": "{{count}} sin leer",
+    "MARK_READ": "Marcar como leída",
+    "MARK_ALL_READ": "Marcar todas como leídas",
+    "EMPTY": "Aún no hay notificaciones",
+    "LOADING": "Cargando notificaciones…",
+    "ERROR": "No se pudieron cargar las notificaciones",
+    "TYPE_VISITOR_FOLLOW_UP": "Seguimiento de visitante",
+    "TYPE_SCHEDULE_REMINDER": "Recordatorio de escala",
+    "TYPE_GENERIC": "Notificación",
+    "CONNECTION_LOST": "Conexión en tiempo real perdida",
+    "CONNECTION_RESTORED": "Conexión en tiempo real restablecida",
+    "CLOSE_PANEL": "Cerrar panel de notificaciones"
+  },
   "ANNOUNCEMENTS": {
     "TITLE": "Avisos",
     "DESCRIPTION": "Mural interno de comunicados de la congregación",

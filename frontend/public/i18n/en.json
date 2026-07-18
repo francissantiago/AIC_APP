@@ -269,6 +269,23 @@
     "EBD_CLASSES": "Sunday School classes",
     "EBD_CLASSES_EMPTY": "Not enrolled in any Sunday School class"
   },
+  "NOTIFICATIONS": {
+    "TITLE": "Notifications",
+    "PANEL_TITLE": "Notifications",
+    "BELL_ARIA": "Open notifications",
+    "UNREAD_COUNT": "{{count}} unread",
+    "MARK_READ": "Mark as read",
+    "MARK_ALL_READ": "Mark all as read",
+    "EMPTY": "No notifications yet",
+    "LOADING": "Loading notifications…",
+    "ERROR": "Could not load notifications",
+    "TYPE_VISITOR_FOLLOW_UP": "Visitor follow-up",
+    "TYPE_SCHEDULE_REMINDER": "Schedule reminder",
+    "TYPE_GENERIC": "Notification",
+    "CONNECTION_LOST": "Real-time connection lost",
+    "CONNECTION_RESTORED": "Real-time connection restored",
+    "CLOSE_PANEL": "Close notifications panel"
+  },
   "ANNOUNCEMENTS": {
     "TITLE": "Announcements",
     "DESCRIPTION": "Internal board for congregation notices",
