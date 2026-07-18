@@ -60,6 +60,10 @@ export const ApiErrorCode = {
   FINANCE_EXPORT_RANGE_REQUIRED: 'FINANCE.EXPORT_RANGE_REQUIRED',
   FINANCE_EXPORT_RANGE_ORDER: 'FINANCE.EXPORT_RANGE_ORDER',
   FINANCE_EXPORT_RANGE_MAX: 'FINANCE.EXPORT_RANGE_MAX',
+  FINANCE_MEMBER_LINK_INVALID: 'FINANCE.MEMBER_LINK_INVALID',
+  FINANCE_MEMBER_NOT_FOUND: 'FINANCE.MEMBER_NOT_FOUND',
+  FINANCE_MEMBER_WRONG_CONGREGATION: 'FINANCE.MEMBER_WRONG_CONGREGATION',
+  FINANCE_MEMBER_REQUIRED_FOR_REPORT: 'FINANCE.MEMBER_REQUIRED_FOR_REPORT',
 
   ASSETS_NOT_FOUND: 'ASSETS.NOT_FOUND',
   ASSETS_DUPLICATE: 'ASSETS.DUPLICATE',
@@ -138,6 +142,13 @@ export const ApiErrorMessage = {
     'from deve ser anterior ou igual a to.',
   [ApiErrorCode.FINANCE_EXPORT_RANGE_MAX]:
     'O período máximo permitido é de 24 meses.',
+  [ApiErrorCode.FINANCE_MEMBER_LINK_INVALID]:
+    'O membro só pode ser vinculado a lançamentos de dízimo, oferta ou doação.',
+  [ApiErrorCode.FINANCE_MEMBER_NOT_FOUND]: 'Membro não encontrado.',
+  [ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION]:
+    'O membro deve pertencer a esta congregação.',
+  [ApiErrorCode.FINANCE_MEMBER_REQUIRED_FOR_REPORT]:
+    'memberId é obrigatório para este relatório.',
   [ApiErrorCode.ASSETS_NOT_FOUND]: 'Bem não encontrado.',
   [ApiErrorCode.ASSETS_DUPLICATE]: 'Já existe um bem com esses dados.',
   [ApiErrorCode.SECRETARIAT_ATTENDANCE_NOT_FOUND]:

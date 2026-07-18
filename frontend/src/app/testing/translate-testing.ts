@@ -11,7 +11,7 @@ export function translateServiceStub() {
     onLangChange: of({ lang: 'en', translations: {} }),
     onTranslationChange: of({ translations: {} }),
     onDefaultLangChange: of({ lang: 'en', translations: {} }),
-    currentLang: 'en',
+    currentLang: () => 'en',
     defaultLang: 'en',
     langs: ['en'],
     use: () => of('en'),

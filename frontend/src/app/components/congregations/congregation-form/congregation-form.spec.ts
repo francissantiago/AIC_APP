@@ -1,8 +1,11 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { CongregationStatus } from '@enums/congregation-status';
 import { CongregationType } from '@enums/congregation-type';
+import { ApiErrorService } from '@services/api-error.service';
+import { AuthService } from '@services/auth-service';
 import { CongregationService } from '@services/congregation-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { CongregationForm } from './congregation-form';
@@ -46,6 +49,18 @@ describe('CongregationForm', () => {
       imports: [CongregationForm],
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: signal({ permissions: ['congregations:read', 'congregations:write'] }),
+            hasPermission: (code: string) =>
+              ['congregations:read', 'congregations:write'].includes(code),
+          },
+        },
+        {
+          provide: ApiErrorService,
+          useValue: { resolve: () => ({ displayMessage: 'error', supportHint: null }) },
+        },
         { provide: CongregationService, useValue: congregationService },
       ],
     })

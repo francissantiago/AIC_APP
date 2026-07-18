@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Member } from '../../members/entities/member.entity';
 import { FinancialType, PaymentMethod } from '../enums/finance.enums';
 import { FinancialCategory } from './financial-category.entity';
 
@@ -24,6 +25,7 @@ import { FinancialCategory } from './financial-category.entity';
 ])
 @Index('IDX_financial_entries_category', ['categoryId'])
 @Index('IDX_financial_entries_created_by', ['createdByUserId'])
+@Index('IDX_financial_entries_member_date', ['memberId', 'entryDate'])
 export class FinancialEntry {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -42,6 +44,13 @@ export class FinancialEntry {
 
   @Column({ name: 'created_by_user_id', type: 'char', length: 36 })
   createdByUserId!: string;
+
+  @Column({ name: 'member_id', type: 'char', length: 36, nullable: true })
+  memberId!: string | null;
+
+  @ManyToOne(() => Member, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'member_id' })
+  member!: Member | null;
 
   @Column({ type: 'enum', enum: FinancialType })
   type!: FinancialType;

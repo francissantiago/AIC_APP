@@ -13,10 +13,11 @@ import { AppDialog } from '@components/app-dialog/app-dialog';
 import { FinancialCategoryManager } from '@components/finance/financial-category-manager/financial-category-manager';
 import { FinancialEntryForm } from '@components/finance/financial-entry-form/financial-entry-form';
 import { FINANCIAL_TYPES, FinancialType } from '@enums/finance';
-import { IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
+import { IFinanceMemberOption, IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
 import { FinanceService } from '@services/finance-service';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-financial-entries',
@@ -75,7 +76,7 @@ import { FinanceService } from '@services/finance-service';
       </app-dialog>
       <form
         [formGroup]="filterForm"
-        class="mb-4 grid min-w-0 gap-3 md:grid-cols-6"
+        class="mb-4 grid min-w-0 gap-3 md:grid-cols-4 xl:grid-cols-8"
         (ngSubmit)="applyFilters()"
         [attr.aria-label]="'COMMON.FILTER' | translate"
       >
@@ -118,6 +119,27 @@ import { FinanceService } from '@services/finance-service';
           </select></label
         >
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
+          ><span>{{ 'FINANCE.FILTER_BY_MEMBER' | translate }}</span
+          ><input
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            type="search"
+            formControlName="memberQuery"
+            [attr.placeholder]="'FINANCE.MEMBER_PLACEHOLDER' | translate"
+            [attr.aria-label]="'FINANCE.MEMBER_PLACEHOLDER' | translate"
+        /></label>
+        <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
+          ><span>{{ 'FINANCE.MEMBER' | translate }}</span
+          ><select
+            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+            formControlName="memberId"
+          >
+            <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+            @for (option of memberOptions(); track option.id) {
+              <option [value]="option.id">{{ option.fullName }}</option>
+            }
+          </select></label
+        >
+        <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'COMMON.SEARCH' | translate }}</span
           ><input
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
@@ -125,7 +147,7 @@ import { FinanceService } from '@services/finance-service';
             formControlName="q"
         /></label>
         <button
-          class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50 md:col-span-1"
+          class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           type="submit"
         >
           {{ 'COMMON.FILTER' | translate }}
@@ -180,6 +202,9 @@ import { FinanceService } from '@services/finance-service';
                   {{ 'FINANCE.CATEGORY' | translate }}
                 </th>
                 <th scope="col" class="px-3 py-2 font-medium">
+                  {{ 'FINANCE.MEMBER' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 font-medium">
                   {{ 'FINANCE.TYPE' | translate }}
                 </th>
                 <th scope="col" class="px-3 py-2 font-medium">
@@ -198,6 +223,9 @@ import { FinanceService } from '@services/finance-service';
                   <td class="px-3 py-2 text-slate-700">{{ entry.entryDate }}</td>
                   <td class="px-3 py-2 text-slate-900">{{ entry.description }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ entry.category.name }}</td>
+                  <td class="px-3 py-2 text-slate-700">
+                    {{ entry.member?.fullName || ('FINANCE.ANONYMOUS' | translate) }}
+                  </td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ typeLabel(entry.type) | translate }}
                   </td>
@@ -259,6 +287,7 @@ export class FinancialEntries implements OnInit {
   readonly #translate = inject(TranslateService);
   readonly entries = signal<IFinancialEntry[]>([]);
   readonly categories = signal<IFinancialCategory[]>([]);
+  readonly memberOptions = signal<IFinanceMemberOption[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
   readonly loading = signal(false);
@@ -275,11 +304,22 @@ export class FinancialEntries implements OnInit {
     to: new FormControl('', { nonNullable: true }),
     type: new FormControl<FinancialType | ''>('', { nonNullable: true }),
     categoryId: new FormControl('', { nonNullable: true }),
+    memberId: new FormControl('', { nonNullable: true }),
+    memberQuery: new FormControl('', { nonNullable: true }),
     q: new FormControl('', { nonNullable: true }),
   });
 
   ngOnInit(): void {
     this.loadCategories();
+    this.loadMemberOptions();
+    this.filterForm.controls.memberQuery.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.#destroyRef))
+      .subscribe((q) => {
+        const trimmed = q.trim();
+        if (trimmed.length === 0 || trimmed.length >= 2) {
+          this.loadMemberOptions(trimmed);
+        }
+      });
     this.load();
   }
   toggleCategories(): void {
@@ -293,6 +333,23 @@ export class FinancialEntries implements OnInit {
       .categories()
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({ next: (v) => this.categories.set(v), error: () => this.error.set(true) });
+  }
+  loadMemberOptions(q = ''): void {
+    this.#finance
+      .memberOptions({ q: q || undefined, limit: 20 })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (options) => {
+          const selectedId = this.filterForm.controls.memberId.value;
+          const selected = this.memberOptions().find((item) => item.id === selectedId);
+          const merged = [...options];
+          if (selected && !merged.some((item) => item.id === selected.id)) {
+            merged.unshift(selected);
+          }
+          this.memberOptions.set(merged);
+        },
+        error: () => this.memberOptions.set([]),
+      });
   }
   applyFilters(): void {
     this.page.set(1);
@@ -353,6 +410,7 @@ export class FinancialEntries implements OnInit {
         to: raw.to || undefined,
         type: raw.type || undefined,
         categoryId: raw.categoryId || undefined,
+        memberId: raw.memberId || undefined,
         q: raw.q.trim() || undefined,
       })
       .pipe(takeUntilDestroyed(this.#destroyRef))

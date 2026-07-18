@@ -11,10 +11,15 @@ import {
   ICreateAsset,
   ICreateFinancialCategory,
   ICreateFinancialEntry,
+  IFinanceMemberOption,
+  IFinanceMemberOptionsQuery,
   IFinancialCategory,
   IFinancialDashboard,
   IFinancialEntriesQuery,
   IFinancialEntry,
+  IMemberContributionsCsvQuery,
+  IMemberContributionsQuery,
+  IMemberContributionsReport,
   IPaginatedAssets,
   IPaginatedFinancialEntries,
   IPeriodQuery,
@@ -104,6 +109,23 @@ export class FinanceService {
   cashFlowCsv(query: ICashFlowCsvQuery): Observable<Blob> {
     return this.#request(
       this.#http.get(`${this.#apiUrl}/reports/cash-flow.csv`, {
+        params: this.#params(query),
+        responseType: 'blob',
+      }),
+    );
+  }
+
+  memberOptions(query: IFinanceMemberOptionsQuery = {}): Observable<IFinanceMemberOption[]> {
+    return this.#get<IFinanceMemberOption[]>('member-options', query);
+  }
+
+  memberContributions(query: IMemberContributionsQuery): Observable<IMemberContributionsReport> {
+    return this.#get<IMemberContributionsReport>('reports/member-contributions', query);
+  }
+
+  memberContributionsCsv(query: IMemberContributionsCsvQuery): Observable<Blob> {
+    return this.#request(
+      this.#http.get(`${this.#apiUrl}/reports/member-contributions.csv`, {
         params: this.#params(query),
         responseType: 'blob',
       }),

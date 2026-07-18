@@ -14,6 +14,8 @@ import { ApiException } from '../../common/errors/api.exception';
 import { AssetsService } from '../assets/assets.service';
 import { CongregationsService } from '../congregations/congregations.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
+import { Member } from '../members/entities/member.entity';
+import { MemberStatus } from '../members/enums/member-status.enum';
 import {
   CashFlowCsvQueryDto,
   CashFlowQueryDto,
@@ -21,9 +23,14 @@ import {
   CreateFinancialCategoryDto,
   CreateFinancialEntryDto,
   ExpenseByCategoryDto,
+  FinanceMemberOptionDto,
+  FinanceMemberOptionsQueryDto,
   FinancialCategoryResponseDto,
   FinancialDashboardResponseDto,
   FinancialEntryResponseDto,
+  MemberContributionsCsvQueryDto,
+  MemberContributionsQueryDto,
+  MemberContributionsReportDto,
   PaginatedFinancialEntriesResponseDto,
   PeriodQueryDto,
   QueryFinancialCategoriesDto,
@@ -48,7 +55,21 @@ const DEFAULT_CATEGORIES: ReadonlyArray<readonly [string, FinancialType]> = [
   ['Outros', FinancialType.EXPENSE],
 ];
 
+const MEMBER_LINKABLE_CATEGORY_NAMES = [
+  'Dízimos',
+  'Ofertas',
+  'Doações',
+] as const;
+
 type TotalRow = { income: string | null; expense: string | null };
+
+type ContributionTotalsRow = {
+  total: string | null;
+  tithesTotal: string | null;
+  offeringsTotal: string | null;
+  donationsTotal: string | null;
+  entriesCount: string | null;
+};
 
 @Injectable()
 export class FinanceService {
@@ -59,6 +80,8 @@ export class FinanceService {
     private readonly categoriesRepository: Repository<FinancialCategory>,
     @InjectRepository(FinancialEntry)
     private readonly entriesRepository: Repository<FinancialEntry>,
+    @InjectRepository(Member)
+    private readonly membersRepository: Repository<Member>,
     private readonly congregationsService: CongregationsService,
     private readonly assetsService: AssetsService,
   ) {}
@@ -139,10 +162,17 @@ export class FinanceService {
       congregationId,
       true,
     );
+    const member = await this.assertMemberLinkAllowed(
+      dto.memberId,
+      dto.type,
+      category,
+      congregationId,
+    );
     const entry = this.entriesRepository.create({
       congregationId,
       categoryId: category.id,
       createdByUserId: user.id,
+      memberId: member?.id ?? null,
       type: dto.type,
       amount: this.money(dto.amount),
       entryDate: dto.entryDate,
@@ -153,6 +183,7 @@ export class FinanceService {
     });
     const saved = await this.entriesRepository.save(entry);
     saved.category = category;
+    saved.member = member;
     return this.toEntryDto(saved);
   }
 
@@ -164,6 +195,7 @@ export class FinanceService {
     const qb = this.entriesRepository
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.category', 'category')
+      .leftJoinAndSelect('entry.member', 'member')
       .where('entry.congregationId = :congregationId', { congregationId });
     this.applyEntryFilters(qb, query);
     qb.orderBy('entry.entryDate', 'DESC')
@@ -212,6 +244,28 @@ export class FinanceService {
       entry.reference = this.nullableText(dto.reference);
     }
     if (dto.notes !== undefined) entry.notes = this.nullableText(dto.notes);
+
+    const nextMemberId =
+      dto.memberId !== undefined ? dto.memberId : entry.memberId;
+    if (
+      dto.memberId !== undefined ||
+      dto.type !== undefined ||
+      dto.categoryId !== undefined
+    ) {
+      if (nextMemberId) {
+        entry.member = await this.assertMemberLinkAllowed(
+          nextMemberId,
+          nextType,
+          entry.category,
+          congregationId,
+        );
+        entry.memberId = nextMemberId;
+      } else {
+        entry.memberId = null;
+        entry.member = null;
+      }
+    }
+
     return this.toEntryDto(await this.entriesRepository.save(entry));
   }
 
@@ -350,6 +404,7 @@ export class FinanceService {
     const qb = this.entriesRepository
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.category', 'category')
+      .leftJoinAndSelect('entry.member', 'member')
       .where('entry.congregationId = :congregationId', { congregationId });
     this.applyEntryFilters(qb, query);
     const entries = await qb
@@ -367,6 +422,7 @@ export class FinanceService {
         'Meio de pagamento',
         'Referência',
         'Observações',
+        'Membro',
       ],
       ...entries.map((entry) => [
         entry.entryDate,
@@ -377,6 +433,144 @@ export class FinanceService {
         entry.paymentMethod,
         entry.reference ?? '',
         entry.notes ?? '',
+        entry.member?.fullName ?? '',
+      ]),
+    ];
+    return `\uFEFF${rows.map((row) => row.map(this.csvCell).join(';')).join('\r\n')}`;
+  }
+
+  async listMemberOptions(
+    query: FinanceMemberOptionsQueryDto,
+  ): Promise<FinanceMemberOptionDto[]> {
+    const congregationId = await this.getCongregationId();
+    const qb = this.membersRepository
+      .createQueryBuilder('member')
+      .select(['member.id', 'member.fullName'])
+      .where('member.congregationId = :congregationId', { congregationId })
+      .andWhere('member.status = :status', { status: MemberStatus.ACTIVE })
+      .orderBy('member.fullName', 'ASC')
+      .take(query.limit);
+    if (query.q) {
+      qb.andWhere('member.fullName LIKE :q', { q: `%${query.q}%` });
+    }
+    return (await qb.getMany()).map((member) => ({
+      id: member.id,
+      fullName: member.fullName,
+    }));
+  }
+
+  async getMemberContributions(
+    query: MemberContributionsQueryDto,
+  ): Promise<MemberContributionsReportDto> {
+    this.validatePeriod(query.from, query.to);
+    const congregationId = await this.getCongregationId();
+    const member = await this.getReportMemberOrFail(
+      query.memberId,
+      congregationId,
+    );
+    const baseQb = this.buildMemberContributionsQb(
+      congregationId,
+      query.memberId,
+      query.from,
+      query.to,
+    );
+    const totals = await baseQb
+      .clone()
+      .select('SUM(entry.amount)', 'total')
+      .addSelect(
+        `SUM(CASE WHEN category.name = :tithesName THEN entry.amount ELSE 0 END)`,
+        'tithesTotal',
+      )
+      .addSelect(
+        `SUM(CASE WHEN category.name = :offeringsName THEN entry.amount ELSE 0 END)`,
+        'offeringsTotal',
+      )
+      .addSelect(
+        `SUM(CASE WHEN category.name = :donationsName THEN entry.amount ELSE 0 END)`,
+        'donationsTotal',
+      )
+      .addSelect('COUNT(entry.id)', 'entriesCount')
+      .setParameter('tithesName', MEMBER_LINKABLE_CATEGORY_NAMES[0])
+      .setParameter('offeringsName', MEMBER_LINKABLE_CATEGORY_NAMES[1])
+      .setParameter('donationsName', MEMBER_LINKABLE_CATEGORY_NAMES[2])
+      .getRawOne<ContributionTotalsRow>();
+
+    const [entries, total] = await baseQb
+      .clone()
+      .orderBy('entry.entryDate', 'DESC')
+      .addOrderBy('entry.createdAt', 'DESC')
+      .skip((query.page - 1) * query.limit)
+      .take(query.limit)
+      .getManyAndCount();
+
+    return {
+      member: { id: member.id, fullName: member.fullName },
+      period: { from: query.from, to: query.to },
+      summary: {
+        total: this.money(totals?.total),
+        tithesTotal: this.money(totals?.tithesTotal),
+        offeringsTotal: this.money(totals?.offeringsTotal),
+        donationsTotal: this.money(totals?.donationsTotal),
+        entriesCount: Number(totals?.entriesCount ?? 0),
+      },
+      data: entries.map((entry) => ({
+        id: entry.id,
+        entryDate: entry.entryDate,
+        categoryName: entry.category.name,
+        description: entry.description,
+        amount: this.money(entry.amount),
+        paymentMethod: entry.paymentMethod,
+      })),
+      total,
+      page: query.page,
+      limit: query.limit,
+    };
+  }
+
+  async exportMemberContributionsCsv(
+    query: MemberContributionsCsvQueryDto,
+  ): Promise<string> {
+    if (!query.memberId) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.FINANCE_MEMBER_REQUIRED_FOR_REPORT,
+        message:
+          ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_REQUIRED_FOR_REPORT],
+      });
+    }
+    this.validatePeriod(query.from, query.to);
+    const congregationId = await this.getCongregationId();
+    const member = await this.getReportMemberOrFail(
+      query.memberId,
+      congregationId,
+    );
+    const entries = await this.buildMemberContributionsQb(
+      congregationId,
+      query.memberId,
+      query.from,
+      query.to,
+    )
+      .orderBy('entry.entryDate', 'ASC')
+      .addOrderBy('entry.createdAt', 'ASC')
+      .take(10000)
+      .getMany();
+    const rows = [
+      [
+        'Data',
+        'Categoria',
+        'Descrição',
+        'Valor',
+        'Meio de pagamento',
+        'Referência',
+        'Membro',
+      ],
+      ...entries.map((entry) => [
+        entry.entryDate,
+        entry.category.name,
+        entry.description,
+        this.money(entry.amount),
+        entry.paymentMethod,
+        entry.reference ?? '',
+        member.fullName,
       ]),
     ];
     return `\uFEFF${rows.map((row) => row.map(this.csvCell).join(';')).join('\r\n')}`;
@@ -461,7 +655,7 @@ export class FinanceService {
   ): Promise<FinancialEntry> {
     const entry = await this.entriesRepository.findOne({
       where: { id, congregationId },
-      relations: { category: true },
+      relations: { category: true, member: true },
     });
     if (!entry) {
       throw new ApiException(HttpStatus.NOT_FOUND, {
@@ -472,6 +666,109 @@ export class FinanceService {
     return entry;
   }
 
+  private async assertMemberLinkAllowed(
+    memberId: string | null | undefined,
+    type: FinancialType,
+    category: FinancialCategory,
+    congregationId: string,
+  ): Promise<Member | null> {
+    if (memberId === undefined || memberId === null) {
+      return null;
+    }
+    if (
+      type !== FinancialType.INCOME ||
+      !this.isMemberLinkableCategory(category)
+    ) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.FINANCE_MEMBER_LINK_INVALID,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_LINK_INVALID],
+        details: [
+          {
+            field: 'memberId',
+            code: ApiErrorCode.FINANCE_MEMBER_LINK_INVALID,
+            message: ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_LINK_INVALID],
+          },
+        ],
+      });
+    }
+    const member = await this.membersRepository.findOne({
+      where: { id: memberId },
+    });
+    if (!member) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.FINANCE_MEMBER_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_NOT_FOUND],
+      });
+    }
+    if (member.congregationId !== congregationId) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION,
+        message:
+          ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION],
+        details: [
+          {
+            field: 'memberId',
+            code: ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION,
+            message:
+              ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION],
+          },
+        ],
+      });
+    }
+    return member;
+  }
+
+  private isMemberLinkableCategory(category: FinancialCategory): boolean {
+    if (category.type !== FinancialType.INCOME) {
+      return false;
+    }
+    const normalized = category.name.trim().toLocaleLowerCase('pt-BR');
+    return MEMBER_LINKABLE_CATEGORY_NAMES.some(
+      (name) => name.toLocaleLowerCase('pt-BR') === normalized,
+    );
+  }
+
+  private async getReportMemberOrFail(
+    memberId: string,
+    congregationId: string,
+  ): Promise<Member> {
+    const member = await this.membersRepository.findOne({
+      where: { id: memberId },
+    });
+    if (!member) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.FINANCE_MEMBER_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_NOT_FOUND],
+      });
+    }
+    if (member.congregationId !== congregationId) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION,
+        message:
+          ApiErrorMessage[ApiErrorCode.FINANCE_MEMBER_WRONG_CONGREGATION],
+      });
+    }
+    return member;
+  }
+
+  private buildMemberContributionsQb(
+    congregationId: string,
+    memberId: string,
+    from: string,
+    to: string,
+  ): SelectQueryBuilder<FinancialEntry> {
+    return this.entriesRepository
+      .createQueryBuilder('entry')
+      .innerJoinAndSelect('entry.category', 'category')
+      .where('entry.congregationId = :congregationId', { congregationId })
+      .andWhere('entry.memberId = :memberId', { memberId })
+      .andWhere('entry.type = :type', { type: FinancialType.INCOME })
+      .andWhere('entry.entryDate BETWEEN :from AND :to', { from, to })
+      .andWhere('category.name IN (:...linkableNames)', {
+        linkableNames: [...MEMBER_LINKABLE_CATEGORY_NAMES],
+      });
+  }
+
   private applyEntryFilters(
     qb: SelectQueryBuilder<FinancialEntry>,
     query: {
@@ -479,6 +776,7 @@ export class FinanceService {
       to?: string;
       type?: FinancialType;
       categoryId?: string;
+      memberId?: string;
       q?: string;
     },
   ): void {
@@ -490,6 +788,9 @@ export class FinanceService {
       qb.andWhere('entry.categoryId = :categoryId', {
         categoryId: query.categoryId,
       });
+    }
+    if (query.memberId) {
+      qb.andWhere('entry.memberId = :memberId', { memberId: query.memberId });
     }
     if (query.q) {
       qb.andWhere(
@@ -619,6 +920,10 @@ export class FinanceService {
     id: entry.id,
     categoryId: entry.categoryId,
     createdByUserId: entry.createdByUserId,
+    memberId: entry.memberId ?? null,
+    member: entry.member
+      ? { id: entry.member.id, fullName: entry.member.fullName }
+      : null,
     type: entry.type,
     amount: this.money(entry.amount),
     entryDate: entry.entryDate,

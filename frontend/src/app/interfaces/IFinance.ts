@@ -36,10 +36,22 @@ export interface ICategoryQuery {
   active?: boolean;
 }
 
+export interface IFinanceMemberSummary {
+  id: string;
+  fullName: string;
+}
+
+export interface IFinanceMemberOption {
+  id: string;
+  fullName: string;
+}
+
 export interface IFinancialEntry {
   id: string;
   categoryId: string;
   createdByUserId: string;
+  memberId: string | null;
+  member: IFinanceMemberSummary | null;
   type: FinancialType;
   amount: string;
   entryDate: string;
@@ -61,6 +73,7 @@ export interface ICreateFinancialEntry {
   paymentMethod: PaymentMethod;
   reference?: string | null;
   notes?: string | null;
+  memberId?: string | null;
 }
 
 export type IUpdateFinancialEntry = Partial<ICreateFinancialEntry>;
@@ -69,6 +82,7 @@ export interface IFinancialEntriesQuery extends IPaginationQuery, IPeriodQuery {
   type?: FinancialType;
   categoryId?: string;
   q?: string;
+  memberId?: string;
 }
 
 export interface IPaginatedFinancialEntries {
@@ -151,4 +165,48 @@ export interface ICashFlowReport extends IPaginatedFinancialEntries {
 export interface IAssetReport extends IPaginatedAssets {
   quantity: number;
   estimatedValue: string;
+}
+
+export interface IMemberContributionsQuery extends IPaginationQuery {
+  memberId: string;
+  from: string;
+  to: string;
+}
+
+export interface IMemberContributionsCsvQuery {
+  memberId: string;
+  from: string;
+  to: string;
+}
+
+export interface IMemberContributionItem {
+  id: string;
+  entryDate: string;
+  categoryName: string;
+  description: string;
+  amount: string;
+  paymentMethod: PaymentMethod;
+}
+
+export interface IMemberContributionsSummary {
+  total: string;
+  tithesTotal: string;
+  offeringsTotal: string;
+  donationsTotal: string;
+  entriesCount: number;
+}
+
+export interface IMemberContributionsReport {
+  member: IFinanceMemberSummary;
+  period: { from: string; to: string };
+  summary: IMemberContributionsSummary;
+  data: IMemberContributionItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface IFinanceMemberOptionsQuery {
+  q?: string;
+  limit?: number;
 }

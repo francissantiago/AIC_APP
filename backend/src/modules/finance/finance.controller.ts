@@ -42,9 +42,14 @@ import {
   CashFlowReportResponseDto,
   CreateFinancialCategoryDto,
   CreateFinancialEntryDto,
+  FinanceMemberOptionDto,
+  FinanceMemberOptionsQueryDto,
   FinancialCategoryResponseDto,
   FinancialDashboardResponseDto,
   FinancialEntryResponseDto,
+  MemberContributionsCsvQueryDto,
+  MemberContributionsQueryDto,
+  MemberContributionsReportDto,
   PaginatedFinancialEntriesResponseDto,
   PeriodQueryDto,
   QueryFinancialCategoriesDto,
@@ -103,6 +108,52 @@ export class FinanceController {
         'attachment; filename="fluxo-financeiro.csv"',
       )
       .send(csv);
+  }
+
+  @Get('reports/member-contributions')
+  @ApiOperation({ summary: 'Relatório de contribuições por membro e período' })
+  @ApiOkResponse({ type: MemberContributionsReportDto })
+  @ApiNotFoundResponse({ description: 'Membro não encontrado' })
+  @ApiUnprocessableEntityResponse({
+    description: 'Membro de outra congregação',
+  })
+  memberContributions(
+    @Query() query: MemberContributionsQueryDto,
+  ): Promise<MemberContributionsReportDto> {
+    return this.financeService.getMemberContributions(query);
+  }
+
+  @Get('reports/member-contributions.csv')
+  @ApiOperation({ summary: 'Exportar contribuições do membro em CSV UTF-8' })
+  @ApiProduces('text/csv')
+  @ApiOkResponse({
+    description: 'CSV com BOM UTF-8, limitado a 10.000 lançamentos',
+    schema: { type: 'string', format: 'binary' },
+  })
+  @ApiNotFoundResponse({ description: 'Membro não encontrado' })
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  async memberContributionsCsv(
+    @Query() query: MemberContributionsCsvQueryDto,
+    @Res() response: Response,
+  ): Promise<void> {
+    const csv = await this.financeService.exportMemberContributionsCsv(query);
+    response
+      .setHeader(
+        'Content-Disposition',
+        'attachment; filename="contribuicoes-membro.csv"',
+      )
+      .send(csv);
+  }
+
+  @Get('member-options')
+  @ApiOperation({
+    summary: 'Autocomplete de membros para vínculo em dízimo/oferta',
+  })
+  @ApiOkResponse({ type: FinanceMemberOptionDto, isArray: true })
+  memberOptions(
+    @Query() query: FinanceMemberOptionsQueryDto,
+  ): Promise<FinanceMemberOptionDto[]> {
+    return this.financeService.listMemberOptions(query);
   }
 
   @Get('categories')
@@ -164,9 +215,12 @@ export class FinanceController {
   @RequirePermission('finance:write')
   @ApiOperation({ summary: 'Criar lançamento financeiro realizado' })
   @ApiCreatedResponse({ type: FinancialEntryResponseDto })
-  @ApiNotFoundResponse({ description: 'Categoria não encontrada' })
+  @ApiNotFoundResponse({
+    description: 'Categoria ou membro não encontrado',
+  })
   @ApiUnprocessableEntityResponse({
-    description: 'Categoria inativa ou incompatível com o tipo',
+    description:
+      'Categoria inativa/incompatível, ou vínculo de membro inválido',
   })
   createEntry(
     @Body() dto: CreateFinancialEntryDto,
@@ -180,10 +234,11 @@ export class FinanceController {
   @ApiOperation({ summary: 'Atualizar lançamento financeiro' })
   @ApiOkResponse({ type: FinancialEntryResponseDto })
   @ApiNotFoundResponse({
-    description: 'Lançamento ou categoria não encontrado',
+    description: 'Lançamento, categoria ou membro não encontrado',
   })
   @ApiUnprocessableEntityResponse({
-    description: 'Categoria inativa ou incompatível com o tipo',
+    description:
+      'Categoria inativa/incompatível, ou vínculo de membro inválido',
   })
   updateEntry(
     @Param('id', ParseUUIDPipe) id: string,

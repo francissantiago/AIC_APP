@@ -14,6 +14,7 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { FinancialType, PaymentMethod } from '../enums/finance.enums';
 
@@ -109,11 +110,31 @@ export class CreateFinancialEntryDto {
   @IsString()
   @MaxLength(65535)
   notes?: string | null;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'Membro opcional (apenas Dízimos/Ofertas/Doações)',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID()
+  memberId?: string | null;
 }
 
 export class UpdateFinancialEntryDto extends PartialType(
   CreateFinancialEntryDto,
-) {}
+) {
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'Enviar null para desvincular o membro',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID()
+  memberId?: string | null;
+}
 
 export class PaginationDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
@@ -175,6 +196,11 @@ export class QueryFinancialEntriesDto extends PaginationDto {
   @IsString()
   @MaxLength(255)
   q?: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  memberId?: string;
 }
 
 export class CashFlowQueryDto extends QueryFinancialEntriesDto {}
@@ -189,6 +215,60 @@ export class CashFlowCsvQueryDto extends PeriodQueryDto {
   @IsOptional()
   @IsUUID()
   categoryId?: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  memberId?: string;
+}
+
+export class FinanceMemberOptionsQueryDto {
+  @ApiPropertyOptional({ maxLength: 150, description: 'Busca por nome' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(150)
+  q?: string;
+
+  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 50 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit: number = 20;
+}
+
+export class MemberContributionsQueryDto extends PaginationDto {
+  @ApiProperty({ format: 'uuid' })
+  @IsUUID()
+  memberId!: string;
+
+  @ApiProperty({ example: '2026-01-01', format: 'date' })
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  from!: string;
+
+  @ApiProperty({ example: '2026-12-31', format: 'date' })
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  to!: string;
+}
+
+export class MemberContributionsCsvQueryDto {
+  @ApiProperty({ format: 'uuid' })
+  @IsUUID()
+  memberId!: string;
+
+  @ApiProperty({ example: '2026-01-01', format: 'date' })
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  from!: string;
+
+  @ApiProperty({ example: '2026-12-31', format: 'date' })
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  to!: string;
 }
 
 export class FinancialCategoryResponseDto {
@@ -208,6 +288,20 @@ export class FinancialCategoryResponseDto {
   updatedAt!: Date;
 }
 
+export class FinanceMemberSummaryDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiProperty()
+  fullName!: string;
+}
+
+export class FinanceMemberOptionDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiProperty()
+  fullName!: string;
+}
+
 export class FinancialEntryResponseDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -215,6 +309,10 @@ export class FinancialEntryResponseDto {
   categoryId!: string;
   @ApiProperty({ format: 'uuid' })
   createdByUserId!: string;
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  memberId!: string | null;
+  @ApiPropertyOptional({ type: FinanceMemberSummaryDto, nullable: true })
+  member!: FinanceMemberSummaryDto | null;
   @ApiProperty({ enum: FinancialType })
   type!: FinancialType;
   @ApiProperty({ example: '1250.00', description: 'Decimal como string' })
@@ -237,6 +335,34 @@ export class FinancialEntryResponseDto {
   updatedAt!: Date;
 }
 
+export class MemberContributionsSummaryDto {
+  @ApiProperty({ example: '1500.00' })
+  total!: string;
+  @ApiProperty({ example: '1000.00' })
+  tithesTotal!: string;
+  @ApiProperty({ example: '500.00' })
+  offeringsTotal!: string;
+  @ApiProperty({ example: '200.00' })
+  donationsTotal!: string;
+  @ApiProperty()
+  entriesCount!: number;
+}
+
+export class MemberContributionItemDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiProperty({ format: 'date' })
+  entryDate!: string;
+  @ApiProperty()
+  categoryName!: string;
+  @ApiProperty()
+  description!: string;
+  @ApiProperty({ example: '100.00' })
+  amount!: string;
+  @ApiProperty({ enum: PaymentMethod })
+  paymentMethod!: PaymentMethod;
+}
+
 export class PaginatedFinancialEntriesResponseDto {
   @ApiProperty({ type: FinancialEntryResponseDto, isArray: true })
   data!: FinancialEntryResponseDto[];
@@ -253,6 +379,23 @@ export class PeriodResponseDto {
   from!: string;
   @ApiProperty({ format: 'date' })
   to!: string;
+}
+
+export class MemberContributionsReportDto {
+  @ApiProperty({ type: FinanceMemberSummaryDto })
+  member!: FinanceMemberSummaryDto;
+  @ApiProperty({ type: PeriodResponseDto })
+  period!: PeriodResponseDto;
+  @ApiProperty({ type: MemberContributionsSummaryDto })
+  summary!: MemberContributionsSummaryDto;
+  @ApiProperty({ type: MemberContributionItemDto, isArray: true })
+  data!: MemberContributionItemDto[];
+  @ApiProperty()
+  total!: number;
+  @ApiProperty()
+  page!: number;
+  @ApiProperty()
+  limit!: number;
 }
 
 export class FinancialTotalsDto {
