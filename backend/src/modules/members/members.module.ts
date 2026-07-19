@@ -6,17 +6,19 @@ import { MinistriesModule } from '../ministries/ministries.module';
 import { User } from '../users/entities/user.entity';
 import { Member } from './entities/member.entity';
 import { MembersController } from './members.controller';
+import { MemberBirthdayCalendarSyncService } from './member-birthday-calendar.sync.service';
 import { MembersService } from './members.service';
+import { CalendarEvent } from '../secretariat/calendar/entities/calendar-event.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Member, User]),
+    TypeOrmModule.forFeature([Member, User, CalendarEvent]),
     CongregationsModule,
     MinistriesModule,
     ClassesModule,
   ],
   controllers: [MembersController],
-  providers: [MembersService],
+  providers: [MembersService, MemberBirthdayCalendarSyncService],
   exports: [MembersService],
 })
 export class MembersModule {}

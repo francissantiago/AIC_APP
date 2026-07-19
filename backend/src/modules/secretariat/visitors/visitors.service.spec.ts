@@ -292,6 +292,7 @@ describe('VisitorsService', () => {
       expect.any(Object),
       expect.any(Object),
       explicitId,
+      expect.any(String),
     );
   });
 });

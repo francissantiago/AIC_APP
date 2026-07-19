@@ -4,6 +4,7 @@ export enum CalendarEventType {
   REHEARSAL = 'rehearsal',
   WEDDING = 'wedding',
   OTHER = 'other',
+  BIRTHDAY = 'birthday',
 }
 
 export enum CalendarRecurrenceFrequency {
@@ -11,6 +12,7 @@ export enum CalendarRecurrenceFrequency {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
+  YEARLY = 'yearly',
 }
 
 export enum AttendanceEventType {

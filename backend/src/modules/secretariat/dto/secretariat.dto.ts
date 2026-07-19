@@ -163,6 +163,12 @@ export class CalendarEventResponseDto {
   congregationId!: string;
   @ApiProperty({ format: 'uuid' })
   createdByUserId!: string;
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'Membro de origem quando o evento foi gerado automaticamente',
+  })
+  sourceMemberId!: string | null;
   @ApiProperty()
   title!: string;
   @ApiProperty({ enum: CalendarEventType })

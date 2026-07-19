@@ -137,6 +137,7 @@ export class CalendarService {
   ): Promise<CalendarEventResponseDto> {
     const congregationId = await this.getCongregationId(activeCongregationId);
     const event = await this.getEventOrFail(id, congregationId);
+    this.assertNotSystemManaged(event);
     const nextStartsAt = dto.startsAt ? new Date(dto.startsAt) : event.startsAt;
     const nextEndsAt = dto.endsAt ? new Date(dto.endsAt) : event.endsAt;
     if (dto.startsAt !== undefined || dto.endsAt !== undefined) {
@@ -182,9 +183,9 @@ export class CalendarService {
 
   async removeEvent(id: string, activeCongregationId?: string): Promise<void> {
     const congregationId = await this.getCongregationId(activeCongregationId);
-    await this.calendarEventsRepository.softRemove(
-      await this.getEventOrFail(id, congregationId),
-    );
+    const event = await this.getEventOrFail(id, congregationId);
+    this.assertNotSystemManaged(event);
+    await this.calendarEventsRepository.softRemove(event);
     this.logger.log(`Evento de agenda removido (soft delete): ${id}`);
   }
 
@@ -211,6 +212,15 @@ export class CalendarService {
       });
     }
     return event;
+  }
+
+  private assertNotSystemManaged(event: CalendarEvent): void {
+    if (event.sourceMemberId) {
+      throw new ApiException(HttpStatus.FORBIDDEN, {
+        code: ApiErrorCode.SECRETARIAT_EVENT_SYSTEM_MANAGED,
+        message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_EVENT_SYSTEM_MANAGED],
+      });
+    }
   }
 
   private validateRange(startsAt: Date, endsAt: Date): void {
@@ -296,6 +306,7 @@ export class CalendarService {
       seriesId: item.seriesId,
       congregationId: event.congregationId,
       createdByUserId: event.createdByUserId,
+      sourceMemberId: event.sourceMemberId,
       title: event.title,
       type: event.type,
       startsAt: item.startsAt,

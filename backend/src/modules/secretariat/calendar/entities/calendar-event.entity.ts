@@ -33,6 +33,14 @@ export class CalendarEvent {
   @Column({ name: 'created_by_user_id', type: 'char', length: 36 })
   createdByUserId!: string;
 
+  @Column({
+    name: 'source_member_id',
+    type: 'char',
+    length: 36,
+    nullable: true,
+  })
+  sourceMemberId!: string | null;
+
   @Column({ type: 'varchar', length: 150 })
   title!: string;
 

@@ -12,6 +12,7 @@ import { MemberGender } from './enums/member-gender.enum';
 import { MemberMaritalStatus } from './enums/member-marital-status.enum';
 import { MemberStatus } from './enums/member-status.enum';
 import { MembersService } from './members.service';
+import { MemberBirthdayCalendarSyncService } from './member-birthday-calendar.sync.service';
 
 describe('MembersService', () => {
   let service: MembersService;
@@ -34,6 +35,11 @@ describe('MembersService', () => {
   };
   const congregationsService = {
     getOrCreateBase: jest.fn(),
+  };
+  const birthdayCalendarSync = {
+    syncOnCreate: jest.fn(),
+    syncOnUpdate: jest.fn(),
+    syncOnRemove: jest.fn(),
   };
 
   const baseCongregation = (): Congregation => {
@@ -88,6 +94,10 @@ describe('MembersService', () => {
         { provide: getRepositoryToken(Member), useValue: membersRepository },
         { provide: getRepositoryToken(User), useValue: usersRepository },
         { provide: CongregationsService, useValue: congregationsService },
+        {
+          provide: MemberBirthdayCalendarSyncService,
+          useValue: birthdayCalendarSync,
+        },
       ],
     }).compile();
 

@@ -31,6 +31,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
 import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserResponseDto } from '../users/dto/user-response.dto';
 import { MemberClassSummaryDto } from '../classes/dto/class-enrollment-response.dto';
 import { ClassesService } from '../classes/classes.service';
 import { MinistryResponseDto } from '../ministries/dto/ministry-response.dto';
@@ -69,9 +71,10 @@ export class MembersController {
   })
   create(
     @Body() dto: CreateMemberDto,
-    @ActiveCongregation() activeCongregationId?: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+    @CurrentUser() user: UserResponseDto,
   ): Promise<MemberResponseDto> {
-    return this.membersService.create(dto, activeCongregationId);
+    return this.membersService.create(dto, activeCongregationId, user.id);
   }
 
   @Get()
@@ -131,9 +134,10 @@ export class MembersController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateMemberDto,
-    @ActiveCongregation() activeCongregationId?: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+    @CurrentUser() user: UserResponseDto,
   ): Promise<MemberResponseDto> {
-    return this.membersService.update(id, dto, activeCongregationId);
+    return this.membersService.update(id, dto, activeCongregationId, user.id);
   }
 
   @Delete(':id')
@@ -144,8 +148,9 @@ export class MembersController {
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
   remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @ActiveCongregation() activeCongregationId?: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+    @CurrentUser() user: UserResponseDto,
   ): Promise<void> {
-    return this.membersService.remove(id, activeCongregationId);
+    return this.membersService.remove(id, activeCongregationId, user.id);
   }
 }

@@ -21,6 +21,7 @@ export interface ICalendarEvent {
   seriesId: string;
   congregationId: string;
   createdByUserId: string;
+  sourceMemberId?: string | null;
   title: string;
   type: CalendarEventType;
   startsAt: string;

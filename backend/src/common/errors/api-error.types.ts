@@ -104,6 +104,7 @@ export const ApiErrorCode = {
   SECRETARIAT_EVENT_ENDS_BEFORE_START: 'SECRETARIAT.EVENT_ENDS_BEFORE_START',
   SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID:
     'SECRETARIAT.EVENT_RECURRENCE_UNTIL_INVALID',
+  SECRETARIAT_EVENT_SYSTEM_MANAGED: 'SECRETARIAT.EVENT_SYSTEM_MANAGED',
 
   MINISTRIES_NOT_FOUND: 'MINISTRIES.NOT_FOUND',
   MINISTRIES_NAME_IN_USE: 'MINISTRIES.NAME_IN_USE',
@@ -287,6 +288,8 @@ export const ApiErrorMessage = {
     'O fim do evento deve ser posterior ou igual ao início.',
   [ApiErrorCode.SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID]:
     'A data final da recorrência deve ser posterior ou igual à data de início.',
+  [ApiErrorCode.SECRETARIAT_EVENT_SYSTEM_MANAGED]:
+    'Este evento é gerenciado automaticamente pelo cadastro de membro.',
   [ApiErrorCode.MINISTRIES_NOT_FOUND]: 'Ministério não encontrado.',
   [ApiErrorCode.MINISTRIES_NAME_IN_USE]:
     'Já existe um ministério com este nome.',

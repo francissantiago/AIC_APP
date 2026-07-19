@@ -19,6 +19,7 @@ import { Member } from './entities/member.entity';
 import { MemberGender } from './enums/member-gender.enum';
 import { MemberMaritalStatus } from './enums/member-marital-status.enum';
 import { MemberStatus } from './enums/member-status.enum';
+import { MemberBirthdayCalendarSyncService } from './member-birthday-calendar.sync.service';
 
 @Injectable()
 export class MembersService {
@@ -30,6 +31,7 @@ export class MembersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly congregationsService: CongregationsService,
+    private readonly birthdayCalendarSync: MemberBirthdayCalendarSyncService,
   ) {}
 
   private async getCongregationId(
@@ -44,12 +46,14 @@ export class MembersService {
   async create(
     dto: CreateMemberDto,
     activeCongregationId?: string,
+    actorUserId?: string,
   ): Promise<MemberResponseDto> {
     const congregationId = await this.getCongregationId(activeCongregationId);
     const saved = await this.createInTransaction(
       this.membersRepository.manager,
       dto,
       congregationId,
+      actorUserId,
     );
     return MemberResponseDto.fromEntity(saved);
   }
@@ -58,6 +62,7 @@ export class MembersService {
     manager: EntityManager,
     dto: CreateMemberDto,
     congregationId: string,
+    actorUserId?: string,
   ): Promise<Member> {
     await this.assertEmailDocumentUniqueness(dto.email, dto.document);
     if (dto.userId) {
@@ -87,6 +92,13 @@ export class MembersService {
 
     const saved = await manager.save(member);
     this.logger.log(`Membro criado: ${saved.id} (${saved.fullName})`);
+    if (actorUserId) {
+      await this.birthdayCalendarSync.syncOnCreate(
+        saved,
+        { actorUserId, congregationId },
+        manager,
+      );
+    }
     return saved;
   }
 
@@ -140,8 +152,10 @@ export class MembersService {
     id: string,
     dto: UpdateMemberDto,
     activeCongregationId?: string,
+    actorUserId?: string,
   ): Promise<MemberResponseDto> {
     const member = await this.getMemberOrFail(id, activeCongregationId);
+    const before = Object.assign(new Member(), member);
 
     if (dto.email !== undefined && dto.email !== member.email) {
       await this.assertEmailDocumentUniqueness(dto.email, undefined, id);
@@ -201,11 +215,24 @@ export class MembersService {
 
     const saved = await this.membersRepository.save(member);
     this.logger.log(`Membro atualizado: ${saved.id}`);
+    if (actorUserId) {
+      await this.birthdayCalendarSync.syncOnUpdate(before, saved, {
+        actorUserId,
+        congregationId: saved.congregationId,
+      });
+    }
     return MemberResponseDto.fromEntity(saved);
   }
 
-  async remove(id: string, activeCongregationId?: string): Promise<void> {
+  async remove(
+    id: string,
+    activeCongregationId?: string,
+    actorUserId?: string,
+  ): Promise<void> {
     const member = await this.getMemberOrFail(id, activeCongregationId);
+    if (actorUserId) {
+      await this.birthdayCalendarSync.syncOnRemove(member);
+    }
     await this.membersRepository.softRemove(member);
     this.logger.log(`Membro removido (soft delete): ${id}`);
   }

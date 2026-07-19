@@ -28,10 +28,10 @@ import {
 } from 'angular-calendar';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import {
-  CALENDAR_EVENT_TYPES,
   CALENDAR_RECURRENCE_FREQUENCIES,
   CalendarEventType,
   CalendarRecurrenceFrequency,
+  MANUAL_CALENDAR_EVENT_TYPES,
 } from '@enums/secretariat';
 import { ICalendarEvent } from '@interfaces/ISecretariat';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -46,6 +46,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
   [CalendarEventType.REHEARSAL]: { primary: '#6b21a8', secondary: '#f3e8ff' },
   [CalendarEventType.WEDDING]: { primary: '#be123c', secondary: '#ffe4e6' },
   [CalendarEventType.OTHER]: { primary: '#334155', secondary: '#e2e8f0' },
+  [CalendarEventType.BIRTHDAY]: { primary: '#db2777', secondary: '#fce7f3' },
 };
 
 @Component({
@@ -218,6 +219,19 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
               {{ 'SECRETARIAT.RECURRENCE_EDIT_HINT' | translate }}
             </p>
           }
+          @if (isSystemBirthdayEvent()) {
+            <p class="text-sm text-slate-600 md:col-span-2" role="status">
+              {{ 'SECRETARIAT.BIRTHDAY_EVENT_READONLY' | translate }}
+              @if (editing()?.sourceMemberId; as memberId) {
+                <a
+                  class="ml-1 font-medium text-slate-800 underline hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [routerLink]="['/members', memberId]"
+                >
+                  {{ 'SECRETARIAT.OPEN_MEMBER_PROFILE' | translate }}
+                </a>
+              }
+            </p>
+          }
           @if (errorMessage(); as message) {
             <p role="alert" class="text-sm text-red-700 md:col-span-2">
               {{ message }}
@@ -227,7 +241,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             </p>
           }
           <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
-            @if (canWrite()) {
+            @if (canWrite() && !isSystemBirthdayEvent()) {
               <button
                 class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
                 type="submit"
@@ -236,7 +250,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
                 {{ 'COMMON.SAVE' | translate }}
               </button>
             }
-            @if (canWrite() && editing()) {
+            @if (canWrite() && editing() && !isSystemBirthdayEvent()) {
               <button
                 class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 type="button"
@@ -426,7 +440,7 @@ export class AgendaCalendar implements OnInit {
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly calendarView = CalendarView;
-  readonly eventTypes = CALENDAR_EVENT_TYPES;
+  readonly eventTypes = MANUAL_CALENDAR_EVENT_TYPES;
   readonly recurrenceFrequencies = CALENDAR_RECURRENCE_FREQUENCIES;
   readonly recurrenceNone = CalendarRecurrenceFrequency.NONE;
 
@@ -444,6 +458,9 @@ export class AgendaCalendar implements OnInit {
 
   readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly canViewSchedules = computed(() => this.#auth.hasPermission('schedules:read'));
+  readonly isSystemBirthdayEvent = computed(() =>
+    Boolean(this.editing()?.sourceMemberId),
+  );
   readonly locale = computed(() => this.#translate.currentLang() || 'en');
 
   readonly calendarEvents = computed<CalendarEvent<ICalendarEvent>[]>(() =>
@@ -582,7 +599,10 @@ export class AgendaCalendar implements OnInit {
   }
 
   onEventClicked(event: CalendarEvent<ICalendarEvent>): void {
-    if (event.meta && (this.canWrite() || this.canViewSchedules())) {
+    if (
+      event.meta &&
+      (this.canWrite() || this.canViewSchedules() || event.meta.sourceMemberId)
+    ) {
       this.openEdit(event.meta);
     }
   }
@@ -701,7 +721,7 @@ export class AgendaCalendar implements OnInit {
   }
 
   #syncFormEditability(): void {
-    if (this.canWrite()) {
+    if (this.canWrite() && !this.isSystemBirthdayEvent()) {
       this.form.enable({ emitEvent: false });
     } else {
       this.form.disable({ emitEvent: false });

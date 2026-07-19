@@ -23,6 +23,7 @@ function buildEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
+    sourceMemberId: null,
     ...overrides,
   };
 }
@@ -44,6 +45,27 @@ describe('expandCalendarEvent', () => {
       '2026-07-12T22:00:00.000Z',
       '2026-07-19T22:00:00.000Z',
       '2026-07-26T22:00:00.000Z',
+    ]);
+  });
+
+  it('expande eventos anuais dentro do intervalo', () => {
+    const event = buildEvent({
+      startsAt: new Date('2026-07-19T00:00:00.000Z'),
+      endsAt: new Date('2026-07-19T23:59:59.999Z'),
+      allDay: true,
+      recurrenceFrequency: CalendarRecurrenceFrequency.YEARLY,
+      recurrenceUntil: null,
+    });
+    const occurrences = expandCalendarEvent(
+      event,
+      new Date('2026-01-01T00:00:00.000Z'),
+      new Date('2027-12-31T23:59:59.999Z'),
+    );
+
+    expect(occurrences).toHaveLength(2);
+    expect(occurrences.map((item) => item.startsAt.toISOString())).toEqual([
+      '2026-07-19T00:00:00.000Z',
+      '2027-07-19T00:00:00.000Z',
     ]);
   });
 

@@ -41,6 +41,9 @@ function addInterval(
       next.setUTCDate(Math.min(day, lastDay));
       break;
     }
+    case CalendarRecurrenceFrequency.YEARLY:
+      next.setUTCFullYear(next.getUTCFullYear() + interval);
+      break;
     default:
       break;
   }

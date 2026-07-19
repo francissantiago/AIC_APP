@@ -4,6 +4,7 @@ export enum CalendarEventType {
   REHEARSAL = 'rehearsal',
   WEDDING = 'wedding',
   OTHER = 'other',
+  BIRTHDAY = 'birthday',
 }
 
 export enum CalendarRecurrenceFrequency {
@@ -11,6 +12,7 @@ export enum CalendarRecurrenceFrequency {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
+  YEARLY = 'yearly',
 }
 
 export enum AttendanceEventType {
@@ -33,6 +35,9 @@ export enum SecretariatDocumentStatus {
 }
 
 export const CALENDAR_EVENT_TYPES = Object.values(CalendarEventType);
+export const MANUAL_CALENDAR_EVENT_TYPES = CALENDAR_EVENT_TYPES.filter(
+  (type) => type !== CalendarEventType.BIRTHDAY,
+);
 export const CALENDAR_RECURRENCE_FREQUENCIES = Object.values(CalendarRecurrenceFrequency);
 export const ATTENDANCE_EVENT_TYPES = Object.values(AttendanceEventType);
 export const SECRETARIAT_DOCUMENT_TYPES = Object.values(SecretariatDocumentType);

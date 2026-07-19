@@ -139,6 +139,7 @@ export class VisitorsService {
         manager,
         memberDto,
         congregationId,
+        user.id,
       );
 
       visitor.memberId = member.id;
