@@ -40,8 +40,12 @@ describe('FinanceService', () => {
     createQueryBuilder: jest.fn(),
   } as unknown as Repository<Member>;
 
+  const getOrCreateBaseMock = jest
+    .fn()
+    .mockResolvedValue({ id: 'congregation-1' });
+
   const congregationsService = {
-    getOrCreateBase: jest.fn().mockResolvedValue({ id: 'congregation-1' }),
+    getOrCreateBase: getOrCreateBaseMock,
   } as unknown as CongregationsService;
 
   const assetsService = {
@@ -596,6 +600,33 @@ describe('FinanceService', () => {
       expect(options).toEqual([
         { id: activeMember.id, fullName: activeMember.fullName },
       ]);
+    });
+  });
+
+  describe('contexto de congregação ativa', () => {
+    it('listMemberOptions com activeCongregationId não chama getOrCreateBase', async () => {
+      const explicitId = 'branch-1111-2222-3333-4444-555555555555';
+      const qb = {
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      (membersRepository.createQueryBuilder as jest.Mock).mockReturnValue(qb);
+      jest.clearAllMocks();
+      getOrCreateBaseMock.mockResolvedValue({
+        id: 'congregation-1',
+      });
+
+      await service.listMemberOptions({ limit: 10 }, explicitId);
+
+      expect(getOrCreateBaseMock).not.toHaveBeenCalled();
+      expect(qb.where).toHaveBeenCalledWith(
+        'member.congregationId = :congregationId',
+        { congregationId: explicitId },
+      );
     });
   });
 });

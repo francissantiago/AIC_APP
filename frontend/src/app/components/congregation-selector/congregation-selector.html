@@ -1,0 +1,81 @@
+@if (selectorVisible()) {
+  <label class="relative block">
+    <span class="sr-only">{{ 'CONGREGATION_CONTEXT.SELECT_LABEL' | translate }}</span>
+    <svg
+      class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-500"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"
+      />
+    </svg>
+    <select
+      class="h-9 max-w-52 appearance-none truncate rounded-md border border-slate-200 bg-white py-1.5 pr-9 pl-9 text-sm font-medium text-slate-700 shadow-sm outline-none transition-colors hover:border-slate-300 hover:bg-slate-50 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+      [disabled]="loading()"
+      [value]="activeCongregationId() ?? ''"
+      (change)="onCongregationChange($event)"
+      [attr.aria-label]="'CONGREGATION_CONTEXT.SELECT_LABEL' | translate"
+      [attr.aria-busy]="loading()"
+    >
+      @if (loading()) {
+        <option value="">{{ 'CONGREGATION_CONTEXT.LOADING' | translate }}</option>
+      } @else {
+        @for (membership of memberships(); track membership.congregationId) {
+          <option [value]="membership.congregationId">
+            {{ membership.congregationName }}
+            ({{ typeLabelKey(membership.congregationType) | translate }})
+          </option>
+        }
+      }
+    </select>
+    <svg
+      class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-slate-400"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      aria-hidden="true"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" d="m8 10 4 4 4-4" />
+    </svg>
+  </label>
+
+  @if (switchedFeedback()) {
+    <p class="sr-only" role="status" aria-live="polite">
+      {{ 'CONGREGATION_CONTEXT.SWITCHED' | translate }}
+    </p>
+  }
+} @else if (error()) {
+  <span
+    class="inline-flex size-9 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-700"
+    [attr.title]="'CONGREGATION_CONTEXT.LOAD_ERROR' | translate"
+    [attr.aria-label]="'CONGREGATION_CONTEXT.LOAD_ERROR' | translate"
+  >
+    <svg
+      class="size-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+      />
+    </svg>
+  </span>
+}
+
+@if (contextDeniedMessage()) {
+  <p class="sr-only" role="alert" aria-live="assertive">
+    {{ 'CONGREGATION_CONTEXT.ERROR_DENIED' | translate }}
+  </p>
+}

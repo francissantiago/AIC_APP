@@ -12,16 +12,18 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from './decorators/active-congregation.decorator';
 import { CongregationResponseDto } from './dto/congregation-response.dto';
 import { UpdateCongregationDto } from './dto/update-congregation.dto';
 import { CongregationsService } from './congregations.service';
+import { CongregationContextGuard } from './guards/congregation-context.guard';
 
 @ApiTags('congregation')
 @ApiBearerAuth()
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('congregations:read')
 @Controller('congregation')
 export class CongregationsController {
@@ -30,8 +32,10 @@ export class CongregationsController {
   @Get()
   @ApiOperation({ summary: 'Obter a congregação-base desta instalação' })
   @ApiOkResponse({ type: CongregationResponseDto })
-  getBase(): Promise<CongregationResponseDto> {
-    return this.congregationsService.getBase();
+  getBase(
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<CongregationResponseDto> {
+    return this.congregationsService.getBase(activeCongregationId);
   }
 
   @Patch()
@@ -41,7 +45,8 @@ export class CongregationsController {
   @ApiConflictResponse({ description: 'email ou document já em uso' })
   updateBase(
     @Body() dto: UpdateCongregationDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<CongregationResponseDto> {
-    return this.congregationsService.updateBase(dto);
+    return this.congregationsService.updateBase(dto, activeCongregationId);
   }
 }

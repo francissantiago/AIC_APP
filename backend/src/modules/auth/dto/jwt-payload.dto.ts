@@ -3,5 +3,6 @@ export interface JwtPayload {
   email?: string;
   username?: string;
   roles?: string[];
+  defaultCongregationId?: string;
   purpose?: '2fa';
 }

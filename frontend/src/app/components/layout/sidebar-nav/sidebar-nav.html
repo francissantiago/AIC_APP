@@ -155,6 +155,60 @@
         </a>
       </li>
     }
+    @if (canViewCongregations()) {
+      <li>
+        <button
+          type="button"
+          class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.justify-center]="!expanded()"
+          [class.bg-slate-600]="
+            currentUrl().startsWith('/congregation') || currentUrl().startsWith('/congregations')
+          "
+          [class.px-3]="expanded()"
+          [class.px-0]="!expanded()"
+          [attr.aria-label]="expanded() ? null : ('NAV.CONGREGATIONS' | translate)"
+          [attr.title]="expanded() ? null : ('NAV.CONGREGATIONS' | translate)"
+          [attr.aria-expanded]="expanded() ? congregationsOpen() : null"
+          [attr.aria-controls]="expanded() ? 'congregations-submenu' : null"
+          (click)="toggleCongregations()"
+        >
+          <svg
+            class="size-5 shrink-0 text-current"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"
+            />
+          </svg>
+          @if (expanded()) {
+            <span class="flex-1 truncate text-left">{{ 'NAV.CONGREGATIONS' | translate }}</span>
+            <span aria-hidden="true">{{ congregationsOpen() ? '−' : '+' }}</span>
+          }
+        </button>
+        @if (expanded() && congregationsOpen()) {
+          <ul id="congregations-submenu" class="ml-5 mt-1 border-l border-slate-400 pl-3">
+            @for (item of congregationItems; track item.route) {
+              <li>
+                <a
+                  [routerLink]="item.route"
+                  routerLinkActive="bg-slate-600 text-white"
+                  [routerLinkActiveOptions]="{ exact: item.route === '/congregation' }"
+                  class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                >
+                  {{ item.labelKey | translate }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </li>
+    }
     @if (canViewEbd()) {
       <li>
         <button

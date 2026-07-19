@@ -149,20 +149,11 @@ export const routes: Routes = [
       },
       {
         path: 'congregations',
-        pathMatch: 'full',
-        redirectTo: 'congregation',
-      },
-      {
-        path: 'congregations/new',
-        redirectTo: 'congregation',
-      },
-      {
-        path: 'congregations/:id/edit',
-        redirectTo: 'congregation',
-      },
-      {
-        path: 'congregations/:id',
-        redirectTo: 'congregation',
+        canActivate: [congregationsPermissionGuard],
+        loadComponent: () =>
+          import('@components/congregations/congregations-list/congregations-list').then(
+            (m) => m.CongregationsList,
+          ),
       },
       {
         path: 'example',

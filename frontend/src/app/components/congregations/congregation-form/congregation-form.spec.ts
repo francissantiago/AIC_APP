@@ -6,6 +6,7 @@ import { CongregationStatus } from '@enums/congregation-status';
 import { CongregationType } from '@enums/congregation-type';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
+import { CongregationContextService } from '@services/congregation-context-service';
 import { CongregationService } from '@services/congregation-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { CongregationForm } from './congregation-form';
@@ -17,9 +18,11 @@ describe('CongregationForm', () => {
     get: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
+  let contextVersion: ReturnType<typeof signal<number>>;
 
   beforeEach(async () => {
     TestBed.resetTestingModule();
+    contextVersion = signal(0);
     congregationService = {
       get: vi.fn().mockReturnValue(
         of({
@@ -27,6 +30,7 @@ describe('CongregationForm', () => {
           name: 'Congregação',
           tradeName: null,
           type: CongregationType.HEADQUARTERS,
+          parentId: null,
           document: null,
           email: null,
           phone: null,
@@ -55,6 +59,20 @@ describe('CongregationForm', () => {
             currentUser: signal({ permissions: ['congregations:read', 'congregations:write'] }),
             hasPermission: (code: string) =>
               ['congregations:read', 'congregations:write'].includes(code),
+            isAuthenticated: () => true,
+          },
+        },
+        {
+          provide: CongregationContextService,
+          useValue: {
+            contextVersion,
+            activeMembership: signal({
+              congregationId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+              congregationName: 'Congregação',
+              congregationType: CongregationType.HEADQUARTERS,
+              isDefault: true,
+              assignedAt: '',
+            }),
           },
         },
         {
@@ -71,6 +89,7 @@ describe('CongregationForm', () => {
 
     fixture = TestBed.createComponent(CongregationForm);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -78,15 +97,13 @@ describe('CongregationForm', () => {
   });
 
   it('should load congregation on init', () => {
-    component.ngOnInit();
     expect(congregationService.get).toHaveBeenCalledTimes(1);
     expect(component.form.controls.name.value).toBe('Congregação');
     expect(component.loading()).toBe(false);
     expect(component.loadError()).toBe(false);
   });
 
-  it('should PATCH on submit when form is valid', () => {
-    component.ngOnInit();
+  it('should PATCH without type on submit', () => {
     component.form.patchValue({ name: 'Congregação Central', email: 'contato@aic.org' });
     congregationService.update.mockReturnValue(
       of({
@@ -94,6 +111,7 @@ describe('CongregationForm', () => {
         name: 'Congregação Central',
         tradeName: null,
         type: CongregationType.HEADQUARTERS,
+        parentId: null,
         document: null,
         email: 'contato@aic.org',
         phone: null,
@@ -113,11 +131,16 @@ describe('CongregationForm', () => {
     component.submit();
 
     expect(congregationService.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: 'Congregação Central',
-        email: 'contato@aic.org',
-      }),
+      expect.not.objectContaining({ type: expect.anything() }),
     );
     expect(component.feedbackKey()).toBe('CONGREGATION.SAVE_SUCCESS');
+  });
+
+  it('reloads when contextVersion changes', () => {
+    congregationService.get.mockClear();
+    contextVersion.set(1);
+    fixture.detectChanges();
+
+    expect(congregationService.get).toHaveBeenCalledTimes(1);
   });
 });

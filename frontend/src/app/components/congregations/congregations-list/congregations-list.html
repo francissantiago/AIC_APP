@@ -1,0 +1,217 @@
+<section class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">
+        {{ 'CONGREGATIONS.TITLE' | translate }}
+      </h1>
+      <p class="text-sm text-slate-600">{{ 'CONGREGATIONS.DESCRIPTION' | translate }}</p>
+    </div>
+    @if (canManageBranches()) {
+      <button
+        type="button"
+        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        (click)="openCreate()"
+      >
+        {{ 'CONGREGATIONS.NEW_BRANCH' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="(editingId() ? 'CONGREGATIONS.EDIT_BRANCH' : 'CONGREGATIONS.NEW_BRANCH') | translate"
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-congregation-branch-form
+        [congregationId]="editingId()"
+        (saved)="afterSave(!editingId())"
+        (cancelled)="closeForm()"
+      />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'CONGREGATIONS.CONFIRM_DELETE' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <form
+    [formGroup]="filterForm"
+    class="mb-4 grid gap-3 md:grid-cols-3"
+    [attr.aria-label]="'COMMON.FILTER' | translate"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONGREGATIONS.FILTER_SEARCH' | translate }}</span>
+      <input
+        type="search"
+        formControlName="q"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONGREGATIONS.FILTER_TYPE' | translate }}</span>
+      <select
+        formControlName="type"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (type of types; track type) {
+          <option [value]="type">{{ typeLabelKey(type) | translate }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONGREGATIONS.FILTER_STATUS' | translate }}</span>
+      <select
+        formControlName="status"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+        }
+      </select>
+    </label>
+  </form>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'CONGREGATIONS.LOAD_ERROR' | translate }}</p>
+  } @else if (congregations().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'CONGREGATIONS.EMPTY' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONGREGATIONS.COLUMN_NAME' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONGREGATIONS.COLUMN_TYPE' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONGREGATIONS.COLUMN_STATUS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONGREGATIONS.COLUMN_LOCATION' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONGREGATIONS.COLUMN_BRANCHES' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (congregation of congregations(); track congregation.id) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">
+                <div>{{ congregation.name }}</div>
+                @if (congregation.tradeName) {
+                  <div class="text-xs text-slate-500">{{ congregation.tradeName }}</div>
+                }
+              </td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ typeLabelKey(congregation.type) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ statusLabelKey(congregation.status) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ locationLabel(congregation) }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ branchesLabel(congregation) }}</td>
+              <td class="px-3 py-2">
+                <div class="flex flex-wrap gap-2">
+                  @if (canWrite()) {
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openEdit(congregation.id)"
+                    >
+                      {{ 'COMMON.EDIT' | translate }}
+                    </button>
+                  }
+                  @if (canManageBranches()) {
+                    @if (canDelete(congregation)) {
+                      <button
+                        type="button"
+                        class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                        (click)="askDelete(congregation.id)"
+                      >
+                        {{ 'COMMON.DELETE' | translate }}
+                      </button>
+                    } @else if (isHeadquarters(congregation)) {
+                      <span
+                        class="text-xs text-slate-500"
+                        [attr.title]="'CONGREGATIONS.HQ_DELETE_DISABLED' | translate"
+                      >
+                        {{ 'CONGREGATIONS.HQ_DELETE_DISABLED' | translate }}
+                      </span>
+                    }
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+      <p>
+        {{ 'COMMON.PAGE' | translate }}
+        {{ page() }}
+        /
+        {{ totalPages() }}
+      </p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() <= 1"
+          (click)="previousPage()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() >= totalPages()"
+          (click)="nextPage()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</section>

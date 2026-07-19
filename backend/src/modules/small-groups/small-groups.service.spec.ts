@@ -723,4 +723,36 @@ describe('SmallGroupsService', () => {
       expect(csv).toContain(';');
     });
   });
+
+  describe('contexto de congregação ativa', () => {
+    it('findAll com activeCongregationId não chama getOrCreateBase', async () => {
+      const explicitId = '22222222-3333-4444-5555-666666666666';
+      const group = baseGroup({ congregationId: explicitId });
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        loadRelationCountAndMap: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[group], 1]),
+      };
+      groupsRepository.createQueryBuilder.mockReturnValue(qb);
+      jest.clearAllMocks();
+      congregationsService.getOrCreateBase.mockResolvedValue(
+        baseCongregation(),
+      );
+
+      await service.findAll({ page: 1, limit: 20 }, explicitId);
+
+      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(qb.where).toHaveBeenCalledWith(
+        'sg.congregationId = :congregationId',
+        {
+          congregationId: explicitId,
+        },
+      );
+    });
+  });
 });

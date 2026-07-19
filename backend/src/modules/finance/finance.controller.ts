@@ -35,6 +35,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import {
   CashFlowCsvQueryDto,
@@ -65,7 +67,7 @@ import { FinanceService } from './finance.service';
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('finance:read')
 @Controller('finance')
 export class FinanceController {
@@ -76,8 +78,9 @@ export class FinanceController {
   @ApiOkResponse({ type: FinancialDashboardResponseDto })
   dashboard(
     @Query() query: PeriodQueryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialDashboardResponseDto> {
-    return this.financeService.getDashboard(query);
+    return this.financeService.getDashboard(query, activeCongregationId);
   }
 
   @Get('reports/cash-flow')
@@ -85,8 +88,9 @@ export class FinanceController {
   @ApiOkResponse({ type: CashFlowReportResponseDto })
   cashFlow(
     @Query() query: CashFlowQueryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<CashFlowReportResponseDto> {
-    return this.financeService.getCashFlowReport(query);
+    return this.financeService.getCashFlowReport(query, activeCongregationId);
   }
 
   @Get('reports/cash-flow.csv')
@@ -100,8 +104,12 @@ export class FinanceController {
   async cashFlowCsv(
     @Query() query: CashFlowCsvQueryDto,
     @Res() response: Response,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    const csv = await this.financeService.exportCashFlowCsv(query);
+    const csv = await this.financeService.exportCashFlowCsv(
+      query,
+      activeCongregationId,
+    );
     response
       .setHeader(
         'Content-Disposition',
@@ -119,8 +127,12 @@ export class FinanceController {
   })
   memberContributions(
     @Query() query: MemberContributionsQueryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberContributionsReportDto> {
-    return this.financeService.getMemberContributions(query);
+    return this.financeService.getMemberContributions(
+      query,
+      activeCongregationId,
+    );
   }
 
   @Get('reports/member-contributions.csv')
@@ -135,8 +147,12 @@ export class FinanceController {
   async memberContributionsCsv(
     @Query() query: MemberContributionsCsvQueryDto,
     @Res() response: Response,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    const csv = await this.financeService.exportMemberContributionsCsv(query);
+    const csv = await this.financeService.exportMemberContributionsCsv(
+      query,
+      activeCongregationId,
+    );
     response
       .setHeader(
         'Content-Disposition',
@@ -152,8 +168,9 @@ export class FinanceController {
   @ApiOkResponse({ type: FinanceMemberOptionDto, isArray: true })
   memberOptions(
     @Query() query: FinanceMemberOptionsQueryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinanceMemberOptionDto[]> {
-    return this.financeService.listMemberOptions(query);
+    return this.financeService.listMemberOptions(query, activeCongregationId);
   }
 
   @Get('categories')
@@ -161,8 +178,9 @@ export class FinanceController {
   @ApiOkResponse({ type: FinancialCategoryResponseDto, isArray: true })
   findCategories(
     @Query() query: QueryFinancialCategoriesDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialCategoryResponseDto[]> {
-    return this.financeService.findCategories(query);
+    return this.financeService.findCategories(query, activeCongregationId);
   }
 
   @Post('categories')
@@ -172,8 +190,9 @@ export class FinanceController {
   @ApiConflictResponse({ description: 'Nome já existe para o mesmo tipo' })
   createCategory(
     @Body() dto: CreateFinancialCategoryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialCategoryResponseDto> {
-    return this.financeService.createCategory(dto);
+    return this.financeService.createCategory(dto, activeCongregationId);
   }
 
   @Patch('categories/:id')
@@ -188,8 +207,9 @@ export class FinanceController {
   updateCategory(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateFinancialCategoryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialCategoryResponseDto> {
-    return this.financeService.updateCategory(id, dto);
+    return this.financeService.updateCategory(id, dto, activeCongregationId);
   }
 
   @Get('entries')
@@ -197,8 +217,9 @@ export class FinanceController {
   @ApiOkResponse({ type: PaginatedFinancialEntriesResponseDto })
   findEntries(
     @Query() query: QueryFinancialEntriesDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedFinancialEntriesResponseDto> {
-    return this.financeService.findEntries(query);
+    return this.financeService.findEntries(query, activeCongregationId);
   }
 
   @Get('entries/:id')
@@ -207,8 +228,9 @@ export class FinanceController {
   @ApiNotFoundResponse({ description: 'Lançamento não encontrado' })
   findEntry(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialEntryResponseDto> {
-    return this.financeService.findEntry(id);
+    return this.financeService.findEntry(id, activeCongregationId);
   }
 
   @Post('entries')
@@ -225,8 +247,9 @@ export class FinanceController {
   createEntry(
     @Body() dto: CreateFinancialEntryDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialEntryResponseDto> {
-    return this.financeService.createEntry(dto, user);
+    return this.financeService.createEntry(dto, user, activeCongregationId);
   }
 
   @Patch('entries/:id')
@@ -243,8 +266,9 @@ export class FinanceController {
   updateEntry(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateFinancialEntryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FinancialEntryResponseDto> {
-    return this.financeService.updateEntry(id, dto);
+    return this.financeService.updateEntry(id, dto, activeCongregationId);
   }
 
   @Delete('entries/:id')
@@ -253,7 +277,10 @@ export class FinanceController {
   @ApiOperation({ summary: 'Remover lançamento por soft delete' })
   @ApiNoContentResponse({ description: 'Lançamento removido' })
   @ApiNotFoundResponse({ description: 'Lançamento não encontrado' })
-  removeEntry(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.financeService.removeEntry(id);
+  removeEntry(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.financeService.removeEntry(id, activeCongregationId);
   }
 }

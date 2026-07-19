@@ -198,9 +198,49 @@ describe('MemberTransfersService', () => {
           status: SecretariatDocumentStatus.DRAFT,
         }),
         expect.objectContaining({ id: userId }),
+        undefined,
       );
       expect(result.status).toBe(MemberTransferStatus.PENDING);
       expect(result.documentId).toBe(documentId);
+    });
+
+    it('create repassa activeCongregationId para documentsService sem chamar getOrCreateBase', async () => {
+      const branchId = '11111111-2222-3333-4444-555555555555';
+      const member = baseMember({ congregationId: branchId });
+      const transfer = baseTransfer({ congregationId: branchId });
+      membersRepository.findOne.mockResolvedValue(member);
+      transfersRepository.exists.mockResolvedValue(false);
+      documentsService.createDocument.mockResolvedValue({
+        id: documentId,
+        title: 'Carta',
+        type: SecretariatDocumentType.LETTER,
+        status: SecretariatDocumentStatus.DRAFT,
+        documentDate: '2026-07-18',
+        summary: 'Resumo',
+        hasFile: false,
+      });
+      transfersRepository.findOne.mockResolvedValue(transfer);
+      jest.clearAllMocks();
+      congregationsService.getOrCreateBase.mockResolvedValue(
+        baseCongregation(),
+      );
+
+      await service.create(
+        memberId,
+        {
+          destinationChurchName: 'Igreja Destino',
+          destinationCity: 'Campinas',
+        },
+        baseUser(),
+        branchId,
+      );
+
+      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(documentsService.createDocument).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+        branchId,
+      );
     });
 
     it('deve completar na mesma operação quando completeNow=true', async () => {

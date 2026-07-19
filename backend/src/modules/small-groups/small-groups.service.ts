@@ -67,8 +67,11 @@ export class SmallGroupsService {
     private readonly congregationsService: CongregationsService,
   ) {}
 
-  async create(dto: CreateSmallGroupDto): Promise<SmallGroupResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async create(
+    dto: CreateSmallGroupDto,
+    activeCongregationId?: string,
+  ): Promise<SmallGroupResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const name = dto.name.trim();
     await this.assertNameAvailable(congregationId, name);
 
@@ -95,13 +98,16 @@ export class SmallGroupsService {
     }
 
     this.logger.log(`Pequeno grupo criado: ${saved.id} (${saved.name})`);
-    return this.toGroupResponse(await this.getGroupOrFail(saved.id));
+    return this.toGroupResponse(
+      await this.getGroupOrFail(saved.id, true, activeCongregationId),
+    );
   }
 
   async findAll(
     query: QuerySmallGroupsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupsResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, q, status } = query;
 
     const qb = this.groupsRepository
@@ -136,8 +142,9 @@ export class SmallGroupsService {
 
   async listLeaderOptions(
     query: QueryLeaderOptionsDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupLeaderOptionDto[]> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.churchMembersRepository
       .createQueryBuilder('member')
       .select(['member.id', 'member.fullName'])
@@ -154,8 +161,11 @@ export class SmallGroupsService {
     }));
   }
 
-  async findOne(id: string): Promise<SmallGroupResponseDto> {
-    const group = await this.getGroupOrFail(id, true);
+  async findOne(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<SmallGroupResponseDto> {
+    const group = await this.getGroupOrFail(id, true, activeCongregationId);
     const membersCount = await this.membersRepository.count({
       where: { smallGroupId: id },
     });
@@ -165,8 +175,9 @@ export class SmallGroupsService {
   async update(
     id: string,
     dto: UpdateSmallGroupDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupResponseDto> {
-    const group = await this.getGroupOrFail(id);
+    const group = await this.getGroupOrFail(id, true, activeCongregationId);
     const previousLeaderId = group.leaderMemberId;
 
     if (dto.name !== undefined) {
@@ -211,11 +222,13 @@ export class SmallGroupsService {
 
     const saved = await this.groupsRepository.save(group);
     this.logger.log(`Pequeno grupo atualizado: ${saved.id}`);
-    return this.toGroupResponse(await this.getGroupOrFail(saved.id));
+    return this.toGroupResponse(
+      await this.getGroupOrFail(saved.id, true, activeCongregationId),
+    );
   }
 
-  async remove(id: string): Promise<void> {
-    const group = await this.getGroupOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const group = await this.getGroupOrFail(id, true, activeCongregationId);
     await this.groupsRepository.softRemove(group);
     this.logger.log(`Pequeno grupo removido (soft delete): ${id}`);
   }
@@ -223,8 +236,9 @@ export class SmallGroupsService {
   async findMembers(
     groupId: string,
     query: QuerySmallGroupMembersDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupMembersResponseDto> {
-    await this.getGroupOrFail(groupId);
+    await this.getGroupOrFail(groupId, true, activeCongregationId);
     const { page, limit, status } = query;
 
     const qb = this.membersRepository
@@ -251,8 +265,13 @@ export class SmallGroupsService {
   async addMember(
     groupId: string,
     dto: AddSmallGroupMemberDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMemberResponseDto> {
-    const group = await this.getGroupOrFail(groupId);
+    const group = await this.getGroupOrFail(
+      groupId,
+      true,
+      activeCongregationId,
+    );
     const member = await this.assertMemberEligible(
       dto.memberId,
       group.congregationId,
@@ -293,8 +312,13 @@ export class SmallGroupsService {
     groupId: string,
     memberId: string,
     dto: UpdateSmallGroupMemberDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMemberResponseDto> {
-    const group = await this.getGroupOrFail(groupId);
+    const group = await this.getGroupOrFail(
+      groupId,
+      true,
+      activeCongregationId,
+    );
     const link = await this.getLinkOrFail(groupId, memberId);
 
     if (dto.role !== undefined) {
@@ -320,8 +344,16 @@ export class SmallGroupsService {
     return SmallGroupMemberResponseDto.fromEntity(saved);
   }
 
-  async removeMember(groupId: string, memberId: string): Promise<void> {
-    const group = await this.getGroupOrFail(groupId);
+  async removeMember(
+    groupId: string,
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    const group = await this.getGroupOrFail(
+      groupId,
+      true,
+      activeCongregationId,
+    );
     const link = await this.getLinkOrFail(groupId, memberId);
 
     await this.membersRepository.remove(link);
@@ -337,8 +369,13 @@ export class SmallGroupsService {
   async listMemberOptions(
     groupId: string,
     query: QueryMemberOptionsDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMemberOptionDto[]> {
-    const group = await this.getGroupOrFail(groupId);
+    const group = await this.getGroupOrFail(
+      groupId,
+      true,
+      activeCongregationId,
+    );
     const qb = this.churchMembersRepository
       .createQueryBuilder('member')
       .select(['member.id', 'member.fullName'])
@@ -367,8 +404,9 @@ export class SmallGroupsService {
   async findMeetings(
     groupId: string,
     query: QuerySmallGroupMeetingsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupMeetingsResponseDto> {
-    await this.getGroupOrFail(groupId);
+    await this.getGroupOrFail(groupId, true, activeCongregationId);
     const { page, limit, from, to } = query;
 
     const qb = this.meetingsRepository
@@ -399,8 +437,12 @@ export class SmallGroupsService {
   async createMeeting(
     groupId: string,
     dto: CreateSmallGroupMeetingDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMeetingResponseDto> {
-    const group = await this.getWritableGroupOrFail(groupId);
+    const group = await this.getWritableGroupOrFail(
+      groupId,
+      activeCongregationId,
+    );
     await this.assertMeetingDateAvailable(group.id, dto.meetingDate);
 
     const meeting = this.meetingsRepository.create({
@@ -420,8 +462,9 @@ export class SmallGroupsService {
     groupId: string,
     meetingId: string,
     dto: UpdateSmallGroupMeetingDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMeetingResponseDto> {
-    await this.getWritableGroupOrFail(groupId);
+    await this.getWritableGroupOrFail(groupId, activeCongregationId);
     const meeting = await this.getMeetingOrFail(groupId, meetingId);
 
     if (
@@ -446,8 +489,12 @@ export class SmallGroupsService {
     return SmallGroupMeetingResponseDto.fromEntity(saved);
   }
 
-  async removeMeeting(groupId: string, meetingId: string): Promise<void> {
-    await this.getWritableGroupOrFail(groupId);
+  async removeMeeting(
+    groupId: string,
+    meetingId: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    await this.getWritableGroupOrFail(groupId, activeCongregationId);
     const meeting = await this.getMeetingOrFail(groupId, meetingId);
     await this.meetingsRepository.remove(meeting);
     this.logger.log(`Reunião removida: ${meetingId} (grupo ${groupId})`);
@@ -456,8 +503,13 @@ export class SmallGroupsService {
   async getMeetingAttendance(
     groupId: string,
     meetingId: string,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMeetingAttendanceDto> {
-    const group = await this.getGroupOrFail(groupId);
+    const group = await this.getGroupOrFail(
+      groupId,
+      true,
+      activeCongregationId,
+    );
     const meeting = await this.getMeetingOrFail(groupId, meetingId);
 
     const links = await this.membersRepository
@@ -500,8 +552,9 @@ export class SmallGroupsService {
     groupId: string,
     meetingId: string,
     dto: UpsertSmallGroupAttendanceDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupMeetingAttendanceDto> {
-    await this.getWritableGroupOrFail(groupId);
+    await this.getWritableGroupOrFail(groupId, activeCongregationId);
     await this.getMeetingOrFail(groupId, meetingId);
 
     const memberIds = [...new Set(dto.entries.map((entry) => entry.memberId))];
@@ -542,15 +595,20 @@ export class SmallGroupsService {
       `Chamada salva: grupo ${groupId}, reunião ${meetingId}, ${dto.entries.length} entradas`,
     );
 
-    return this.getMeetingAttendance(groupId, meetingId);
+    return this.getMeetingAttendance(groupId, meetingId, activeCongregationId);
   }
 
   async getFrequencyReport(
     groupId: string,
     query: QuerySmallGroupFrequencyDto,
+    activeCongregationId?: string,
   ): Promise<SmallGroupFrequencyReportDto> {
     this.validatePeriod(query.from, query.to);
-    const group = await this.getGroupOrFail(groupId);
+    const group = await this.getGroupOrFail(
+      groupId,
+      true,
+      activeCongregationId,
+    );
 
     const meetings = await this.meetingsRepository
       .createQueryBuilder('meeting')
@@ -622,8 +680,13 @@ export class SmallGroupsService {
   async exportFrequencyCsv(
     groupId: string,
     query: QuerySmallGroupFrequencyDto,
+    activeCongregationId?: string,
   ): Promise<string> {
-    const report = await this.getFrequencyReport(groupId, query);
+    const report = await this.getFrequencyReport(
+      groupId,
+      query,
+      activeCongregationId,
+    );
     const rows = [
       [
         'Membro',
@@ -675,15 +738,21 @@ export class SmallGroupsService {
     await this.attendanceRepository.save(row);
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
   private async getGroupOrFail(
     id: string,
     withLeader = true,
+    activeCongregationId?: string,
   ): Promise<SmallGroup> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const group = await this.groupsRepository.findOne({
       where: { id, congregationId },
       relations: withLeader ? { leaderMember: true } : undefined,
@@ -697,8 +766,11 @@ export class SmallGroupsService {
     return group;
   }
 
-  private async getWritableGroupOrFail(id: string): Promise<SmallGroup> {
-    const group = await this.getGroupOrFail(id);
+  private async getWritableGroupOrFail(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<SmallGroup> {
+    const group = await this.getGroupOrFail(id, true, activeCongregationId);
     if (group.status !== SmallGroupStatus.ACTIVE) {
       throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
         code: ApiErrorCode.SMALL_GROUPS_NOT_FOUND,

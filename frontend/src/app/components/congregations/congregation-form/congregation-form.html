@@ -2,7 +2,7 @@
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-xl font-semibold text-slate-900">
-        {{ 'CONGREGATION.EDIT_TITLE' | translate }}
+        {{ 'CONGREGATION.EDIT_ACTIVE_TITLE' | translate }}
       </h1>
       <p class="mt-1 text-sm text-slate-600">{{ 'CONGREGATION.DESCRIPTION' | translate }}</p>
     </div>
@@ -16,6 +16,27 @@
       </button>
     }
   </div>
+
+  @if (isHeadquartersActive()) {
+    <p class="mb-4 rounded-md bg-sky-50 px-3 py-2 text-sm text-sky-900" role="status">
+      {{ 'CONGREGATION.ACTIVE_HEADQUARTERS_HINT' | translate }}
+    </p>
+  } @else {
+    <p class="mb-4 rounded-md bg-sky-50 px-3 py-2 text-sm text-sky-900" role="status">
+      {{ 'CONGREGATION.ACTIVE_BRANCH_HINT' | translate: { name: activeName() } }}
+    </p>
+  }
+
+  @if (canReadBranches()) {
+    <p class="mb-4 text-sm">
+      <a
+        routerLink="/congregations"
+        class="font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        {{ 'CONGREGATION.MANAGE_BRANCHES_LINK' | translate }}
+      </a>
+    </p>
+  }
 
   @if (feedbackKey(); as key) {
     <p
@@ -41,7 +62,7 @@
 
   <app-dialog
     [(open)]="showForm"
-    [title]="'CONGREGATION.EDIT_TITLE' | translate"
+    [title]="'CONGREGATION.EDIT_ACTIVE_TITLE' | translate"
     (closed)="showForm.set(false)"
   >
     @if (loading()) {
@@ -82,7 +103,8 @@
             <span>{{ 'CONGREGATION.TYPE' | translate }}</span>
             <select
               formControlName="type"
-              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-slate-600 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              [attr.aria-readonly]="true"
             >
               @for (type of types; track type) {
                 <option [value]="type">{{ typeLabelKey(type) | translate }}</option>

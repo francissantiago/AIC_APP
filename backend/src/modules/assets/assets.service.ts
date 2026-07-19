@@ -43,8 +43,9 @@ export class AssetsService {
   async createAsset(
     dto: CreateAssetDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<AssetResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const asset = this.assetsRepository.create({
       congregationId,
       createdByUserId: user.id,
@@ -67,8 +68,11 @@ export class AssetsService {
     }
   }
 
-  async findAssets(query: QueryAssetsDto): Promise<PaginatedAssetsResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findAssets(
+    query: QueryAssetsDto,
+    activeCongregationId?: string,
+  ): Promise<PaginatedAssetsResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.assetsRepository
       .createQueryBuilder('asset')
       .where('asset.congregationId = :congregationId', { congregationId });
@@ -85,16 +89,20 @@ export class AssetsService {
     };
   }
 
-  async findAsset(id: string): Promise<AssetResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findAsset(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<AssetResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     return this.toAssetDto(await this.getAssetOrFail(id, congregationId));
   }
 
   async updateAsset(
     id: string,
     dto: UpdateAssetDto,
+    activeCongregationId?: string,
   ): Promise<AssetResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const asset = await this.getAssetOrFail(id, congregationId);
     if (dto.assetTag !== undefined)
       asset.assetTag = this.nullableText(dto.assetTag);
@@ -123,18 +131,21 @@ export class AssetsService {
     }
   }
 
-  async removeAsset(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeAsset(id: string, activeCongregationId?: string): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.assetsRepository.softRemove(
       await this.getAssetOrFail(id, congregationId),
     );
     this.logger.log(`Bem removido (soft delete): ${id}`);
   }
 
-  async getAssetReport(query: QueryAssetsDto): Promise<AssetReportResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async getAssetReport(
+    query: QueryAssetsDto,
+    activeCongregationId?: string,
+  ): Promise<AssetReportResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const [assets, totals] = await Promise.all([
-      this.findAssets(query),
+      this.findAssets(query, activeCongregationId),
       this.getAssetTotals(congregationId, query),
     ]);
     return {
@@ -166,7 +177,12 @@ export class AssetsService {
     };
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 

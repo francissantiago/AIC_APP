@@ -34,6 +34,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { AddClassEnrollmentDto } from './dto/add-class-enrollment.dto';
 import { ClassSessionAttendanceDto } from './dto/class-attendance-response.dto';
 import {
@@ -64,7 +66,7 @@ import { ClassesService } from './classes.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('classes:read')
 @Controller('classes')
 export class ClassesController {
@@ -79,8 +81,11 @@ export class ClassesController {
   @ApiUnprocessableEntityResponse({
     description: 'Professor de outra congregação',
   })
-  create(@Body() dto: CreateClassDto): Promise<ClassResponseDto> {
-    return this.classesService.create(dto);
+  create(
+    @Body() dto: CreateClassDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<ClassResponseDto> {
+    return this.classesService.create(dto, activeCongregationId);
   }
 
   @Get()
@@ -88,8 +93,9 @@ export class ClassesController {
   @ApiOkResponse({ type: PaginatedClassesResponseDto })
   findAll(
     @Query() query: QueryClassesDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedClassesResponseDto> {
-    return this.classesService.findAll(query);
+    return this.classesService.findAll(query, activeCongregationId);
   }
 
   @Get('teacher-options')
@@ -99,8 +105,9 @@ export class ClassesController {
   @ApiOkResponse({ type: ClassTeacherOptionDto, isArray: true })
   teacherOptions(
     @Query() query: QueryTeacherOptionsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassTeacherOptionDto[]> {
-    return this.classesService.listTeacherOptions(query);
+    return this.classesService.listTeacherOptions(query, activeCongregationId);
   }
 
   @Get(':id/enrollment-options')
@@ -113,8 +120,13 @@ export class ClassesController {
   enrollmentOptions(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryEnrollmentOptionsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassEnrollmentOptionDto[]> {
-    return this.classesService.listEnrollmentOptions(id, query);
+    return this.classesService.listEnrollmentOptions(
+      id,
+      query,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/enrollments')
@@ -124,8 +136,9 @@ export class ClassesController {
   findEnrollments(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryClassEnrollmentsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedClassEnrollmentsResponseDto> {
-    return this.classesService.findEnrollments(id, query);
+    return this.classesService.findEnrollments(id, query, activeCongregationId);
   }
 
   @Post(':id/enrollments')
@@ -140,8 +153,9 @@ export class ClassesController {
   addEnrollment(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddClassEnrollmentDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassEnrollmentResponseDto> {
-    return this.classesService.addEnrollment(id, dto);
+    return this.classesService.addEnrollment(id, dto, activeCongregationId);
   }
 
   @Patch(':id/enrollments/:memberId')
@@ -153,8 +167,14 @@ export class ClassesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body() dto: UpdateClassEnrollmentDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassEnrollmentResponseDto> {
-    return this.classesService.updateEnrollmentStatus(id, memberId, dto);
+    return this.classesService.updateEnrollmentStatus(
+      id,
+      memberId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Delete(':id/enrollments/:memberId')
@@ -166,8 +186,13 @@ export class ClassesController {
   removeEnrollment(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    return this.classesService.removeEnrollment(id, memberId);
+    return this.classesService.removeEnrollment(
+      id,
+      memberId,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/attendance')
@@ -179,8 +204,13 @@ export class ClassesController {
   getSessionAttendance(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QuerySessionAttendanceDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassSessionAttendanceDto> {
-    return this.classesService.getSessionAttendance(id, query);
+    return this.classesService.getSessionAttendance(
+      id,
+      query,
+      activeCongregationId,
+    );
   }
 
   @Put(':id/attendance')
@@ -196,8 +226,13 @@ export class ClassesController {
   upsertSessionAttendance(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpsertClassAttendanceDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassSessionAttendanceDto> {
-    return this.classesService.upsertSessionAttendance(id, dto);
+    return this.classesService.upsertSessionAttendance(
+      id,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/reports/frequency.csv')
@@ -216,8 +251,13 @@ export class ClassesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryClassFrequencyDto,
     @Res() response: Response,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    const csv = await this.classesService.exportFrequencyCsv(id, query);
+    const csv = await this.classesService.exportFrequencyCsv(
+      id,
+      query,
+      activeCongregationId,
+    );
     response
       .setHeader(
         'Content-Disposition',
@@ -236,16 +276,24 @@ export class ClassesController {
   frequencyReport(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryClassFrequencyDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassFrequencyReportDto> {
-    return this.classesService.getFrequencyReport(id, query);
+    return this.classesService.getFrequencyReport(
+      id,
+      query,
+      activeCongregationId,
+    );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Detalhar turma da EBD' })
   @ApiOkResponse({ type: ClassResponseDto })
   @ApiNotFoundResponse({ description: 'Turma não encontrada' })
-  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<ClassResponseDto> {
-    return this.classesService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<ClassResponseDto> {
+    return this.classesService.findOne(id, activeCongregationId);
   }
 
   @Patch(':id')
@@ -260,8 +308,9 @@ export class ClassesController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateClassDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassResponseDto> {
-    return this.classesService.update(id, dto);
+    return this.classesService.update(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -270,7 +319,10 @@ export class ClassesController {
   @ApiOperation({ summary: 'Remover turma da EBD (soft delete)' })
   @ApiNoContentResponse({ description: 'Turma removida' })
   @ApiNotFoundResponse({ description: 'Turma não encontrada' })
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.classesService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.classesService.remove(id, activeCongregationId);
   }
 }

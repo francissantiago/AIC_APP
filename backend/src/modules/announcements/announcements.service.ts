@@ -33,8 +33,9 @@ export class AnnouncementsService {
   async create(
     dto: CreateAnnouncementDto,
     author: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<AnnouncementResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     this.assertAudienceSupported(dto.audience);
     this.assertAudienceTargets(dto.audienceTargets);
 
@@ -69,13 +70,16 @@ export class AnnouncementsService {
 
     const saved = await this.announcementsRepository.save(announcement);
     this.logger.log(`Aviso criado: ${saved.id}`);
-    return this.toResponse(await this.getAnnouncementOrFail(saved.id));
+    return this.toResponse(
+      await this.getAnnouncementOrFail(saved.id, activeCongregationId),
+    );
   }
 
   async findAll(
     query: QueryAnnouncementsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedAnnouncementsResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, search, includeExpired } = query;
     const now = new Date();
 
@@ -113,8 +117,9 @@ export class AnnouncementsService {
 
   async findBoard(
     query: QueryAnnouncementsBoardDto,
+    activeCongregationId?: string,
   ): Promise<AnnouncementsBoardResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const now = new Date();
     const limit = query.limit;
 
@@ -141,15 +146,24 @@ export class AnnouncementsService {
     };
   }
 
-  async findOne(id: string): Promise<AnnouncementResponseDto> {
-    return this.toResponse(await this.getAnnouncementOrFail(id));
+  async findOne(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<AnnouncementResponseDto> {
+    return this.toResponse(
+      await this.getAnnouncementOrFail(id, activeCongregationId),
+    );
   }
 
   async update(
     id: string,
     dto: UpdateAnnouncementDto,
+    activeCongregationId?: string,
   ): Promise<AnnouncementResponseDto> {
-    const announcement = await this.getAnnouncementOrFail(id);
+    const announcement = await this.getAnnouncementOrFail(
+      id,
+      activeCongregationId,
+    );
 
     if (dto.audience !== undefined) {
       this.assertAudienceSupported(dto.audience);
@@ -211,21 +225,34 @@ export class AnnouncementsService {
 
     const saved = await this.announcementsRepository.save(announcement);
     this.logger.log(`Aviso atualizado: ${saved.id}`);
-    return this.toResponse(await this.getAnnouncementOrFail(saved.id));
+    return this.toResponse(
+      await this.getAnnouncementOrFail(saved.id, activeCongregationId),
+    );
   }
 
-  async remove(id: string): Promise<void> {
-    const announcement = await this.getAnnouncementOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const announcement = await this.getAnnouncementOrFail(
+      id,
+      activeCongregationId,
+    );
     await this.announcementsRepository.softRemove(announcement);
     this.logger.log(`Aviso removido (soft delete): ${id}`);
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
-  private async getAnnouncementOrFail(id: string): Promise<Announcement> {
-    const congregationId = await this.getCongregationId();
+  private async getAnnouncementOrFail(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<Announcement> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const announcement = await this.announcementsRepository.findOne({
       where: { id, congregationId },
       relations: { author: true },

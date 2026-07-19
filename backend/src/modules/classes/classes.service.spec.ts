@@ -181,6 +181,27 @@ describe('ClassesService', () => {
       expect(result.enrollmentsCount).toBe(0);
     });
 
+    it('create com activeCongregationId não chama getOrCreateBase', async () => {
+      const explicitId = '22222222-3333-4444-5555-666666666666';
+      const saved = baseClass({ congregationId: explicitId });
+      classesRepository.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(saved);
+      classesRepository.create.mockReturnValue(saved);
+      classesRepository.save.mockResolvedValue(saved);
+      jest.clearAllMocks();
+      congregationsService.getOrCreateBase.mockResolvedValue(
+        baseCongregation(),
+      );
+
+      await service.create({ name: 'Turma B' }, explicitId);
+
+      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(classesRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ congregationId: explicitId }),
+      );
+    });
+
     it('deve lançar 409 NAME_IN_USE para nome duplicado', async () => {
       classesRepository.findOne.mockResolvedValue(baseClass());
 

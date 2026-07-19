@@ -32,12 +32,24 @@ export class MembersService {
     private readonly congregationsService: CongregationsService,
   ) {}
 
-  async create(dto: CreateMemberDto): Promise<MemberResponseDto> {
-    const base = await this.congregationsService.getOrCreateBase();
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
+    return (await this.congregationsService.getOrCreateBase()).id;
+  }
+
+  async create(
+    dto: CreateMemberDto,
+    activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const saved = await this.createInTransaction(
       this.membersRepository.manager,
       dto,
-      base.id,
+      congregationId,
     );
     return MemberResponseDto.fromEntity(saved);
   }
@@ -78,14 +90,17 @@ export class MembersService {
     return saved;
   }
 
-  async findAll(query: QueryMembersDto): Promise<PaginatedMembersResponseDto> {
-    const base = await this.congregationsService.getOrCreateBase();
+  async findAll(
+    query: QueryMembersDto,
+    activeCongregationId?: string,
+  ): Promise<PaginatedMembersResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, status, gender, q } = query;
 
     const qb = this.membersRepository
       .createQueryBuilder('member')
       .where('member.congregationId = :congregationId', {
-        congregationId: base.id,
+        congregationId,
       })
       .orderBy('member.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -113,13 +128,20 @@ export class MembersService {
     };
   }
 
-  async findOne(id: string): Promise<MemberResponseDto> {
-    const member = await this.getMemberOrFail(id);
+  async findOne(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    const member = await this.getMemberOrFail(id, activeCongregationId);
     return MemberResponseDto.fromEntity(member);
   }
 
-  async update(id: string, dto: UpdateMemberDto): Promise<MemberResponseDto> {
-    const member = await this.getMemberOrFail(id);
+  async update(
+    id: string,
+    dto: UpdateMemberDto,
+    activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    const member = await this.getMemberOrFail(id, activeCongregationId);
 
     if (dto.email !== undefined && dto.email !== member.email) {
       await this.assertEmailDocumentUniqueness(dto.email, undefined, id);
@@ -182,16 +204,19 @@ export class MembersService {
     return MemberResponseDto.fromEntity(saved);
   }
 
-  async remove(id: string): Promise<void> {
-    const member = await this.getMemberOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const member = await this.getMemberOrFail(id, activeCongregationId);
     await this.membersRepository.softRemove(member);
     this.logger.log(`Membro removido (soft delete): ${id}`);
   }
 
-  private async getMemberOrFail(id: string): Promise<Member> {
-    const base = await this.congregationsService.getOrCreateBase();
+  private async getMemberOrFail(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<Member> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.membersRepository.findOne({
-      where: { id, congregationId: base.id },
+      where: { id, congregationId },
     });
     if (!member) {
       throw new ApiException(HttpStatus.NOT_FOUND, {

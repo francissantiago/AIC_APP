@@ -26,6 +26,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { CreateMemberTransferDto } from './dto/create-member-transfer.dto';
 import { MemberTransferResponseDto } from './dto/member-transfer-response.dto';
@@ -36,7 +38,7 @@ import { MemberTransfersService } from './member-transfers.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('members:read')
 @Controller('members/:memberId/transfers')
 export class MemberTransfersController {
@@ -50,8 +52,12 @@ export class MemberTransfersController {
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
   list(
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto[]> {
-    return this.memberTransfersService.listByMember(memberId);
+    return this.memberTransfersService.listByMember(
+      memberId,
+      activeCongregationId,
+    );
   }
 
   @Get(':id')
@@ -63,8 +69,13 @@ export class MemberTransfersController {
   findOne(
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    return this.memberTransfersService.findOne(memberId, id);
+    return this.memberTransfersService.findOne(
+      memberId,
+      id,
+      activeCongregationId,
+    );
   }
 
   @Post()
@@ -82,8 +93,14 @@ export class MemberTransfersController {
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body() dto: CreateMemberTransferDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    return this.memberTransfersService.create(memberId, dto, user);
+    return this.memberTransfersService.create(
+      memberId,
+      dto,
+      user,
+      activeCongregationId,
+    );
   }
 
   @Post(':id/complete')
@@ -103,8 +120,13 @@ export class MemberTransfersController {
   complete(
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    return this.memberTransfersService.complete(memberId, id);
+    return this.memberTransfersService.complete(
+      memberId,
+      id,
+      activeCongregationId,
+    );
   }
 
   @Post(':id/cancel')
@@ -121,7 +143,12 @@ export class MemberTransfersController {
   cancel(
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    return this.memberTransfersService.cancel(memberId, id);
+    return this.memberTransfersService.cancel(
+      memberId,
+      id,
+      activeCongregationId,
+    );
   }
 }

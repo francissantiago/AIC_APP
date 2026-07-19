@@ -29,6 +29,8 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   AttendanceRecordResponseDto,
@@ -45,7 +47,7 @@ import { AttendanceService } from './attendance.service';
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('secretariat:read')
 @Controller('secretariat/attendance')
 export class AttendanceController {
@@ -56,8 +58,9 @@ export class AttendanceController {
   @ApiOkResponse({ type: PaginatedAttendanceResponseDto })
   findRecords(
     @Query() query: QueryAttendanceDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedAttendanceResponseDto> {
-    return this.attendanceService.findRecords(query);
+    return this.attendanceService.findRecords(query, activeCongregationId);
   }
 
   @Get(':id')
@@ -66,8 +69,9 @@ export class AttendanceController {
   @ApiNotFoundResponse({ description: 'Registro não encontrado' })
   findRecord(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<AttendanceRecordResponseDto> {
-    return this.attendanceService.findRecord(id);
+    return this.attendanceService.findRecord(id, activeCongregationId);
   }
 
   @Post()
@@ -77,8 +81,9 @@ export class AttendanceController {
   createRecord(
     @Body() dto: CreateAttendanceRecordDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<AttendanceRecordResponseDto> {
-    return this.attendanceService.createRecord(dto, user);
+    return this.attendanceService.createRecord(dto, user, activeCongregationId);
   }
 
   @Patch(':id')
@@ -89,8 +94,9 @@ export class AttendanceController {
   updateRecord(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateAttendanceRecordDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<AttendanceRecordResponseDto> {
-    return this.attendanceService.updateRecord(id, dto);
+    return this.attendanceService.updateRecord(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -99,7 +105,10 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Remover registro de presença por soft delete' })
   @ApiNoContentResponse({ description: 'Registro removido' })
   @ApiNotFoundResponse({ description: 'Registro não encontrado' })
-  removeRecord(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.attendanceService.removeRecord(id);
+  removeRecord(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.attendanceService.removeRecord(id, activeCongregationId);
   }
 }

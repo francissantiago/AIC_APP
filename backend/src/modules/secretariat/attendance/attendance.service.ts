@@ -30,8 +30,9 @@ export class AttendanceService {
   async createRecord(
     dto: CreateAttendanceRecordDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<AttendanceRecordResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     this.validateComposition(dto.totalPresent, dto.adults, dto.children);
     const record = this.attendanceRepository.create({
       congregationId,
@@ -51,8 +52,9 @@ export class AttendanceService {
 
   async findRecords(
     query: QueryAttendanceDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedAttendanceResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.attendanceRepository
       .createQueryBuilder('record')
       .where('record.congregationId = :congregationId', { congregationId });
@@ -70,16 +72,20 @@ export class AttendanceService {
     };
   }
 
-  async findRecord(id: string): Promise<AttendanceRecordResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findRecord(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<AttendanceRecordResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     return this.toDto(await this.getRecordOrFail(id, congregationId));
   }
 
   async updateRecord(
     id: string,
     dto: UpdateAttendanceRecordDto,
+    activeCongregationId?: string,
   ): Promise<AttendanceRecordResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const record = await this.getRecordOrFail(id, congregationId);
     const nextTotalPresent = dto.totalPresent ?? record.totalPresent;
     const nextAdults = dto.adults !== undefined ? dto.adults : record.adults;
@@ -100,8 +106,8 @@ export class AttendanceService {
     return this.toDto(saved);
   }
 
-  async removeRecord(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeRecord(id: string, activeCongregationId?: string): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.attendanceRepository.softRemove(
       await this.getRecordOrFail(id, congregationId),
     );
@@ -117,7 +123,12 @@ export class AttendanceService {
     });
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 

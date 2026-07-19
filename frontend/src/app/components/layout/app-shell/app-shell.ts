@@ -11,6 +11,7 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
 import { SidebarNav } from '@components/layout/sidebar-nav/sidebar-nav';
+import { CongregationSelector } from '@components/congregation-selector/congregation-selector';
 import { NotificationsBell } from '@components/notifications-bell/notifications-bell';
 import { AuthService } from '@services/auth-service';
 import { filter, startWith } from 'rxjs';
@@ -25,6 +26,7 @@ const SIDEBAR_ID = 'app-sidebar';
     RouterLink,
     TranslatePipe,
     LanguageSwitcher,
+    CongregationSelector,
     SidebarNav,
     NotificationsBell,
   ],
@@ -160,8 +162,11 @@ export class AppShell {
     if (path.startsWith('/small-groups')) {
       return 'APP_SHELL.PAGE_SMALL_GROUPS';
     }
-    if (path.startsWith('/congregation') || path.startsWith('/congregations')) {
-      return 'APP_SHELL.PAGE_CONGREGATION';
+    if (path === '/congregations' || path.startsWith('/congregations/')) {
+      return 'APP_SHELL.PAGE_CONGREGATIONS_LIST';
+    }
+    if (path === '/congregation' || path.startsWith('/congregation/')) {
+      return 'APP_SHELL.PAGE_CONGREGATION_ACTIVE';
     }
     if (path.startsWith('/users')) {
       return 'APP_SHELL.PAGE_USERS';

@@ -65,8 +65,11 @@ export class ClassesService {
     private readonly congregationsService: CongregationsService,
   ) {}
 
-  async create(dto: CreateClassDto): Promise<ClassResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async create(
+    dto: CreateClassDto,
+    activeCongregationId?: string,
+  ): Promise<ClassResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const name = dto.name.trim();
     await this.assertNameAvailable(congregationId, name);
 
@@ -90,11 +93,17 @@ export class ClassesService {
     const saved = await this.classesRepository.save(ebdClass);
 
     this.logger.log(`Turma EBD criada: ${saved.id} (${saved.name})`);
-    return this.toResponse(await this.getClassOrFail(saved.id), 0);
+    return this.toResponse(
+      await this.getClassOrFail(saved.id, activeCongregationId),
+      0,
+    );
   }
 
-  async findAll(query: QueryClassesDto): Promise<PaginatedClassesResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findAll(
+    query: QueryClassesDto,
+    activeCongregationId?: string,
+  ): Promise<PaginatedClassesResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, q, status, ageGroup, dayOfWeek, teacherMemberId } =
       query;
 
@@ -147,16 +156,23 @@ export class ClassesService {
     };
   }
 
-  async findOne(id: string): Promise<ClassResponseDto> {
-    const ebdClass = await this.getClassOrFail(id);
+  async findOne(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<ClassResponseDto> {
+    const ebdClass = await this.getClassOrFail(id, activeCongregationId);
     const enrollmentsCount = await this.enrollmentsRepository.count({
       where: { classId: id, status: ClassEnrollmentStatus.ACTIVE },
     });
     return this.toResponse(ebdClass, enrollmentsCount);
   }
 
-  async update(id: string, dto: UpdateClassDto): Promise<ClassResponseDto> {
-    const ebdClass = await this.getClassOrFail(id);
+  async update(
+    id: string,
+    dto: UpdateClassDto,
+    activeCongregationId?: string,
+  ): Promise<ClassResponseDto> {
+    const ebdClass = await this.getClassOrFail(id, activeCongregationId);
 
     if (dto.name !== undefined) {
       const name = dto.name.trim();
@@ -201,16 +217,17 @@ export class ClassesService {
     return this.findOne(saved.id);
   }
 
-  async remove(id: string): Promise<void> {
-    const ebdClass = await this.getClassOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const ebdClass = await this.getClassOrFail(id, activeCongregationId);
     await this.classesRepository.softRemove(ebdClass);
     this.logger.log(`Turma EBD removida (soft delete): ${id}`);
   }
 
   async listTeacherOptions(
     query: QueryTeacherOptionsDto,
+    activeCongregationId?: string,
   ): Promise<ClassTeacherOptionDto[]> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.membersRepository
       .createQueryBuilder('member')
       .select(['member.id', 'member.fullName'])
@@ -230,8 +247,9 @@ export class ClassesService {
   async findEnrollments(
     classId: string,
     query: QueryClassEnrollmentsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedClassEnrollmentsResponseDto> {
-    await this.getClassOrFail(classId);
+    await this.getClassOrFail(classId, activeCongregationId);
     const { page, limit, status, q } = query;
 
     const qb = this.enrollmentsRepository
@@ -261,8 +279,9 @@ export class ClassesService {
   async addEnrollment(
     classId: string,
     dto: AddClassEnrollmentDto,
+    activeCongregationId?: string,
   ): Promise<ClassEnrollmentResponseDto> {
-    const ebdClass = await this.getClassOrFail(classId);
+    const ebdClass = await this.getClassOrFail(classId, activeCongregationId);
     const member = await this.assertEnrollmentMemberEligible(
       dto.memberId,
       ebdClass.congregationId,
@@ -298,8 +317,9 @@ export class ClassesService {
     classId: string,
     memberId: string,
     dto: UpdateClassEnrollmentDto,
+    activeCongregationId?: string,
   ): Promise<ClassEnrollmentResponseDto> {
-    await this.getClassOrFail(classId);
+    await this.getClassOrFail(classId, activeCongregationId);
     const link = await this.getEnrollmentOrFail(classId, memberId);
 
     link.status = dto.status;
@@ -314,8 +334,12 @@ export class ClassesService {
     return ClassEnrollmentResponseDto.fromEntity(saved);
   }
 
-  async removeEnrollment(classId: string, memberId: string): Promise<void> {
-    await this.getClassOrFail(classId);
+  async removeEnrollment(
+    classId: string,
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    await this.getClassOrFail(classId, activeCongregationId);
     const link = await this.getEnrollmentOrFail(classId, memberId);
     await this.enrollmentsRepository.remove(link);
     this.logger.log(
@@ -326,8 +350,9 @@ export class ClassesService {
   async listEnrollmentOptions(
     classId: string,
     query: QueryEnrollmentOptionsDto,
+    activeCongregationId?: string,
   ): Promise<ClassEnrollmentOptionDto[]> {
-    const ebdClass = await this.getClassOrFail(classId);
+    const ebdClass = await this.getClassOrFail(classId, activeCongregationId);
     const qb = this.membersRepository
       .createQueryBuilder('member')
       .select(['member.id', 'member.fullName'])
@@ -353,8 +378,11 @@ export class ClassesService {
     }));
   }
 
-  async findByMemberId(memberId: string): Promise<MemberClassSummaryDto[]> {
-    const congregationId = await this.getCongregationId();
+  async findByMemberId(
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<MemberClassSummaryDto[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.membersRepository.findOne({
       where: { id: memberId, congregationId },
     });
@@ -388,8 +416,9 @@ export class ClassesService {
   async getSessionAttendance(
     classId: string,
     query: QuerySessionAttendanceDto,
+    activeCongregationId?: string,
   ): Promise<ClassSessionAttendanceDto> {
-    const ebdClass = await this.getClassOrFail(classId);
+    const ebdClass = await this.getClassOrFail(classId, activeCongregationId);
     const sessionDate = query.sessionDate;
     const enrollments = await this.enrollmentsRepository
       .createQueryBuilder('enrollment')
@@ -431,8 +460,9 @@ export class ClassesService {
   async upsertSessionAttendance(
     classId: string,
     dto: UpsertClassAttendanceDto,
+    activeCongregationId?: string,
   ): Promise<ClassSessionAttendanceDto> {
-    await this.getClassOrFail(classId);
+    await this.getClassOrFail(classId, activeCongregationId);
 
     if (!dto.entries?.length) {
       throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
@@ -485,9 +515,10 @@ export class ClassesService {
   async getFrequencyReport(
     classId: string,
     query: QueryClassFrequencyDto,
+    activeCongregationId?: string,
   ): Promise<ClassFrequencyReportDto> {
     this.validateAttendancePeriod(query.from, query.to);
-    const ebdClass = await this.getClassOrFail(classId);
+    const ebdClass = await this.getClassOrFail(classId, activeCongregationId);
 
     const attendanceRows = await this.attendanceRepository
       .createQueryBuilder('attendance')
@@ -556,8 +587,13 @@ export class ClassesService {
   async exportFrequencyCsv(
     classId: string,
     query: QueryClassFrequencyDto,
+    activeCongregationId?: string,
   ): Promise<string> {
-    const report = await this.getFrequencyReport(classId, query);
+    const report = await this.getFrequencyReport(
+      classId,
+      query,
+      activeCongregationId,
+    );
     const rows = [
       [
         'Membro',
@@ -651,12 +687,20 @@ export class ClassesService {
   private readonly csvCell = (value: string): string =>
     `"${value.replaceAll('"', '""')}"`;
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
-  private async getClassOrFail(id: string): Promise<EbdClass> {
-    const congregationId = await this.getCongregationId();
+  private async getClassOrFail(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<EbdClass> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const ebdClass = await this.classesRepository.findOne({
       where: { id, congregationId },
       relations: { teacherMember: true },

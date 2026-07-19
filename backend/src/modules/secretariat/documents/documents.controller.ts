@@ -37,6 +37,8 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   CreateSecretariatDocumentDto,
@@ -63,7 +65,7 @@ function resolveUploadMaxBytes(): number {
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('secretariat:read')
 @Controller('secretariat/documents')
 export class DocumentsController {
@@ -74,8 +76,9 @@ export class DocumentsController {
   @ApiOkResponse({ type: PaginatedSecretariatDocumentsResponseDto })
   findDocuments(
     @Query() query: QuerySecretariatDocumentsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedSecretariatDocumentsResponseDto> {
-    return this.documentsService.findDocuments(query);
+    return this.documentsService.findDocuments(query, activeCongregationId);
   }
 
   @Get(':id/download')
@@ -91,8 +94,12 @@ export class DocumentsController {
   async downloadFile(
     @Param('id', ParseUUIDPipe) id: string,
     @Res() response: Response,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    const file = await this.documentsService.downloadFile(id);
+    const file = await this.documentsService.downloadFile(
+      id,
+      activeCongregationId,
+    );
     const safeName = file.originalFilename.replace(/"/g, '');
     response
       .setHeader('Content-Type', file.mimeType)
@@ -107,8 +114,9 @@ export class DocumentsController {
   @ApiNotFoundResponse({ description: 'Documento não encontrado' })
   findDocument(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    return this.documentsService.findDocument(id);
+    return this.documentsService.findDocument(id, activeCongregationId);
   }
 
   @Post()
@@ -118,8 +126,13 @@ export class DocumentsController {
   createDocument(
     @Body() dto: CreateSecretariatDocumentDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    return this.documentsService.createDocument(dto, user);
+    return this.documentsService.createDocument(
+      dto,
+      user,
+      activeCongregationId,
+    );
   }
 
   @Post(':id/upload')
@@ -155,8 +168,9 @@ export class DocumentsController {
   uploadFile(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: SecretariatUploadedFile | undefined,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    return this.documentsService.uploadFile(id, file);
+    return this.documentsService.uploadFile(id, file, activeCongregationId);
   }
 
   @Patch(':id')
@@ -167,8 +181,9 @@ export class DocumentsController {
   updateDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateSecretariatDocumentDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    return this.documentsService.updateDocument(id, dto);
+    return this.documentsService.updateDocument(id, dto, activeCongregationId);
   }
 
   @Delete(':id/file')
@@ -179,8 +194,11 @@ export class DocumentsController {
   @ApiNotFoundResponse({
     description: 'Documento ou arquivo não encontrado',
   })
-  removeFile(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.documentsService.removeFile(id);
+  removeFile(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.documentsService.removeFile(id, activeCongregationId);
   }
 
   @Delete(':id')
@@ -189,7 +207,10 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Remover documento de secretaria por soft delete' })
   @ApiNoContentResponse({ description: 'Documento removido' })
   @ApiNotFoundResponse({ description: 'Documento não encontrado' })
-  removeDocument(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.documentsService.removeDocument(id);
+  removeDocument(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.documentsService.removeDocument(id, activeCongregationId);
   }
 }
