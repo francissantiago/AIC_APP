@@ -10,6 +10,7 @@ import { Role } from '../roles/entities/role.entity';
 import { User } from '../users/entities/user.entity';
 import { UserStatus } from '../users/enums/user-status.enum';
 import { UsersService } from '../users/users.service';
+import { UserCongregationsService } from '../congregations/user-congregations.service';
 import { AuthService } from './auth.service';
 
 jest.mock('bcrypt', () => ({
@@ -47,6 +48,11 @@ describe('AuthService', () => {
   const configService = {
     get: jest.fn(),
   };
+  const userCongregationsService = {
+    resolveDefaultForUser: jest.fn(),
+  };
+
+  const defaultCongregationId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
   const adminRole: Role = {
     id: 1,
@@ -84,6 +90,9 @@ describe('AuthService', () => {
       return fallback;
     });
     jwtService.signAsync.mockResolvedValue('jwt-token-fake');
+    userCongregationsService.resolveDefaultForUser.mockResolvedValue({
+      id: defaultCongregationId,
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -91,6 +100,10 @@ describe('AuthService', () => {
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
+        {
+          provide: UserCongregationsService,
+          useValue: userCongregationsService,
+        },
       ],
     }).compile();
 
@@ -119,6 +132,7 @@ describe('AuthService', () => {
         email: user.email,
         username: user.username,
         roles: ['ADMIN'],
+        defaultCongregationId,
       });
       expect(result).toMatchObject({
         accessToken: 'jwt-token-fake',
@@ -222,6 +236,7 @@ describe('AuthService', () => {
         email: user.email,
         username: user.username,
         roles: ['ADMIN'],
+        defaultCongregationId,
       });
     });
 

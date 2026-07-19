@@ -35,8 +35,9 @@ export class CalendarService {
   async createEvent(
     dto: CreateCalendarEventDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<CalendarEventResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const startsAt = new Date(dto.startsAt);
     const endsAt = new Date(dto.endsAt);
     this.validateRange(startsAt, endsAt);
@@ -60,8 +61,9 @@ export class CalendarService {
 
   async findEvents(
     query: QueryCalendarEventsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedCalendarEventsResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const rangeFrom = query.from
       ? new Date(query.from)
       : new Date('1970-01-01T00:00:00.000Z');
@@ -120,16 +122,20 @@ export class CalendarService {
     };
   }
 
-  async findEvent(id: string): Promise<CalendarEventResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findEvent(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<CalendarEventResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     return this.toMasterDto(await this.getEventOrFail(id, congregationId));
   }
 
   async updateEvent(
     id: string,
     dto: UpdateCalendarEventDto,
+    activeCongregationId?: string,
   ): Promise<CalendarEventResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const event = await this.getEventOrFail(id, congregationId);
     const nextStartsAt = dto.startsAt ? new Date(dto.startsAt) : event.startsAt;
     const nextEndsAt = dto.endsAt ? new Date(dto.endsAt) : event.endsAt;
@@ -174,15 +180,20 @@ export class CalendarService {
     return this.toMasterDto(saved);
   }
 
-  async removeEvent(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeEvent(id: string, activeCongregationId?: string): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.calendarEventsRepository.softRemove(
       await this.getEventOrFail(id, congregationId),
     );
     this.logger.log(`Evento de agenda removido (soft delete): ${id}`);
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 

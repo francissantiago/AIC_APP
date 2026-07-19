@@ -31,6 +31,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { AddMinistryMemberDto } from './dto/add-ministry-member.dto';
 import { CreateMinistryDto } from './dto/create-ministry.dto';
 import {
@@ -52,7 +54,7 @@ import { MinistriesService } from './ministries.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('ministries:read')
 @Controller('ministries')
 export class MinistriesController {
@@ -66,8 +68,11 @@ export class MinistriesController {
   @ApiUnprocessableEntityResponse({
     description: 'Líder inválido ou de outra congregação',
   })
-  create(@Body() dto: CreateMinistryDto): Promise<MinistryResponseDto> {
-    return this.ministriesService.create(dto);
+  create(
+    @Body() dto: CreateMinistryDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MinistryResponseDto> {
+    return this.ministriesService.create(dto, activeCongregationId);
   }
 
   @Get()
@@ -77,8 +82,9 @@ export class MinistriesController {
   @ApiOkResponse({ type: PaginatedMinistriesResponseDto })
   findAll(
     @Query() query: QueryMinistriesDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedMinistriesResponseDto> {
-    return this.ministriesService.findAll(query);
+    return this.ministriesService.findAll(query, activeCongregationId);
   }
 
   @Get(':id')
@@ -95,8 +101,13 @@ export class MinistriesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('includeMembers', new ParseBoolPipe({ optional: true }))
     includeMembers?: boolean,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MinistryResponseDto> {
-    return this.ministriesService.findOne(id, includeMembers === true);
+    return this.ministriesService.findOne(
+      id,
+      includeMembers === true,
+      activeCongregationId,
+    );
   }
 
   @Patch(':id')
@@ -111,8 +122,9 @@ export class MinistriesController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateMinistryDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MinistryResponseDto> {
-    return this.ministriesService.update(id, dto);
+    return this.ministriesService.update(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -121,8 +133,11 @@ export class MinistriesController {
   @ApiOperation({ summary: 'Remover ministério (soft delete)' })
   @ApiNoContentResponse({ description: 'Ministério removido' })
   @ApiNotFoundResponse({ description: 'Ministério não encontrado' })
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.ministriesService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.ministriesService.remove(id, activeCongregationId);
   }
 
   @Get(':id/members')
@@ -132,8 +147,9 @@ export class MinistriesController {
   findMembers(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryMinistryMembersDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedMinistryMembersResponseDto> {
-    return this.ministriesService.findMembers(id, query);
+    return this.ministriesService.findMembers(id, query, activeCongregationId);
   }
 
   @Post(':id/members')
@@ -148,8 +164,9 @@ export class MinistriesController {
   addMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddMinistryMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MinistryMemberResponseDto> {
-    return this.ministriesService.addMember(id, dto);
+    return this.ministriesService.addMember(id, dto, activeCongregationId);
   }
 
   @Patch(':id/members/:memberId')
@@ -161,8 +178,14 @@ export class MinistriesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body() dto: UpdateMinistryMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MinistryMemberResponseDto> {
-    return this.ministriesService.updateMemberRole(id, memberId, dto);
+    return this.ministriesService.updateMemberRole(
+      id,
+      memberId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Delete(':id/members/:memberId')
@@ -174,7 +197,12 @@ export class MinistriesController {
   removeMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    return this.ministriesService.removeMember(id, memberId);
+    return this.ministriesService.removeMember(
+      id,
+      memberId,
+      activeCongregationId,
+    );
   }
 }

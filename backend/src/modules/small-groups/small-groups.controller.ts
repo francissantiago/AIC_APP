@@ -34,6 +34,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { AddSmallGroupMemberDto } from './dto/add-small-group-member.dto';
 import { CreateSmallGroupMeetingDto } from './dto/create-small-group-meeting.dto';
 import { CreateSmallGroupDto } from './dto/create-small-group.dto';
@@ -70,7 +72,7 @@ import { SmallGroupsService } from './small-groups.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('small-groups:read')
 @Controller('small-groups')
 export class SmallGroupsController {
@@ -84,8 +86,11 @@ export class SmallGroupsController {
   @ApiUnprocessableEntityResponse({
     description: 'Líder inválido, inativo ou de outra congregação',
   })
-  create(@Body() dto: CreateSmallGroupDto): Promise<SmallGroupResponseDto> {
-    return this.smallGroupsService.create(dto);
+  create(
+    @Body() dto: CreateSmallGroupDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<SmallGroupResponseDto> {
+    return this.smallGroupsService.create(dto, activeCongregationId);
   }
 
   @Get()
@@ -95,8 +100,9 @@ export class SmallGroupsController {
   @ApiOkResponse({ type: PaginatedSmallGroupsResponseDto })
   findAll(
     @Query() query: QuerySmallGroupsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupsResponseDto> {
-    return this.smallGroupsService.findAll(query);
+    return this.smallGroupsService.findAll(query, activeCongregationId);
   }
 
   @Get('leader-options')
@@ -106,8 +112,12 @@ export class SmallGroupsController {
   @ApiOkResponse({ type: SmallGroupLeaderOptionDto, isArray: true })
   leaderOptions(
     @Query() query: QueryLeaderOptionsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupLeaderOptionDto[]> {
-    return this.smallGroupsService.listLeaderOptions(query);
+    return this.smallGroupsService.listLeaderOptions(
+      query,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/member-options')
@@ -120,8 +130,13 @@ export class SmallGroupsController {
   memberOptions(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryMemberOptionsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMemberOptionDto[]> {
-    return this.smallGroupsService.listMemberOptions(id, query);
+    return this.smallGroupsService.listMemberOptions(
+      id,
+      query,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/members')
@@ -131,8 +146,9 @@ export class SmallGroupsController {
   findMembers(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QuerySmallGroupMembersDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupMembersResponseDto> {
-    return this.smallGroupsService.findMembers(id, query);
+    return this.smallGroupsService.findMembers(id, query, activeCongregationId);
   }
 
   @Post(':id/members')
@@ -147,8 +163,9 @@ export class SmallGroupsController {
   addMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddSmallGroupMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMemberResponseDto> {
-    return this.smallGroupsService.addMember(id, dto);
+    return this.smallGroupsService.addMember(id, dto, activeCongregationId);
   }
 
   @Patch(':id/members/:memberId')
@@ -160,8 +177,14 @@ export class SmallGroupsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body() dto: UpdateSmallGroupMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMemberResponseDto> {
-    return this.smallGroupsService.updateMember(id, memberId, dto);
+    return this.smallGroupsService.updateMember(
+      id,
+      memberId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Delete(':id/members/:memberId')
@@ -173,8 +196,13 @@ export class SmallGroupsController {
   removeMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    return this.smallGroupsService.removeMember(id, memberId);
+    return this.smallGroupsService.removeMember(
+      id,
+      memberId,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/meetings')
@@ -184,8 +212,13 @@ export class SmallGroupsController {
   findMeetings(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QuerySmallGroupMeetingsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupMeetingsResponseDto> {
-    return this.smallGroupsService.findMeetings(id, query);
+    return this.smallGroupsService.findMeetings(
+      id,
+      query,
+      activeCongregationId,
+    );
   }
 
   @Post(':id/meetings')
@@ -200,8 +233,9 @@ export class SmallGroupsController {
   createMeeting(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateSmallGroupMeetingDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMeetingResponseDto> {
-    return this.smallGroupsService.createMeeting(id, dto);
+    return this.smallGroupsService.createMeeting(id, dto, activeCongregationId);
   }
 
   @Patch(':id/meetings/:meetingId')
@@ -214,8 +248,14 @@ export class SmallGroupsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('meetingId', ParseUUIDPipe) meetingId: string,
     @Body() dto: UpdateSmallGroupMeetingDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMeetingResponseDto> {
-    return this.smallGroupsService.updateMeeting(id, meetingId, dto);
+    return this.smallGroupsService.updateMeeting(
+      id,
+      meetingId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Delete(':id/meetings/:meetingId')
@@ -227,8 +267,13 @@ export class SmallGroupsController {
   removeMeeting(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('meetingId', ParseUUIDPipe) meetingId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    return this.smallGroupsService.removeMeeting(id, meetingId);
+    return this.smallGroupsService.removeMeeting(
+      id,
+      meetingId,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/meetings/:meetingId/attendance')
@@ -240,8 +285,13 @@ export class SmallGroupsController {
   getMeetingAttendance(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('meetingId', ParseUUIDPipe) meetingId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMeetingAttendanceDto> {
-    return this.smallGroupsService.getMeetingAttendance(id, meetingId);
+    return this.smallGroupsService.getMeetingAttendance(
+      id,
+      meetingId,
+      activeCongregationId,
+    );
   }
 
   @Put(':id/meetings/:meetingId/attendance')
@@ -258,8 +308,14 @@ export class SmallGroupsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('meetingId', ParseUUIDPipe) meetingId: string,
     @Body() dto: UpsertSmallGroupAttendanceDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupMeetingAttendanceDto> {
-    return this.smallGroupsService.upsertMeetingAttendance(id, meetingId, dto);
+    return this.smallGroupsService.upsertMeetingAttendance(
+      id,
+      meetingId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Get(':id/reports/frequency.csv')
@@ -278,8 +334,13 @@ export class SmallGroupsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QuerySmallGroupFrequencyDto,
     @Res() response: Response,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    const csv = await this.smallGroupsService.exportFrequencyCsv(id, query);
+    const csv = await this.smallGroupsService.exportFrequencyCsv(
+      id,
+      query,
+      activeCongregationId,
+    );
     response
       .setHeader(
         'Content-Disposition',
@@ -298,8 +359,13 @@ export class SmallGroupsController {
   frequencyReport(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QuerySmallGroupFrequencyDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupFrequencyReportDto> {
-    return this.smallGroupsService.getFrequencyReport(id, query);
+    return this.smallGroupsService.getFrequencyReport(
+      id,
+      query,
+      activeCongregationId,
+    );
   }
 
   @Get(':id')
@@ -308,8 +374,9 @@ export class SmallGroupsController {
   @ApiNotFoundResponse({ description: 'Grupo não encontrado' })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupResponseDto> {
-    return this.smallGroupsService.findOne(id);
+    return this.smallGroupsService.findOne(id, activeCongregationId);
   }
 
   @Patch(':id')
@@ -324,8 +391,9 @@ export class SmallGroupsController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateSmallGroupDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<SmallGroupResponseDto> {
-    return this.smallGroupsService.update(id, dto);
+    return this.smallGroupsService.update(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -334,7 +402,10 @@ export class SmallGroupsController {
   @ApiOperation({ summary: 'Remover pequeno grupo (soft delete)' })
   @ApiNoContentResponse({ description: 'Grupo removido' })
   @ApiNotFoundResponse({ description: 'Grupo não encontrado' })
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.smallGroupsService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.smallGroupsService.remove(id, activeCongregationId);
   }
 }

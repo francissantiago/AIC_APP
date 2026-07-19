@@ -1,9 +1,14 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { Test, TestingModule } from '@nestjs/testing';
 import { ApiException } from '../../common/errors/api.exception';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
+import { ClassesService } from '../classes/classes.service';
+import { MinistriesService } from '../ministries/ministries.service';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { MembersController } from './members.controller';
+import { MembersService } from './members.service';
 
 /**
  * Testes de integração leves: exercitam o `PermissionsGuard` real lendo a
@@ -102,5 +107,56 @@ describe('MembersController (PermissionsGuard aplicado)', () => {
       expectAllowed('update', permissions);
       expectAllowed('remove', permissions);
     });
+  });
+});
+
+describe('MembersController (delegação de contexto)', () => {
+  let controller: MembersController;
+
+  const membersService = { findOne: jest.fn() };
+  const ministriesService = { findByMemberId: jest.fn() };
+  const classesService = { findByMemberId: jest.fn() };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [MembersController],
+      providers: [
+        { provide: MembersService, useValue: membersService },
+        { provide: MinistriesService, useValue: ministriesService },
+        { provide: ClassesService, useValue: classesService },
+      ],
+    })
+      .overrideGuard(CongregationContextGuard)
+      .useValue({ canActivate: jest.fn().mockResolvedValue(true) })
+      .compile();
+
+    controller = module.get(MembersController);
+  });
+
+  it('findMinistries repassa activeCongregationId ao MinistriesService', async () => {
+    const memberId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    const congregationId = '22222222-3333-4444-5555-666666666666';
+    ministriesService.findByMemberId.mockResolvedValue([]);
+
+    await controller.findMinistries(memberId, congregationId);
+
+    expect(ministriesService.findByMemberId).toHaveBeenCalledWith(
+      memberId,
+      congregationId,
+    );
+  });
+
+  it('findClasses repassa activeCongregationId ao ClassesService', async () => {
+    const memberId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    const congregationId = '22222222-3333-4444-5555-666666666666';
+    classesService.findByMemberId.mockResolvedValue([]);
+
+    await controller.findClasses(memberId, congregationId);
+
+    expect(classesService.findByMemberId).toHaveBeenCalledWith(
+      memberId,
+      congregationId,
+    );
   });
 });

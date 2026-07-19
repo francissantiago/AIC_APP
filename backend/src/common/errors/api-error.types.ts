@@ -61,6 +61,15 @@ export const ApiErrorCode = {
 
   CONGREGATIONS_EMAIL_IN_USE: 'CONGREGATIONS.EMAIL_IN_USE',
   CONGREGATIONS_DOCUMENT_IN_USE: 'CONGREGATIONS.DOCUMENT_IN_USE',
+  CONGREGATIONS_NOT_FOUND: 'CONGREGATIONS.NOT_FOUND',
+  CONGREGATIONS_PARENT_NOT_FOUND: 'CONGREGATIONS.PARENT_NOT_FOUND',
+  CONGREGATIONS_PARENT_MUST_BE_HEADQUARTERS:
+    'CONGREGATIONS.PARENT_MUST_BE_HEADQUARTERS',
+  CONGREGATIONS_HAS_ACTIVE_BRANCHES: 'CONGREGATIONS.HAS_ACTIVE_BRANCHES',
+  CONGREGATIONS_TYPE_LOCKED: 'CONGREGATIONS.TYPE_LOCKED',
+  CONGREGATIONS_CONTEXT_DENIED: 'CONGREGATIONS.CONTEXT_DENIED',
+  CONGREGATIONS_MEMBERSHIP_DEFAULT_REQUIRED:
+    'CONGREGATIONS.MEMBERSHIP_DEFAULT_REQUIRED',
 
   FINANCE_CATEGORY_NOT_FOUND: 'FINANCE.CATEGORY_NOT_FOUND',
   FINANCE_ENTRY_NOT_FOUND: 'FINANCE.ENTRY_NOT_FOUND',
@@ -220,6 +229,19 @@ export const ApiErrorMessage = {
   [ApiErrorCode.CONGREGATIONS_EMAIL_IN_USE]: 'Este e-mail já está cadastrado.',
   [ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE]:
     'Este documento já está cadastrado.',
+  [ApiErrorCode.CONGREGATIONS_NOT_FOUND]: 'Congregação não encontrada.',
+  [ApiErrorCode.CONGREGATIONS_PARENT_NOT_FOUND]:
+    'Congregação-sede (parentId) não encontrada.',
+  [ApiErrorCode.CONGREGATIONS_PARENT_MUST_BE_HEADQUARTERS]:
+    'A filial deve estar vinculada a uma congregação do tipo sede (headquarters).',
+  [ApiErrorCode.CONGREGATIONS_HAS_ACTIVE_BRANCHES]:
+    'Não é possível remover: esta congregação possui filiais ativas.',
+  [ApiErrorCode.CONGREGATIONS_TYPE_LOCKED]:
+    'O tipo da congregação (sede/filial) não pode ser alterado após a criação.',
+  [ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED]:
+    'Você não tem acesso a esta congregação. Verifique o cabeçalho X-Congregation-Id.',
+  [ApiErrorCode.CONGREGATIONS_MEMBERSHIP_DEFAULT_REQUIRED]:
+    'defaultCongregationId deve estar presente em congregationIds.',
   [ApiErrorCode.FINANCE_CATEGORY_NOT_FOUND]: 'Categoria não encontrada.',
   [ApiErrorCode.FINANCE_ENTRY_NOT_FOUND]: 'Lançamento não encontrado.',
   [ApiErrorCode.FINANCE_CATEGORY_TYPE_LOCKED]:

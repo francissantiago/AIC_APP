@@ -260,4 +260,23 @@ describe('AnnouncementsService', () => {
       expect(result.total).toBe(1);
     });
   });
+
+  describe('contexto de congregação ativa', () => {
+    it('findAll com activeCongregationId não chama getOrCreateBase', async () => {
+      const explicitId = '22222222-3333-4444-5555-666666666666';
+      const qb = mockQueryBuilder([]);
+      jest.clearAllMocks();
+      congregationsService.getOrCreateBase.mockResolvedValue(
+        baseCongregation(),
+      );
+
+      await service.findAll({ page: 1, limit: 20 }, explicitId);
+
+      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(qb.where).toHaveBeenCalledWith(
+        'announcement.congregationId = :congregationId',
+        { congregationId: explicitId },
+      );
+    });
+  });
 });

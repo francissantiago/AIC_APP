@@ -31,6 +31,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { AddFamilyMemberDto } from './dto/add-family-member.dto';
 import { BirthdayReportResponseDto } from './dto/birthday-report-item.dto';
 import { CreateFamilyDto } from './dto/create-family.dto';
@@ -54,7 +56,7 @@ import { FamiliesService } from './families.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('members:read')
 @Controller('families')
 export class FamiliesController {
@@ -70,8 +72,11 @@ export class FamiliesController {
   @ApiUnprocessableEntityResponse({
     description: 'Responsável inválido ou de outra congregação',
   })
-  create(@Body() dto: CreateFamilyDto): Promise<FamilyResponseDto> {
-    return this.familiesService.create(dto);
+  create(
+    @Body() dto: CreateFamilyDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<FamilyResponseDto> {
+    return this.familiesService.create(dto, activeCongregationId);
   }
 
   @Get()
@@ -79,8 +84,9 @@ export class FamiliesController {
   @ApiOkResponse({ type: PaginatedFamiliesResponseDto })
   findAll(
     @Query() query: QueryFamiliesDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedFamiliesResponseDto> {
-    return this.familiesService.findAll(query);
+    return this.familiesService.findAll(query, activeCongregationId);
   }
 
   @Get('birthdays')
@@ -88,8 +94,9 @@ export class FamiliesController {
   @ApiOkResponse({ type: BirthdayReportResponseDto })
   findBirthdays(
     @Query() query: QueryFamilyBirthdaysDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<BirthdayReportResponseDto> {
-    return this.familiesService.findBirthdays(query);
+    return this.familiesService.findBirthdays(query, activeCongregationId);
   }
 
   @Get('by-member/:memberId')
@@ -100,8 +107,9 @@ export class FamiliesController {
   })
   findByMember(
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FamilyResponseDto> {
-    return this.familiesService.findByMemberId(memberId);
+    return this.familiesService.findByMemberId(memberId, activeCongregationId);
   }
 
   @Get(':id')
@@ -118,8 +126,13 @@ export class FamiliesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('includeMembers', new ParseBoolPipe({ optional: true }))
     includeMembers?: boolean,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FamilyResponseDto> {
-    return this.familiesService.findOne(id, includeMembers === true);
+    return this.familiesService.findOne(
+      id,
+      includeMembers === true,
+      activeCongregationId,
+    );
   }
 
   @Patch(':id')
@@ -136,8 +149,9 @@ export class FamiliesController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateFamilyDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FamilyResponseDto> {
-    return this.familiesService.update(id, dto);
+    return this.familiesService.update(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -148,8 +162,11 @@ export class FamiliesController {
   })
   @ApiNoContentResponse({ description: 'Família removida' })
   @ApiNotFoundResponse({ description: 'Família não encontrada' })
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.familiesService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.familiesService.remove(id, activeCongregationId);
   }
 
   @Get(':id/members')
@@ -159,8 +176,9 @@ export class FamiliesController {
   findMembers(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: QueryFamilyMembersDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedFamilyMembersResponseDto> {
-    return this.familiesService.findMembers(id, query);
+    return this.familiesService.findMembers(id, query, activeCongregationId);
   }
 
   @Post(':id/members')
@@ -177,8 +195,9 @@ export class FamiliesController {
   addMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddFamilyMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FamilyMemberResponseDto> {
-    return this.familiesService.addMember(id, dto);
+    return this.familiesService.addMember(id, dto, activeCongregationId);
   }
 
   @Patch(':id/members/:memberId')
@@ -190,8 +209,14 @@ export class FamiliesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body() dto: UpdateFamilyMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<FamilyMemberResponseDto> {
-    return this.familiesService.updateMemberRelation(id, memberId, dto);
+    return this.familiesService.updateMemberRelation(
+      id,
+      memberId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Delete(':id/members/:memberId')
@@ -203,7 +228,12 @@ export class FamiliesController {
   removeMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<void> {
-    return this.familiesService.removeMember(id, memberId);
+    return this.familiesService.removeMember(
+      id,
+      memberId,
+      activeCongregationId,
+    );
   }
 }

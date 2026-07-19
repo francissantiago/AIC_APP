@@ -45,9 +45,12 @@ export class SecretariatService {
     private readonly attendanceService: AttendanceService,
   ) {}
 
-  async getDashboard(): Promise<SecretariatDashboardResponseDto> {
-    const congregationId = (await this.congregationsService.getOrCreateBase())
-      .id;
+  async getDashboard(
+    activeCongregationId?: string,
+  ): Promise<SecretariatDashboardResponseDto> {
+    const congregationId =
+      activeCongregationId ??
+      (await this.congregationsService.getOrCreateBase()).id;
     const now = new Date();
     const [
       upcomingEventsCount,

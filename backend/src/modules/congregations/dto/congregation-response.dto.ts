@@ -19,6 +19,12 @@ export class CongregationResponseDto {
   })
   type!: CongregationType;
 
+  @ApiPropertyOptional({
+    example: '7c4b835d-3342-467b-a94b-2e464036b138',
+    nullable: true,
+  })
+  parentId!: string | null;
+
   @ApiPropertyOptional({ example: '12.345.678/0001-99', nullable: true })
   document!: string | null;
 
@@ -55,18 +61,28 @@ export class CongregationResponseDto {
   })
   notes!: string | null;
 
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'Só populado quando type=headquarters',
+  })
+  branchesCount?: number;
+
   @ApiProperty()
   createdAt!: Date;
 
   @ApiProperty()
   updatedAt!: Date;
 
-  static fromEntity(congregation: Congregation): CongregationResponseDto {
+  static fromEntity(
+    congregation: Congregation,
+    options?: { branchesCount?: number },
+  ): CongregationResponseDto {
     const dto = new CongregationResponseDto();
     dto.id = congregation.id;
     dto.name = congregation.name;
     dto.tradeName = congregation.tradeName;
     dto.type = congregation.type;
+    dto.parentId = congregation.parentId;
     dto.document = congregation.document;
     dto.email = congregation.email;
     dto.phone = congregation.phone;
@@ -80,6 +96,23 @@ export class CongregationResponseDto {
     dto.notes = congregation.notes;
     dto.createdAt = congregation.createdAt;
     dto.updatedAt = congregation.updatedAt;
+    if (options?.branchesCount !== undefined) {
+      dto.branchesCount = options.branchesCount;
+    }
     return dto;
   }
+}
+
+export class PaginatedCongregationsResponseDto {
+  @ApiProperty({ type: CongregationResponseDto, isArray: true })
+  data!: CongregationResponseDto[];
+
+  @ApiProperty({ example: 2 })
+  total!: number;
+
+  @ApiProperty({ example: 1 })
+  page!: number;
+
+  @ApiProperty({ example: 20 })
+  limit!: number;
 }

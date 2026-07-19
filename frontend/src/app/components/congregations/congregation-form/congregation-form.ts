@@ -4,12 +4,13 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
-  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-status';
@@ -17,20 +18,28 @@ import { CONGREGATION_TYPES, CongregationType } from '@enums/congregation-type';
 import { IUpdateCongregation } from '@interfaces/IUpdateCongregation';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
+import { CongregationContextService } from '@services/congregation-context-service';
 import { CongregationService } from '@services/congregation-service';
 
 @Component({
   selector: 'app-congregation-form',
-  imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDialog, ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './congregation-form.html',
   styleUrl: './congregation-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CongregationForm implements OnInit {
+export class CongregationForm {
   readonly #congregationService = inject(CongregationService);
+  readonly #context = inject(CongregationContextService);
   readonly #apiError = inject(ApiErrorService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);
+
+  readonly activeName = computed(() => this.#context.activeMembership()?.congregationName ?? '');
+  readonly isHeadquartersActive = computed(
+    () => this.#context.activeMembership()?.congregationType === CongregationType.HEADQUARTERS,
+  );
+  readonly canReadBranches = computed(() => this.#auth.hasPermission('congregations:read'));
 
   readonly statuses = CONGREGATION_STATUSES;
   readonly types = CONGREGATION_TYPES;
@@ -98,8 +107,14 @@ export class CongregationForm implements OnInit {
     notes: new FormControl('', { nonNullable: true }),
   });
 
-  ngOnInit(): void {
-    this.#loadCongregation();
+  constructor() {
+    this.form.controls.type.disable();
+    effect(() => {
+      this.#context.contextVersion();
+      if (this.#auth.isAuthenticated()) {
+        this.#loadCongregation();
+      }
+    });
   }
 
   statusLabelKey(status: CongregationStatus): string {
@@ -198,7 +213,6 @@ export class CongregationForm implements OnInit {
     const raw = this.form.getRawValue();
     const payload: IUpdateCongregation = {
       name: raw.name.trim(),
-      type: raw.type,
       status: raw.status,
     };
 

@@ -29,6 +29,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { MemberClassSummaryDto } from '../classes/dto/class-enrollment-response.dto';
 import { ClassesService } from '../classes/classes.service';
 import { MinistryResponseDto } from '../ministries/dto/ministry-response.dto';
@@ -47,7 +49,7 @@ import { MembersService } from './members.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('members:read')
 @Controller('members')
 export class MembersController {
@@ -65,8 +67,11 @@ export class MembersController {
   @ApiUnprocessableEntityResponse({
     description: 'userId aponta para usuário inexistente',
   })
-  create(@Body() dto: CreateMemberDto): Promise<MemberResponseDto> {
-    return this.membersService.create(dto);
+  create(
+    @Body() dto: CreateMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    return this.membersService.create(dto, activeCongregationId);
   }
 
   @Get()
@@ -74,8 +79,9 @@ export class MembersController {
   @ApiOkResponse({ type: PaginatedMembersResponseDto })
   findAll(
     @Query() query: QueryMembersDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedMembersResponseDto> {
-    return this.membersService.findAll(query);
+    return this.membersService.findAll(query, activeCongregationId);
   }
 
   @Get(':id/ministries')
@@ -85,8 +91,9 @@ export class MembersController {
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
   findMinistries(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MinistryResponseDto[]> {
-    return this.ministriesService.findByMemberId(id);
+    return this.ministriesService.findByMemberId(id, activeCongregationId);
   }
 
   @Get(':id/classes')
@@ -96,16 +103,20 @@ export class MembersController {
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
   findClasses(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberClassSummaryDto[]> {
-    return this.classesService.findByMemberId(id);
+    return this.classesService.findByMemberId(id, activeCongregationId);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Detalhar membro' })
   @ApiOkResponse({ type: MemberResponseDto })
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
-  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<MemberResponseDto> {
-    return this.membersService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    return this.membersService.findOne(id, activeCongregationId);
   }
 
   @Patch(':id')
@@ -120,8 +131,9 @@ export class MembersController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateMemberDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberResponseDto> {
-    return this.membersService.update(id, dto);
+    return this.membersService.update(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -130,7 +142,10 @@ export class MembersController {
   @ApiOperation({ summary: 'Remover membro (soft delete via deleted_at)' })
   @ApiNoContentResponse({ description: 'Membro removido' })
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.membersService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.membersService.remove(id, activeCongregationId);
   }
 }

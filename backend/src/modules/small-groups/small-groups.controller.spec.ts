@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { SmallGroupsController } from './small-groups.controller';
 import { SmallGroupsService } from './small-groups.service';
 
@@ -34,7 +35,10 @@ describe('SmallGroupsController', () => {
       providers: [
         { provide: SmallGroupsService, useValue: smallGroupsService },
       ],
-    }).compile();
+    })
+      .overrideGuard(CongregationContextGuard)
+      .useValue({ canActivate: jest.fn().mockResolvedValue(true) })
+      .compile();
 
     controller = module.get(SmallGroupsController);
   });
@@ -44,8 +48,8 @@ describe('SmallGroupsController', () => {
     const response = { id: 'g1', name: 'Célula Centro' };
     smallGroupsService.create.mockResolvedValue(response);
 
-    await expect(controller.create(dto)).resolves.toEqual(response);
-    expect(smallGroupsService.create).toHaveBeenCalledWith(dto);
+    await expect(controller.create(dto, undefined)).resolves.toEqual(response);
+    expect(smallGroupsService.create).toHaveBeenCalledWith(dto, undefined);
   });
 
   it('deve delegar findAll ao service', async () => {
@@ -53,7 +57,9 @@ describe('SmallGroupsController', () => {
     const response = { data: [], total: 0, page: 1, limit: 20 };
     smallGroupsService.findAll.mockResolvedValue(response);
 
-    await expect(controller.findAll(query)).resolves.toEqual(response);
-    expect(smallGroupsService.findAll).toHaveBeenCalledWith(query);
+    await expect(controller.findAll(query, undefined)).resolves.toEqual(
+      response,
+    );
+    expect(smallGroupsService.findAll).toHaveBeenCalledWith(query, undefined);
   });
 });

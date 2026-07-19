@@ -7,6 +7,8 @@ export interface ICongregation {
   name: string;
   tradeName: string | null;
   type: CongregationType;
+  parentId: string | null;
+  branchesCount?: number;
   document: string | null;
   email: string | null;
   phone: string | null;

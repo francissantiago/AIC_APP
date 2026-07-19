@@ -11,6 +11,8 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+build-errors.txt
+build-out.txt
 
 # OS
 .DS_Store
@@ -37,6 +39,7 @@ lerna-debug.log*
 
 # env
 .env
+.env.test
 .env.local
 .env.*.local
 

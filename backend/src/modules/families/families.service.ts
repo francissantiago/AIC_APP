@@ -47,8 +47,11 @@ export class FamiliesService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(dto: CreateFamilyDto): Promise<FamilyResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async create(
+    dto: CreateFamilyDto,
+    activeCongregationId?: string,
+  ): Promise<FamilyResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const name = dto.name.trim();
     if (!name) {
       throw new ApiException(HttpStatus.BAD_REQUEST, {
@@ -87,13 +90,16 @@ export class FamiliesService {
     }
 
     this.logger.log(`Família criada: ${saved.id} (${saved.name})`);
-    return this.toFamilyResponse(await this.getFamilyOrFail(saved.id));
+    return this.toFamilyResponse(
+      await this.getFamilyOrFail(saved.id, true, activeCongregationId),
+    );
   }
 
   async findAll(
     query: QueryFamiliesDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedFamiliesResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, search } = query;
 
     const qb = this.familiesRepository
@@ -125,6 +131,7 @@ export class FamiliesService {
 
   async findBirthdays(
     query: QueryFamilyBirthdaysDto,
+    activeCongregationId?: string,
   ): Promise<BirthdayReportResponseDto> {
     const month = Number(query.month);
     if (!Number.isInteger(month) || month < 1 || month > 12) {
@@ -134,10 +141,10 @@ export class FamiliesService {
       });
     }
 
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
 
     if (query.familyId) {
-      await this.getFamilyOrFail(query.familyId);
+      await this.getFamilyOrFail(query.familyId, true, activeCongregationId);
     }
 
     const qb = this.familyMembersRepository
@@ -174,8 +181,11 @@ export class FamiliesService {
     return { data };
   }
 
-  async findByMemberId(memberId: string): Promise<FamilyResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findByMemberId(
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<FamilyResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.membersRepository.findOne({
       where: { id: memberId, congregationId },
     });
@@ -209,8 +219,9 @@ export class FamiliesService {
   async findOne(
     id: string,
     includeMembers = false,
+    activeCongregationId?: string,
   ): Promise<FamilyResponseDto> {
-    const family = await this.getFamilyOrFail(id, true);
+    const family = await this.getFamilyOrFail(id, true, activeCongregationId);
     const response = this.toFamilyResponse(family);
     if (includeMembers) {
       response.membersCount = await this.familyMembersRepository.count({
@@ -220,8 +231,12 @@ export class FamiliesService {
     return response;
   }
 
-  async update(id: string, dto: UpdateFamilyDto): Promise<FamilyResponseDto> {
-    const family = await this.getFamilyOrFail(id);
+  async update(
+    id: string,
+    dto: UpdateFamilyDto,
+    activeCongregationId?: string,
+  ): Promise<FamilyResponseDto> {
+    const family = await this.getFamilyOrFail(id, true, activeCongregationId);
 
     if (dto.name !== undefined) {
       const name = dto.name.trim();
@@ -260,11 +275,13 @@ export class FamiliesService {
 
     const saved = await this.familiesRepository.save(family);
     this.logger.log(`Família atualizada: ${saved.id}`);
-    return this.toFamilyResponse(await this.getFamilyOrFail(saved.id));
+    return this.toFamilyResponse(
+      await this.getFamilyOrFail(saved.id, true, activeCongregationId),
+    );
   }
 
-  async remove(id: string): Promise<void> {
-    const family = await this.getFamilyOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const family = await this.getFamilyOrFail(id, true, activeCongregationId);
 
     await this.dataSource.transaction(async (manager) => {
       family.headMemberId = null;
@@ -279,8 +296,9 @@ export class FamiliesService {
   async findMembers(
     familyId: string,
     query: QueryFamilyMembersDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedFamilyMembersResponseDto> {
-    await this.getFamilyOrFail(familyId);
+    await this.getFamilyOrFail(familyId, true, activeCongregationId);
     const { page, limit } = query;
 
     const [links, total] = await this.familyMembersRepository.findAndCount({
@@ -302,8 +320,13 @@ export class FamiliesService {
   async addMember(
     familyId: string,
     dto: AddFamilyMemberDto,
+    activeCongregationId?: string,
   ): Promise<FamilyMemberResponseDto> {
-    const family = await this.getFamilyOrFail(familyId);
+    const family = await this.getFamilyOrFail(
+      familyId,
+      true,
+      activeCongregationId,
+    );
     const member = await this.assertMemberEligible(
       dto.memberId,
       family.congregationId,
@@ -350,8 +373,9 @@ export class FamiliesService {
     familyId: string,
     memberId: string,
     dto: UpdateFamilyMemberDto,
+    activeCongregationId?: string,
   ): Promise<FamilyMemberResponseDto> {
-    await this.getFamilyOrFail(familyId);
+    await this.getFamilyOrFail(familyId, true, activeCongregationId);
     const link = await this.getLinkOrFail(familyId, memberId);
 
     link.relation = dto.relation;
@@ -366,8 +390,16 @@ export class FamiliesService {
     return FamilyMemberResponseDto.fromEntity(saved);
   }
 
-  async removeMember(familyId: string, memberId: string): Promise<void> {
-    const family = await this.getFamilyOrFail(familyId);
+  async removeMember(
+    familyId: string,
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    const family = await this.getFamilyOrFail(
+      familyId,
+      true,
+      activeCongregationId,
+    );
     const link = await this.getLinkOrFail(familyId, memberId);
 
     await this.familyMembersRepository.remove(link);
@@ -380,12 +412,21 @@ export class FamiliesService {
     this.logger.log(`Membro ${memberId} desvinculado da família ${familyId}`);
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
-  private async getFamilyOrFail(id: string, withHead = true): Promise<Family> {
-    const congregationId = await this.getCongregationId();
+  private async getFamilyOrFail(
+    id: string,
+    withHead = true,
+    activeCongregationId?: string,
+  ): Promise<Family> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const family = await this.familiesRepository.findOne({
       where: { id, congregationId },
       relations: withHead ? { headMember: true } : undefined,

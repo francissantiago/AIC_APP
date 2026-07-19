@@ -30,6 +30,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { AssetsService } from './assets.service';
 import {
@@ -47,7 +49,7 @@ import {
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('assets:read')
 @Controller('finance')
 export class AssetsController {
@@ -56,8 +58,11 @@ export class AssetsController {
   @Get('reports/assets')
   @ApiOperation({ summary: 'Gerar relatório de inventário patrimonial' })
   @ApiOkResponse({ type: AssetReportResponseDto })
-  assetReport(@Query() query: QueryAssetsDto): Promise<AssetReportResponseDto> {
-    return this.assetsService.getAssetReport(query);
+  assetReport(
+    @Query() query: QueryAssetsDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<AssetReportResponseDto> {
+    return this.assetsService.getAssetReport(query, activeCongregationId);
   }
 
   @Get('assets')
@@ -65,16 +70,20 @@ export class AssetsController {
   @ApiOkResponse({ type: PaginatedAssetsResponseDto })
   findAssets(
     @Query() query: QueryAssetsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedAssetsResponseDto> {
-    return this.assetsService.findAssets(query);
+    return this.assetsService.findAssets(query, activeCongregationId);
   }
 
   @Get('assets/:id')
   @ApiOperation({ summary: 'Detalhar bem patrimonial' })
   @ApiOkResponse({ type: AssetResponseDto })
   @ApiNotFoundResponse({ description: 'Bem não encontrado' })
-  findAsset(@Param('id', ParseUUIDPipe) id: string): Promise<AssetResponseDto> {
-    return this.assetsService.findAsset(id);
+  findAsset(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<AssetResponseDto> {
+    return this.assetsService.findAsset(id, activeCongregationId);
   }
 
   @Post('assets')
@@ -87,8 +96,9 @@ export class AssetsController {
   createAsset(
     @Body() dto: CreateAssetDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<AssetResponseDto> {
-    return this.assetsService.createAsset(dto, user);
+    return this.assetsService.createAsset(dto, user, activeCongregationId);
   }
 
   @Patch('assets/:id')
@@ -102,8 +112,9 @@ export class AssetsController {
   updateAsset(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateAssetDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<AssetResponseDto> {
-    return this.assetsService.updateAsset(id, dto);
+    return this.assetsService.updateAsset(id, dto, activeCongregationId);
   }
 
   @Delete('assets/:id')
@@ -112,7 +123,10 @@ export class AssetsController {
   @ApiOperation({ summary: 'Remover bem patrimonial por soft delete' })
   @ApiNoContentResponse({ description: 'Bem removido' })
   @ApiNotFoundResponse({ description: 'Bem não encontrado' })
-  removeAsset(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.assetsService.removeAsset(id);
+  removeAsset(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.assetsService.removeAsset(id, activeCongregationId);
   }
 }

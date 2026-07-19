@@ -4,6 +4,8 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -31,6 +33,18 @@ export class Congregation {
     default: CongregationType.HEADQUARTERS,
   })
   type!: CongregationType;
+
+  @Column({ name: 'parent_id', type: 'char', length: 36, nullable: true })
+  parentId!: string | null;
+
+  @ManyToOne(() => Congregation, (congregation) => congregation.branches, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'parent_id' })
+  parent!: Congregation | null;
+
+  @OneToMany(() => Congregation, (congregation) => congregation.parent)
+  branches!: Congregation[];
 
   @Column({ type: 'varchar', length: 30, unique: true, nullable: true })
   document!: string | null;

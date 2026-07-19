@@ -63,6 +63,8 @@
     "EBD": "EBD",
     "EBD_REPORTS": "Frequência",
     "CONGREGATIONS": "Congregação",
+    "CONGREGATION_ACTIVE": "Congregação ativa",
+    "CONGREGATIONS_BRANCHES": "Filiais",
     "EXPAND": "Expandir menu",
     "COLLAPSE": "Recolher menu",
     "FINANCE_ASSETS": "Finanças e Patrimônio",
@@ -94,6 +96,8 @@
     "PAGE_EBD": "Escola Bíblica Dominical",
     "PAGE_EBD_REPORTS": "Frequência da EBD",
     "PAGE_CONGREGATION": "Congregação",
+    "PAGE_CONGREGATIONS_LIST": "Congregações",
+    "PAGE_CONGREGATION_ACTIVE": "Congregação ativa",
     "DEVELOPED_BY": "Desenvolvido por",
     "PAGE_FINANCE": "Visão financeira",
     "PAGE_ENTRIES": "Lançamentos financeiros",
@@ -679,7 +683,39 @@
     "NOT_FOUND": "Congregação não encontrada",
     "VALIDATION_REQUIRED": "Campo obrigatório",
     "VALIDATION_EMAIL": "E-mail inválido",
-    "CONFLICT_ERROR": "E-mail ou documento já em uso"
+    "CONFLICT_ERROR": "E-mail ou documento já em uso",
+    "EDIT_ACTIVE_TITLE": "Congregação ativa",
+    "ACTIVE_HEADQUARTERS_HINT": "Você está editando o perfil da matriz do contexto atual.",
+    "ACTIVE_BRANCH_HINT": "Você está editando a filial \"{{name}}\" do contexto atual.",
+    "MANAGE_BRANCHES_LINK": "Gerenciar filiais"
+  },
+  "CONGREGATION_CONTEXT": {
+    "SELECT_LABEL": "Congregação ativa",
+    "LOADING": "Carregando congregações…",
+    "LOAD_ERROR": "Não foi possível carregar suas congregações",
+    "SWITCHED": "Contexto de congregação atualizado",
+    "ERROR_DENIED": "Você não tem mais acesso a essa congregação"
+  },
+  "CONGREGATIONS": {
+    "TITLE": "Congregações",
+    "DESCRIPTION": "Gerenciar matriz e filiais",
+    "NEW_BRANCH": "Nova filial",
+    "EDIT_BRANCH": "Editar filial",
+    "CONFIRM_DELETE": "Remover esta congregação?",
+    "DELETE_SUCCESS": "Congregação removida",
+    "CREATE_SUCCESS": "Filial criada",
+    "SAVE_SUCCESS": "Congregação salva",
+    "LOAD_ERROR": "Falha ao carregar congregações",
+    "EMPTY": "Nenhuma congregação encontrada",
+    "COLUMN_NAME": "Nome",
+    "COLUMN_TYPE": "Tipo",
+    "COLUMN_STATUS": "Status",
+    "COLUMN_LOCATION": "Localização",
+    "COLUMN_BRANCHES": "Filiais",
+    "FILTER_SEARCH": "Buscar",
+    "FILTER_TYPE": "Tipo",
+    "FILTER_STATUS": "Status",
+    "HQ_DELETE_DISABLED": "A matriz não pode ser removida enquanto houver filiais"
   },
   "SECRETARIAT": {
     "TITLE": "Secretaria",
@@ -881,7 +917,14 @@
     },
     "CONGREGATIONS": {
       "EMAIL_IN_USE": "Este e-mail já está cadastrado.",
-      "DOCUMENT_IN_USE": "Este documento já está cadastrado."
+      "DOCUMENT_IN_USE": "Este documento já está cadastrado.",
+      "NOT_FOUND": "Congregação não encontrada.",
+      "TYPE_LOCKED": "O tipo da congregação não pode ser alterado.",
+      "HAS_ACTIVE_BRANCHES": "Não é possível remover a matriz enquanto houver filiais.",
+      "CONTEXT_DENIED": "Você não tem acesso à congregação selecionada.",
+      "PARENT_NOT_FOUND": "Congregação matriz não encontrada.",
+      "PARENT_MUST_BE_HEADQUARTERS": "A congregação matriz deve ser sede.",
+      "MEMBERSHIP_DEFAULT_REQUIRED": "Uma congregação padrão é obrigatória."
     },
     "FINANCE": {
       "CATEGORY_NOT_FOUND": "Categoria não encontrada.",

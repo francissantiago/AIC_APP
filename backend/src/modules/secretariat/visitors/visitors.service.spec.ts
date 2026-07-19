@@ -257,4 +257,41 @@ describe('VisitorsService', () => {
       status: HttpStatus.CONFLICT,
     });
   });
+
+  it('convertToMember repassa congregationId explícito para createInTransaction', async () => {
+    const explicitId = '22222222-3333-4444-5555-666666666666';
+    const visitor = baseVisitor();
+    const member = baseMember();
+
+    dataSource.transaction.mockImplementationOnce(
+      async (callback: (manager: unknown) => Promise<unknown>) => {
+        const manager = {
+          findOne: jest.fn().mockResolvedValue(visitor),
+          save: jest
+            .fn()
+            .mockImplementation((entity) =>
+              Promise.resolve({ ...entity, id: visitor.id }),
+            ),
+        };
+        membersService.createInTransaction.mockResolvedValue(member);
+        return callback(manager);
+      },
+    );
+    jest.clearAllMocks();
+    congregationsService.getOrCreateBase.mockResolvedValue(baseCongregation());
+
+    await service.convertToMember(
+      visitorId,
+      {},
+      userWithPermissions(),
+      explicitId,
+    );
+
+    expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+    expect(membersService.createInTransaction).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      explicitId,
+    );
+  });
 });

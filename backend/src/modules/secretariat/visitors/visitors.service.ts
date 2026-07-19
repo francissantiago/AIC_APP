@@ -38,8 +38,9 @@ export class VisitorsService {
   async createVisitor(
     dto: CreateVisitorDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<VisitorResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const visitor = this.visitorsRepository.create({
       congregationId,
       createdByUserId: user.id,
@@ -57,8 +58,9 @@ export class VisitorsService {
 
   async findVisitors(
     query: QueryVisitorsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedVisitorsResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.visitorsRepository
       .createQueryBuilder('visitor')
       .where('visitor.congregationId = :congregationId', { congregationId });
@@ -76,16 +78,20 @@ export class VisitorsService {
     };
   }
 
-  async findVisitor(id: string): Promise<VisitorResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findVisitor(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<VisitorResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     return this.toDto(await this.getVisitorOrFail(id, congregationId));
   }
 
   async updateVisitor(
     id: string,
     dto: UpdateVisitorDto,
+    activeCongregationId?: string,
   ): Promise<VisitorResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const visitor = await this.getVisitorOrFail(id, congregationId);
     if (dto.fullName !== undefined) visitor.fullName = dto.fullName.trim();
     if (dto.phone !== undefined) visitor.phone = this.nullableText(dto.phone);
@@ -104,9 +110,10 @@ export class VisitorsService {
     id: string,
     dto: ConvertVisitorToMemberDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<ConvertVisitorToMemberResponseDto> {
     this.assertCanConvert(user);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
 
     return this.dataSource.transaction(async (manager) => {
       const visitor = await manager.findOne(Visitor, {
@@ -148,8 +155,11 @@ export class VisitorsService {
     });
   }
 
-  async removeVisitor(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeVisitor(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.visitorsRepository.softRemove(
       await this.getVisitorOrFail(id, congregationId),
     );
@@ -193,7 +203,12 @@ export class VisitorsService {
     return new Date().toISOString().slice(0, 10);
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 

@@ -12,6 +12,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { User } from '../users/entities/user.entity';
 import { UserStatus } from '../users/enums/user-status.enum';
+import { UserCongregationsService } from '../congregations/user-congregations.service';
 import { UsersService } from '../users/users.service';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -34,6 +35,7 @@ export class AuthService {
 
   constructor(
     private readonly usersService: UsersService,
+    private readonly userCongregationsService: UserCongregationsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -237,12 +239,16 @@ export class AuthService {
     await this.usersService.touchLastLogin(user.id);
     user.lastLoginAt = new Date();
 
+    const defaultCongregation =
+      await this.userCongregationsService.resolveDefaultForUser(user.id);
+
     const roles = (user.roles ?? []).map((role) => role.code);
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       username: user.username,
       roles,
+      defaultCongregationId: defaultCongregation.id,
     };
 
     const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN', '8h');

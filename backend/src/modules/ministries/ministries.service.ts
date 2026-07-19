@@ -42,8 +42,11 @@ export class MinistriesService {
     private readonly congregationsService: CongregationsService,
   ) {}
 
-  async create(dto: CreateMinistryDto): Promise<MinistryResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async create(
+    dto: CreateMinistryDto,
+    activeCongregationId?: string,
+  ): Promise<MinistryResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const name = dto.name.trim();
     await this.assertNameAvailable(congregationId, name);
 
@@ -67,13 +70,16 @@ export class MinistriesService {
     }
 
     this.logger.log(`Ministério criado: ${saved.id} (${saved.name})`);
-    return this.toMinistryResponse(await this.getMinistryOrFail(saved.id));
+    return this.toMinistryResponse(
+      await this.getMinistryOrFail(saved.id, true, activeCongregationId),
+    );
   }
 
   async findAll(
     query: QueryMinistriesDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedMinistriesResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, q, status, memberId } = query;
 
     const qb = this.ministriesRepository
@@ -117,8 +123,13 @@ export class MinistriesService {
   async findOne(
     id: string,
     includeMembers = false,
+    activeCongregationId?: string,
   ): Promise<MinistryResponseDto> {
-    const ministry = await this.getMinistryOrFail(id, true);
+    const ministry = await this.getMinistryOrFail(
+      id,
+      true,
+      activeCongregationId,
+    );
     const response = this.toMinistryResponse(ministry);
     if (includeMembers) {
       const count = await this.ministryMembersRepository.count({
@@ -132,8 +143,13 @@ export class MinistriesService {
   async update(
     id: string,
     dto: UpdateMinistryDto,
+    activeCongregationId?: string,
   ): Promise<MinistryResponseDto> {
-    const ministry = await this.getMinistryOrFail(id);
+    const ministry = await this.getMinistryOrFail(
+      id,
+      true,
+      activeCongregationId,
+    );
 
     if (dto.name !== undefined) {
       const name = dto.name.trim();
@@ -164,11 +180,17 @@ export class MinistriesService {
 
     const saved = await this.ministriesRepository.save(ministry);
     this.logger.log(`Ministério atualizado: ${saved.id}`);
-    return this.toMinistryResponse(await this.getMinistryOrFail(saved.id));
+    return this.toMinistryResponse(
+      await this.getMinistryOrFail(saved.id, true, activeCongregationId),
+    );
   }
 
-  async remove(id: string): Promise<void> {
-    const ministry = await this.getMinistryOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const ministry = await this.getMinistryOrFail(
+      id,
+      true,
+      activeCongregationId,
+    );
     await this.ministriesRepository.softRemove(ministry);
     this.logger.log(`Ministério removido (soft delete): ${id}`);
   }
@@ -176,8 +198,9 @@ export class MinistriesService {
   async findMembers(
     ministryId: string,
     query: QueryMinistryMembersDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedMinistryMembersResponseDto> {
-    await this.getMinistryOrFail(ministryId);
+    await this.getMinistryOrFail(ministryId, true, activeCongregationId);
     const { page, limit } = query;
 
     const [links, total] = await this.ministryMembersRepository.findAndCount({
@@ -199,8 +222,13 @@ export class MinistriesService {
   async addMember(
     ministryId: string,
     dto: AddMinistryMemberDto,
+    activeCongregationId?: string,
   ): Promise<MinistryMemberResponseDto> {
-    const ministry = await this.getMinistryOrFail(ministryId);
+    const ministry = await this.getMinistryOrFail(
+      ministryId,
+      true,
+      activeCongregationId,
+    );
     const member = await this.assertMemberEligible(
       dto.memberId,
       ministry.congregationId,
@@ -241,8 +269,13 @@ export class MinistriesService {
     ministryId: string,
     memberId: string,
     dto: UpdateMinistryMemberDto,
+    activeCongregationId?: string,
   ): Promise<MinistryMemberResponseDto> {
-    const ministry = await this.getMinistryOrFail(ministryId);
+    const ministry = await this.getMinistryOrFail(
+      ministryId,
+      true,
+      activeCongregationId,
+    );
     const link = await this.getLinkOrFail(ministryId, memberId);
 
     link.role = dto.role;
@@ -262,8 +295,16 @@ export class MinistriesService {
     return MinistryMemberResponseDto.fromEntity(saved);
   }
 
-  async removeMember(ministryId: string, memberId: string): Promise<void> {
-    const ministry = await this.getMinistryOrFail(ministryId);
+  async removeMember(
+    ministryId: string,
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    const ministry = await this.getMinistryOrFail(
+      ministryId,
+      true,
+      activeCongregationId,
+    );
     const link = await this.getLinkOrFail(ministryId, memberId);
 
     await this.ministryMembersRepository.remove(link);
@@ -278,8 +319,11 @@ export class MinistriesService {
     );
   }
 
-  async findByMemberId(memberId: string): Promise<MinistryResponseDto[]> {
-    const congregationId = await this.getCongregationId();
+  async findByMemberId(
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<MinistryResponseDto[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.membersRepository.findOne({
       where: { id: memberId, congregationId },
     });
@@ -309,15 +353,21 @@ export class MinistriesService {
     );
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
   private async getMinistryOrFail(
     id: string,
     withLeader = true,
+    activeCongregationId?: string,
   ): Promise<Ministry> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const ministry = await this.ministriesRepository.findOne({
       where: { id, congregationId },
       relations: withLeader ? { leaderMember: true } : undefined,

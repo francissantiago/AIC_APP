@@ -29,6 +29,8 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { CalendarService } from './calendar.service';
 import {
@@ -45,7 +47,7 @@ import {
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('secretariat:read')
 @Controller('secretariat/calendar-events')
 export class CalendarController {
@@ -56,8 +58,9 @@ export class CalendarController {
   @ApiOkResponse({ type: PaginatedCalendarEventsResponseDto })
   findEvents(
     @Query() query: QueryCalendarEventsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedCalendarEventsResponseDto> {
-    return this.calendarService.findEvents(query);
+    return this.calendarService.findEvents(query, activeCongregationId);
   }
 
   @Get(':id')
@@ -66,8 +69,9 @@ export class CalendarController {
   @ApiNotFoundResponse({ description: 'Evento não encontrado' })
   findEvent(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<CalendarEventResponseDto> {
-    return this.calendarService.findEvent(id);
+    return this.calendarService.findEvent(id, activeCongregationId);
   }
 
   @Post()
@@ -77,8 +81,9 @@ export class CalendarController {
   createEvent(
     @Body() dto: CreateCalendarEventDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<CalendarEventResponseDto> {
-    return this.calendarService.createEvent(dto, user);
+    return this.calendarService.createEvent(dto, user, activeCongregationId);
   }
 
   @Patch(':id')
@@ -89,8 +94,9 @@ export class CalendarController {
   updateEvent(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCalendarEventDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<CalendarEventResponseDto> {
-    return this.calendarService.updateEvent(id, dto);
+    return this.calendarService.updateEvent(id, dto, activeCongregationId);
   }
 
   @Delete(':id')
@@ -99,7 +105,10 @@ export class CalendarController {
   @ApiOperation({ summary: 'Remover evento da agenda por soft delete' })
   @ApiNoContentResponse({ description: 'Evento removido' })
   @ApiNotFoundResponse({ description: 'Evento não encontrado' })
-  removeEvent(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.calendarService.removeEvent(id);
+  removeEvent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.calendarService.removeEvent(id, activeCongregationId);
   }
 }

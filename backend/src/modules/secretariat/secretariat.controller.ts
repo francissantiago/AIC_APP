@@ -11,6 +11,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { SecretariatDashboardResponseDto } from './dto/secretariat.dto';
 import { SecretariatService } from './secretariat.service';
 
@@ -19,7 +21,7 @@ import { SecretariatService } from './secretariat.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('secretariat:read')
 @Controller('secretariat')
 export class SecretariatController {
@@ -30,7 +32,9 @@ export class SecretariatController {
     summary: 'Obter indicadores e séries do módulo de secretaria',
   })
   @ApiOkResponse({ type: SecretariatDashboardResponseDto })
-  dashboard(): Promise<SecretariatDashboardResponseDto> {
-    return this.secretariatService.getDashboard();
+  dashboard(
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<SecretariatDashboardResponseDto> {
+    return this.secretariatService.getDashboard(activeCongregationId);
   }
 }

@@ -12,6 +12,7 @@ import { ITwoFactorSetupResponse } from '@interfaces/ITwoFactorSetupResponse';
 import { IUpdateMeRequest } from '@interfaces/IUpdateMeRequest';
 import { IUser } from '@interfaces/IUser';
 import { ApiErrorService } from '@services/api-error.service';
+import { CongregationContextService } from '@services/congregation-context-service';
 import {
   hasAnyPermission as checkAnyPermission,
   hasPermission as checkPermission,
@@ -199,12 +200,14 @@ export class AuthService {
     this.currentUser.set(null);
     this.loginError.set(null);
     this.preAuthToken.set(null);
+    this.#injector.get(CongregationContextService).clear();
   }
 
   #persistSession(token: string, user: IUser): void {
     sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
     this.accessToken.set(token);
     this.currentUser.set(user);
+    void this.#injector.get(CongregationContextService).initialize();
   }
 
   #readStoredToken(): string | null {

@@ -41,8 +41,9 @@ export class DocumentsService {
   async createDocument(
     dto: CreateSecretariatDocumentDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const document = this.documentsRepository.create({
       congregationId,
       createdByUserId: user.id,
@@ -59,8 +60,9 @@ export class DocumentsService {
 
   async findDocuments(
     query: QuerySecretariatDocumentsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedSecretariatDocumentsResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.documentsRepository
       .createQueryBuilder('document')
       .where('document.congregationId = :congregationId', { congregationId });
@@ -78,16 +80,20 @@ export class DocumentsService {
     };
   }
 
-  async findDocument(id: string): Promise<SecretariatDocumentResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findDocument(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<SecretariatDocumentResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     return this.toDto(await this.getDocumentOrFail(id, congregationId));
   }
 
   async updateDocument(
     id: string,
     dto: UpdateSecretariatDocumentDto,
+    activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const document = await this.getDocumentOrFail(id, congregationId);
     if (dto.title !== undefined) document.title = dto.title.trim();
     if (dto.type !== undefined) document.type = dto.type;
@@ -103,8 +109,11 @@ export class DocumentsService {
     return this.toDto(saved);
   }
 
-  async removeDocument(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeDocument(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.documentsRepository.softRemove(
       await this.getDocumentOrFail(id, congregationId),
     );
@@ -114,8 +123,9 @@ export class DocumentsService {
   async uploadFile(
     id: string,
     file: UploadedFile | undefined,
+    activeCongregationId?: string,
   ): Promise<SecretariatDocumentResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const document = await this.getDocumentOrFail(id, congregationId);
     const previousPath = document.filePath;
 
@@ -147,8 +157,11 @@ export class DocumentsService {
     return this.toDto(saved);
   }
 
-  async downloadFile(id: string): Promise<DocumentFileDownload> {
-    const congregationId = await this.getCongregationId();
+  async downloadFile(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<DocumentFileDownload> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const document = await this.getDocumentOrFail(id, congregationId);
 
     if (
@@ -185,8 +198,8 @@ export class DocumentsService {
     }
   }
 
-  async removeFile(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeFile(id: string, activeCongregationId?: string): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const document = await this.getDocumentOrFail(id, congregationId);
 
     if (!document.filePath) {
@@ -207,7 +220,12 @@ export class DocumentsService {
     this.logger.log(`Anexo removido do documento ${id}`);
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 

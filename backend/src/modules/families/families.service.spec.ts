@@ -317,4 +317,31 @@ describe('FamiliesService', () => {
       expect(result.membersCount).toBe(2);
     });
   });
+
+  describe('contexto de congregação ativa', () => {
+    it('findBirthdays com activeCongregationId não chama getOrCreateBase', async () => {
+      const explicitId = '22222222-3333-4444-5555-666666666666';
+      const queryBuilder = {
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      familyMembersRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+      jest.clearAllMocks();
+      congregationsService.getOrCreateBase.mockResolvedValue(
+        baseCongregation(),
+      );
+
+      await service.findBirthdays({ month: 7 }, explicitId);
+
+      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'family.congregationId = :congregationId',
+        { congregationId: explicitId },
+      );
+    });
+  });
 });

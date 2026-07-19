@@ -88,8 +88,9 @@ export class FinanceService {
 
   async findCategories(
     query: QueryFinancialCategoriesDto,
+    activeCongregationId?: string,
   ): Promise<FinancialCategoryResponseDto[]> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.categoriesRepository
       .createQueryBuilder('category')
       .where('category.congregationId = :congregationId', { congregationId })
@@ -106,8 +107,9 @@ export class FinanceService {
 
   async createCategory(
     dto: CreateFinancialCategoryDto,
+    activeCongregationId?: string,
   ): Promise<FinancialCategoryResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const category = this.categoriesRepository.create({
       congregationId,
       name: dto.name.trim(),
@@ -125,8 +127,9 @@ export class FinanceService {
   async updateCategory(
     id: string,
     dto: UpdateFinancialCategoryDto,
+    activeCongregationId?: string,
   ): Promise<FinancialCategoryResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const category = await this.getCategoryOrFail(id, congregationId);
     if (dto.type && dto.type !== category.type) {
       const used = await this.entriesRepository
@@ -154,8 +157,9 @@ export class FinanceService {
   async createEntry(
     dto: CreateFinancialEntryDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<FinancialEntryResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const category = await this.validateCategory(
       dto.categoryId,
       dto.type,
@@ -189,9 +193,10 @@ export class FinanceService {
 
   async findEntries(
     query: QueryFinancialEntriesDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedFinancialEntriesResponseDto> {
     this.validateOptionalPeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.entriesRepository
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.category', 'category')
@@ -211,16 +216,20 @@ export class FinanceService {
     };
   }
 
-  async findEntry(id: string): Promise<FinancialEntryResponseDto> {
-    const congregationId = await this.getCongregationId();
+  async findEntry(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<FinancialEntryResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     return this.toEntryDto(await this.getEntryOrFail(id, congregationId));
   }
 
   async updateEntry(
     id: string,
     dto: UpdateFinancialEntryDto,
+    activeCongregationId?: string,
   ): Promise<FinancialEntryResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const entry = await this.getEntryOrFail(id, congregationId);
     const nextType = dto.type ?? entry.type;
     const nextCategoryId = dto.categoryId ?? entry.categoryId;
@@ -269,8 +278,8 @@ export class FinanceService {
     return this.toEntryDto(await this.entriesRepository.save(entry));
   }
 
-  async removeEntry(id: string): Promise<void> {
-    const congregationId = await this.getCongregationId();
+  async removeEntry(id: string, activeCongregationId?: string): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.entriesRepository.softRemove(
       await this.getEntryOrFail(id, congregationId),
     );
@@ -279,9 +288,10 @@ export class FinanceService {
 
   async getDashboard(
     query: PeriodQueryDto,
+    activeCongregationId?: string,
   ): Promise<FinancialDashboardResponseDto> {
     const period = this.resolvePeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const totals = await this.getEntryTotals(
       congregationId,
       period.from,
@@ -369,11 +379,12 @@ export class FinanceService {
 
   async getCashFlowReport(
     query: CashFlowQueryDto,
+    activeCongregationId?: string,
   ): Promise<CashFlowReportResponseDto> {
     this.validateOptionalPeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const [entries, summary] = await Promise.all([
-      this.findEntries(query),
+      this.findEntries(query, activeCongregationId),
       this.getEntryTotals(
         congregationId,
         query.from,
@@ -392,7 +403,10 @@ export class FinanceService {
     };
   }
 
-  async exportCashFlowCsv(query: CashFlowCsvQueryDto): Promise<string> {
+  async exportCashFlowCsv(
+    query: CashFlowCsvQueryDto,
+    activeCongregationId?: string,
+  ): Promise<string> {
     if (!query.from || !query.to) {
       throw new ApiException(HttpStatus.BAD_REQUEST, {
         code: ApiErrorCode.FINANCE_EXPORT_RANGE_REQUIRED,
@@ -400,7 +414,7 @@ export class FinanceService {
       });
     }
     this.validatePeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.entriesRepository
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.category', 'category')
@@ -441,8 +455,9 @@ export class FinanceService {
 
   async listMemberOptions(
     query: FinanceMemberOptionsQueryDto,
+    activeCongregationId?: string,
   ): Promise<FinanceMemberOptionDto[]> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const qb = this.membersRepository
       .createQueryBuilder('member')
       .select(['member.id', 'member.fullName'])
@@ -461,9 +476,10 @@ export class FinanceService {
 
   async getMemberContributions(
     query: MemberContributionsQueryDto,
+    activeCongregationId?: string,
   ): Promise<MemberContributionsReportDto> {
     this.validatePeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.getReportMemberOrFail(
       query.memberId,
       congregationId,
@@ -529,6 +545,7 @@ export class FinanceService {
 
   async exportMemberContributionsCsv(
     query: MemberContributionsCsvQueryDto,
+    activeCongregationId?: string,
   ): Promise<string> {
     if (!query.memberId) {
       throw new ApiException(HttpStatus.BAD_REQUEST, {
@@ -538,7 +555,7 @@ export class FinanceService {
       });
     }
     this.validatePeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.getReportMemberOrFail(
       query.memberId,
       congregationId,
@@ -576,7 +593,13 @@ export class FinanceService {
     return `\uFEFF${rows.map((row) => row.map(this.csvCell).join(';')).join('\r\n')}`;
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      await this.ensureDefaultCategories(activeCongregationId);
+      return activeCongregationId;
+    }
     const congregationId = (await this.congregationsService.getOrCreateBase())
       .id;
     await this.ensureDefaultCategories(congregationId);

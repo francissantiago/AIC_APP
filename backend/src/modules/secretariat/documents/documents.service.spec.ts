@@ -180,4 +180,22 @@ describe('DocumentsService (file attachment)', () => {
       response: { code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND },
     });
   });
+
+  it('findDocument com activeCongregationId não chama getOrCreateBase', async () => {
+    const explicitId = '22222222-3333-4444-5555-666666666666';
+    const document = baseDocument();
+    document.congregationId = explicitId;
+    documentsRepository.findOne.mockResolvedValue(document);
+    jest.clearAllMocks();
+    congregationsService.getOrCreateBase.mockResolvedValue({
+      id: congregationId,
+    });
+
+    await service.findDocument(documentId, explicitId);
+
+    expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+    expect(documentsRepository.findOne).toHaveBeenCalledWith({
+      where: { id: documentId, congregationId: explicitId },
+    });
+  });
 });

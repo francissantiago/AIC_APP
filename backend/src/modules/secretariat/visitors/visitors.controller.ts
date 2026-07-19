@@ -29,6 +29,8 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   CreateVisitorDto,
@@ -47,7 +49,7 @@ import { VisitorsService } from './visitors.service';
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @ApiBadRequestResponse({ description: 'Payload ou filtro inválido' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('secretariat:read')
 @Controller('secretariat/visitors')
 export class VisitorsController {
@@ -58,8 +60,9 @@ export class VisitorsController {
   @ApiOkResponse({ type: PaginatedVisitorsResponseDto })
   findVisitors(
     @Query() query: QueryVisitorsDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedVisitorsResponseDto> {
-    return this.visitorsService.findVisitors(query);
+    return this.visitorsService.findVisitors(query, activeCongregationId);
   }
 
   @Get(':id')
@@ -68,8 +71,9 @@ export class VisitorsController {
   @ApiNotFoundResponse({ description: 'Visitante não encontrado' })
   findVisitor(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<VisitorResponseDto> {
-    return this.visitorsService.findVisitor(id);
+    return this.visitorsService.findVisitor(id, activeCongregationId);
   }
 
   @Post()
@@ -79,8 +83,9 @@ export class VisitorsController {
   createVisitor(
     @Body() dto: CreateVisitorDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<VisitorResponseDto> {
-    return this.visitorsService.createVisitor(dto, user);
+    return this.visitorsService.createVisitor(dto, user, activeCongregationId);
   }
 
   @Patch(':id')
@@ -91,8 +96,9 @@ export class VisitorsController {
   updateVisitor(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateVisitorDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<VisitorResponseDto> {
-    return this.visitorsService.updateVisitor(id, dto);
+    return this.visitorsService.updateVisitor(id, dto, activeCongregationId);
   }
 
   @Post(':id/convert-to-member')
@@ -104,8 +110,14 @@ export class VisitorsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ConvertVisitorToMemberDto,
     @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ConvertVisitorToMemberResponseDto> {
-    return this.visitorsService.convertToMember(id, dto, user);
+    return this.visitorsService.convertToMember(
+      id,
+      dto,
+      user,
+      activeCongregationId,
+    );
   }
 
   @Delete(':id')
@@ -114,7 +126,10 @@ export class VisitorsController {
   @ApiOperation({ summary: 'Remover visitante por soft delete' })
   @ApiNoContentResponse({ description: 'Visitante removido' })
   @ApiNotFoundResponse({ description: 'Visitante não encontrado' })
-  removeVisitor(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.visitorsService.removeVisitor(id);
+  removeVisitor(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.visitorsService.removeVisitor(id, activeCongregationId);
   }
 }

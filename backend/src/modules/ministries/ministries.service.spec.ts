@@ -330,4 +330,31 @@ describe('MinistriesService', () => {
       );
     });
   });
+
+  describe('contexto de congregação ativa', () => {
+    it('findByMemberId com activeCongregationId não chama getOrCreateBase', async () => {
+      const explicitId = '22222222-3333-4444-5555-666666666666';
+      membersRepository.findOne.mockResolvedValue(baseMember());
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        loadRelationCountAndMap: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      ministriesRepository.createQueryBuilder.mockReturnValue(qb);
+      jest.clearAllMocks();
+      congregationsService.getOrCreateBase.mockResolvedValue(
+        baseCongregation(),
+      );
+
+      await service.findByMemberId(memberId, explicitId);
+
+      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(membersRepository.findOne).toHaveBeenCalledWith({
+        where: { id: memberId, congregationId: explicitId },
+      });
+    });
+  });
 });

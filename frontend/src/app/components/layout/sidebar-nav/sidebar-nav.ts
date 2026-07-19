@@ -50,6 +50,9 @@ export class SidebarNav {
   readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
   readonly ebdOpen = signal(this.#router.url.startsWith('/ebd'));
   readonly smallGroupsOpen = signal(this.#router.url.startsWith('/small-groups'));
+  readonly congregationsOpen = signal(
+    this.#router.url.startsWith('/congregation') || this.#router.url.startsWith('/congregations'),
+  );
 
   readonly canViewFinanceSection = computed(() =>
     this.#auth.hasAnyPermission('finance:read', 'assets:read'),
@@ -59,6 +62,7 @@ export class SidebarNav {
   );
   readonly canViewEbd = computed(() => this.#auth.hasPermission('classes:read'));
   readonly canViewSmallGroups = computed(() => this.#auth.hasPermission('small-groups:read'));
+  readonly canViewCongregations = computed(() => this.#auth.hasPermission('congregations:read'));
 
   readonly allItems: readonly SidebarNavItem[] = [
     {
@@ -87,13 +91,12 @@ export class SidebarNav {
       icon: 'ministries',
       permission: 'ministries:read',
     },
-    {
-      route: '/congregation',
-      labelKey: 'NAV.CONGREGATIONS',
-      icon: 'congregation',
-      permission: 'congregations:read',
-    },
   ];
+
+  readonly congregationItems = [
+    { route: '/congregation', labelKey: 'NAV.CONGREGATION_ACTIVE' },
+    { route: '/congregations', labelKey: 'NAV.CONGREGATIONS_BRANCHES' },
+  ] as const;
 
   readonly ebdItems = [
     { route: '/ebd', labelKey: 'NAV.EBD' },
@@ -177,6 +180,12 @@ export class SidebarNav {
         if (event.urlAfterRedirects.startsWith('/small-groups')) {
           this.smallGroupsOpen.set(true);
         }
+        if (
+          event.urlAfterRedirects.startsWith('/congregation') ||
+          event.urlAfterRedirects.startsWith('/congregations')
+        ) {
+          this.congregationsOpen.set(true);
+        }
       });
   }
 
@@ -212,5 +221,13 @@ export class SidebarNav {
       return;
     }
     this.smallGroupsOpen.update((value) => !value);
+  }
+
+  toggleCongregations(): void {
+    if (!this.expanded()) {
+      void this.#router.navigateByUrl('/congregation');
+      return;
+    }
+    this.congregationsOpen.update((value) => !value);
   }
 }

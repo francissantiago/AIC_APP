@@ -36,8 +36,11 @@ export class MemberTransfersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async listByMember(memberId: string): Promise<MemberTransferResponseDto[]> {
-    const congregationId = await this.getCongregationId();
+  async listByMember(
+    memberId: string,
+    activeCongregationId?: string,
+  ): Promise<MemberTransferResponseDto[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.getMemberOrFail(memberId, congregationId);
 
     const transfers = await this.transfersRepository.find({
@@ -54,8 +57,9 @@ export class MemberTransfersService {
   async findOne(
     memberId: string,
     id: string,
+    activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.getMemberOrFail(memberId, congregationId);
     const transfer = await this.getTransferOrFail(id, memberId, congregationId);
     return MemberTransferResponseDto.fromEntity(transfer);
@@ -65,8 +69,9 @@ export class MemberTransfersService {
     memberId: string,
     dto: CreateMemberTransferDto,
     user: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.getMemberOrFail(memberId, congregationId);
     this.assertMemberEligible(member);
 
@@ -103,6 +108,7 @@ export class MemberTransfersService {
         status: SecretariatDocumentStatus.DRAFT,
       },
       user,
+      activeCongregationId,
     );
 
     const completeNow = dto.completeNow === true;
@@ -133,14 +139,15 @@ export class MemberTransfersService {
       `Transferência criada: ${transferId} (membro ${memberId}${completeNow ? ', completed' : ''})`,
     );
 
-    return this.findOne(memberId, transferId);
+    return this.findOne(memberId, transferId, activeCongregationId);
   }
 
   async complete(
     memberId: string,
     id: string,
+    activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     const member = await this.getMemberOrFail(memberId, congregationId);
     const transfer = await this.getTransferOrFail(id, memberId, congregationId);
 
@@ -158,14 +165,15 @@ export class MemberTransfersService {
     });
 
     this.logger.log(`Transferência concluída: ${id} (membro ${memberId})`);
-    return this.findOne(memberId, id);
+    return this.findOne(memberId, id, activeCongregationId);
   }
 
   async cancel(
     memberId: string,
     id: string,
+    activeCongregationId?: string,
   ): Promise<MemberTransferResponseDto> {
-    const congregationId = await this.getCongregationId();
+    const congregationId = await this.getCongregationId(activeCongregationId);
     await this.getMemberOrFail(memberId, congregationId);
     const transfer = await this.getTransferOrFail(id, memberId, congregationId);
 
@@ -180,7 +188,7 @@ export class MemberTransfersService {
     await this.transfersRepository.save(transfer);
 
     this.logger.log(`Transferência cancelada: ${id} (membro ${memberId})`);
-    return this.findOne(memberId, id);
+    return this.findOne(memberId, id, activeCongregationId);
   }
 
   private async applyCompleteInTransaction(
@@ -250,7 +258,12 @@ export class MemberTransfersService {
     return transfer;
   }
 
-  private async getCongregationId(): Promise<string> {
+  private async getCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 

@@ -10,13 +10,18 @@ describe('CalendarService', () => {
   const findOne = jest.fn();
   const save = jest.fn((value: object) => value);
   const create = jest.fn((value: object) => value);
+  const createQueryBuilder = jest.fn();
   const calendarEventsRepository = {
     findOne,
     save,
     create,
+    createQueryBuilder,
   } as unknown as Repository<CalendarEvent>;
+  const getOrCreateBaseMock = jest
+    .fn()
+    .mockResolvedValue({ id: 'congregation-1' });
   const congregationsService = {
-    getOrCreateBase: jest.fn().mockResolvedValue({ id: 'congregation-1' }),
+    getOrCreateBase: getOrCreateBaseMock,
   } as unknown as CongregationsService;
   const service = new CalendarService(
     calendarEventsRepository,
@@ -98,5 +103,28 @@ describe('CalendarService', () => {
     expect(findOne).toHaveBeenCalledWith({
       where: { id: 'event-x', congregationId: 'congregation-1' },
     });
+  });
+
+  it('findEvents com activeCongregationId não chama getOrCreateBase', async () => {
+    const explicitId = '22222222-3333-4444-5555-666666666666';
+    const qb = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+    };
+    createQueryBuilder.mockReturnValue(qb);
+    jest.clearAllMocks();
+    getOrCreateBaseMock.mockResolvedValue({ id: 'congregation-1' });
+
+    await service.findEvents({ page: 1, limit: 20 }, explicitId);
+
+    expect(getOrCreateBaseMock).not.toHaveBeenCalled();
+    expect(qb.where).toHaveBeenCalledWith(
+      'event.congregationId = :congregationId',
+      {
+        congregationId: explicitId,
+      },
+    );
   });
 });
