@@ -120,6 +120,8 @@ export class NotificationsBell implements OnInit {
         return 'NOTIFICATIONS.TYPE_VISITOR_FOLLOW_UP';
       case 'schedule_reminder':
         return 'NOTIFICATIONS.TYPE_SCHEDULE_REMINDER';
+      case 'member_birthday':
+        return 'NOTIFICATIONS.TYPE_MEMBER_BIRTHDAY';
       default:
         return 'NOTIFICATIONS.TYPE_GENERIC';
     }
@@ -139,6 +141,8 @@ export class NotificationsBell implements OnInit {
         return '/secretariat/visitors';
       case 'schedule_reminder':
         return '/secretariat/schedules';
+      case 'member_birthday':
+        return '/families/birthdays';
       default:
         return null;
     }

@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from '../../infra/events/events.module';
+import { AnnouncementsModule } from '../announcements/announcements.module';
 import { CongregationsModule } from '../congregations/congregations.module';
+import { Member } from '../members/entities/member.entity';
 import { ScheduleAssignment } from '../schedules/entities/schedule-assignment.entity';
 import { Visitor } from '../secretariat/visitors/entities/visitor.entity';
 import { User } from '../users/entities/user.entity';
@@ -12,9 +14,16 @@ import { NotificationsService } from './notifications.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification, Visitor, ScheduleAssignment, User]),
+    TypeOrmModule.forFeature([
+      Notification,
+      Visitor,
+      ScheduleAssignment,
+      User,
+      Member,
+    ]),
     EventsModule,
     CongregationsModule,
+    AnnouncementsModule,
   ],
   controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsJobsService],

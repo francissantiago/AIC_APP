@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { createHash } from 'node:crypto';
 import { Repository } from 'typeorm';
 import { CongregationsService } from '../congregations/congregations.service';
+import { AnnouncementsService } from '../announcements/announcements.service';
+import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
 import { ScheduleAssignment } from '../schedules/entities/schedule-assignment.entity';
 import { Visitor } from '../secretariat/visitors/entities/visitor.entity';
@@ -35,7 +38,10 @@ export class NotificationsJobsService {
     private readonly scheduleAssignmentsRepository: Repository<ScheduleAssignment>,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Member)
+    private readonly membersRepository: Repository<Member>,
     private readonly notificationsService: NotificationsService,
+    private readonly announcementsService: AnnouncementsService,
     private readonly congregationsService: CongregationsService,
   ) {}
 
@@ -198,6 +204,142 @@ export class NotificationsJobsService {
     );
   }
 
+  @Cron('0 8 * * *', {
+    name: 'notifications-member-birthday',
+    timeZone: process.env.APP_TIMEZONE ?? 'America/Sao_Paulo',
+  })
+  async handleMemberBirthday(): Promise<void> {
+    const congregationId = await this.getCongregationId();
+
+    const members = await this.membersRepository
+      .createQueryBuilder('m')
+      .where('m.deleted_at IS NULL')
+      .andWhere('m.status = :status', { status: MemberStatus.ACTIVE })
+      .andWhere('m.birth_date IS NOT NULL')
+      .andWhere('m.congregation_id = :congregationId', { congregationId })
+      .andWhere('MONTH(m.birth_date) = MONTH(CURDATE())')
+      .andWhere('DAY(m.birth_date) = DAY(CURDATE())')
+      .getMany();
+
+    if (members.length === 0) {
+      this.logger.log('Job member-birthday: nenhum aniversariante elegível');
+      return;
+    }
+
+    const authorUserId = await this.resolveBirthdayAuthorUserId();
+    if (authorUserId) {
+      try {
+        const boardResult =
+          await this.announcementsService.upsertDailyBirthdayBoard(
+            congregationId,
+            members.map((member) => ({
+              fullName: member.fullName,
+              birthDate: member.birthDate as string,
+            })),
+            authorUserId,
+          );
+        this.logger.log(`Job member-birthday mural: ${boardResult}`);
+      } catch (error) {
+        this.logger.error(
+          'Falha ao publicar mural de aniversários',
+          error instanceof Error ? error.stack : undefined,
+        );
+      }
+    } else {
+      this.logger.warn('Job member-birthday: nenhum autor elegível para mural');
+    }
+
+    const recipients = await this.resolveMemberManagementUserIds();
+    if (recipients.length === 0) {
+      this.logger.warn(
+        'Job member-birthday: nenhum destinatário com secretariat:read ou members:read',
+      );
+      return;
+    }
+
+    const birthdayYear = new Date().getFullYear();
+    let created = 0;
+    let skipped = 0;
+
+    for (const member of members) {
+      const birthDate = member.birthDate as string;
+      const referenceId = buildBirthdayReferenceId(member.id, birthdayYear);
+      const title = 'Aniversariante do dia';
+      const body = `${member.fullName} faz aniversário hoje (${birthDate}).`;
+      const payload: Record<string, unknown> = {
+        memberId: member.id,
+        memberFullName: member.fullName,
+        birthDate,
+        birthdayYear,
+      };
+
+      for (const userId of recipients) {
+        try {
+          const result = await this.notificationsService.createIfAbsent({
+            userId,
+            type: NotificationType.MEMBER_BIRTHDAY,
+            title,
+            body,
+            payload,
+            referenceType: NotificationReferenceType.MEMBER,
+            referenceId,
+          });
+          if (result) {
+            created += 1;
+          } else {
+            skipped += 1;
+          }
+        } catch (error) {
+          this.logger.error(
+            `Falha ao criar aniversário (member=${member.id}, user=${userId})`,
+            error instanceof Error ? error.stack : undefined,
+          );
+        }
+      }
+    }
+
+    this.logger.log(
+      `Job member-birthday: elegíveis=${members.length}, criadas=${created}, dedupe-skipped=${skipped}`,
+    );
+  }
+
+  async resolveMemberManagementUserIds(): Promise<string[]> {
+    const rows = await this.usersRepository
+      .createQueryBuilder('u')
+      .innerJoin('user_roles', 'ur', 'ur.user_id = u.id')
+      .innerJoin('role_permissions', 'rp', 'rp.role_id = ur.role_id')
+      .innerJoin('permissions', 'p', 'p.id = rp.permission_id')
+      .select('DISTINCT u.id', 'id')
+      .where('u.deleted_at IS NULL')
+      .andWhere('u.status = :status', { status: UserStatus.ACTIVE })
+      .andWhere('p.code IN (:...codes)', {
+        codes: ['secretariat:read', 'members:read'],
+      })
+      .getRawMany<{ id: string }>();
+
+    return rows.map((row) => row.id);
+  }
+
+  private async resolveBirthdayAuthorUserId(): Promise<string | null> {
+    const managementIds = await this.resolveMemberManagementUserIds();
+    if (managementIds.length > 0) {
+      return managementIds[0];
+    }
+
+    const rows = await this.usersRepository
+      .createQueryBuilder('u')
+      .innerJoin('user_roles', 'ur', 'ur.user_id = u.id')
+      .innerJoin('role_permissions', 'rp', 'rp.role_id = ur.role_id')
+      .innerJoin('permissions', 'p', 'p.id = rp.permission_id')
+      .select('DISTINCT u.id', 'id')
+      .where('u.deleted_at IS NULL')
+      .andWhere('u.status = :status', { status: UserStatus.ACTIVE })
+      .andWhere('p.code = :code', { code: 'announcements:write' })
+      .getRawMany<{ id: string }>();
+
+    return rows[0]?.id ?? null;
+  }
+
   async resolveSecretariatUserIds(): Promise<string[]> {
     const rows = await this.usersRepository
       .createQueryBuilder('u')
@@ -238,4 +380,15 @@ export class NotificationsJobsService {
     const diffMs = today.getTime() - visit.getTime();
     return Math.floor(diffMs / (1000 * 60 * 60 * 24));
   }
+}
+
+export function buildBirthdayReferenceId(
+  memberId: string,
+  year: number,
+): string {
+  const digest = createHash('sha256')
+    .update(`${memberId}:${year}`)
+    .digest('hex')
+    .slice(0, 32);
+  return `${digest.slice(0, 8)}-${digest.slice(8, 12)}-${digest.slice(12, 16)}-${digest.slice(16, 20)}-${digest.slice(20, 32)}`;
 }

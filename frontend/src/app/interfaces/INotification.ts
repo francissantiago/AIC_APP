@@ -1,6 +1,12 @@
-export type NotificationType = 'visitor_follow_up' | 'schedule_reminder';
+export type NotificationType =
+  | 'visitor_follow_up'
+  | 'schedule_reminder'
+  | 'member_birthday';
 
-export type NotificationReferenceType = 'visitor' | 'schedule_assignment';
+export type NotificationReferenceType =
+  | 'visitor'
+  | 'schedule_assignment'
+  | 'member';
 
 export interface INotification {
   id: string;

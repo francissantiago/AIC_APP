@@ -17,8 +17,16 @@ import {
 import { QueryAnnouncementsBoardDto } from './dto/query-announcements-board.dto';
 import { QueryAnnouncementsDto } from './dto/query-announcements.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
+import {
+  BIRTHDAY_BOARD_TITLE,
+  BirthdayBoardMember,
+  buildBirthdayBoardBody,
+  buildBirthdayBoardExpiresAt,
+} from './birthday-board.util';
 import { Announcement } from './entities/announcement.entity';
 import { AnnouncementAudience } from './enums/announcement-audience.enum';
+
+export type BirthdayBoardUpsertResult = 'created' | 'updated' | 'unchanged';
 
 @Injectable()
 export class AnnouncementsService {
@@ -237,6 +245,56 @@ export class AnnouncementsService {
     );
     await this.announcementsRepository.softRemove(announcement);
     this.logger.log(`Aviso removido (soft delete): ${id}`);
+  }
+
+  async upsertDailyBirthdayBoard(
+    congregationId: string,
+    members: BirthdayBoardMember[],
+    authorUserId: string,
+  ): Promise<BirthdayBoardUpsertResult> {
+    if (members.length === 0) {
+      return 'unchanged';
+    }
+
+    const now = new Date();
+    const body = buildBirthdayBoardBody(members);
+    const expiresAt = buildBirthdayBoardExpiresAt(now);
+
+    const existing = await this.announcementsRepository
+      .createQueryBuilder('announcement')
+      .where('announcement.congregationId = :congregationId', {
+        congregationId,
+      })
+      .andWhere('announcement.title = :title', { title: BIRTHDAY_BOARD_TITLE })
+      .andWhere('DATE(announcement.published_at) = CURDATE()')
+      .andWhere('announcement.deleted_at IS NULL')
+      .getOne();
+
+    if (existing) {
+      if (existing.body === body) {
+        return 'unchanged';
+      }
+
+      existing.body = body;
+      existing.expiresAt = expiresAt;
+      await this.announcementsRepository.save(existing);
+      this.logger.log(`Mural de aniversários atualizado: ${existing.id}`);
+      return 'updated';
+    }
+
+    const announcement = this.announcementsRepository.create({
+      congregationId,
+      title: BIRTHDAY_BOARD_TITLE,
+      body,
+      audience: AnnouncementAudience.ALL,
+      audienceTargets: null,
+      publishedAt: now,
+      expiresAt,
+      authorUserId,
+    });
+    const saved = await this.announcementsRepository.save(announcement);
+    this.logger.log(`Mural de aniversários publicado: ${saved.id}`);
+    return 'created';
   }
 
   private async getCongregationId(

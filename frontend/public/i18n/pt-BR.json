@@ -356,6 +356,7 @@
     "ERROR": "Não foi possível carregar as notificações",
     "TYPE_VISITOR_FOLLOW_UP": "Follow-up de visitante",
     "TYPE_SCHEDULE_REMINDER": "Lembrete de escala",
+    "TYPE_MEMBER_BIRTHDAY": "Aniversário de membro",
     "TYPE_GENERIC": "Notificação",
     "CONNECTION_LOST": "Conexão em tempo real perdida",
     "CONNECTION_RESTORED": "Conexão em tempo real restaurada",

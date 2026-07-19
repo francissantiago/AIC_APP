@@ -9,6 +9,7 @@ import { CongregationStatus } from '../congregations/enums/congregation-status.e
 import { CongregationType } from '../congregations/enums/congregation-type.enum';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { AnnouncementsService } from './announcements.service';
+import { BIRTHDAY_BOARD_TITLE } from './birthday-board.util';
 import { Announcement } from './entities/announcement.entity';
 import { AnnouncementAudience } from './enums/announcement-audience.enum';
 import { AnnouncementStatus } from './enums/announcement-status.enum';
@@ -72,7 +73,11 @@ describe('AnnouncementsService', () => {
     return announcement;
   };
 
-  const mockQueryBuilder = (items: Announcement[], total = items.length) => {
+  const mockQueryBuilder = (
+    items: Announcement[],
+    total = items.length,
+    existing: Announcement | null = null,
+  ) => {
     const qb = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
@@ -82,6 +87,7 @@ describe('AnnouncementsService', () => {
       take: jest.fn().mockReturnThis(),
       getManyAndCount: jest.fn().mockResolvedValue([items, total]),
       getMany: jest.fn().mockResolvedValue(items),
+      getOne: jest.fn().mockResolvedValue(existing),
     };
     announcementsRepository.createQueryBuilder.mockReturnValue(qb);
     return qb;
@@ -277,6 +283,78 @@ describe('AnnouncementsService', () => {
         'announcement.congregationId = :congregationId',
         { congregationId: explicitId },
       );
+    });
+  });
+
+  describe('upsertDailyBirthdayBoard', () => {
+    beforeEach(() => {
+      jest.useFakeTimers({ now: new Date('2026-07-19T08:00:00-03:00') });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('deve criar aviso no mural quando não existe publicação do dia', async () => {
+      mockQueryBuilder([], 0, null);
+      const saved = baseAnnouncement({
+        title: BIRTHDAY_BOARD_TITLE,
+        body: 'Juliana Bezerra Facre faz aniversário hoje (19/07).',
+      });
+      announcementsRepository.create.mockReturnValue(saved);
+      announcementsRepository.save.mockResolvedValue(saved);
+
+      const result = await service.upsertDailyBirthdayBoard(
+        baseCongregationId,
+        [{ fullName: 'Juliana Bezerra Facre', birthDate: '1945-07-19' }],
+        authorUserId,
+      );
+
+      expect(result).toBe('created');
+      expect(announcementsRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          congregationId: baseCongregationId,
+          title: BIRTHDAY_BOARD_TITLE,
+          authorUserId,
+          audience: AnnouncementAudience.ALL,
+        }),
+      );
+    });
+
+    it('deve atualizar aviso existente do dia', async () => {
+      const existing = baseAnnouncement({
+        title: BIRTHDAY_BOARD_TITLE,
+        body: 'Corpo antigo',
+      });
+      mockQueryBuilder([], 0, existing);
+      announcementsRepository.save.mockResolvedValue(existing);
+
+      const result = await service.upsertDailyBirthdayBoard(
+        baseCongregationId,
+        [{ fullName: 'Juliana Bezerra Facre', birthDate: '1945-07-19' }],
+        authorUserId,
+      );
+
+      expect(result).toBe('updated');
+      expect(existing.body).toContain('Juliana Bezerra Facre');
+      expect(announcementsRepository.save).toHaveBeenCalledWith(existing);
+    });
+
+    it('deve retornar unchanged quando corpo já está atualizado', async () => {
+      const existing = baseAnnouncement({
+        title: BIRTHDAY_BOARD_TITLE,
+        body: 'Juliana Bezerra Facre faz aniversário hoje (19/07).',
+      });
+      mockQueryBuilder([], 0, existing);
+
+      const result = await service.upsertDailyBirthdayBoard(
+        baseCongregationId,
+        [{ fullName: 'Juliana Bezerra Facre', birthDate: '1945-07-19' }],
+        authorUserId,
+      );
+
+      expect(result).toBe('unchanged');
+      expect(announcementsRepository.save).not.toHaveBeenCalled();
     });
   });
 });

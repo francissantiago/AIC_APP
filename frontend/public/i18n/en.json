@@ -356,6 +356,7 @@
     "ERROR": "Could not load notifications",
     "TYPE_VISITOR_FOLLOW_UP": "Visitor follow-up",
     "TYPE_SCHEDULE_REMINDER": "Schedule reminder",
+    "TYPE_MEMBER_BIRTHDAY": "Member birthday",
     "TYPE_GENERIC": "Notification",
     "CONNECTION_LOST": "Real-time connection lost",
     "CONNECTION_RESTORED": "Real-time connection restored",
