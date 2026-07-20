@@ -70,15 +70,23 @@ export class AgendaCalendarPage extends BasePage {
     const event = this.page.locator('.cal-event').filter({ hasText: title }).first();
     await event.waitFor({ state: 'visible', timeout: 15000 });
     await event.click();
+    await this.page.getByTestId('agenda-event-preview').waitFor({ state: 'visible' });
+    await this.page.getByTestId('agenda-event-preview-edit').click();
     await this.page.getByTestId('agenda-form').waitFor({ state: 'visible' });
   }
 
   async deleteCurrentEvent(): Promise<void> {
-    await this.page.getByRole('button', { name: /^Excluir$|^Delete$|^Eliminar$/i }).click();
+    const previewDelete = this.page.getByTestId('agenda-event-preview-delete');
+    if (await previewDelete.isVisible().catch(() => false)) {
+      await previewDelete.click();
+    } else {
+      await this.page.getByRole('button', { name: /^Excluir$|^Delete$|^Eliminar$/i }).click();
+    }
     const confirmDialog = this.page.getByRole('dialog', { name: /Tem certeza|Are you sure|Confirm/i });
     await confirmDialog.getByTestId('dialog-confirm').click();
     await confirmDialog.waitFor({ state: 'hidden' });
-    await this.page.getByTestId('agenda-form').waitFor({ state: 'hidden' });
+    await this.page.getByTestId('agenda-form').waitFor({ state: 'hidden' }).catch(() => undefined);
+    await this.page.getByTestId('agenda-event-preview').waitFor({ state: 'hidden' }).catch(() => undefined);
   }
 }
 

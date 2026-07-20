@@ -1,0 +1,359 @@
+:host {
+  .agenda-month-cell {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.2rem 0.25rem 0.25rem;
+  }
+
+  .agenda-month-day-number {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: rgb(31 41 55);
+  }
+
+  .agenda-month-day-number-outside {
+    color: rgb(148 163 184);
+  }
+
+  .agenda-month-day-number-today {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background-color: rgb(29 78 216);
+    color: rgb(255 255 255);
+    font-weight: 600;
+    padding: 0 0.25rem;
+  }
+
+  .agenda-month-events {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .agenda-month-all-day-event {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: rgb(255 255 255);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .agenda-month-all-day-event:hover,
+  .agenda-month-all-day-event:focus-visible {
+    filter: brightness(0.92);
+    outline: 2px solid rgb(100 116 139);
+    outline-offset: 1px;
+  }
+
+  .agenda-month-timed-event {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    border-radius: 0.25rem;
+    padding: 0.0625rem 0.125rem;
+    background: transparent;
+    text-align: left;
+    font-size: 0.6875rem;
+    line-height: 1.25;
+    color: rgb(31 41 55);
+    cursor: pointer;
+  }
+
+  .agenda-month-timed-event:hover,
+  .agenda-month-timed-event:focus-visible {
+    background-color: rgb(241 245 249);
+    outline: 2px solid rgb(100 116 139);
+    outline-offset: 1px;
+  }
+
+  .agenda-month-event-dot {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+  }
+
+  .agenda-month-timed-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .agenda-month-event-more {
+    flex: 0 0 auto;
+    width: 100%;
+    overflow: hidden;
+    border: 0;
+    padding: 0.125rem 0.125rem 0 0.25rem;
+    background: transparent;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: rgb(55 65 81);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .agenda-month-event-more:hover,
+  .agenda-month-event-more:focus-visible {
+    color: rgb(15 23 42);
+    text-decoration: underline;
+    outline: 2px solid rgb(100 116 139);
+    outline-offset: 1px;
+  }
+
+  .agenda-event-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .agenda-event-name {
+    overflow: hidden;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .agenda-event-title-time {
+    font-size: 0.625rem;
+    font-weight: 500;
+    line-height: 1.1;
+    opacity: 0.9;
+  }
+}
+
+:host ::ng-deep .agenda-calendar-surface .cal-month-view {
+  .cal-header .cal-cell {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgb(100 116 139);
+    padding: 0.5rem 0;
+  }
+
+  .cal-cell-row {
+    overflow: hidden;
+  }
+
+  .cal-day-cell {
+    min-height: 7.5rem;
+    overflow: hidden;
+    border-color: rgb(226 232 240);
+  }
+
+  .cal-cell {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .cal-days {
+    border-color: rgb(226 232 240);
+  }
+
+  .cal-days .cal-cell-row {
+    border-color: rgb(226 232 240);
+  }
+
+  .cal-day-number,
+  .cal-day-badge,
+  .cal-cell-top {
+    display: none;
+  }
+
+  .cal-events {
+    display: none;
+  }
+}
+
+:host ::ng-deep .agenda-calendar-surface .cal-week-view {
+  --agenda-time-gutter: 3.5rem;
+  background: #fff;
+  border-color: #e2e8f0;
+
+  .cal-day-headers,
+  .cal-day-headers .cal-header,
+  .cal-all-day-events,
+  .cal-time-events,
+  .cal-day-column,
+  .cal-hour:not(:last-child) .cal-hour-segment,
+  .cal-hour:last-child :not(:last-child) .cal-hour-segment {
+    border-color: #e2e8f0;
+  }
+
+  .cal-day-headers {
+    padding-left: var(--agenda-time-gutter);
+  }
+
+  .agenda-week-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0.25rem 0.5rem;
+  }
+
+  .agenda-week-header-weekday {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #70757a;
+  }
+
+  .agenda-week-header-date {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.875rem;
+    height: 2.875rem;
+    font-size: 1.625rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #3c4043;
+  }
+
+  .agenda-week-header-date-today {
+    border-radius: 9999px;
+    background: #1a73e8;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .cal-header.cal-today {
+    background: transparent;
+  }
+
+  .cal-all-day-events {
+    background: #f8fafc;
+  }
+
+  .cal-all-day-events .cal-events-row {
+    margin-left: var(--agenda-time-gutter);
+  }
+
+  .cal-all-day-events .cal-event-container {
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .cal-all-day-events .cal-time-label-column,
+  .cal-time-label-column,
+  .cal-time {
+    width: var(--agenda-time-gutter);
+  }
+
+  .agenda-week-all-day-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+  }
+
+  .cal-all-day-events .cal-time-label-column {
+    color: #64748b;
+    font-size: 0.6875rem;
+  }
+
+  .cal-all-day-events .cal-event {
+    border: 0;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    height: 1.5rem;
+    line-height: 1.5rem;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .cal-time-events .cal-event {
+    border: 0 solid transparent;
+    border-left-width: 3px;
+    border-radius: 0.25rem;
+    box-shadow: none;
+    padding: 0.125rem 0.25rem;
+    font-size: 0.6875rem;
+    line-height: 1.15;
+    overflow: hidden;
+  }
+
+  .cal-current-time-marker {
+    background: #ef4444;
+  }
+}
+
+:host ::ng-deep .agenda-calendar-surface .agenda-day-view .cal-week-view {
+  .cal-day-headers {
+    display: flex;
+    padding-left: 0;
+    border-bottom: 1px solid #e2e8f0;
+
+    &::before {
+      content: '';
+      flex: 0 0 var(--agenda-time-gutter);
+    }
+  }
+
+  .cal-day-headers .cal-header {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+  }
+
+  .agenda-week-header {
+    padding: 0.75rem 0.5rem 0.625rem;
+  }
+
+  .agenda-week-header-date {
+    min-width: 3rem;
+    height: 3rem;
+    font-size: 1.75rem;
+  }
+
+  .cal-time-events .cal-event {
+    padding: 0.25rem 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .cal-all-day-events .cal-event {
+    height: 1.75rem;
+    line-height: 1.75rem;
+    font-size: 0.8125rem;
+  }
+}
