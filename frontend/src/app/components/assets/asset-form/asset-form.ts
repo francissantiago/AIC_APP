@@ -23,6 +23,7 @@ import { FinanceService } from '@services/finance-service';
   template: `
     <section
       class="w-full"
+      data-testid="asset-form"
       [attr.aria-label]="(asset() ? 'ASSETS.EDIT' : 'ASSETS.NEW') | translate"
     >
       <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
@@ -32,6 +33,7 @@ import { FinanceService } from '@services/finance-service';
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="name"
             maxlength="150"
+            data-testid="asset-form-name"
             [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
             [attr.aria-describedby]="
               form.controls.name.touched && form.controls.name.invalid ? 'asset-name-error' : null
@@ -94,6 +96,7 @@ import { FinanceService } from '@services/finance-service';
             min="0.01"
             step="0.01"
             formControlName="acquisitionValue"
+            data-testid="asset-form-acquisition-value"
             [attr.aria-invalid]="
               form.controls.acquisitionValue.touched && form.controls.acquisitionValue.invalid
             "
@@ -152,12 +155,14 @@ import { FinanceService } from '@services/finance-service';
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="submit"
+            data-testid="asset-form-save"
             [disabled]="saving()"
           >
             {{ 'COMMON.SAVE' | translate }}</button
           ><button
             class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             type="button"
+            data-testid="asset-form-cancel"
             (click)="cancelled.emit()"
           >
             {{ 'COMMON.CANCEL' | translate }}

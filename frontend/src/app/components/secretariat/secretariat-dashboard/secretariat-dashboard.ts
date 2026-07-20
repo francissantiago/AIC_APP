@@ -20,7 +20,7 @@ import { ChartData } from 'chart.js';
   selector: 'app-secretariat-dashboard',
   imports: [ChartCanvas, DatePipe, RouterLink, TranslatePipe],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="secretariat-dashboard">
       <div class="mb-5">
         <h1 class="text-xl font-semibold text-slate-900">
           {{ 'SECRETARIAT.TITLE' | translate }}
@@ -37,7 +37,7 @@ import { ChartData } from 'chart.js';
           {{ 'SECRETARIAT.LOAD_ERROR' | translate }}
         </p>
       } @else if (dashboard(); as value) {
-        <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-testid="secretariat-dashboard-cards">
           <article class="rounded-md border border-slate-200 p-4">
             <p class="text-sm text-slate-600">{{ 'SECRETARIAT.CARD_UPCOMING' | translate }}</p>
             <p class="mt-1 text-xl font-semibold text-slate-900">{{ value.upcomingEventsCount }}</p>
@@ -76,6 +76,7 @@ import { ChartData } from 'chart.js';
             titleKey="SECRETARIAT.CHART_ATTENDANCE_MONTH"
             titleId="secretariat-attendance-chart-title"
             summaryId="secretariat-attendance-chart-summary"
+            testId="secretariat-attendance-chart"
           />
           <app-chart-canvas
             type="bar"
@@ -85,6 +86,7 @@ import { ChartData } from 'chart.js';
             titleKey="SECRETARIAT.CHART_VISITORS_MONTH"
             titleId="secretariat-visitors-chart-title"
             summaryId="secretariat-visitors-chart-summary"
+            testId="secretariat-visitors-chart"
           />
         </div>
 

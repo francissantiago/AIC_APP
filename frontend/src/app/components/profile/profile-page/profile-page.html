@@ -1,4 +1,4 @@
-<section class="space-y-8" [attr.aria-label]="'PROFILE.TITLE' | translate">
+<section class="space-y-8" data-testid="profile-page" [attr.aria-label]="'PROFILE.TITLE' | translate">
   <header class="space-y-1">
     <h2 class="text-xl font-semibold tracking-tight text-slate-900">
       {{ 'PROFILE.TITLE' | translate }}
@@ -28,6 +28,7 @@
       (ngSubmit)="saveProfile()"
       class="grid max-w-xl gap-4"
       novalidate
+      data-testid="profile-form"
     >
       <div class="flex flex-col gap-1">
         <label for="profile-username" class="text-sm font-medium text-slate-700">
@@ -49,6 +50,7 @@
         </label>
         <input
           id="profile-full-name"
+          data-testid="profile-full-name"
           type="text"
           formControlName="fullName"
           autocomplete="name"
@@ -74,6 +76,7 @@
       <div>
         <button
           type="submit"
+          data-testid="profile-save-btn"
           class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
           [disabled]="profileSaving()"
         >

@@ -1,5 +1,6 @@
 <section
   class="rounded-md border border-slate-200 px-3 py-4"
+  data-testid="member-transfer-wizard"
   [attr.aria-label]="'MEMBER_TRANSFERS.WIZARD_TITLE' | translate"
 >
   <h3 class="text-sm font-medium text-slate-900">
@@ -71,6 +72,7 @@
         <span>{{ 'MEMBER_TRANSFERS.DESTINATION_CHURCH' | translate }}</span>
         <input
           type="text"
+          data-testid="transfer-destination-church"
           formControlName="destinationChurchName"
           class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [attr.aria-invalid]="fieldInvalid('destinationChurchName')"
@@ -86,6 +88,7 @@
         <span>{{ 'MEMBER_TRANSFERS.DESTINATION_CITY' | translate }}</span>
         <input
           type="text"
+          data-testid="transfer-destination-city"
           formControlName="destinationCity"
           class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [attr.aria-invalid]="fieldInvalid('destinationCity')"
@@ -109,6 +112,7 @@
       <div class="mt-2 flex flex-wrap gap-2">
         <button
           type="button"
+          data-testid="transfer-next"
           class="rounded-md bg-slate-500 px-4 py-2 text-sm text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
           (click)="goPreview()"
         >
@@ -133,6 +137,7 @@
       </p>
       <pre
         class="mt-2 whitespace-pre-wrap rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"
+        data-testid="transfer-letter-preview"
         >{{ letterSummaryPreview() }}</pre>
 
       <div class="mt-4 flex flex-wrap gap-2">

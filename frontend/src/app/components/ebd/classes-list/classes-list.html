@@ -9,6 +9,7 @@
     <div class="flex flex-wrap gap-2">
       <a
         routerLink="/ebd/reports"
+        data-testid="ebd-open-reports"
         class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         {{ 'EBD_ATTENDANCE.REPORT_TITLE' | translate }}
@@ -16,6 +17,7 @@
       @if (canWrite()) {
         <button
           type="button"
+          data-testid="class-create-btn"
           class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
           (click)="openCreate()"
         >
@@ -64,6 +66,7 @@
     <div class="mt-4 flex gap-2">
       <button
         type="button"
+        data-testid="dialog-confirm"
         class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
         [disabled]="deleting()"
         (click)="confirmDelete()"
@@ -72,6 +75,7 @@
       </button>
       <button
         type="button"
+        data-testid="dialog-cancel"
         class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
         [disabled]="deleting()"
         (click)="cancelDelete()"
@@ -90,6 +94,7 @@
       <span>{{ 'EBD_CLASSES.FILTER_SEARCH' | translate }}</span>
       <input
         type="search"
+        data-testid="class-search"
         formControlName="q"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       />
@@ -98,6 +103,7 @@
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'EBD_CLASSES.FILTER_STATUS' | translate }}</span>
       <select
+        data-testid="class-filter-status"
         formControlName="status"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
@@ -135,7 +141,7 @@
   } @else if (classes().length === 0) {
     <p class="text-sm text-slate-600">{{ 'EBD_CLASSES.EMPTY' | translate }}</p>
   } @else {
-    <div class="overflow-x-auto rounded-md border border-slate-200">
+    <div class="overflow-x-auto rounded-md border border-slate-200" data-testid="class-table">
       <table class="min-w-full text-left text-sm">
         <thead class="bg-slate-50 text-slate-700">
           <tr>
@@ -164,7 +170,7 @@
         </thead>
         <tbody>
           @for (ebdClass of classes(); track ebdClass.id) {
-            <tr class="border-t border-slate-100">
+            <tr class="border-t border-slate-100" [attr.data-testid]="'class-row-' + ebdClass.id">
               <td class="px-3 py-2 text-slate-900">{{ ebdClass.name }}</td>
               <td class="px-3 py-2 text-slate-700">
                 {{ ageGroupLabelKey(ebdClass.ageGroup) | translate }}
@@ -188,6 +194,7 @@
                 <div class="flex flex-wrap gap-2">
                   <button
                     type="button"
+                    [attr.data-testid]="'class-enrollments-' + ebdClass.id"
                     class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                     (click)="openEnrollments(ebdClass.id)"
                   >
@@ -195,6 +202,7 @@
                   </button>
                   <button
                     type="button"
+                    [attr.data-testid]="'class-attendance-' + ebdClass.id"
                     class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                     (click)="openAttendance(ebdClass.id)"
                   >
@@ -203,6 +211,7 @@
                   <a
                     [routerLink]="['/ebd/reports']"
                     [queryParams]="{ classId: ebdClass.id }"
+                    [attr.data-testid]="'class-report-' + ebdClass.id"
                     class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                   >
                     {{ 'NAV.EBD_REPORTS' | translate }}
@@ -210,6 +219,7 @@
                   @if (canWrite()) {
                     <button
                       type="button"
+                      [attr.data-testid]="'class-edit-' + ebdClass.id"
                       class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                       (click)="openEdit(ebdClass.id)"
                     >
@@ -217,7 +227,7 @@
                     </button>
                     <button
                       type="button"
-                      class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      [attr.data-testid]="'class-delete-' + ebdClass.id"
                       (click)="askDelete(ebdClass.id)"
                     >
                       {{ 'EBD_CLASSES.DELETE' | translate }}

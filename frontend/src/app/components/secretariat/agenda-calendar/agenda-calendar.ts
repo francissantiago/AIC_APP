@@ -39,6 +39,12 @@ import { AuthService } from '@services/auth-service';
 import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
 import { endOfDay, endOfMonth, endOfWeek, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
+import {
+  isCrossMidnightSameDayEnd,
+  isEventRangeInvalid,
+  normalizeEventRange,
+  spansMidnight,
+} from './agenda-calendar.util';
 
 const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: string }> = {
   [CalendarEventType.SERVICE]: { primary: '#0369a1', secondary: '#e0f2fe' },
@@ -66,7 +72,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
   ],
   providers: [provideCalendar({ provide: DateAdapter, useFactory: adapterFactory })],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="agenda-calendar">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">
           {{ 'SECRETARIAT.AGENDA_TITLE' | translate }}
@@ -75,6 +81,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="button"
+            data-testid="agenda-create-btn"
             (click)="openCreate()"
           >
             {{ 'SECRETARIAT.EVENT_NEW' | translate }}
@@ -87,13 +94,20 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
         [title]="(editing() ? 'SECRETARIAT.EVENT_EDIT' : 'SECRETARIAT.EVENT_NEW') | translate"
         (closed)="closeForm()"
       >
-        <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+        <form
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          class="grid gap-4 md:grid-cols-2"
+          novalidate
+          data-testid="agenda-form"
+        >
           <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
             <span>{{ 'SECRETARIAT.EVENT_TITLE' | translate }}</span>
             <input
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               formControlName="title"
               maxlength="150"
+              data-testid="agenda-form-title"
               [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
               [attr.aria-describedby]="
                 form.controls.title.touched && form.controls.title.invalid
@@ -128,6 +142,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="datetime-local"
               formControlName="startsAt"
+              data-testid="agenda-form-starts"
               [attr.aria-invalid]="form.controls.startsAt.touched && form.controls.startsAt.invalid"
               [attr.aria-describedby]="
                 form.controls.startsAt.touched && form.controls.startsAt.invalid
@@ -147,6 +162,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="datetime-local"
               formControlName="endsAt"
+              data-testid="agenda-form-ends"
               [attr.aria-invalid]="form.controls.endsAt.touched && form.controls.endsAt.invalid"
               [attr.aria-describedby]="
                 form.controls.endsAt.touched && form.controls.endsAt.invalid
@@ -162,6 +178,24 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             @if (rangeInvalid()) {
               <span class="text-xs text-red-700">
                 {{ 'SECRETARIAT.INVALID_EVENT_RANGE' | translate }}
+              </span>
+            }
+            @if (crossMidnightHint()) {
+              <span
+                class="text-xs text-slate-600"
+                role="status"
+                data-testid="agenda-cross-midnight-hint"
+              >
+                {{ 'SECRETARIAT.CROSS_MIDNIGHT_HINT' | translate }}
+              </span>
+            }
+            @if (spansMidnightHint()) {
+              <span
+                class="text-xs text-slate-600"
+                role="status"
+                data-testid="agenda-spans-midnight-hint"
+              >
+                {{ 'SECRETARIAT.EVENT_SPANS_MIDNIGHT' | translate }}
               </span>
             }
           </label>
@@ -220,7 +254,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             </p>
           }
           @if (isSystemBirthdayEvent()) {
-            <p class="text-sm text-slate-600 md:col-span-2" role="status">
+            <p class="text-sm text-slate-600 md:col-span-2" role="status" data-testid="agenda-birthday-readonly">
               {{ 'SECRETARIAT.BIRTHDAY_EVENT_READONLY' | translate }}
               @if (editing()?.sourceMemberId; as memberId) {
                 <a
@@ -245,6 +279,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
               <button
                 class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
                 type="submit"
+                data-testid="agenda-form-save"
                 [disabled]="saving()"
               >
                 {{ 'COMMON.SAVE' | translate }}
@@ -296,6 +331,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
           <button
             class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             type="button"
+            data-testid="dialog-confirm"
             (click)="confirmDelete(pendingDelete()!)"
           >
             {{ 'COMMON.YES' | translate }}
@@ -396,7 +432,7 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
         <p role="alert" class="text-sm text-red-700">{{ 'SECRETARIAT.LOAD_ERROR' | translate }}</p>
       }
 
-      <div class="rounded-md border border-slate-200 p-2">
+      <div class="rounded-md border border-slate-200 p-2" data-testid="agenda-calendar-view">
         @switch (view()) {
           @case (calendarView.Month) {
             <mwl-calendar-month-view
@@ -408,22 +444,36 @@ const EVENT_COLORS: Record<CalendarEventType, { primary: string; secondary: stri
             />
           }
           @case (calendarView.Week) {
-            <mwl-calendar-week-view
-              [viewDate]="viewDate()"
-              [events]="calendarEvents()"
-              [locale]="locale()"
-              (eventClicked)="onEventClicked($event.event)"
-              (hourSegmentClicked)="onSlotClicked($event.date)"
-            />
+            <div class="max-h-[70vh] overflow-y-auto" data-testid="agenda-calendar-scroll">
+              <mwl-calendar-week-view
+                [viewDate]="viewDate()"
+                [events]="calendarEvents()"
+                [locale]="locale()"
+                [dayStartHour]="dayStartHour"
+                [dayStartMinute]="dayStartMinute"
+                [dayEndHour]="dayEndHour"
+                [dayEndMinute]="dayEndMinute"
+                [hourSegments]="hourSegments"
+                (eventClicked)="onEventClicked($event.event)"
+                (hourSegmentClicked)="onSlotClicked($event.date)"
+              />
+            </div>
           }
           @case (calendarView.Day) {
-            <mwl-calendar-day-view
-              [viewDate]="viewDate()"
-              [events]="calendarEvents()"
-              [locale]="locale()"
-              (eventClicked)="onEventClicked($event.event)"
-              (hourSegmentClicked)="onSlotClicked($event.date)"
-            />
+            <div class="max-h-[70vh] overflow-y-auto" data-testid="agenda-calendar-scroll">
+              <mwl-calendar-day-view
+                [viewDate]="viewDate()"
+                [events]="calendarEvents()"
+                [locale]="locale()"
+                [dayStartHour]="dayStartHour"
+                [dayStartMinute]="dayStartMinute"
+                [dayEndHour]="dayEndHour"
+                [dayEndMinute]="dayEndMinute"
+                [hourSegments]="hourSegments"
+                (eventClicked)="onEventClicked($event.event)"
+                (hourSegmentClicked)="onSlotClicked($event.date)"
+              />
+            </div>
           }
         }
       </div>
@@ -443,6 +493,11 @@ export class AgendaCalendar implements OnInit {
   readonly eventTypes = MANUAL_CALENDAR_EVENT_TYPES;
   readonly recurrenceFrequencies = CALENDAR_RECURRENCE_FREQUENCIES;
   readonly recurrenceNone = CalendarRecurrenceFrequency.NONE;
+  readonly dayStartHour = 0;
+  readonly dayStartMinute = 0;
+  readonly dayEndHour = 23;
+  readonly dayEndMinute = 59;
+  readonly hourSegments = 4;
 
   readonly view = signal<CalendarView>(CalendarView.Month);
   readonly viewDate = signal(new Date());
@@ -455,6 +510,7 @@ export class AgendaCalendar implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly supportHint = signal<string | null>(null);
   readonly pendingDelete = signal<string | null>(null);
+  readonly #formRangeVersion = signal(0);
 
   readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly canViewSchedules = computed(() => this.#auth.hasPermission('schedules:read'));
@@ -494,8 +550,25 @@ export class AgendaCalendar implements OnInit {
   });
 
   readonly rangeInvalid = computed(() => {
+    this.#formRangeVersion();
     const v = this.form.getRawValue();
-    return Boolean(v.startsAt && v.endsAt && v.endsAt < v.startsAt);
+    return isEventRangeInvalid(v.startsAt, v.endsAt);
+  });
+
+  readonly crossMidnightHint = computed(() => {
+    this.#formRangeVersion();
+    const v = this.form.getRawValue();
+    return isCrossMidnightSameDayEnd(v.startsAt, v.endsAt);
+  });
+
+  readonly spansMidnightHint = computed(() => {
+    this.#formRangeVersion();
+    const v = this.form.getRawValue();
+    if (!v.startsAt || !v.endsAt) {
+      return false;
+    }
+    const { startsAt, endsAt } = normalizeEventRange(v.startsAt, v.endsAt);
+    return spansMidnight(startsAt, endsAt);
   });
 
   constructor() {
@@ -507,16 +580,19 @@ export class AgendaCalendar implements OnInit {
   }
 
   ngOnInit(): void {
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
+      this.#formRangeVersion.update((value) => value + 1);
+    });
     this.#load(this.view(), this.viewDate());
   }
 
-  openCreate(date?: Date): void {
+  openCreate(date?: Date, options?: { preserveTime?: boolean }): void {
     if (!this.canWrite()) {
       return;
     }
     this.editing.set(null);
     const start = date ? new Date(date) : new Date();
-    if (date) {
+    if (date && !options?.preserveTime) {
       start.setHours(19, 0, 0, 0);
     }
     const end = new Date(start.getTime() + 60 * 60 * 1000);
@@ -594,7 +670,7 @@ export class AgendaCalendar implements OnInit {
 
   onSlotClicked(date: Date): void {
     if (this.canWrite()) {
-      this.openCreate(date);
+      this.openCreate(date, { preserveTime: true });
     }
   }
 
@@ -617,12 +693,13 @@ export class AgendaCalendar implements OnInit {
       return;
     }
     const v = this.form.getRawValue();
+    const { startsAt, endsAt } = normalizeEventRange(v.startsAt, v.endsAt);
     const payload = {
       title: v.title,
       type: v.type,
       allDay: v.allDay,
-      startsAt: new Date(v.startsAt).toISOString(),
-      endsAt: new Date(v.endsAt).toISOString(),
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
       location: v.location || null,
       description: v.description || null,
       recurrenceFrequency: v.recurrenceFrequency,

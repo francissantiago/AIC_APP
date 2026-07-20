@@ -1,9 +1,10 @@
-<nav [attr.aria-label]="'NAV.MAIN_NAV' | translate">
+<nav [attr.aria-label]="'NAV.MAIN_NAV' | translate" data-testid="app-sidebar-nav">
   <ul class="flex flex-col gap-2 px-2 py-4">
     @for (item of items(); track item.route) {
       <li>
         <a
           [routerLink]="item.route"
+          [attr.data-testid]="navLinkTestId(item.route)"
           routerLinkActive="bg-slate-600 text-slate-100 border-sky-400 shadow-sm"
           class="group flex min-h-11 items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
@@ -159,6 +160,7 @@
       <li>
         <button
           type="button"
+          data-testid="nav-toggle-congregations"
           class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
           [class.bg-slate-600]="
@@ -197,6 +199,7 @@
               <li>
                 <a
                   [routerLink]="item.route"
+                  [attr.data-testid]="navLinkTestId(item.route)"
                   routerLinkActive="bg-slate-600 text-white"
                   [routerLinkActiveOptions]="{ exact: item.route === '/congregation' }"
                   class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -213,6 +216,7 @@
       <li>
         <button
           type="button"
+          data-testid="nav-toggle-ebd"
           class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
           [class.bg-slate-600]="currentUrl().startsWith('/ebd')"
@@ -250,6 +254,7 @@
               <li>
                 <a
                   [routerLink]="item.route"
+                  [attr.data-testid]="navLinkTestId(item.route)"
                   routerLinkActive="bg-slate-600 text-white"
                   [routerLinkActiveOptions]="{ exact: item.route === '/ebd' }"
                   class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -266,6 +271,7 @@
       <li>
         <button
           type="button"
+          data-testid="nav-toggle-small-groups"
           class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
           [class.bg-slate-600]="currentUrl().startsWith('/small-groups')"
@@ -308,6 +314,7 @@
               <li>
                 <a
                   [routerLink]="item.route"
+                  [attr.data-testid]="navLinkTestId(item.route)"
                   routerLinkActive="bg-slate-600 text-white"
                   [routerLinkActiveOptions]="{ exact: item.route === '/small-groups' }"
                   class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -324,6 +331,7 @@
       <li>
         <button
           type="button"
+          data-testid="nav-toggle-finance"
           class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
           [class.bg-slate-600]="currentUrl().startsWith('/finance')"
@@ -360,6 +368,7 @@
               <li>
                 <a
                   [routerLink]="item.route"
+                  [attr.data-testid]="navLinkTestId(item.route)"
                   routerLinkActive="bg-slate-600 text-white"
                   [routerLinkActiveOptions]="{ exact: item.route === '/finance' }"
                   class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -376,6 +385,7 @@
       <li>
         <button
           type="button"
+          data-testid="nav-toggle-secretariat"
           class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [class.justify-center]="!expanded()"
           [class.bg-slate-600]="currentUrl().startsWith('/secretariat')"
@@ -412,6 +422,7 @@
               <li>
                 <a
                   [routerLink]="item.route"
+                  [attr.data-testid]="navLinkTestId(item.route)"
                   routerLinkActive="bg-slate-600 text-white"
                   [routerLinkActiveOptions]="{ exact: item.route === '/secretariat' }"
                   class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"

@@ -29,7 +29,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
     TranslatePipe,
   ],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="finance-entries">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">{{ 'FINANCE.ENTRIES' | translate }}</h1>
         @if (canWrite()) {
@@ -37,6 +37,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
             <button
               class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               type="button"
+              data-testid="finance-categories-btn"
               (click)="toggleCategories()"
             >
               {{ 'FINANCE.CATEGORIES' | translate }}
@@ -44,6 +45,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
             <button
               class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
               type="button"
+              data-testid="finance-entry-create-btn"
               (click)="openCreate()"
             >
               {{ 'FINANCE.NEW_ENTRY' | translate }}
@@ -149,6 +151,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
         <button
           class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           type="submit"
+          data-testid="finance-entry-filter-btn"
         >
           {{ 'COMMON.FILTER' | translate }}
         </button>
@@ -163,6 +166,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
           <button
             class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             type="button"
+            data-testid="dialog-confirm"
             (click)="confirmDelete(pendingDelete()!)"
           >
             {{ 'COMMON.YES' | translate }}
@@ -219,7 +223,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
             </thead>
             <tbody>
               @for (entry of entries(); track entry.id) {
-                <tr class="border-t border-slate-100">
+                <tr class="border-t border-slate-100" [attr.data-testid]="'finance-entry-row-' + entry.id">
                   <td class="px-3 py-2 text-slate-700">{{ entry.entryDate }}</td>
                   <td class="px-3 py-2 text-slate-900">{{ entry.description }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ entry.category.name }}</td>
@@ -236,6 +240,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
                         <button
                           class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                           type="button"
+                          [attr.data-testid]="'finance-entry-edit-' + entry.id"
                           (click)="openEdit(entry)"
                         >
                           {{ 'COMMON.EDIT' | translate }}
@@ -243,6 +248,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
                         <button
                           class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                           type="button"
+                          [attr.data-testid]="'finance-entry-delete-' + entry.id"
                           (click)="pendingDelete.set(entry.id)"
                         >
                           {{ 'COMMON.DELETE' | translate }}

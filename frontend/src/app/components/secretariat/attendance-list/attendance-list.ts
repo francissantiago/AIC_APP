@@ -24,7 +24,7 @@ const PAGE_SIZE = 20;
   selector: 'app-attendance-list',
   imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="attendance-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">
           {{ 'SECRETARIAT.ATTENDANCE_TITLE' | translate }}
@@ -33,6 +33,7 @@ const PAGE_SIZE = 20;
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="button"
+            data-testid="attendance-create-btn"
             (click)="openCreate()"
           >
             {{ 'SECRETARIAT.NEW' | translate }}
@@ -45,13 +46,20 @@ const PAGE_SIZE = 20;
         [title]="(editing() ? 'SECRETARIAT.EDIT' : 'SECRETARIAT.NEW') | translate"
         (closed)="closeForm()"
       >
-        <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+        <form
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          class="grid gap-4 md:grid-cols-2"
+          novalidate
+          data-testid="attendance-form"
+        >
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.EVENT_DATE' | translate }}</span>
             <input
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="eventDate"
+              data-testid="attendance-form-date"
               [attr.aria-invalid]="
                 form.controls.eventDate.touched && form.controls.eventDate.invalid
               "
@@ -72,6 +80,7 @@ const PAGE_SIZE = 20;
             <select
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               formControlName="eventType"
+              data-testid="attendance-form-type"
             >
               @for (type of eventTypes; track type) {
                 <option [value]="type">{{ typeLabel(type) | translate }}</option>
@@ -86,6 +95,7 @@ const PAGE_SIZE = 20;
               min="0"
               step="1"
               formControlName="totalPresent"
+              data-testid="attendance-form-total"
               [attr.aria-invalid]="
                 form.controls.totalPresent.touched && form.controls.totalPresent.invalid
               "
@@ -143,6 +153,7 @@ const PAGE_SIZE = 20;
             <button
               class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
               type="submit"
+              data-testid="attendance-form-save"
               [disabled]="saving()"
             >
               {{ 'COMMON.SAVE' | translate }}
@@ -210,6 +221,7 @@ const PAGE_SIZE = 20;
           <button
             class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             type="button"
+            data-testid="dialog-confirm"
             (click)="confirmDelete(pendingDelete()!)"
           >
             {{ 'COMMON.YES' | translate }}
@@ -264,7 +276,7 @@ const PAGE_SIZE = 20;
             </thead>
             <tbody>
               @for (record of records(); track record.id) {
-                <tr class="border-t border-slate-100">
+                <tr class="border-t border-slate-100" [attr.data-testid]="'attendance-row-' + record.id">
                   <td class="px-3 py-2 text-slate-700">{{ record.eventDate }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ typeLabel(record.eventType) | translate }}
@@ -282,6 +294,7 @@ const PAGE_SIZE = 20;
                         <button
                           class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                           type="button"
+                          [attr.data-testid]="'attendance-edit-' + record.id"
                           (click)="openEdit(record)"
                         >
                           {{ 'COMMON.EDIT' | translate }}
@@ -289,6 +302,7 @@ const PAGE_SIZE = 20;
                         <button
                           class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                           type="button"
+                          [attr.data-testid]="'attendance-delete-' + record.id"
                           (click)="pendingDelete.set(record.id)"
                         >
                           {{ 'COMMON.DELETE' | translate }}

@@ -26,6 +26,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
   template: `
     <section
       class="w-full"
+      data-testid="finance-entry-form"
       [attr.aria-label]="(entry() ? 'FINANCE.EDIT_ENTRY' : 'FINANCE.NEW_ENTRY') | translate"
     >
       <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
@@ -53,6 +54,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
           <select
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
+            data-testid="finance-entry-form-type"
           >
             @for (type of financialTypes; track type) {
               <option [value]="type">{{ typeLabel(type) | translate }}</option>
@@ -64,6 +66,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
           <select
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="categoryId"
+            data-testid="finance-entry-form-category"
             [attr.aria-invalid]="
               form.controls.categoryId.touched && form.controls.categoryId.invalid
             "
@@ -92,6 +95,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
             min="0.01"
             step="0.01"
             formControlName="amount"
+            data-testid="finance-entry-form-amount"
             [attr.aria-invalid]="form.controls.amount.touched && form.controls.amount.invalid"
             [attr.aria-describedby]="
               form.controls.amount.touched && form.controls.amount.invalid
@@ -122,6 +126,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
               <select
                 class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
                 formControlName="memberId"
+                data-testid="finance-entry-form-member"
               >
                 <option value="">{{ 'FINANCE.ANONYMOUS' | translate }}</option>
                 @for (option of memberOptions(); track option.id) {
@@ -138,6 +143,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             maxlength="255"
             formControlName="description"
+            data-testid="finance-entry-form-description"
             [attr.aria-invalid]="
               form.controls.description.touched && form.controls.description.invalid
             "
@@ -192,6 +198,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="submit"
+            data-testid="finance-entry-form-save"
             [disabled]="saving()"
           >
             {{ 'COMMON.SAVE' | translate }}
@@ -199,6 +206,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
           <button
             class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             type="button"
+            data-testid="finance-entry-form-cancel"
             (click)="cancelled.emit()"
           >
             {{ 'COMMON.CANCEL' | translate }}

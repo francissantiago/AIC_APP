@@ -1,4 +1,4 @@
-<section class="w-full" [attr.aria-label]="'SMALL_GROUPS.MEETINGS' | translate">
+<section class="w-full" data-testid="small-group-meetings-panel" [attr.aria-label]="'SMALL_GROUPS.MEETINGS' | translate">
   @if (feedback(); as messageKey) {
     <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
       {{ messageKey | translate }}
@@ -34,6 +34,7 @@
           <span>{{ 'SMALL_GROUPS.MEETING_DATE' | translate }}</span>
           <input
             type="date"
+            data-testid="small-group-meeting-date"
             formControlName="meetingDate"
             class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           />
@@ -43,6 +44,7 @@
           <span>{{ 'SMALL_GROUPS.THEME' | translate }}</span>
           <input
             type="text"
+            data-testid="small-group-meeting-theme"
             formControlName="theme"
             maxlength="255"
             class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -62,6 +64,7 @@
         <div class="flex flex-wrap items-end gap-2">
           <button
             type="submit"
+            data-testid="small-group-meeting-save"
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             [disabled]="saving()"
           >
@@ -135,7 +138,7 @@
           </thead>
           <tbody>
             @for (meeting of meetings(); track meeting.id) {
-              <tr class="border-t border-slate-100">
+              <tr class="border-t border-slate-100" [attr.data-testid]="'small-group-meeting-row-' + meeting.id">
                 <td class="px-3 py-2 text-slate-900">{{ meeting.meetingDate }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ meeting.theme || '' }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ meeting.notes || '' }}</td>
@@ -143,6 +146,7 @@
                   <div class="flex flex-wrap gap-2">
                     <button
                       type="button"
+                      [attr.data-testid]="'small-group-meeting-attendance-' + meeting.id"
                       class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                       (click)="openAttendance(meeting.id)"
                     >

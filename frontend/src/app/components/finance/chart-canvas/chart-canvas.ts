@@ -37,7 +37,11 @@ Chart.register(
   selector: 'app-chart-canvas',
   imports: [TranslatePipe],
   template: `
-    <section class="rounded-md border border-slate-200 p-4" [attr.aria-labelledby]="titleId()">
+    <section
+      class="rounded-md border border-slate-200 p-4"
+      [attr.aria-labelledby]="titleId()"
+      [attr.data-testid]="testId() ?? null"
+    >
       <h2 [id]="titleId()" class="mb-3 font-semibold text-slate-900">
         {{ titleKey() | translate }}
       </h2>
@@ -73,6 +77,7 @@ export class ChartCanvas {
   readonly empty = input(false);
   readonly titleId = input('finance-chart-title');
   readonly summaryId = input('finance-chart-summary');
+  readonly testId = input<string | undefined>(undefined);
 
   protected readonly canvas = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
   #chart: Chart<'bar' | 'doughnut'> | null = null;

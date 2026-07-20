@@ -24,7 +24,7 @@ const PAGE_SIZE = 20;
   selector: 'app-visitors-list',
   imports: [AppDialog, ReactiveFormsModule, TranslatePipe, RouterLink],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="visitors-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">
           {{ 'SECRETARIAT.VISITORS_TITLE' | translate }}
@@ -33,6 +33,7 @@ const PAGE_SIZE = 20;
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="button"
+            data-testid="visitor-create-btn"
             (click)="openCreate()"
           >
             {{ 'SECRETARIAT.NEW' | translate }}
@@ -45,13 +46,20 @@ const PAGE_SIZE = 20;
         [title]="(editing() ? 'SECRETARIAT.EDIT' : 'SECRETARIAT.NEW') | translate"
         (closed)="closeForm()"
       >
-        <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+        <form
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          class="grid gap-4 md:grid-cols-2"
+          novalidate
+          data-testid="visitor-form"
+        >
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.FULL_NAME' | translate }}</span>
             <input
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               formControlName="fullName"
               maxlength="150"
+              data-testid="visitor-form-full-name"
               [attr.aria-invalid]="form.controls.fullName.touched && form.controls.fullName.invalid"
               [attr.aria-describedby]="
                 form.controls.fullName.touched && form.controls.fullName.invalid
@@ -79,6 +87,7 @@ const PAGE_SIZE = 20;
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="visitDate"
+              data-testid="visitor-form-visit-date"
               [attr.aria-invalid]="
                 form.controls.visitDate.touched && form.controls.visitDate.invalid
               "
@@ -118,6 +127,7 @@ const PAGE_SIZE = 20;
             <button
               class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
               type="submit"
+              data-testid="visitor-form-save"
               [disabled]="saving()"
             >
               {{ 'COMMON.SAVE' | translate }}
@@ -146,6 +156,7 @@ const PAGE_SIZE = 20;
           (ngSubmit)="submitConvert()"
           class="grid gap-4 md:grid-cols-2"
           novalidate
+          data-testid="visitor-convert-form"
         >
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.FULL_NAME' | translate }}</span>
@@ -229,6 +240,7 @@ const PAGE_SIZE = 20;
             <button
               class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
               type="submit"
+              data-testid="visitor-convert-save"
               [disabled]="converting()"
             >
               {{ 'SECRETARIAT.VISITORS.CONVERT' | translate }}
@@ -292,6 +304,7 @@ const PAGE_SIZE = 20;
           <button
             class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             type="button"
+            data-testid="dialog-confirm"
             (click)="confirmDelete(pendingDelete()!)"
           >
             {{ 'COMMON.YES' | translate }}
@@ -346,7 +359,7 @@ const PAGE_SIZE = 20;
             </thead>
             <tbody>
               @for (visitor of visitors(); track visitor.id) {
-                <tr class="border-t border-slate-100">
+                <tr class="border-t border-slate-100" [attr.data-testid]="'visitor-row-' + visitor.id">
                   <td class="px-3 py-2 text-slate-900">{{ visitor.fullName }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ visitor.phone || ('COMMON.NOT_AVAILABLE' | translate) }}
@@ -383,6 +396,7 @@ const PAGE_SIZE = 20;
                           <button
                             class="text-emerald-800 underline underline-offset-2 hover:text-emerald-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                             type="button"
+                            [attr.data-testid]="'visitor-convert-' + visitor.id"
                             (click)="openConvert(visitor)"
                           >
                             {{ 'SECRETARIAT.VISITORS.CONVERT' | translate }}
@@ -392,6 +406,7 @@ const PAGE_SIZE = 20;
                           <button
                             class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                             type="button"
+                            [attr.data-testid]="'visitor-edit-' + visitor.id"
                             (click)="openEdit(visitor)"
                           >
                             {{ 'COMMON.EDIT' | translate }}
@@ -399,6 +414,7 @@ const PAGE_SIZE = 20;
                           <button
                             class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                             type="button"
+                            [attr.data-testid]="'visitor-delete-' + visitor.id"
                             (click)="pendingDelete.set(visitor.id)"
                           >
                             {{ 'COMMON.DELETE' | translate }}

@@ -45,7 +45,7 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
     }
   `,
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="finance-reports">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">{{ 'REPORTS.TITLE' | translate }}</h1>
         <button
@@ -63,6 +63,7 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
       >
         <button
           type="button"
+          data-testid="finance-reports-tab-cash"
           [class]="tabClass('cash')"
           [attr.aria-pressed]="tab() === 'cash'"
           (click)="selectTab('cash')"
@@ -71,6 +72,7 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
         </button>
         <button
           type="button"
+          data-testid="finance-reports-tab-assets"
           [class]="tabClass('assets')"
           [attr.aria-pressed]="tab() === 'assets'"
           (click)="selectTab('assets')"
@@ -137,9 +139,10 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
               type="submit"
             >
               {{ 'COMMON.FILTER' | translate }}</button
-            ><button
+            >            <button
               class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
               type="button"
+              data-testid="finance-reports-export-csv"
               [disabled]="exporting()"
               (click)="exportCsv()"
             >
@@ -171,7 +174,7 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
           @if (report.data.length === 0) {
             <p class="text-sm text-slate-600">{{ 'REPORTS.EMPTY_CASH_FLOW' | translate }}</p>
           } @else {
-            <div class="overflow-x-auto rounded-md border border-slate-200">
+            <div class="overflow-x-auto rounded-md border border-slate-200" data-testid="finance-reports-cash-table">
               <table class="min-w-full text-left text-sm">
                 <caption class="sr-only">
                   {{

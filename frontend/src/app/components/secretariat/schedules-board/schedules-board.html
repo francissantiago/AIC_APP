@@ -1,4 +1,4 @@
-<section class="w-full">
+<section class="w-full" data-testid="schedules-board">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-xl font-semibold text-slate-900">{{ 'SCHEDULES.TITLE' | translate }}</h1>
@@ -8,6 +8,7 @@
       <button
         class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
         type="button"
+        data-testid="schedules-editor-open-btn"
         (click)="openEditor()"
       >
         {{ 'SCHEDULES.EDITOR_TITLE' | translate }}
@@ -22,6 +23,7 @@
         <button
           class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           type="button"
+          data-testid="schedules-week-prev"
           (click)="previousWeek()"
         >
           {{ 'COMMON.PREVIOUS' | translate }}
@@ -29,6 +31,7 @@
         <button
           class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           type="button"
+          data-testid="schedules-week-today"
           (click)="goCurrentWeek()"
         >
           {{ 'SECRETARIAT.TODAY' | translate }}
@@ -36,6 +39,7 @@
         <button
           class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           type="button"
+          data-testid="schedules-week-next"
           (click)="nextWeek()"
         >
           {{ 'COMMON.NEXT' | translate }}
@@ -76,7 +80,7 @@
   } @else {
     <div class="grid gap-4">
       @for (event of events(); track event.id) {
-        <article class="rounded-md border border-slate-200 p-4">
+        <article class="rounded-md border border-slate-200 p-4" [attr.data-testid]="'schedules-event-' + event.id">
           <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
               <h2 class="text-lg font-semibold text-slate-900">{{ event.title }}</h2>

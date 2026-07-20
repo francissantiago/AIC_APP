@@ -20,7 +20,7 @@ import { FinanceService } from '@services/finance-service';
   selector: 'app-financial-category-manager',
   imports: [ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="w-full" [attr.aria-label]="'FINANCE.CATEGORIES' | translate">
+    <section class="w-full" data-testid="finance-category-manager" [attr.aria-label]="'FINANCE.CATEGORIES' | translate">
       <form
         [formGroup]="form"
         (ngSubmit)="save()"
@@ -33,6 +33,7 @@ import { FinanceService } from '@services/finance-service';
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="name"
             maxlength="100"
+            data-testid="finance-category-name"
             [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
             [attr.aria-describedby]="
               form.controls.name.touched && form.controls.name.invalid
@@ -51,6 +52,7 @@ import { FinanceService } from '@services/finance-service';
           <select
             class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
             formControlName="type"
+            data-testid="finance-category-type"
           >
             @for (type of types; track type) {
               <option [value]="type">{{ typeLabel(type) | translate }}</option>
@@ -60,6 +62,7 @@ import { FinanceService } from '@services/finance-service';
         <button
           class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           type="submit"
+          data-testid="finance-category-save"
         >
           {{ (editingId() ? 'COMMON.SAVE' : 'COMMON.CREATE') | translate }}
         </button>
@@ -76,7 +79,10 @@ import { FinanceService } from '@services/finance-service';
       <div class="overflow-hidden rounded-md border border-slate-200">
         <ul class="divide-y divide-slate-100">
           @for (category of categories(); track category.id) {
-            <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+            <li
+              class="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
+              [attr.data-testid]="'finance-category-row-' + category.id"
+            >
               <span class="text-sm text-slate-900">
                 {{ category.name }} · {{ typeLabel(category.type) | translate }}
               </span>

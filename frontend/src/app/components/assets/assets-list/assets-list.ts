@@ -21,13 +21,14 @@ import { FinanceService } from '@services/finance-service';
   selector: 'app-assets-list',
   imports: [AppDialog, AssetForm, ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="assets-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">{{ 'ASSETS.TITLE' | translate }}</h1>
         @if (canWrite()) {
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="button"
+            data-testid="asset-create-btn"
             (click)="openCreate()"
           >
             {{ 'ASSETS.NEW' | translate }}
@@ -81,6 +82,7 @@ import { FinanceService } from '@services/finance-service';
         <button
           class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           type="submit"
+          data-testid="asset-filter-btn"
         >
           {{ 'COMMON.FILTER' | translate }}
         </button>
@@ -95,6 +97,7 @@ import { FinanceService } from '@services/finance-service';
           <button
             class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             type="button"
+            data-testid="dialog-confirm"
             (click)="confirmDelete(pendingDelete()!)"
           >
             {{ 'COMMON.YES' | translate }}
@@ -143,7 +146,7 @@ import { FinanceService } from '@services/finance-service';
             </thead>
             <tbody>
               @for (asset of assets(); track asset.id) {
-                <tr class="border-t border-slate-100">
+                <tr class="border-t border-slate-100" [attr.data-testid]="'asset-row-' + asset.id">
                   <td class="px-3 py-2 text-slate-700">
                     {{ asset.assetTag || ('COMMON.NOT_AVAILABLE' | translate) }}
                   </td>
@@ -166,6 +169,7 @@ import { FinanceService } from '@services/finance-service';
                         <button
                           class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                           type="button"
+                          [attr.data-testid]="'asset-edit-' + asset.id"
                           (click)="openEdit(asset)"
                         >
                           {{ 'COMMON.EDIT' | translate }}
@@ -173,6 +177,7 @@ import { FinanceService } from '@services/finance-service';
                         <button
                           class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                           type="button"
+                          [attr.data-testid]="'asset-delete-' + asset.id"
                           (click)="pendingDelete.set(asset.id)"
                         >
                           {{ 'COMMON.DELETE' | translate }}

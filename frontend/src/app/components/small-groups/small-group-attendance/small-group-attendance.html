@@ -1,4 +1,4 @@
-<section class="w-full" [attr.aria-label]="'SMALL_GROUPS.ATTENDANCE' | translate">
+<section class="w-full" data-testid="small-group-attendance-panel" [attr.aria-label]="'SMALL_GROUPS.ATTENDANCE' | translate">
   <div class="mb-4">
     <h2 class="text-lg font-semibold text-slate-900">
       {{ 'SMALL_GROUPS.ATTENDANCE' | translate }}
@@ -50,7 +50,7 @@
         </thead>
         <tbody>
           @for (entry of drafts(); track entry.memberId) {
-            <tr class="border-t border-slate-100">
+            <tr class="border-t border-slate-100" [attr.data-testid]="'small-group-attendance-row-' + entry.memberId">
               <td class="px-3 py-2 text-slate-900">{{ entry.memberFullName }}</td>
               <td class="px-3 py-2">
                 <label class="inline-flex items-center gap-2 text-slate-800">
@@ -99,6 +99,7 @@
       <div class="mt-4">
         <button
           type="button"
+          data-testid="small-group-attendance-save"
           class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           [disabled]="saving()"
           (click)="save()"

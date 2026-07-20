@@ -756,6 +756,8 @@
     "CONFIRM_DELETE_EVENT": "¿Eliminar este evento?",
     "CONFIRM_DELETE_SERIES": "¿Eliminar toda la serie recurrente?",
     "INVALID_EVENT_RANGE": "La hora de fin no puede ser anterior a la hora de inicio",
+    "CROSS_MIDNIGHT_HINT": "La hora de fin se registrará al día siguiente (vigilia).",
+    "EVENT_SPANS_MIDNIGHT": "Este evento continúa después de la medianoche y también aparecerá al día siguiente en el calendario.",
     "RECURRENCE": "Recurrencia",
     "RECURRENCE_NONE": "No se repite",
     "RECURRENCE_DAILY": "Diaria",

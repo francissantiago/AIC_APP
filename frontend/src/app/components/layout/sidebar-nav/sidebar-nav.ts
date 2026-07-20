@@ -230,4 +230,9 @@ export class SidebarNav {
     }
     this.congregationsOpen.update((value) => !value);
   }
+
+  navLinkTestId(route: string): string {
+    const segment = route.replace(/^\//, '').replace(/\//g, '-');
+    return `nav-${segment}`;
+  }
 }

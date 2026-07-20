@@ -26,12 +26,13 @@
   } @else if (loadError()) {
     <p class="text-sm text-red-700" role="alert">{{ 'ROLES.LOAD_ERROR' | translate }}</p>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate data-testid="role-form">
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'ROLES.CODE' | translate }}</span>
         <input
           type="text"
           formControlName="code"
+          data-testid="role-form-code"
           autocomplete="off"
           class="rounded-md border border-slate-200 px-3 py-2 uppercase focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
           [attr.aria-invalid]="fieldInvalid('code')"
@@ -57,6 +58,7 @@
         <input
           type="text"
           formControlName="name"
+          data-testid="role-form-name"
           autocomplete="off"
           class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           [attr.aria-invalid]="fieldInvalid('name')"
@@ -107,6 +109,7 @@
                       <input
                         type="checkbox"
                         [id]="'permission-' + group.read.id"
+                        [attr.data-testid]="'role-permission-' + group.resource + '-read'"
                         class="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-400"
                         [checked]="isPermissionChecked(group.read)"
                         [disabled]="isPermissionDisabled(group.read)"
@@ -124,6 +127,7 @@
                         <input
                           type="checkbox"
                           [id]="'permission-' + group.write.id"
+                          [attr.data-testid]="'role-permission-' + group.resource + '-write'"
                           class="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-400 disabled:opacity-60"
                           [checked]="isPermissionChecked(group.write)"
                           [disabled]="isPermissionDisabled(group.write)"
@@ -148,6 +152,7 @@
       <div class="mt-2 flex flex-wrap gap-3">
         <button
           type="submit"
+          data-testid="role-form-save"
           class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           [disabled]="saving()"
         >
@@ -155,6 +160,7 @@
         </button>
         <button
           type="button"
+          data-testid="role-form-cancel"
           class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           (click)="cancelled.emit()"
         >

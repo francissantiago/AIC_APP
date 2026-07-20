@@ -1,4 +1,4 @@
-<section class="w-full">
+<section class="w-full" data-testid="congregations-list">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-xl font-semibold text-slate-900">
@@ -9,6 +9,7 @@
     @if (canManageBranches()) {
       <button
         type="button"
+        data-testid="congregation-create-btn"
         class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
         (click)="openCreate()"
       >
@@ -40,6 +41,7 @@
     <div class="mt-4 flex gap-2">
       <button
         type="button"
+        data-testid="dialog-confirm"
         class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
         [disabled]="deleting()"
         (click)="confirmDelete()"
@@ -67,6 +69,7 @@
       <input
         type="search"
         formControlName="q"
+        data-testid="congregation-search"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       />
     </label>
@@ -75,6 +78,7 @@
       <span>{{ 'CONGREGATIONS.FILTER_TYPE' | translate }}</span>
       <select
         formControlName="type"
+        data-testid="congregation-filter-type"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -88,6 +92,7 @@
       <span>{{ 'CONGREGATIONS.FILTER_STATUS' | translate }}</span>
       <select
         formControlName="status"
+        data-testid="congregation-filter-status"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         <option value="">{{ 'COMMON.FILTER' | translate }}</option>
@@ -135,7 +140,7 @@
         </thead>
         <tbody>
           @for (congregation of congregations(); track congregation.id) {
-            <tr class="border-t border-slate-100">
+            <tr class="border-t border-slate-100" [attr.data-testid]="'congregation-row-' + congregation.id">
               <td class="px-3 py-2 text-slate-900">
                 <div>{{ congregation.name }}</div>
                 @if (congregation.tradeName) {
@@ -155,6 +160,7 @@
                   @if (canWrite()) {
                     <button
                       type="button"
+                      [attr.data-testid]="'congregation-edit-' + congregation.id"
                       class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                       (click)="openEdit(congregation.id)"
                     >
@@ -165,6 +171,7 @@
                     @if (canDelete(congregation)) {
                       <button
                         type="button"
+                        [attr.data-testid]="'congregation-delete-' + congregation.id"
                         class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                         (click)="askDelete(congregation.id)"
                       >

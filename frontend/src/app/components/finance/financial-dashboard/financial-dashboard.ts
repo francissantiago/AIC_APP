@@ -19,7 +19,7 @@ import { ChartData } from 'chart.js';
   selector: 'app-financial-dashboard',
   imports: [ChartCanvas, ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="finance-dashboard">
       <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 class="text-xl font-semibold text-slate-900">{{ 'FINANCE.TITLE' | translate }}</h1>
@@ -37,6 +37,7 @@ import { ChartData } from 'chart.js';
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="from"
+              data-testid="finance-dashboard-from"
               [attr.aria-invalid]="periodInvalid()"
               [attr.aria-describedby]="periodInvalid() ? 'dashboard-period-error' : null"
             />
@@ -47,6 +48,7 @@ import { ChartData } from 'chart.js';
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="to"
+              data-testid="finance-dashboard-to"
               [attr.aria-invalid]="periodInvalid()"
               [attr.aria-describedby]="periodInvalid() ? 'dashboard-period-error' : null"
             />
@@ -54,6 +56,7 @@ import { ChartData } from 'chart.js';
           <button
             class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="submit"
+            data-testid="finance-dashboard-filter"
           >
             {{ 'COMMON.FILTER' | translate }}
           </button>
@@ -70,7 +73,7 @@ import { ChartData } from 'chart.js';
       } @else if (error()) {
         <p role="alert" class="text-sm text-red-700">{{ 'FINANCE.LOAD_ERROR' | translate }}</p>
       } @else if (dashboard(); as value) {
-        <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5" data-testid="finance-dashboard-cards">
           @for (card of cards(); track card.labelKey) {
             <article class="rounded-md border border-slate-200 p-4">
               <p class="text-sm text-slate-600">{{ card.labelKey | translate }}</p>
@@ -87,6 +90,7 @@ import { ChartData } from 'chart.js';
             titleKey="FINANCE.MONTHLY_CHART"
             titleId="monthly-chart-title"
             summaryId="monthly-chart-summary"
+            testId="finance-monthly-chart"
           />
           <app-chart-canvas
             type="doughnut"
@@ -96,6 +100,7 @@ import { ChartData } from 'chart.js';
             titleKey="FINANCE.CATEGORY_CHART"
             titleId="category-chart-title"
             summaryId="category-chart-summary"
+            testId="finance-category-chart"
           />
         </div>
       } @else {

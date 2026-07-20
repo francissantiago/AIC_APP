@@ -11,6 +11,7 @@
 
   <aside
     [id]="sidebarId"
+    data-testid="app-sidebar"
     class="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-slate-600 bg-slate-500 shadow-lg transition-[width,transform] duration-200 md:translate-x-0"
     [class.w-60]="sidebarExpanded()"
     [class.w-16]="!sidebarExpanded()"
@@ -110,6 +111,7 @@
         <app-language-switcher />
         <a
           routerLink="/profile"
+          data-testid="app-profile-link"
           class="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:h-9 sm:w-auto sm:gap-2 sm:px-3"
           [attr.aria-label]="'PROFILE.MENU_LINK' | translate"
         >
@@ -131,6 +133,7 @@
         </a>
         <button
           type="button"
+          data-testid="app-logout"
           class="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:h-9 sm:w-auto sm:gap-2 sm:px-3"
           [attr.aria-label]="'AUTH.LOGOUT' | translate"
           (click)="logout()"
@@ -154,7 +157,11 @@
       </div>
     </header>
 
-    <main class="flex-1 p-4 md:p-6" [attr.aria-label]="'APP_SHELL.CONTENT_AREA' | translate">
+    <main
+      class="flex-1 p-4 md:p-6"
+      data-testid="app-main"
+      [attr.aria-label]="'APP_SHELL.CONTENT_AREA' | translate"
+    >
       <div class="rounded-md border border-slate-200 bg-white p-4 md:p-6">
         <router-outlet />
       </div>

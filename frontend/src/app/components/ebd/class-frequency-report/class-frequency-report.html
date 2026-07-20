@@ -1,4 +1,4 @@
-<section class="w-full" [attr.aria-label]="'EBD_ATTENDANCE.REPORT_TITLE' | translate">
+<section class="w-full" data-testid="class-frequency-report" [attr.aria-label]="'EBD_ATTENDANCE.REPORT_TITLE' | translate">
   <div class="mb-4">
     <h1 class="text-xl font-semibold text-slate-900">
       {{ 'EBD_ATTENDANCE.REPORT_TITLE' | translate }}
@@ -21,6 +21,7 @@
     <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-1">
       <span>{{ 'EBD_ATTENDANCE.FILTER_CLASS' | translate }}</span>
       <select
+        data-testid="class-report-class-select"
         formControlName="classId"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
@@ -52,6 +53,7 @@
     <div class="flex flex-wrap items-end gap-2">
       <button
         type="submit"
+        data-testid="class-report-filter-btn"
         class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
         [disabled]="loading()"
       >
@@ -93,7 +95,7 @@
     @if (report()!.members.length === 0) {
       <p class="text-sm text-slate-600">{{ 'EBD_ATTENDANCE.NO_DATA' | translate }}</p>
     } @else {
-      <div class="overflow-x-auto rounded-md border border-slate-200">
+      <div class="overflow-x-auto rounded-md border border-slate-200" data-testid="class-report-table">
         <table class="min-w-full text-left text-sm">
           <thead class="bg-slate-50 text-slate-700">
             <tr>

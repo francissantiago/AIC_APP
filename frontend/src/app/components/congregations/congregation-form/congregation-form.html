@@ -1,4 +1,4 @@
-<section class="w-full max-w-7xl">
+<section class="w-full max-w-7xl" data-testid="congregation-active">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-xl font-semibold text-slate-900">
@@ -9,6 +9,7 @@
     @if (canWrite()) {
       <button
         type="button"
+        data-testid="congregation-edit-btn"
         class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
         (click)="showForm.set(true)"
       >
@@ -70,7 +71,13 @@
     } @else if (loadError()) {
       <p class="text-sm text-red-700" role="alert">{{ 'CONGREGATION.LOAD_ERROR' | translate }}</p>
     } @else {
-      <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        class="grid gap-4"
+        novalidate
+        data-testid="congregation-form"
+      >
         <div class="grid gap-4 md:grid-cols-2">
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'CONGREGATION.NAME' | translate }}</span>
@@ -78,6 +85,7 @@
               type="text"
               formControlName="name"
               autocomplete="organization"
+              data-testid="congregation-form-name"
               class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               [attr.aria-invalid]="fieldInvalid('name')"
             />
@@ -237,6 +245,7 @@
         <div class="mt-2">
           <button
             type="submit"
+            data-testid="congregation-form-save"
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             [disabled]="saving()"
           >

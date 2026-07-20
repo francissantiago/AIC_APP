@@ -41,7 +41,7 @@ const ALLOWED_MIME_TYPES = new Set([
   selector: 'app-documents-list',
   imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
   template: `
-    <section class="w-full">
+    <section class="w-full" data-testid="documents-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-slate-900">
           {{ 'SECRETARIAT.DOCUMENTS_TITLE' | translate }}
@@ -50,6 +50,7 @@ const ALLOWED_MIME_TYPES = new Set([
           <button
             class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
             type="button"
+            data-testid="document-create-btn"
             (click)="openCreate()"
           >
             {{ 'SECRETARIAT.NEW' | translate }}
@@ -62,13 +63,20 @@ const ALLOWED_MIME_TYPES = new Set([
         [title]="(editing() ? 'SECRETARIAT.EDIT' : 'SECRETARIAT.NEW') | translate"
         (closed)="closeForm()"
       >
-        <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+        <form
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          class="grid gap-4 md:grid-cols-2"
+          novalidate
+          data-testid="document-form"
+        >
           <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
             <span>{{ 'SECRETARIAT.DOC_TITLE' | translate }}</span>
             <input
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               formControlName="title"
               maxlength="200"
+              data-testid="document-form-title"
               [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid"
               [attr.aria-describedby]="
                 form.controls.title.touched && form.controls.title.invalid
@@ -99,6 +107,7 @@ const ALLOWED_MIME_TYPES = new Set([
               class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
               type="date"
               formControlName="documentDate"
+              data-testid="document-form-date"
               [attr.aria-invalid]="
                 form.controls.documentDate.touched && form.controls.documentDate.invalid
               "
@@ -158,6 +167,7 @@ const ALLOWED_MIME_TYPES = new Set([
                   <button
                     class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
                     type="button"
+                    data-testid="document-form-download"
                     [disabled]="downloading() || removingFile()"
                     (click)="downloadFile(doc)"
                   >
@@ -187,6 +197,7 @@ const ALLOWED_MIME_TYPES = new Set([
                     <input
                       class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
                       type="file"
+                      data-testid="document-form-upload-input"
                       [accept]="fileAccept"
                       [disabled]="uploading()"
                       (change)="onFileSelected($event)"
@@ -195,6 +206,7 @@ const ALLOWED_MIME_TYPES = new Set([
                   <button
                     class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
                     type="button"
+                    data-testid="document-form-upload-btn"
                     [disabled]="!selectedFile() || uploading()"
                     (click)="uploadSelectedFile()"
                   >
@@ -231,6 +243,7 @@ const ALLOWED_MIME_TYPES = new Set([
             <button
               class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
               type="submit"
+              data-testid="document-form-save"
               [disabled]="saving() || uploading()"
             >
               {{ 'COMMON.SAVE' | translate }}
@@ -320,6 +333,7 @@ const ALLOWED_MIME_TYPES = new Set([
           <button
             class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             type="button"
+            data-testid="dialog-confirm"
             (click)="confirmDelete(pendingDelete()!)"
           >
             {{ 'COMMON.YES' | translate }}
@@ -378,7 +392,7 @@ const ALLOWED_MIME_TYPES = new Set([
             </thead>
             <tbody>
               @for (doc of documents(); track doc.id) {
-                <tr class="border-t border-slate-100">
+                <tr class="border-t border-slate-100" [attr.data-testid]="'document-row-' + doc.id">
                   <td class="px-3 py-2 text-slate-900">{{ doc.title }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ typeLabel(doc.type) | translate }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ doc.documentDate }}</td>
@@ -421,6 +435,7 @@ const ALLOWED_MIME_TYPES = new Set([
                         <button
                           class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                           type="button"
+                          [attr.data-testid]="'document-edit-' + doc.id"
                           (click)="openEdit(doc)"
                         >
                           {{ 'COMMON.EDIT' | translate }}
@@ -428,6 +443,7 @@ const ALLOWED_MIME_TYPES = new Set([
                         <button
                           class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                           type="button"
+                          [attr.data-testid]="'document-delete-' + doc.id"
                           (click)="pendingDelete.set(doc.id)"
                         >
                           {{ 'COMMON.DELETE' | translate }}
