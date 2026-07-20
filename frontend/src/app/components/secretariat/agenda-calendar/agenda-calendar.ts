@@ -658,7 +658,7 @@ const EVENT_COLORS: Record<
           [attr.aria-label]="'SECRETARIAT.AGENDA_TITLE' | translate"
         >
           <button
-            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [class.bg-slate-600]="view() === calendarView.Month"
             [class.text-white]="view() === calendarView.Month"
             [class.border-slate-300]="view() !== calendarView.Month"
@@ -669,7 +669,7 @@ const EVENT_COLORS: Record<
             {{ 'SECRETARIAT.VIEW_MONTH' | translate }}
           </button>
           <button
-            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [class.bg-slate-600]="view() === calendarView.Week"
             [class.text-white]="view() === calendarView.Week"
             [class.border-slate-300]="view() !== calendarView.Week"
@@ -680,7 +680,7 @@ const EVENT_COLORS: Record<
             {{ 'SECRETARIAT.VIEW_WEEK' | translate }}
           </button>
           <button
-            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            class="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             [class.bg-slate-600]="view() === calendarView.Day"
             [class.text-white]="view() === calendarView.Day"
             [class.border-slate-300]="view() !== calendarView.Day"
