@@ -1,0 +1,310 @@
+<section class="membership-cards-page" data-testid="membership-cards-page">
+  <header class="mb-4">
+    <h1 class="text-xl font-semibold text-slate-900">
+      {{ 'MEMBERSHIP_CARDS.TITLE' | translate }}
+    </h1>
+    <p class="mt-1 text-sm text-slate-600">
+      {{ 'MEMBERSHIP_CARDS.DESCRIPTION' | translate }}
+    </p>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,22rem)_1fr]">
+    <aside class="rounded-md border border-slate-200 bg-white p-4">
+      <h2 class="mb-3 text-sm font-semibold text-slate-900">
+        {{ 'MEMBERSHIP_CARDS.LIST_TITLE' | translate }}
+      </h2>
+
+      <label class="mb-3 flex flex-col gap-1 text-sm text-slate-700">
+        <span class="sr-only">{{ 'MEMBERSHIP_CARDS.SEARCH_PLACEHOLDER' | translate }}</span>
+        <input
+          type="search"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.placeholder]="'MEMBERSHIP_CARDS.SEARCH_PLACEHOLDER' | translate"
+          [value]="search()"
+          (input)="onSearchInput($event)"
+        />
+      </label>
+
+      <label class="mb-3 flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MEMBERSHIP_CARDS.FILTER_STATUS' | translate }}</span>
+        <select
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [value]="statusFilter()"
+          (change)="onStatusChange($event)"
+        >
+          <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+          }
+        </select>
+      </label>
+
+      <p class="mb-2 text-xs text-slate-600">
+        {{ 'MEMBERSHIP_CARDS.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+      </p>
+
+      @if (membersLoading()) {
+        <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+      } @else if (membersError()) {
+        <p class="text-sm text-red-700" role="alert">{{ 'MEMBERS.LOAD_ERROR' | translate }}</p>
+      } @else if (members().length === 0) {
+        <p class="text-sm text-slate-600">{{ 'MEMBERS.EMPTY' | translate }}</p>
+      } @else {
+        <ul
+          class="max-h-[28rem] space-y-1 overflow-y-auto"
+          role="listbox"
+          aria-multiselectable="true"
+        >
+          @for (member of members(); track member.id) {
+            <li>
+              <button
+                type="button"
+                role="option"
+                class="flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                [class.bg-slate-100]="isSelected(member.id)"
+                [attr.aria-selected]="isSelected(member.id)"
+                (click)="toggleMember(member.id)"
+              >
+                <span
+                  class="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400"
+                  [class.bg-slate-600]="isSelected(member.id)"
+                  [class.border-slate-600]="isSelected(member.id)"
+                  aria-hidden="true"
+                ></span>
+                <span class="min-w-0">
+                  <span class="block font-medium text-slate-900">{{ member.fullName }}</span>
+                  <span class="block text-xs text-slate-600">{{
+                    statusLabelKey(member.status) | translate
+                  }}</span>
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded-md bg-slate-500 px-3 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="selectedCount() === 0 || cardsLoading()"
+          (click)="generatePreview()"
+        >
+          {{ 'MEMBERSHIP_CARDS.GENERATE' | translate }}
+        </button>
+        @if (canWrite()) {
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+            [disabled]="cards().length === 0"
+            (click)="printCards()"
+          >
+            {{ 'MEMBERSHIP_CARDS.BATCH_PRINT' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="openSettings()"
+          >
+            {{ 'MEMBERSHIP_CARDS.SETTINGS_TITLE' | translate }}
+          </button>
+        }
+      </div>
+    </aside>
+
+    <div class="min-w-0">
+      @if (cardsLoading()) {
+        <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+      } @else if (cardsError()) {
+        <p class="text-sm text-red-700" role="alert">
+          {{ 'MEMBERSHIP_CARDS.LOAD_ERROR' | translate }}
+        </p>
+      } @else if (!primaryCard()) {
+        <p class="text-sm text-slate-600">{{ 'MEMBERSHIP_CARDS.EMPTY_STATE' | translate }}</p>
+      } @else {
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="text-sm font-medium text-slate-800">{{
+            'MEMBERSHIP_CARDS.PREVIEW' | translate
+          }}</span>
+          <button
+            type="button"
+            class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-500]="previewSide() === 'front'"
+            [class.text-white]="previewSide() === 'front'"
+            [class.border]="previewSide() !== 'front'"
+            [class.border-slate-300]="previewSide() !== 'front'"
+            (click)="setSide('front')"
+          >
+            {{ 'MEMBERSHIP_CARDS.FRONT' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.bg-slate-500]="previewSide() === 'back'"
+            [class.text-white]="previewSide() === 'back'"
+            [class.border]="previewSide() !== 'back'"
+            [class.border-slate-300]="previewSide() !== 'back'"
+            (click)="setSide('back')"
+          >
+            {{ 'MEMBERSHIP_CARDS.BACK' | translate }}
+          </button>
+          <p class="w-full text-xs text-slate-600">
+            {{ 'MEMBERSHIP_CARDS.PRINT_HINT' | translate }}
+          </p>
+        </div>
+
+        @if (primaryCard(); as card) {
+          @if (card.warnings.includes('inactive_member')) {
+            <p class="mb-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status">
+              {{ 'MEMBERSHIP_CARDS.WARNING_INACTIVE' | translate }}
+            </p>
+          }
+          @if (card.missingFields.length > 0) {
+            <p class="mb-3 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+              {{
+                'MEMBERSHIP_CARDS.MISSING_FIELDS'
+                  | translate: { fields: card.missingFields.join(', ') }
+              }}
+            </p>
+          }
+          <app-membership-card-preview [card]="card" [side]="previewSide()" />
+        }
+
+        @if (selectedCards().length > 1) {
+          <p class="mt-3 text-sm text-slate-600">
+            {{ 'MEMBERSHIP_CARDS.SELECTED_COUNT' | translate: { count: selectedCards().length } }}
+          </p>
+        }
+      }
+    </div>
+  </div>
+
+  @if (showSettings() && canWrite()) {
+    <div
+      class="fixed inset-0 z-40 flex items-start justify-center bg-slate-900/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'MEMBERSHIP_CARDS.SETTINGS_TITLE' | translate"
+    >
+      <div class="mt-8 w-full max-w-xl rounded-md bg-white p-5 shadow-lg">
+        <h2 class="mb-3 text-lg font-semibold text-slate-900">
+          {{ 'MEMBERSHIP_CARDS.SETTINGS_TITLE' | translate }}
+        </h2>
+
+        @if (settingsFeedback(); as key) {
+          <p class="mb-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
+            {{ key | translate }}
+          </p>
+        }
+        @if (settingsError(); as message) {
+          <p class="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+            {{ message }}
+          </p>
+        }
+
+        <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="grid gap-3" novalidate>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERSHIP_CARDS.HEADER_LINE1' | translate }}</span>
+            <input
+              type="text"
+              formControlName="headerLine1"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERSHIP_CARDS.HEADER_LINE2' | translate }}</span>
+            <input
+              type="text"
+              formControlName="headerLine2"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERSHIP_CARDS.MINISTRY_LABEL' | translate }}</span>
+            <input
+              type="text"
+              formControlName="ministryLabel"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+          <div class="grid gap-3 md:grid-cols-2">
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'MEMBERSHIP_CARDS.PRESIDENT_NAME' | translate }}</span>
+              <input
+                type="text"
+                formControlName="presidentName"
+                class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'MEMBERSHIP_CARDS.PRESIDENT_TITLE' | translate }}</span>
+              <input
+                type="text"
+                formControlName="presidentTitle"
+                class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              />
+            </label>
+          </div>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERSHIP_CARDS.VALIDITY_MONTHS' | translate }}</span>
+            <input
+              type="number"
+              formControlName="validityMonths"
+              min="1"
+              max="120"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERSHIP_CARDS.FOOTER_NOTICE' | translate }}</span>
+            <textarea
+              formControlName="footerNotice"
+              rows="2"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            ></textarea>
+          </label>
+
+          <div class="grid gap-3 md:grid-cols-2">
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'MEMBERSHIP_CARDS.UPLOAD_LOGO' | translate }}</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                class="text-sm"
+                (change)="onLogoSelected($event)"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-sm text-slate-700">
+              <span>{{ 'MEMBERSHIP_CARDS.UPLOAD_SIGNATURE' | translate }}</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                class="text-sm"
+                (change)="onSignatureSelected($event)"
+              />
+            </label>
+          </div>
+
+          <div class="mt-2 flex flex-wrap gap-2">
+            <button
+              type="submit"
+              class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+              [disabled]="settingsSaving()"
+            >
+              {{ 'MEMBERSHIP_CARDS.SETTINGS_SAVE' | translate }}
+            </button>
+            <button
+              type="button"
+              class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              (click)="closeSettings()"
+            >
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <app-membership-card-print [cards]="selectedCards()" />
+</section>

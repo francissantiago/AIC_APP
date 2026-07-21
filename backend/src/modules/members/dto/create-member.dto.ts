@@ -105,6 +105,42 @@ export class CreateMemberDto {
   @IsString()
   notes?: string;
 
+  @ApiPropertyOptional({ example: '12.345.678-9', maxLength: 30 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  rg?: string;
+
+  @ApiPropertyOptional({ example: 'São Paulo / SP', maxLength: 150 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  placeOfBirth?: string;
+
+  @ApiPropertyOptional({ example: 'O+', maxLength: 10 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  bloodType?: string;
+
+  @ApiPropertyOptional({ example: 'José da Silva', maxLength: 150 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  fatherName?: string;
+
+  @ApiPropertyOptional({ example: 'Ana da Silva', maxLength: 150 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  motherName?: string;
+
+  @ApiPropertyOptional({ example: 'Diácono', maxLength: 100 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  positionTitle?: string;
+
   @ApiPropertyOptional({
     example: '4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f',
     description: 'UUID de usuário do sistema (opcional)',

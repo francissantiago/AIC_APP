@@ -89,12 +89,30 @@ describe('MembersController (PermissionsGuard aplicado)', () => {
       expectAllowed('create', ['members:write']);
       expectAllowed('update', ['members:write']);
       expectAllowed('remove', ['members:write']);
+      expectAllowed('uploadPhoto', ['members:write']);
+      expectAllowed('removePhoto', ['members:write']);
     });
 
     it('nega com 403 AUTH.FORBIDDEN apenas com members:read', () => {
       expectForbidden('create', ['members:read']);
       expectForbidden('update', ['members:read']);
       expectForbidden('remove', ['members:read']);
+      expectForbidden('uploadPhoto', ['members:read']);
+      expectForbidden('removePhoto', ['members:read']);
+    });
+  });
+
+  describe('GET /members/:id/photo exige members:read OU membership-cards:read', () => {
+    it('permite com members:read', () => {
+      expectAllowed('getPhoto', ['members:read']);
+    });
+
+    it('permite com membership-cards:read', () => {
+      expectAllowed('getPhoto', ['membership-cards:read']);
+    });
+
+    it('nega sem ambas', () => {
+      expectForbidden('getPhoto', ['members:write']);
     });
   });
 

@@ -5,6 +5,7 @@ import { CongregationsService } from '../congregations/congregations.service';
 import { Congregation } from '../congregations/entities/congregation.entity';
 import { CongregationStatus } from '../congregations/enums/congregation-status.enum';
 import { CongregationType } from '../congregations/enums/congregation-type.enum';
+import { FileStorageService } from '../secretariat/storage/file-storage.service';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { Member } from './entities/member.entity';
@@ -41,6 +42,11 @@ describe('MembersService', () => {
     syncOnUpdate: jest.fn(),
     syncOnRemove: jest.fn(),
   };
+  const fileStorageService = {
+    saveImageAsset: jest.fn(),
+    deleteIfExists: jest.fn(),
+    openReadStream: jest.fn(),
+  };
 
   const baseCongregation = (): Congregation => {
     const congregation = new Congregation();
@@ -69,6 +75,13 @@ describe('MembersService', () => {
     member.state = 'SP';
     member.zipCode = '01310-100';
     member.notes = null;
+    member.rg = null;
+    member.placeOfBirth = null;
+    member.bloodType = null;
+    member.fatherName = null;
+    member.motherName = null;
+    member.positionTitle = null;
+    member.photoPath = null;
     member.congregationId = baseCongregationId;
     member.userId = null;
     member.user = null;
@@ -98,6 +111,7 @@ describe('MembersService', () => {
           provide: MemberBirthdayCalendarSyncService,
           useValue: birthdayCalendarSync,
         },
+        { provide: FileStorageService, useValue: fileStorageService },
       ],
     }).compile();
 

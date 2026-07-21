@@ -200,8 +200,36 @@ export class MemberForm implements OnInit {
       validators: [Validators.maxLength(20)],
     }),
     notes: new FormControl('', { nonNullable: true }),
+    rg: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(30)],
+    }),
+    placeOfBirth: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(150)],
+    }),
+    bloodType: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(10)],
+    }),
+    fatherName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(150)],
+    }),
+    motherName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(150)],
+    }),
+    positionTitle: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(100)],
+    }),
     userId: new FormControl('', { nonNullable: true }),
   });
+
+  readonly photoUrl = signal<string | null>(null);
+  readonly photoObjectUrl = signal<string | null>(null);
+  readonly photoUploading = signal(false);
 
   ngOnInit(): void {
     const id = this.memberId();
@@ -284,6 +312,53 @@ export class MemberForm implements OnInit {
       this.#loadTransfers(id);
       this.transfersReloadToken.update((value) => value + 1);
     }
+  }
+
+  onPhotoSelected(event: Event): void {
+    const id = this.memberId();
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!id || !file || !this.canWriteMembers()) {
+      return;
+    }
+    this.photoUploading.set(true);
+    this.#membersService
+      .uploadPhoto(id, file)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (member) => {
+          this.photoUploading.set(false);
+          this.photoUrl.set(member.photoUrl);
+          this.#loadPhotoBlob(member.id, member.photoUrl);
+          this.feedbackKey.set('MEMBERS.SAVE_SUCCESS');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.photoUploading.set(false);
+          this.#applySaveError(error);
+        },
+      });
+  }
+
+  removePhoto(): void {
+    const id = this.memberId();
+    if (!id || !this.canWriteMembers()) {
+      return;
+    }
+    this.photoUploading.set(true);
+    this.#membersService
+      .removePhoto(id)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: () => {
+          this.photoUploading.set(false);
+          this.photoUrl.set(null);
+          this.#revokePhotoObjectUrl();
+          this.feedbackKey.set('MEMBERS.SAVE_SUCCESS');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.photoUploading.set(false);
+          this.#applySaveError(error);
+        },
+      });
   }
 
   fieldInvalid(controlName: keyof typeof this.form.controls): boolean {
@@ -398,10 +473,18 @@ export class MemberForm implements OnInit {
             state: member.state ?? '',
             zipCode: member.zipCode ?? '',
             notes: member.notes ?? '',
+            rg: member.rg ?? '',
+            placeOfBirth: member.placeOfBirth ?? '',
+            bloodType: member.bloodType ?? '',
+            fatherName: member.fatherName ?? '',
+            motherName: member.motherName ?? '',
+            positionTitle: member.positionTitle ?? '',
             userId: member.userId ?? '',
           });
           this.memberStatus.set(member.status);
           this.memberFullName.set(member.fullName);
+          this.photoUrl.set(member.photoUrl);
+          this.#loadPhotoBlob(member.id, member.photoUrl);
           this.loading.set(false);
         },
         error: () => {
@@ -506,12 +589,57 @@ export class MemberForm implements OnInit {
     if (notes) {
       payload.notes = notes;
     }
+    const rg = raw.rg.trim();
+    if (rg) {
+      payload.rg = rg;
+    }
+    const placeOfBirth = raw.placeOfBirth.trim();
+    if (placeOfBirth) {
+      payload.placeOfBirth = placeOfBirth;
+    }
+    const bloodType = raw.bloodType.trim();
+    if (bloodType) {
+      payload.bloodType = bloodType;
+    }
+    const fatherName = raw.fatherName.trim();
+    if (fatherName) {
+      payload.fatherName = fatherName;
+    }
+    const motherName = raw.motherName.trim();
+    if (motherName) {
+      payload.motherName = motherName;
+    }
+    const positionTitle = raw.positionTitle.trim();
+    if (positionTitle) {
+      payload.positionTitle = positionTitle;
+    }
     const userId = raw.userId.trim();
     if (userId) {
       payload.userId = userId;
     }
 
     return payload;
+  }
+
+  #loadPhotoBlob(memberId: string, photoUrl: string | null): void {
+    this.#revokePhotoObjectUrl();
+    if (!photoUrl) {
+      return;
+    }
+    this.#membersService
+      .getPhotoBlob(memberId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (blob) => this.photoObjectUrl.set(URL.createObjectURL(blob)),
+      });
+  }
+
+  #revokePhotoObjectUrl(): void {
+    const current = this.photoObjectUrl();
+    if (current) {
+      URL.revokeObjectURL(current);
+      this.photoObjectUrl.set(null);
+    }
   }
 
   #applySaveError(error: HttpErrorResponse): void {

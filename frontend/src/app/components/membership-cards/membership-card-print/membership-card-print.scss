@@ -1,0 +1,30 @@
+:host {
+  display: none;
+}
+
+@media print {
+  :host {
+    display: block;
+  }
+
+  .membership-card-print__sheet {
+    page-break-after: always;
+    break-after: page;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 8mm;
+  }
+
+  .membership-card-print__sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  :host ::ng-deep .membership-card {
+    max-width: 86mm;
+    width: 86mm;
+    box-shadow: none;
+  }
+}

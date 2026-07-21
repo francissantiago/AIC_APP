@@ -70,6 +70,26 @@ export class MembersService {
       .pipe(this.#withRetry());
   }
 
+  uploadPhoto(id: string, file: File): Observable<IMember> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.#http
+      .post<IMember>(`${this.#apiUrl}/${id}/photo`, formData)
+      .pipe(this.#withRetry());
+  }
+
+  getPhotoBlob(id: string): Observable<Blob> {
+    return this.#http
+      .get(`${this.#apiUrl}/${id}/photo`, { responseType: 'blob' })
+      .pipe(this.#withRetry());
+  }
+
+  removePhoto(id: string): Observable<void> {
+    return this.#http
+      .delete<void>(`${this.#apiUrl}/${id}/photo`, { headers: this.#headers })
+      .pipe(this.#withRetry());
+  }
+
   #withRetry<T>() {
     return retry<T>({
       count: this.#retryCount,

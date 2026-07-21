@@ -1,5 +1,7 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ReadStream } from 'fs';
+import * as path from 'path';
 import { EntityManager, Repository } from 'typeorm';
 import {
   ApiErrorCode,
@@ -7,6 +9,8 @@ import {
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
+import { FileStorageService } from '../secretariat/storage/file-storage.service';
+import { UploadedFile } from '../secretariat/storage/uploaded-file.interface';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
 import {
@@ -21,6 +25,15 @@ import { MemberMaritalStatus } from './enums/member-marital-status.enum';
 import { MemberStatus } from './enums/member-status.enum';
 import { MemberBirthdayCalendarSyncService } from './member-birthday-calendar.sync.service';
 
+const MEMBER_PHOTOS_SUBDIR = 'members/photos';
+
+function mimeFromPath(relativePath: string): string {
+  const ext = path.extname(relativePath).toLowerCase();
+  if (ext === '.png') return 'image/png';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  return 'application/octet-stream';
+}
+
 @Injectable()
 export class MembersService {
   private readonly logger = new Logger(MembersService.name);
@@ -32,6 +45,7 @@ export class MembersService {
     private readonly usersRepository: Repository<User>,
     private readonly congregationsService: CongregationsService,
     private readonly birthdayCalendarSync: MemberBirthdayCalendarSyncService,
+    private readonly fileStorageService: FileStorageService,
   ) {}
 
   private async getCongregationId(
@@ -86,6 +100,13 @@ export class MembersService {
       state: dto.state ?? null,
       zipCode: dto.zipCode ?? null,
       notes: dto.notes ?? null,
+      rg: dto.rg ?? null,
+      placeOfBirth: dto.placeOfBirth ?? null,
+      bloodType: dto.bloodType ?? null,
+      fatherName: dto.fatherName ?? null,
+      motherName: dto.motherName ?? null,
+      positionTitle: dto.positionTitle ?? null,
+      photoPath: null,
       congregationId,
       userId: dto.userId ?? null,
     });
@@ -212,6 +233,24 @@ export class MembersService {
     if (dto.notes !== undefined) {
       member.notes = dto.notes ?? null;
     }
+    if (dto.rg !== undefined) {
+      member.rg = dto.rg ?? null;
+    }
+    if (dto.placeOfBirth !== undefined) {
+      member.placeOfBirth = dto.placeOfBirth ?? null;
+    }
+    if (dto.bloodType !== undefined) {
+      member.bloodType = dto.bloodType ?? null;
+    }
+    if (dto.fatherName !== undefined) {
+      member.fatherName = dto.fatherName ?? null;
+    }
+    if (dto.motherName !== undefined) {
+      member.motherName = dto.motherName ?? null;
+    }
+    if (dto.positionTitle !== undefined) {
+      member.positionTitle = dto.positionTitle ?? null;
+    }
 
     const saved = await this.membersRepository.save(member);
     this.logger.log(`Membro atualizado: ${saved.id}`);
@@ -233,8 +272,77 @@ export class MembersService {
     if (actorUserId) {
       await this.birthdayCalendarSync.syncOnRemove(member);
     }
+    const photoPath = member.photoPath;
     await this.membersRepository.softRemove(member);
+    await this.fileStorageService.deleteIfExists(photoPath);
     this.logger.log(`Membro removido (soft delete): ${id}`);
+  }
+
+  async uploadPhoto(
+    id: string,
+    file: UploadedFile | undefined,
+    activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    const member = await this.getMemberOrFail(id, activeCongregationId);
+    const previousPath = member.photoPath;
+    const savedFile = await this.fileStorageService.saveImageAsset(
+      MEMBER_PHOTOS_SUBDIR,
+      member.id,
+      file as UploadedFile,
+    );
+    member.photoPath = savedFile.relativePath;
+    const saved = await this.membersRepository.save(member);
+    if (previousPath && previousPath !== saved.photoPath) {
+      await this.fileStorageService.deleteIfExists(previousPath);
+    }
+    this.logger.log(`Foto do membro atualizada: ${saved.id}`);
+    return MemberResponseDto.fromEntity(saved);
+  }
+
+  async getPhotoStream(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<{ stream: ReadStream; mimeType: string; absolutePath: string }> {
+    const member = await this.getMemberOrFail(id, activeCongregationId);
+    if (!member.photoPath) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+      });
+    }
+    const opened = await this.fileStorageService.openReadStream(
+      member.photoPath,
+    );
+    return {
+      stream: opened.stream,
+      absolutePath: opened.absolutePath,
+      mimeType: mimeFromPath(member.photoPath),
+    };
+  }
+
+  async removePhoto(id: string, activeCongregationId?: string): Promise<void> {
+    const member = await this.getMemberOrFail(id, activeCongregationId);
+    if (!member.photoPath) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+      });
+    }
+    const photoPath = member.photoPath;
+    member.photoPath = null;
+    await this.membersRepository.save(member);
+    await this.fileStorageService.deleteIfExists(photoPath);
+    this.logger.log(`Foto do membro removida: ${id}`);
+  }
+
+  /** Exposto para módulos que precisam da entity (ex.: membership-cards). */
+  async getMemberEntityOrFail(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<Member> {
+    return this.getMemberOrFail(id, activeCongregationId);
   }
 
   private async getMemberOrFail(

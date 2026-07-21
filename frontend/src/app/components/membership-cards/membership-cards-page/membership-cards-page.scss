@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+@media print {
+  .membership-cards-page > :not(app-membership-card-print) {
+    display: none !important;
+  }
+}

@@ -20,6 +20,13 @@ export interface IMember {
   state: string | null;
   zipCode: string | null;
   notes: string | null;
+  rg: string | null;
+  placeOfBirth: string | null;
+  bloodType: string | null;
+  fatherName: string | null;
+  motherName: string | null;
+  positionTitle: string | null;
+  photoUrl: string | null;
   userId: string | null;
   congregationId: string;
   createdAt: string;

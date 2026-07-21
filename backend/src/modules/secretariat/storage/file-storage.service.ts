@@ -24,12 +24,19 @@ const ALLOWED_MIME_TO_EXT: Readonly<Record<string, readonly string[]>> = {
   'image/jpeg': ['.jpg', '.jpeg'],
 };
 
+const IMAGE_MIME_TO_EXT: Readonly<Record<string, readonly string[]>> = {
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+};
+
 export type SavedSecretariatFile = {
   relativePath: string;
   originalFilename: string;
   mimeType: string;
   sizeBytes: number;
 };
+
+export type SavedImageFile = SavedSecretariatFile;
 
 @Injectable()
 export class FileStorageService {
@@ -85,24 +92,63 @@ export class FileStorageService {
     documentId: string,
     file: Pick<UploadedFile, 'buffer' | 'originalname' | 'mimetype' | 'size'>,
   ): Promise<SavedSecretariatFile> {
+    return this.saveFile(
+      SECRETARIAT_SUBDIR,
+      documentId,
+      file,
+      ALLOWED_MIME_TO_EXT,
+    );
+  }
+
+  async saveImageAsset(
+    subdir: string,
+    entityId: string,
+    file: Pick<UploadedFile, 'buffer' | 'originalname' | 'mimetype' | 'size'>,
+  ): Promise<SavedImageFile> {
+    const normalizedSubdir = subdir
+      .replace(/\\/g, '/')
+      .replace(/^\/+|\/+$/g, '');
+    if (
+      !normalizedSubdir ||
+      normalizedSubdir.includes('..') ||
+      path.isAbsolute(normalizedSubdir)
+    ) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SYS_BAD_REQUEST,
+        message: ApiErrorMessage[ApiErrorCode.SYS_BAD_REQUEST],
+      });
+    }
+    return this.saveFile(normalizedSubdir, entityId, file, IMAGE_MIME_TO_EXT);
+  }
+
+  private async saveFile(
+    subdir: string,
+    entityId: string,
+    file: Pick<UploadedFile, 'buffer' | 'originalname' | 'mimetype' | 'size'>,
+    mimeMap: Readonly<Record<string, readonly string[]>>,
+  ): Promise<SavedSecretariatFile> {
     this.assertFilePresent(file);
     this.assertFileSize(file.size);
     const mimeType = file.mimetype?.toLowerCase().trim();
-    const extension = this.resolveAllowedExtension(mimeType, file.originalname);
+    const extension = this.resolveAllowedExtension(
+      mimeType,
+      file.originalname,
+      mimeMap,
+    );
     const originalFilename = this.sanitizeOriginalFilename(
       file.originalname,
       extension,
     );
 
-    await this.ensureDir(SECRETARIAT_SUBDIR);
-    const relativePath = `${SECRETARIAT_SUBDIR}/${documentId}-${randomUUID()}${extension}`;
+    await this.ensureDir(subdir);
+    const relativePath = `${subdir}/${entityId}-${randomUUID()}${extension}`;
     const absolutePath = this.resolveAbsolutePath(relativePath);
     await fs.writeFile(absolutePath, file.buffer);
 
     return {
       relativePath,
       originalFilename,
-      mimeType,
+      mimeType: mimeType,
       sizeBytes: file.size,
     };
   }
@@ -165,15 +211,16 @@ export class FileStorageService {
   resolveAllowedExtension(
     mimeType: string | undefined,
     originalname: string,
+    mimeMap: Readonly<Record<string, readonly string[]>> = ALLOWED_MIME_TO_EXT,
   ): string {
-    if (!mimeType || !(mimeType in ALLOWED_MIME_TO_EXT)) {
+    if (!mimeType || !(mimeType in mimeMap)) {
       throw new ApiException(HttpStatus.BAD_REQUEST, {
         code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID,
         message:
           ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID],
       });
     }
-    const allowed = ALLOWED_MIME_TO_EXT[mimeType];
+    const allowed = mimeMap[mimeType];
     const ext = path.extname(originalname || '').toLowerCase();
     if (!allowed.includes(ext)) {
       throw new ApiException(HttpStatus.BAD_REQUEST, {

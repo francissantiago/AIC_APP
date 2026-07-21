@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClassesModule } from '../classes/classes.module';
 import { CongregationsModule } from '../congregations/congregations.module';
 import { MinistriesModule } from '../ministries/ministries.module';
+import { StorageModule } from '../secretariat/storage/storage.module';
 import { User } from '../users/entities/user.entity';
 import { Member } from './entities/member.entity';
 import { MembersController } from './members.controller';
@@ -16,6 +17,7 @@ import { CalendarEvent } from '../secretariat/calendar/entities/calendar-event.e
     CongregationsModule,
     MinistriesModule,
     ClassesModule,
+    StorageModule,
   ],
   controllers: [MembersController],
   providers: [MembersService, MemberBirthdayCalendarSyncService],

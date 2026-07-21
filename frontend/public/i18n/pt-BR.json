@@ -174,7 +174,8 @@
     "SECRETARIAT_DOCUMENTS": "Atas e documentos",
     "SECRETARIAT_SCHEDULES": "Escalas",
     "SMALL_GROUPS": "Pequenos grupos",
-    "SMALL_GROUPS_REPORTS": "Frequência"
+    "SMALL_GROUPS_REPORTS": "Frequência",
+    "MEMBERSHIP_CARDS": "Carteirinhas"
   },
   "APP_SHELL": {
     "APP_NAME": "AIC",
@@ -206,7 +207,8 @@
     "PAGE_SECRETARIAT_SCHEDULES": "Escalas de voluntariado",
     "PAGE_SMALL_GROUPS": "Pequenos grupos",
     "PAGE_SMALL_GROUPS_REPORTS": "Frequência dos pequenos grupos",
-    "PAGE_PROFILE": "Perfil"
+    "PAGE_PROFILE": "Perfil",
+    "PAGE_MEMBERSHIP_CARDS": "Carteirinhas"
   },
   "DASHBOARD": {
     "TITLE": "Painel inicial",
@@ -440,7 +442,16 @@
     "MARITAL_WIDOWED": "Viúvo(a)",
     "MARITAL_OTHER": "Outro",
     "EBD_CLASSES": "Turmas da EBD",
-    "EBD_CLASSES_EMPTY": "Sem matrícula em nenhuma turma da EBD"
+    "EBD_CLASSES_EMPTY": "Sem matrícula em nenhuma turma da EBD",
+    "RG": "RG",
+    "PLACE_OF_BIRTH": "Naturalidade",
+    "BLOOD_TYPE": "Fator RH",
+    "FATHER_NAME": "Nome do pai",
+    "MOTHER_NAME": "Nome da mãe",
+    "POSITION_TITLE": "Cargo",
+    "PHOTO": "Foto",
+    "UPLOAD_PHOTO": "Enviar foto",
+    "REMOVE_PHOTO": "Remover foto"
   },
   "MEMBER_TRANSFERS": {
     "TITLE": "Transferências de membro",
@@ -1294,5 +1305,54 @@
     "SAVE_ERROR": "Falha ao salvar pequeno grupo",
     "DELETE_ERROR": "Falha ao excluir pequeno grupo",
     "ATTENDANCE_SAVE_ERROR": "Falha ao salvar chamada"
+  },
+  "MEMBERSHIP_CARDS": {
+    "TITLE": "Carteirinhas de membros",
+    "DESCRIPTION": "Visualize e imprima carteirinhas de membros",
+    "LIST_TITLE": "Membros",
+    "SEARCH_PLACEHOLDER": "Buscar por nome…",
+    "SELECT_MEMBER": "Selecione um membro",
+    "PREVIEW": "Pré-visualização",
+    "FRONT": "Frente",
+    "BACK": "Verso",
+    "PRINT": "Imprimir",
+    "GENERATE": "Gerar carteirinha",
+    "VALIDITY": "Validade",
+    "VALIDITY_UNTIL": "Válida até {{date}}",
+    "VALIDITY_MONTHS": "Validade (meses)",
+    "NO_PHOTO": "Sem foto",
+    "MISSING_FIELDS": "Campos incompletos: {{fields}}",
+    "EMPTY_STATE": "Selecione um ou mais membros para visualizar as carteirinhas",
+    "PRINT_HINT": "Use o diálogo de impressão para imprimir frente e verso",
+    "FOOTER_NOTICE": "Válida somente com a apresentação de documento de identificação com foto",
+    "SIGNATURE_HOLDER": "Assinatura do titular",
+    "SIGNATURE_PRESIDENT": "Assinatura da pastora presidente",
+    "FILTER_STATUS": "Status",
+    "SELECTED_COUNT": "{{count}} selecionados",
+    "BATCH_PRINT": "Imprimir selecionados",
+    "LOAD_ERROR": "Não foi possível carregar os dados da carteirinha",
+    "PERMISSION_DENIED": "Você não tem permissão para carteirinhas",
+    "SETTINGS_TITLE": "Configurações da carteirinha",
+    "SETTINGS_SAVE": "Salvar configurações",
+    "SETTINGS_SAVED": "Configurações salvas",
+    "HEADER_LINE1": "Linha 1 do cabeçalho",
+    "HEADER_LINE2": "Linha 2 do cabeçalho",
+    "MINISTRY_LABEL": "Rótulo do ministério",
+    "PRESIDENT_NAME": "Nome da presidente",
+    "PRESIDENT_TITLE": "Título da presidente",
+    "UPLOAD_LOGO": "Enviar logo",
+    "UPLOAD_SIGNATURE": "Enviar assinatura",
+    "CARD_LABEL": "CARTEIRA DE MEMBRO",
+    "FIELD_NAME": "NOME",
+    "FIELD_FILIATION": "FILIAÇÃO",
+    "FIELD_BIRTH_DATE": "DATA DE NASCIMENTO",
+    "FIELD_PLACE_OF_BIRTH": "NATURALIDADE",
+    "FIELD_POSITION": "CARGO",
+    "FIELD_BLOOD_TYPE": "FATOR RH",
+    "FIELD_CPF": "CPF",
+    "FIELD_RG": "RG",
+    "FIELD_MARITAL_STATUS": "ESTADO CIVIL",
+    "FIELD_VALIDITY": "VALIDADE",
+    "WARNING_INACTIVE": "Membro não está ativo"
   }
 }

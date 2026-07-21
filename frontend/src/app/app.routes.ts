@@ -9,6 +9,7 @@ import {
   defaultRouteGuard,
   financePermissionGuard,
   membersPermissionGuard,
+  membershipCardsPermissionGuard,
   ministriesPermissionGuard,
   rolesPermissionGuard,
   schedulesPermissionGuard,
@@ -99,6 +100,14 @@ export const routes: Routes = [
         canActivate: [membersPermissionGuard],
         loadComponent: () =>
           import('@components/members/members-list/members-list').then((m) => m.MembersList),
+      },
+      {
+        path: 'membership-cards',
+        canActivate: [membershipCardsPermissionGuard],
+        loadComponent: () =>
+          import(
+            '@components/membership-cards/membership-cards-page/membership-cards-page'
+          ).then((m) => m.MembershipCardsPage),
       },
       {
         path: 'families/birthdays',

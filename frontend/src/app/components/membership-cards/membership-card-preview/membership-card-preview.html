@@ -1,0 +1,108 @@
+<article
+  class="membership-card"
+  [class.membership-card--compact]="compact()"
+  [class.membership-card--back]="!showFront()"
+  data-testid="membership-card-preview"
+>
+  @if (showFront()) {
+    <div class="membership-card__face membership-card__face--front">
+      <img
+        class="membership-card__template"
+        src="/membership-cards/front-template.png"
+        alt=""
+        aria-hidden="true"
+      />
+
+      @if (logoObjectUrl(); as logo) {
+        <div class="membership-card__logo membership-card__logo--front">
+          <img [src]="logo" alt="" />
+        </div>
+      }
+
+      <div class="membership-card__titles membership-card__titles--front">
+        <p class="membership-card__header1">{{ card().institution.headerLine1 }}</p>
+        @if (card().institution.headerLine2; as line2) {
+          <p class="membership-card__header2">{{ line2 }}</p>
+        }
+        @if (card().institution.ministryLabel; as ministry) {
+          <p class="membership-card__ministry">{{ ministry }}</p>
+        }
+      </div>
+
+      <div class="membership-card__photo membership-card__photo--front">
+        @if (photoObjectUrl(); as photo) {
+          <img [src]="photo" [alt]="card().front.fullName" />
+        }
+      </div>
+
+      <span class="membership-card__value membership-card__value--name">{{
+        card().front.fullName
+      }}</span>
+      <span class="membership-card__value membership-card__value--filiation">{{
+        card().front.filiation || ''
+      }}</span>
+      <span class="membership-card__value membership-card__value--birth">{{
+        formatDate(card().front.birthDate)
+      }}</span>
+      <span class="membership-card__value membership-card__value--birthplace">{{
+        card().front.placeOfBirth || ''
+      }}</span>
+      <span class="membership-card__value membership-card__value--position">{{
+        card().front.positionTitle || ''
+      }}</span>
+      <span class="membership-card__value membership-card__value--blood">{{
+        card().front.bloodType || ''
+      }}</span>
+    </div>
+  } @else {
+    <div class="membership-card__face membership-card__face--back">
+      <img
+        class="membership-card__template"
+        src="/membership-cards/back-template.png"
+        alt=""
+        aria-hidden="true"
+      />
+
+      @if (logoObjectUrl(); as logo) {
+        <div class="membership-card__logo membership-card__logo--back">
+          <img [src]="logo" alt="" />
+        </div>
+      }
+
+      <div class="membership-card__titles membership-card__titles--back">
+        <p class="membership-card__header1">{{ card().institution.headerLine1 }}</p>
+        @if (card().institution.headerLine2; as line2) {
+          <p class="membership-card__header2">{{ line2 }}</p>
+        }
+        @if (card().institution.ministryLabel; as ministry) {
+          <p class="membership-card__ministry">{{ ministry }}</p>
+        }
+      </div>
+
+      <span class="membership-card__value membership-card__value--cpf">{{
+        card().back.cpf || ''
+      }}</span>
+      <span class="membership-card__value membership-card__value--rg">{{
+        card().back.rg || ''
+      }}</span>
+      <span class="membership-card__value membership-card__value--marital">{{
+        maritalLabelKey(card().back.maritalStatus) | translate
+      }}</span>
+      <span class="membership-card__value membership-card__value--validity">{{
+        formatDate(card().back.validUntil)
+      }}</span>
+
+      <div class="membership-card__president">
+        @if (signatureObjectUrl(); as signature) {
+          <img class="membership-card__sig-img" [src]="signature" alt="" />
+        }
+        <p class="membership-card__president-name">
+          {{ card().institution.presidentName || '' }}
+        </p>
+        <p class="membership-card__president-title">
+          {{ card().institution.presidentTitle }}
+        </p>
+      </div>
+    </div>
+  }
+</article>

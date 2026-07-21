@@ -22,6 +22,7 @@ export type SidebarNavItem = {
     | 'users'
     | 'roles'
     | 'members'
+    | 'membership-cards'
     | 'families'
     | 'ministries'
     | 'congregation';
@@ -90,6 +91,12 @@ export class SidebarNav {
       labelKey: 'NAV.MEMBERS',
       icon: 'members',
       permission: 'members:read',
+    },
+    {
+      route: '/membership-cards',
+      labelKey: 'NAV.MEMBERSHIP_CARDS',
+      icon: 'membership-cards',
+      permission: 'membership-cards:read',
     },
     {
       route: '/families',

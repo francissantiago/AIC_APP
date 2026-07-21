@@ -19,5 +19,11 @@ export interface ICreateMember {
   state?: string;
   zipCode?: string;
   notes?: string;
+  rg?: string;
+  placeOfBirth?: string;
+  bloodType?: string;
+  fatherName?: string;
+  motherName?: string;
+  positionTitle?: string;
   userId?: string;
 }

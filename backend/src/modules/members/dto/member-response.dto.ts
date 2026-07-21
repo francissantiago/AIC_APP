@@ -56,6 +56,31 @@ export class MemberResponseDto {
   @ApiPropertyOptional({ example: 'Observações pastorais', nullable: true })
   notes!: string | null;
 
+  @ApiPropertyOptional({ example: '12.345.678-9', nullable: true })
+  rg!: string | null;
+
+  @ApiPropertyOptional({ example: 'São Paulo / SP', nullable: true })
+  placeOfBirth!: string | null;
+
+  @ApiPropertyOptional({ example: 'O+', nullable: true })
+  bloodType!: string | null;
+
+  @ApiPropertyOptional({ example: 'José da Silva', nullable: true })
+  fatherName!: string | null;
+
+  @ApiPropertyOptional({ example: 'Ana da Silva', nullable: true })
+  motherName!: string | null;
+
+  @ApiPropertyOptional({ example: 'Diácono', nullable: true })
+  positionTitle!: string | null;
+
+  @ApiPropertyOptional({
+    example: '/api/members/4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f/photo',
+    nullable: true,
+    description: 'URL relativa autenticada da foto do membro',
+  })
+  photoUrl!: string | null;
+
   @ApiProperty({
     example: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
     description: 'ID da congregação-base (somente leitura)',
@@ -92,6 +117,13 @@ export class MemberResponseDto {
     dto.state = member.state;
     dto.zipCode = member.zipCode;
     dto.notes = member.notes;
+    dto.rg = member.rg;
+    dto.placeOfBirth = member.placeOfBirth;
+    dto.bloodType = member.bloodType;
+    dto.fatherName = member.fatherName;
+    dto.motherName = member.motherName;
+    dto.positionTitle = member.positionTitle;
+    dto.photoUrl = member.photoPath ? `/api/members/${member.id}/photo` : null;
     dto.congregationId = member.congregationId;
     dto.userId = member.userId;
     dto.createdAt = member.createdAt;

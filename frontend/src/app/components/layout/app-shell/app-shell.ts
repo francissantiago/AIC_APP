@@ -138,6 +138,9 @@ export class AppShell {
     if (path.startsWith('/secretariat')) {
       return 'APP_SHELL.PAGE_SECRETARIAT';
     }
+    if (path.startsWith('/membership-cards')) {
+      return 'APP_SHELL.PAGE_MEMBERSHIP_CARDS';
+    }
     if (path.startsWith('/roles')) {
       return 'APP_SHELL.PAGE_ROLES';
     }

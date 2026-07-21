@@ -174,7 +174,8 @@
     "SECRETARIAT_DOCUMENTS": "Minutes & documents",
     "SECRETARIAT_SCHEDULES": "Schedules",
     "SMALL_GROUPS": "Small groups",
-    "SMALL_GROUPS_REPORTS": "Frequency"
+    "SMALL_GROUPS_REPORTS": "Frequency",
+    "MEMBERSHIP_CARDS": "Membership cards"
   },
   "APP_SHELL": {
     "APP_NAME": "AIC",
@@ -206,7 +207,8 @@
     "PAGE_SECRETARIAT_SCHEDULES": "Volunteer schedules",
     "PAGE_SMALL_GROUPS": "Small groups",
     "PAGE_SMALL_GROUPS_REPORTS": "Small groups frequency",
-    "PAGE_PROFILE": "Profile"
+    "PAGE_PROFILE": "Profile",
+    "PAGE_MEMBERSHIP_CARDS": "Membership cards"
   },
   "DASHBOARD": {
     "TITLE": "Dashboard",
@@ -440,7 +442,16 @@
     "MARITAL_WIDOWED": "Widowed",
     "MARITAL_OTHER": "Other",
     "EBD_CLASSES": "Sunday School classes",
-    "EBD_CLASSES_EMPTY": "Not enrolled in any Sunday School class"
+    "EBD_CLASSES_EMPTY": "Not enrolled in any Sunday School class",
+    "RG": "ID document (RG)",
+    "PLACE_OF_BIRTH": "Place of birth",
+    "BLOOD_TYPE": "Blood type / RH",
+    "FATHER_NAME": "Father's name",
+    "MOTHER_NAME": "Mother's name",
+    "POSITION_TITLE": "Position / role",
+    "PHOTO": "Photo",
+    "UPLOAD_PHOTO": "Upload photo",
+    "REMOVE_PHOTO": "Remove photo"
   },
   "MEMBER_TRANSFERS": {
     "TITLE": "Member transfers",
@@ -1294,5 +1305,54 @@
     "SAVE_ERROR": "Failed to save small group",
     "DELETE_ERROR": "Failed to delete small group",
     "ATTENDANCE_SAVE_ERROR": "Failed to save attendance"
+  },
+  "MEMBERSHIP_CARDS": {
+    "TITLE": "Membership cards",
+    "DESCRIPTION": "Preview and print member ID cards",
+    "LIST_TITLE": "Members",
+    "SEARCH_PLACEHOLDER": "Search by name…",
+    "SELECT_MEMBER": "Select a member",
+    "PREVIEW": "Preview",
+    "FRONT": "Front",
+    "BACK": "Back",
+    "PRINT": "Print",
+    "GENERATE": "Generate card",
+    "VALIDITY": "Validity",
+    "VALIDITY_UNTIL": "Valid until {{date}}",
+    "VALIDITY_MONTHS": "Validity (months)",
+    "NO_PHOTO": "No photo",
+    "MISSING_FIELDS": "Incomplete fields: {{fields}}",
+    "EMPTY_STATE": "Select one or more members to preview cards",
+    "PRINT_HINT": "Use the print dialog to print front and back",
+    "FOOTER_NOTICE": "Valid only with photo ID",
+    "SIGNATURE_HOLDER": "Cardholder signature",
+    "SIGNATURE_PRESIDENT": "President signature",
+    "FILTER_STATUS": "Status",
+    "SELECTED_COUNT": "{{count}} selected",
+    "BATCH_PRINT": "Print selected",
+    "LOAD_ERROR": "Could not load membership card data",
+    "PERMISSION_DENIED": "You do not have permission for membership cards",
+    "SETTINGS_TITLE": "Card settings",
+    "SETTINGS_SAVE": "Save settings",
+    "SETTINGS_SAVED": "Settings saved",
+    "HEADER_LINE1": "Header line 1",
+    "HEADER_LINE2": "Header line 2",
+    "MINISTRY_LABEL": "Ministry label",
+    "PRESIDENT_NAME": "President name",
+    "PRESIDENT_TITLE": "President title",
+    "UPLOAD_LOGO": "Upload logo",
+    "UPLOAD_SIGNATURE": "Upload signature",
+    "CARD_LABEL": "MEMBERSHIP CARD",
+    "FIELD_NAME": "NAME",
+    "FIELD_FILIATION": "PARENTAGE",
+    "FIELD_BIRTH_DATE": "DATE OF BIRTH",
+    "FIELD_PLACE_OF_BIRTH": "PLACE OF BIRTH",
+    "FIELD_POSITION": "POSITION",
+    "FIELD_BLOOD_TYPE": "BLOOD TYPE",
+    "FIELD_CPF": "CPF",
+    "FIELD_RG": "ID",
+    "FIELD_MARITAL_STATUS": "MARITAL STATUS",
+    "FIELD_VALIDITY": "VALIDITY",
+    "WARNING_INACTIVE": "Member is not active"
   }
 }

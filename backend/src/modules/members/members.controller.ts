@@ -10,21 +10,30 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiConflictResponse,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProduces,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -37,6 +46,7 @@ import { MemberClassSummaryDto } from '../classes/dto/class-enrollment-response.
 import { ClassesService } from '../classes/classes.service';
 import { MinistryResponseDto } from '../ministries/dto/ministry-response.dto';
 import { MinistriesService } from '../ministries/ministries.service';
+import { UploadedFile as MemberUploadedFile } from '../secretariat/storage/uploaded-file.interface';
 import { CreateMemberDto } from './dto/create-member.dto';
 import {
   MemberResponseDto,
@@ -45,6 +55,15 @@ import {
 import { QueryMembersDto } from './dto/query-members.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { MembersService } from './members.service';
+
+const DEFAULT_UPLOAD_MAX_BYTES = 10_485_760;
+
+function resolveUploadMaxBytes(): number {
+  const parsed = Number(process.env.UPLOAD_MAX_BYTES);
+  return Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_UPLOAD_MAX_BYTES;
+}
 
 @ApiTags('members')
 @ApiBearerAuth()
@@ -109,6 +128,76 @@ export class MembersController {
     @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MemberClassSummaryDto[]> {
     return this.classesService.findByMemberId(id, activeCongregationId);
+  }
+
+  @Get(':id/photo')
+  @RequirePermission('members:read', 'membership-cards:read')
+  @ApiOperation({ summary: 'Obter foto do membro' })
+  @ApiProduces('image/png', 'image/jpeg')
+  @ApiOkResponse({
+    description: 'Stream da foto do membro',
+    schema: { type: 'string', format: 'binary' },
+  })
+  @ApiNotFoundResponse({ description: 'Membro ou foto não encontrado' })
+  async getPhoto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() response: Response,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    const file = await this.membersService.getPhotoStream(
+      id,
+      activeCongregationId,
+    );
+    response.setHeader('Content-Type', file.mimeType);
+    file.stream.pipe(response);
+  }
+
+  @Post(':id/photo')
+  @RequirePermission('members:write')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: resolveUploadMaxBytes() },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Foto do membro (PNG ou JPEG). Campo multipart: file.',
+        },
+      },
+    },
+  })
+  @ApiOperation({ summary: 'Enviar ou substituir foto do membro' })
+  @ApiOkResponse({ type: MemberResponseDto })
+  @ApiNotFoundResponse({ description: 'Membro não encontrado' })
+  @ApiBadRequestResponse({
+    description: 'Arquivo ausente, tipo inválido ou tamanho excedido',
+  })
+  uploadPhoto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: MemberUploadedFile | undefined,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MemberResponseDto> {
+    return this.membersService.uploadPhoto(id, file, activeCongregationId);
+  }
+
+  @Delete(':id/photo')
+  @RequirePermission('members:write')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remover foto do membro' })
+  @ApiNoContentResponse({ description: 'Foto removida' })
+  @ApiNotFoundResponse({ description: 'Membro ou foto não encontrado' })
+  removePhoto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.membersService.removePhoto(id, activeCongregationId);
   }
 
   @Get(':id')

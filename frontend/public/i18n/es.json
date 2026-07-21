@@ -174,7 +174,8 @@
     "SECRETARIAT_DOCUMENTS": "Actas y documentos",
     "SECRETARIAT_SCHEDULES": "Escalas",
     "SMALL_GROUPS": "Grupos pequeños",
-    "SMALL_GROUPS_REPORTS": "Frecuencia"
+    "SMALL_GROUPS_REPORTS": "Frecuencia",
+    "MEMBERSHIP_CARDS": "Carnets de miembro"
   },
   "APP_SHELL": {
     "APP_NAME": "AIC",
@@ -206,7 +207,8 @@
     "PAGE_SECRETARIAT_SCHEDULES": "Escalas de voluntariado",
     "PAGE_SMALL_GROUPS": "Grupos pequeños",
     "PAGE_SMALL_GROUPS_REPORTS": "Frecuencia de grupos pequeños",
-    "PAGE_PROFILE": "Perfil"
+    "PAGE_PROFILE": "Perfil",
+    "PAGE_MEMBERSHIP_CARDS": "Carnets de miembro"
   },
   "DASHBOARD": {
     "TITLE": "Panel inicial",
@@ -440,7 +442,16 @@
     "MARITAL_WIDOWED": "Viudo/a",
     "MARITAL_OTHER": "Otro",
     "EBD_CLASSES": "Clases de la EBD",
-    "EBD_CLASSES_EMPTY": "Sin matrícula en ninguna clase de la EBD"
+    "EBD_CLASSES_EMPTY": "Sin matrícula en ninguna clase de la EBD",
+    "RG": "Documento (RG)",
+    "PLACE_OF_BIRTH": "Lugar de nacimiento",
+    "BLOOD_TYPE": "Factor RH",
+    "FATHER_NAME": "Nombre del padre",
+    "MOTHER_NAME": "Nombre de la madre",
+    "POSITION_TITLE": "Cargo",
+    "PHOTO": "Foto",
+    "UPLOAD_PHOTO": "Subir foto",
+    "REMOVE_PHOTO": "Quitar foto"
   },
   "MEMBER_TRANSFERS": {
     "TITLE": "Transferencias de miembro",
@@ -1294,5 +1305,54 @@
     "SAVE_ERROR": "No se pudo guardar el grupo pequeño",
     "DELETE_ERROR": "No se pudo eliminar el grupo pequeño",
     "ATTENDANCE_SAVE_ERROR": "No se pudo guardar la asistencia"
+  },
+  "MEMBERSHIP_CARDS": {
+    "TITLE": "Carnets de miembro",
+    "DESCRIPTION": "Vista previa e impresión de carnets",
+    "LIST_TITLE": "Miembros",
+    "SEARCH_PLACEHOLDER": "Buscar por nombre…",
+    "SELECT_MEMBER": "Seleccione un miembro",
+    "PREVIEW": "Vista previa",
+    "FRONT": "Frente",
+    "BACK": "Reverso",
+    "PRINT": "Imprimir",
+    "GENERATE": "Generar carnet",
+    "VALIDITY": "Validez",
+    "VALIDITY_UNTIL": "Válido hasta {{date}}",
+    "VALIDITY_MONTHS": "Validez (meses)",
+    "NO_PHOTO": "Sin foto",
+    "MISSING_FIELDS": "Campos incompletos: {{fields}}",
+    "EMPTY_STATE": "Seleccione uno o más miembros para ver los carnets",
+    "PRINT_HINT": "Use el diálogo de impresión para imprimir frente y reverso",
+    "FOOTER_NOTICE": "Válido solo con documento con foto",
+    "SIGNATURE_HOLDER": "Firma del titular",
+    "SIGNATURE_PRESIDENT": "Firma de la presidenta",
+    "FILTER_STATUS": "Estado",
+    "SELECTED_COUNT": "{{count}} seleccionados",
+    "BATCH_PRINT": "Imprimir seleccionados",
+    "LOAD_ERROR": "No se pudieron cargar los datos del carnet",
+    "PERMISSION_DENIED": "No tiene permiso para carnets",
+    "SETTINGS_TITLE": "Configuración del carnet",
+    "SETTINGS_SAVE": "Guardar configuración",
+    "SETTINGS_SAVED": "Configuración guardada",
+    "HEADER_LINE1": "Encabezado línea 1",
+    "HEADER_LINE2": "Encabezado línea 2",
+    "MINISTRY_LABEL": "Etiqueta del ministerio",
+    "PRESIDENT_NAME": "Nombre de la presidenta",
+    "PRESIDENT_TITLE": "Título de la presidenta",
+    "UPLOAD_LOGO": "Subir logo",
+    "UPLOAD_SIGNATURE": "Subir firma",
+    "CARD_LABEL": "CARNET DE MIEMBRO",
+    "FIELD_NAME": "NOMBRE",
+    "FIELD_FILIATION": "FILIACIÓN",
+    "FIELD_BIRTH_DATE": "FECHA DE NACIMIENTO",
+    "FIELD_PLACE_OF_BIRTH": "NATURALIDAD",
+    "FIELD_POSITION": "CARGO",
+    "FIELD_BLOOD_TYPE": "FACTOR RH",
+    "FIELD_CPF": "CPF",
+    "FIELD_RG": "RG",
+    "FIELD_MARITAL_STATUS": "ESTADO CIVIL",
+    "FIELD_VALIDITY": "VALIDEZ",
+    "WARNING_INACTIVE": "El miembro no está activo"
   }
 }

@@ -80,6 +80,37 @@ export class Member {
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
 
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  rg!: string | null;
+
+  @Column({
+    name: 'place_of_birth',
+    type: 'varchar',
+    length: 150,
+    nullable: true,
+  })
+  placeOfBirth!: string | null;
+
+  @Column({ name: 'blood_type', type: 'varchar', length: 10, nullable: true })
+  bloodType!: string | null;
+
+  @Column({ name: 'father_name', type: 'varchar', length: 150, nullable: true })
+  fatherName!: string | null;
+
+  @Column({ name: 'mother_name', type: 'varchar', length: 150, nullable: true })
+  motherName!: string | null;
+
+  @Column({
+    name: 'position_title',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
+  positionTitle!: string | null;
+
+  @Column({ name: 'photo_path', type: 'varchar', length: 500, nullable: true })
+  photoPath!: string | null;
+
   @Index('IDX_members_congregation_id')
   @Column({ name: 'congregation_id', type: 'char', length: 36 })
   congregationId!: string;
