@@ -1,4 +1,11 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import {
@@ -32,6 +39,7 @@ import {
   ExpandedCalendarOccurrence,
 } from './calendar-recurrence.util';
 import { CalendarEvent } from './entities/calendar-event.entity';
+import { GoogleCalendarSyncService } from './google-calendar-sync.service';
 
 @Injectable()
 export class CalendarService {
@@ -41,6 +49,9 @@ export class CalendarService {
     @InjectRepository(CalendarEvent)
     private readonly calendarEventsRepository: Repository<CalendarEvent>,
     private readonly congregationsService: CongregationsService,
+    @Optional()
+    @Inject(forwardRef(() => GoogleCalendarSyncService))
+    private readonly googleCalendarSyncService?: GoogleCalendarSyncService,
   ) {}
 
   async createEvent(
@@ -67,6 +78,7 @@ export class CalendarService {
     });
     const saved = await this.calendarEventsRepository.save(event);
     this.logger.log(`Evento de agenda criado: ${saved.id}`);
+    void this.googleCalendarSyncService?.pushEventBestEffort(saved, 'upsert');
     return this.toMasterDto(saved);
   }
 
@@ -189,6 +201,7 @@ export class CalendarService {
     }
     const saved = await this.calendarEventsRepository.save(event);
     this.logger.log(`Evento de agenda atualizado: ${saved.id}`);
+    void this.googleCalendarSyncService?.pushEventBestEffort(saved, 'upsert');
     return this.toMasterDto(saved);
   }
 
@@ -198,6 +211,7 @@ export class CalendarService {
     this.assertNotSystemManaged(event);
     await this.calendarEventsRepository.softRemove(event);
     this.logger.log(`Evento de agenda removido (soft delete): ${id}`);
+    void this.googleCalendarSyncService?.pushEventBestEffort(event, 'delete');
   }
 
   async exportEventAsIcs(

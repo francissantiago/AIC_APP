@@ -28,6 +28,7 @@ import {
   provideCalendar,
 } from 'angular-calendar';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { GoogleCalendarPanel } from '@components/secretariat/google-calendar-panel/google-calendar-panel';
 import {
   CALENDAR_RECURRENCE_FREQUENCIES,
   CalendarEventType,
@@ -107,6 +108,7 @@ const EVENT_COLORS: Record<
     CalendarPreviousViewDirective,
     CalendarTodayDirective,
     CalendarWeekViewComponent,
+    GoogleCalendarPanel,
     ReactiveFormsModule,
     RouterLink,
     TranslatePipe,
@@ -271,6 +273,8 @@ const EVENT_COLORS: Record<
           }
         </div>
       </div>
+
+      <app-google-calendar-panel (eventsChanged)="reloadAgendaFromGoogleSync()" />
 
       @if (icsFeedback(); as feedback) {
         <p
@@ -1085,6 +1089,10 @@ export class AgendaCalendar implements OnInit {
     this.form.valueChanges.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       this.#formRangeVersion.update((value) => value + 1);
     });
+    this.#load(this.view(), this.viewDate());
+  }
+
+  reloadAgendaFromGoogleSync(): void {
     this.#load(this.view(), this.viewDate());
   }
 

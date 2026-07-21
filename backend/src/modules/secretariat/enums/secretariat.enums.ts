@@ -33,3 +33,22 @@ export enum SecretariatDocumentStatus {
   DRAFT = 'draft',
   FINAL = 'final',
 }
+
+export enum GoogleCalendarSyncDirection {
+  BIDIRECTIONAL = 'bidirectional',
+  AIC_TO_GOOGLE = 'aic_to_google',
+  GOOGLE_TO_AIC = 'google_to_aic',
+}
+
+export enum GoogleCalendarConflictPolicy {
+  AIC_WINS = 'aic_wins',
+  GOOGLE_WINS = 'google_wins',
+  LATEST_WINS = 'latest_wins',
+}
+
+export enum GoogleCalendarConnectionStatus {
+  ACTIVE = 'active',
+  DISCONNECTED = 'disconnected',
+  ERROR = 'error',
+  REVOKED = 'revoked',
+}

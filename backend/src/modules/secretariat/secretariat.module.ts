@@ -10,6 +10,13 @@ import { AttendanceRecord } from './attendance/entities/attendance-record.entity
 import { CalendarController } from './calendar/calendar.controller';
 import { CalendarService } from './calendar/calendar.service';
 import { CalendarEvent } from './calendar/entities/calendar-event.entity';
+import { GoogleCalendarConnection } from './calendar/entities/google-calendar-connection.entity';
+import { GoogleCalendarEventLink } from './calendar/entities/google-calendar-event-link.entity';
+import { GoogleCalendarController } from './calendar/google-calendar.controller';
+import { GoogleCalendarJobsService } from './calendar/google-calendar-jobs.service';
+import { GoogleCalendarOAuthService } from './calendar/google-calendar-oauth.service';
+import { GoogleCalendarService } from './calendar/google-calendar.service';
+import { GoogleCalendarSyncService } from './calendar/google-calendar-sync.service';
 import { DocumentsController } from './documents/documents.controller';
 import { DocumentsService } from './documents/documents.service';
 import { SecretariatDocument } from './documents/entities/secretariat-document.entity';
@@ -24,6 +31,8 @@ import { VisitorsService } from './visitors/visitors.service';
   imports: [
     TypeOrmModule.forFeature([
       CalendarEvent,
+      GoogleCalendarConnection,
+      GoogleCalendarEventLink,
       Visitor,
       AttendanceRecord,
       SecretariatDocument,
@@ -36,6 +45,7 @@ import { VisitorsService } from './visitors/visitors.service';
   controllers: [
     SecretariatController,
     CalendarController,
+    GoogleCalendarController,
     VisitorsController,
     AttendanceController,
     DocumentsController,
@@ -43,6 +53,10 @@ import { VisitorsService } from './visitors/visitors.service';
   providers: [
     SecretariatService,
     CalendarService,
+    GoogleCalendarService,
+    GoogleCalendarOAuthService,
+    GoogleCalendarSyncService,
+    GoogleCalendarJobsService,
     VisitorsService,
     AttendanceService,
     DocumentsService,
