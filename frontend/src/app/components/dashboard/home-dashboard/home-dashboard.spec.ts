@@ -1,9 +1,12 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
+import { AppLanguage } from '@enums/app-language';
 import { CalendarEventType } from '@enums/secretariat';
 import { IDashboardOverview } from '@interfaces/IDashboard';
 import { DashboardService } from '@services/dashboard-service';
+import { I18nService } from '@services/i18n-service';
 import { of, throwError } from 'rxjs';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { HomeDashboard } from './home-dashboard';
@@ -12,6 +15,7 @@ describe('HomeDashboard', () => {
   let component: HomeDashboard;
   let fixture: ComponentFixture<HomeDashboard>;
   let dashboardService: { overview: ReturnType<typeof vi.fn> };
+  let currentLang: ReturnType<typeof signal<AppLanguage>>;
 
   const mockOverview: IDashboardOverview = {
     generatedAt: '2026-07-21T08:00:00Z',
@@ -40,7 +44,7 @@ describe('HomeDashboard', () => {
       },
     ],
     charts: {
-      membersByStatus: [{ label: 'Ativo', value: 100 }],
+      membersByStatus: [{ label: 'active', value: 22 }],
       attendanceByMonth: [{ month: '2026-07', total: 80 }],
       financeByMonth: [{ month: '2026-07', income: '5000.00', expense: '3000.00' }],
     },
@@ -69,10 +73,38 @@ describe('HomeDashboard', () => {
     ],
   };
 
+  const translations: Record<AppLanguage, Record<string, string>> = {
+    en: {
+      'MEMBERS.STATUS_ACTIVE': 'Active',
+      'DASHBOARD.CHART_ATTENDANCE': 'Attendance',
+      'DASHBOARD.KPI_INCOME': 'Income',
+      'DASHBOARD.KPI_EXPENSE': 'Expense',
+    },
+    es: {
+      'MEMBERS.STATUS_ACTIVE': 'Activo',
+      'DASHBOARD.CHART_ATTENDANCE': 'Asistencia',
+      'DASHBOARD.KPI_INCOME': 'Ingresos',
+      'DASHBOARD.KPI_EXPENSE': 'Gastos',
+    },
+    'pt-BR': {
+      'MEMBERS.STATUS_ACTIVE': 'Ativo',
+      'DASHBOARD.CHART_ATTENDANCE': 'Frequência',
+      'DASHBOARD.KPI_INCOME': 'Receitas',
+      'DASHBOARD.KPI_EXPENSE': 'Despesas',
+    },
+  };
+
   beforeEach(async () => {
     TestBed.resetTestingModule();
+    currentLang = signal<AppLanguage>(AppLanguage.PortugueseBrazil);
     dashboardService = {
       overview: vi.fn().mockReturnValue(of(mockOverview)),
+    };
+
+    const translateStub = {
+      ...translateServiceStub(),
+      currentLang: () => currentLang(),
+      instant: (key: string) => translations[currentLang()][key] ?? key,
     };
 
     await TestBed.configureTestingModule({
@@ -80,8 +112,15 @@ describe('HomeDashboard', () => {
       providers: [
         provideRouter([]),
         { provide: DashboardService, useValue: dashboardService },
-        { provide: TranslateService, useValue: translateServiceStub() },
+        { provide: TranslateService, useValue: translateStub },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
+        {
+          provide: I18nService,
+          useValue: {
+            currentLang,
+            setLanguage: (language: AppLanguage) => currentLang.set(language),
+          },
+        },
       ],
     })
       .overrideComponent(HomeDashboard, {
@@ -124,6 +163,18 @@ describe('HomeDashboard', () => {
     const criticalAlerts = component.criticalAlerts();
     expect(criticalAlerts.length).toBe(1);
     expect(criticalAlerts[0]?.severity).toBe('critical');
+  });
+
+  it('translates member status chart labels according to selected language', () => {
+    fixture.detectChanges();
+
+    expect(component.membersByStatusChartData().labels).toEqual(['Ativo']);
+    expect(component.membersSummary()).toEqual(['Ativo: 22']);
+
+    currentLang.set(AppLanguage.English);
+
+    expect(component.membersByStatusChartData().labels).toEqual(['Active']);
+    expect(component.membersSummary()).toEqual(['Active: 22']);
   });
 
   it('should return correct alert severity classes', () => {

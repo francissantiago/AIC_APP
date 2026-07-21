@@ -11,9 +11,10 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ChartCanvas } from '@components/finance/chart-canvas/chart-canvas';
-import { IDashboardOverview, IDashboardAlert } from '@interfaces/IDashboard';
+import { IDashboardOverview } from '@interfaces/IDashboard';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { DashboardService } from '@services/dashboard-service';
+import { I18nService } from '@services/i18n-service';
 import { ChartData } from 'chart.js';
 
 @Component({
@@ -27,6 +28,7 @@ export class HomeDashboard implements OnInit {
   readonly #dashboard = inject(DashboardService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
+  readonly #i18n = inject(I18nService);
 
   readonly loading = signal(false);
   readonly error = signal(false);
@@ -45,9 +47,10 @@ export class HomeDashboard implements OnInit {
   );
 
   readonly membersByStatusChartData = computed<ChartData<'doughnut'>>(() => {
+    this.#i18n.currentLang();
     const data = this.overview()?.charts.membersByStatus ?? [];
     return {
-      labels: data.map((item) => item.label),
+      labels: data.map((item) => this.#memberStatusLabel(item.label)),
       datasets: [
         {
           data: data.map((item) => item.value),
@@ -58,6 +61,7 @@ export class HomeDashboard implements OnInit {
   });
 
   readonly attendanceChartData = computed<ChartData<'bar'>>(() => {
+    this.#i18n.currentLang();
     const data = this.overview()?.charts.attendanceByMonth ?? [];
     return {
       labels: data.map((item) => item.month),
@@ -72,6 +76,7 @@ export class HomeDashboard implements OnInit {
   });
 
   readonly financeChartData = computed<ChartData<'bar'>>(() => {
+    this.#i18n.currentLang();
     const data = this.overview()?.charts.financeByMonth ?? [];
     return {
       labels: data.map((item) => item.month),
@@ -91,8 +96,9 @@ export class HomeDashboard implements OnInit {
   });
 
   readonly membersSummary = computed(() => {
+    this.#i18n.currentLang();
     const data = this.overview()?.charts.membersByStatus ?? [];
-    return data.map((item) => `${item.label}: ${item.value}`);
+    return data.map((item) => `${this.#memberStatusLabel(item.label)}: ${item.value}`);
   });
 
   readonly attendanceSummary = computed(() => {
@@ -101,6 +107,7 @@ export class HomeDashboard implements OnInit {
   });
 
   readonly financeSummary = computed(() => {
+    this.#i18n.currentLang();
     const data = this.overview()?.charts.financeByMonth ?? [];
     return data.map(
       (item) =>
@@ -162,5 +169,11 @@ export class HomeDashboard implements OnInit {
       '/announcements',
     ];
     return knownRoutes.some((route) => href.startsWith(route));
+  }
+
+  #memberStatusLabel(status: string): string {
+    const key = `MEMBERS.STATUS_${status.toUpperCase()}`;
+    const translated = this.#translate.instant(key);
+    return translated === key ? status : translated;
   }
 }
