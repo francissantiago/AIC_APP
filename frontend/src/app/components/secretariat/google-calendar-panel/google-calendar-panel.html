@@ -1,104 +1,107 @@
 <section class="w-full" data-testid="google-calendar-panel">
-  <div class="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-    <span class="text-sm font-medium text-slate-800">
-      {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.TITLE' | translate }}
-    </span>
-
-    @if (connected()) {
-      <span
-        class="text-sm text-slate-700"
-        data-testid="gcal-status-connected"
-        role="status"
-      >
-        {{
-          'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_CONNECTED'
-            | translate: { email: gcalStatus()?.email || '' }
-        }}
+  @if (integrationAvailable()) {
+    <div
+      class="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+    >
+      <span class="text-sm font-medium text-slate-800">
+        {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.TITLE' | translate }}
       </span>
-      @if (gcalBusy()) {
-        <span class="text-sm text-slate-500">
-          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_SYNCING' | translate }}
+
+      @if (connected()) {
+        <span class="text-sm text-slate-700" data-testid="gcal-status-connected" role="status">
+          {{
+            'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_CONNECTED'
+              | translate: { email: gcalStatus()?.email || '' }
+          }}
         </span>
-      } @else if (hasError()) {
-        <span class="text-sm text-red-700" role="alert">
-          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_ERROR' | translate }}
+        @if (gcalBusy()) {
+          <span class="text-sm text-slate-500">
+            {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_SYNCING' | translate }}
+          </span>
+        } @else if (hasError()) {
+          <span class="text-sm text-red-700" role="alert">
+            {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_ERROR' | translate }}
+          </span>
+        }
+        <span class="text-xs text-slate-500">
+          {{
+            'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.LAST_SYNC'
+              | translate: { at: formatLastSync(gcalStatus()?.lastSyncAt ?? null) }
+          }}
         </span>
+        @if (canWrite()) {
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+            data-testid="gcal-sync-now"
+            [disabled]="gcalBusy()"
+            [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SYNC_NOW' | translate"
+            (click)="syncNow()"
+          >
+            {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SYNC_NOW' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+            data-testid="gcal-settings"
+            [disabled]="gcalBusy()"
+            [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SETTINGS' | translate"
+            (click)="openSettings()"
+          >
+            {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SETTINGS' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:opacity-50"
+            data-testid="gcal-disconnect"
+            [disabled]="gcalBusy()"
+            [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.DISCONNECT' | translate"
+            (click)="askDisconnect()"
+          >
+            {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.DISCONNECT' | translate }}
+          </button>
+        }
+      } @else {
+        <span class="text-sm text-slate-600" data-testid="gcal-status-disconnected" role="status">
+          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_DISCONNECTED' | translate }}
+        </span>
+        @if (canWrite()) {
+          <button
+            type="button"
+            class="rounded-md bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
+            data-testid="gcal-connect"
+            [disabled]="gcalBusy()"
+            [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.CONNECT' | translate"
+            (click)="connect()"
+          >
+            {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.CONNECT' | translate }}
+          </button>
+        }
       }
-      <span class="text-xs text-slate-500">
-        {{
-          'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.LAST_SYNC'
-            | translate: { at: formatLastSync(gcalStatus()?.lastSyncAt ?? null) }
-        }}
-      </span>
-      @if (canWrite()) {
-        <button
-          type="button"
-          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
-          data-testid="gcal-sync-now"
-          [disabled]="gcalBusy()"
-          [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SYNC_NOW' | translate"
-          (click)="syncNow()"
-        >
-          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SYNC_NOW' | translate }}
-        </button>
-        <button
-          type="button"
-          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
-          data-testid="gcal-settings"
-          [disabled]="gcalBusy()"
-          [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SETTINGS' | translate"
-          (click)="openSettings()"
-        >
-          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SETTINGS' | translate }}
-        </button>
-        <button
-          type="button"
-          class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:opacity-50"
-          data-testid="gcal-disconnect"
-          [disabled]="gcalBusy()"
-          [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.DISCONNECT' | translate"
-          (click)="askDisconnect()"
-        >
-          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.DISCONNECT' | translate }}
-        </button>
-      }
-    } @else {
-      <span class="text-sm text-slate-600" data-testid="gcal-status-disconnected" role="status">
-        {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.STATUS_DISCONNECTED' | translate }}
-      </span>
-      @if (canWrite()) {
-        <button
-          type="button"
-          class="rounded-md bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:opacity-50"
-          data-testid="gcal-connect"
-          [disabled]="gcalBusy()"
-          [attr.aria-label]="'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.CONNECT' | translate"
-          (click)="connect()"
-        >
-          {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.CONNECT' | translate }}
-        </button>
-      }
-    }
 
-    <p class="basis-full text-xs leading-relaxed text-slate-600" data-testid="gcal-oauth-disclosure">
-      {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.OAUTH_DISCLOSURE' | translate }}
-      <a
-        href="/privacy"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="font-medium text-slate-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      <p
+        class="basis-full text-xs leading-relaxed text-slate-600"
+        data-testid="gcal-oauth-disclosure"
       >
-        {{ 'LEGAL.NAV_PRIVACY' | translate }}
-      </a>
-      .
-    </p>
+        {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.OAUTH_DISCLOSURE' | translate }}
+        <a
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-medium text-slate-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_PRIVACY' | translate }}
+        </a>
+        .
+      </p>
 
-    <span class="basis-full text-xs text-slate-500">
-      {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.HINT_ICS' | translate }}
-    </span>
-  </div>
+      <span class="basis-full text-xs text-slate-500">
+        {{ 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.HINT_ICS' | translate }}
+      </span>
+    </div>
+  }
 
-  @if (gcalFeedback(); as feedback) {
+  @if (integrationAvailable() && gcalFeedback(); as feedback) {
     <p
       class="mb-3 text-sm"
       [class.text-red-700]="feedback.tone === 'error'"
@@ -110,7 +113,7 @@
     </p>
   }
 
-  @if (showSettings()) {
+  @if (integrationAvailable() && showSettings()) {
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4"
       data-testid="gcal-settings-backdrop"
@@ -210,7 +213,7 @@
     </div>
   }
 
-  @if (showDisconnectConfirm()) {
+  @if (integrationAvailable() && showDisconnectConfirm()) {
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4"
       data-testid="gcal-disconnect-backdrop"

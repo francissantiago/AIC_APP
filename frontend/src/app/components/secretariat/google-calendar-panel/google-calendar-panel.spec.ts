@@ -47,6 +47,7 @@ describe('GoogleCalendarPanel', () => {
   async function setup(canWrite = true): Promise<void> {
     TestBed.resetTestingModule();
     statusResponse = {
+      configured: true,
       connected: false,
       status: null,
       email: null,
@@ -93,12 +94,38 @@ describe('GoogleCalendarPanel', () => {
     fixture.detectChanges();
 
     expect(component.connected()).toBe(false);
+    expect(component.integrationAvailable()).toBe(true);
     expect(fixture.nativeElement.querySelector('[data-testid="gcal-connect"]')).toBeTruthy();
+  });
+
+  it('oculta a integração quando OAuth não está configurado no backend', async () => {
+    await setup(true);
+    statusResponse = {
+      configured: false,
+      connected: false,
+      status: null,
+      email: null,
+      googleCalendarId: null,
+      syncDirection: null,
+      conflictPolicy: null,
+      lastSyncAt: null,
+      lastSyncError: null,
+    };
+    gcalMock.getStatus.mockReturnValue(of(statusResponse));
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.integrationAvailable()).toBe(false);
+    expect(fixture.nativeElement.querySelector('[data-testid="gcal-connect"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="gcal-oauth-disclosure"]')).toBeNull();
   });
 
   it('mostra estado conectado e ações de sync', async () => {
     await setup(true);
     statusResponse = {
+      configured: true,
       connected: true,
       status: 'active',
       email: 'ab***@gmail.com',
@@ -124,6 +151,7 @@ describe('GoogleCalendarPanel', () => {
   it('desabilita botões quando gcalBusy', async () => {
     await setup(true);
     statusResponse = {
+      configured: true,
       connected: true,
       status: 'active',
       email: 'ab***@gmail.com',

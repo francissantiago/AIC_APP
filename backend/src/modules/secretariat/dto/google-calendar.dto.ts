@@ -19,6 +19,12 @@ export class GoogleCalendarOAuthUrlResponseDto {
 }
 
 export class GoogleCalendarConnectionStatusDto {
+  @ApiProperty({
+    description:
+      'False quando GOOGLE_OAUTH_CLIENT_ID/SECRET (e deps) não estão configurados — UI deve ocultar a integração',
+  })
+  configured!: boolean;
+
   @ApiProperty()
   connected!: boolean;
 

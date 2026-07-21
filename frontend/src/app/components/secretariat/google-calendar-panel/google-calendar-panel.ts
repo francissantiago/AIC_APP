@@ -49,6 +49,7 @@ export class GoogleCalendarPanel implements OnInit {
   readonly calendars = signal<IGoogleCalendarListItem[]>([]);
 
   readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
+  readonly integrationAvailable = computed(() => this.gcalStatus()?.configured === true);
   readonly connected = computed(() => Boolean(this.gcalStatus()?.connected));
   readonly hasError = computed(
     () =>
@@ -89,19 +90,22 @@ export class GoogleCalendarPanel implements OnInit {
         },
         error: (err: unknown) => {
           this.gcalBusy.set(false);
-          if (
-            this.#apiError.resolve(err).code ===
-            'SECRETARIAT.GOOGLE_CALENDAR_NOT_CONFIGURED'
-          ) {
-            this.gcalFeedback.set({
-              message: this.#translate.instant(
-                'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_NOT_CONFIGURED',
-              ),
-              tone: 'error',
+          if (this.#apiError.resolve(err).code === 'SECRETARIAT.GOOGLE_CALENDAR_NOT_CONFIGURED') {
+            this.gcalStatus.set({
+              configured: false,
+              connected: false,
+              status: null,
+              email: null,
+              googleCalendarId: null,
+              syncDirection: null,
+              conflictPolicy: null,
+              lastSyncAt: null,
+              lastSyncError: null,
             });
             return;
           }
           this.gcalStatus.set({
+            configured: true,
             connected: false,
             status: null,
             email: null,
@@ -130,10 +134,7 @@ export class GoogleCalendarPanel implements OnInit {
         error: (err: unknown) => {
           this.gcalBusy.set(false);
           this.gcalFeedback.set({
-            message: this.#mapError(
-              err,
-              'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_OAUTH',
-            ),
+            message: this.#mapError(err, 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_OAUTH'),
             tone: 'error',
           });
         },
@@ -152,10 +153,10 @@ export class GoogleCalendarPanel implements OnInit {
         next: (result) => {
           this.gcalBusy.set(false);
           this.gcalFeedback.set({
-            message: this.#translate.instant(
-              'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SUCCESS_SYNCED',
-              { pushed: result.pushed, pulled: result.pulled },
-            ),
+            message: this.#translate.instant('SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SUCCESS_SYNCED', {
+              pushed: result.pushed,
+              pulled: result.pulled,
+            }),
             tone: 'success',
           });
           this.loadStatus();
@@ -164,10 +165,7 @@ export class GoogleCalendarPanel implements OnInit {
         error: (err: unknown) => {
           this.gcalBusy.set(false);
           this.gcalFeedback.set({
-            message: this.#mapError(
-              err,
-              'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_SYNC',
-            ),
+            message: this.#mapError(err, 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_SYNC'),
             tone: 'error',
           });
         },
@@ -210,10 +208,7 @@ export class GoogleCalendarPanel implements OnInit {
         error: (err: unknown) => {
           this.gcalBusy.set(false);
           this.gcalFeedback.set({
-            message: this.#mapError(
-              err,
-              'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_SYNC',
-            ),
+            message: this.#mapError(err, 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_SYNC'),
             tone: 'error',
           });
         },
@@ -254,10 +249,7 @@ export class GoogleCalendarPanel implements OnInit {
         error: (err: unknown) => {
           this.gcalBusy.set(false);
           this.gcalFeedback.set({
-            message: this.#mapError(
-              err,
-              'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_SYNC',
-            ),
+            message: this.#mapError(err, 'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_SYNC'),
             tone: 'error',
           });
         },
@@ -282,9 +274,7 @@ export class GoogleCalendarPanel implements OnInit {
     }
     if (flag === 'connected') {
       this.gcalFeedback.set({
-        message: this.#translate.instant(
-          'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SUCCESS_CONNECTED',
-        ),
+        message: this.#translate.instant('SECRETARIAT.AGENDA.GOOGLE_CALENDAR.SUCCESS_CONNECTED'),
         tone: 'success',
       });
     } else if (flag === 'error') {
@@ -304,14 +294,10 @@ export class GoogleCalendarPanel implements OnInit {
   #mapError(err: unknown, fallbackKey: string): string {
     const resolved = this.#apiError.resolve(err);
     if (resolved.code === 'SECRETARIAT.GOOGLE_CALENDAR_NOT_CONFIGURED') {
-      return this.#translate.instant(
-        'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_NOT_CONFIGURED',
-      );
+      return this.#translate.instant('SECRETARIAT.AGENDA.GOOGLE_CALENDAR.ERROR_NOT_CONFIGURED');
     }
     if (resolved.statusCode === 403) {
-      return this.#translate.instant(
-        'SECRETARIAT.AGENDA.GOOGLE_CALENDAR.PERMISSION_DENIED',
-      );
+      return this.#translate.instant('SECRETARIAT.AGENDA.GOOGLE_CALENDAR.PERMISSION_DENIED');
     }
     return this.#translate.instant(fallbackKey);
   }

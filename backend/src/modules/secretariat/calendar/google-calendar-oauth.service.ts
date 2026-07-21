@@ -200,23 +200,19 @@ export class GoogleCalendarOAuthService {
   async getStatus(
     activeCongregationId?: string,
   ): Promise<GoogleCalendarConnectionStatusDto> {
+    if (!this.isConfigured()) {
+      return this.emptyStatus(false);
+    }
+
     const congregationId =
       await this.resolveCongregationId(activeCongregationId);
     const connection = await this.findActiveConnection(congregationId);
     if (!connection) {
-      return {
-        connected: false,
-        status: null,
-        email: null,
-        googleCalendarId: null,
-        syncDirection: null,
-        conflictPolicy: null,
-        lastSyncAt: null,
-        lastSyncError: null,
-      };
+      return this.emptyStatus(true);
     }
 
     return {
+      configured: true,
       connected: connection.status === GoogleCalendarConnectionStatus.ACTIVE,
       status: connection.status,
       email: this.maskEmail(connection.googleAccountEmail),
@@ -379,18 +375,24 @@ export class GoogleCalendarOAuthService {
     });
   }
 
+  isConfigured(): boolean {
+    const clientId = this.configService
+      .get<string>('GOOGLE_OAUTH_CLIENT_ID')
+      ?.trim();
+    const clientSecret = this.configService
+      .get<string>('GOOGLE_OAUTH_CLIENT_SECRET')
+      ?.trim();
+    const redirectUri = this.configService
+      .get<string>('GOOGLE_OAUTH_REDIRECT_URI')
+      ?.trim();
+    const encryptionKey = this.configService
+      .get<string>('GOOGLE_TOKEN_ENCRYPTION_KEY')
+      ?.trim();
+    return Boolean(clientId && clientSecret && redirectUri && encryptionKey);
+  }
+
   assertConfigured(): void {
-    const clientId = this.configService.get<string>('GOOGLE_OAUTH_CLIENT_ID');
-    const clientSecret = this.configService.get<string>(
-      'GOOGLE_OAUTH_CLIENT_SECRET',
-    );
-    const redirectUri = this.configService.get<string>(
-      'GOOGLE_OAUTH_REDIRECT_URI',
-    );
-    const encryptionKey = this.configService.get<string>(
-      'GOOGLE_TOKEN_ENCRYPTION_KEY',
-    );
-    if (!clientId || !clientSecret || !redirectUri || !encryptionKey) {
+    if (!this.isConfigured()) {
       throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, {
         code: ApiErrorCode.SECRETARIAT_GOOGLE_CALENDAR_NOT_CONFIGURED,
         message:
@@ -399,6 +401,20 @@ export class GoogleCalendarOAuthService {
           ],
       });
     }
+  }
+
+  private emptyStatus(configured: boolean): GoogleCalendarConnectionStatusDto {
+    return {
+      configured,
+      connected: false,
+      status: null,
+      email: null,
+      googleCalendarId: null,
+      syncDirection: null,
+      conflictPolicy: null,
+      lastSyncAt: null,
+      lastSyncError: null,
+    };
   }
 
   private createOAuthClient() {

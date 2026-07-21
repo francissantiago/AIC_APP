@@ -1,17 +1,12 @@
-export type GoogleCalendarSyncDirection =
-  | 'bidirectional'
-  | 'aic_to_google'
-  | 'google_to_aic';
+export type GoogleCalendarSyncDirection = 'bidirectional' | 'aic_to_google' | 'google_to_aic';
 
 export type GoogleCalendarConflictPolicy = 'aic_wins' | 'google_wins' | 'latest_wins';
 
-export type GoogleCalendarConnectionStatusValue =
-  | 'active'
-  | 'disconnected'
-  | 'error'
-  | 'revoked';
+export type GoogleCalendarConnectionStatusValue = 'active' | 'disconnected' | 'error' | 'revoked';
 
 export interface IGoogleCalendarConnectionStatus {
+  /** False when backend OAuth env is incomplete — hide Google Calendar UI. */
+  configured: boolean;
   connected: boolean;
   status: GoogleCalendarConnectionStatusValue | null;
   email: string | null;
