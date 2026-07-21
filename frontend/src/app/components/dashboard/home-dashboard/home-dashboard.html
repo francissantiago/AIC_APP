@@ -31,13 +31,10 @@
                 <div class="min-w-0 flex-1">
                   <p class="font-medium" [class]="alertTextClass(alert.severity)">
                     {{ 'DASHBOARD.SEVERITY_' + alert.severity.toUpperCase() | translate }}:
-                    {{ alert.title }}
+                    {{ alertTitleKey(alert.code) | translate }}
                   </p>
                   <p class="mt-1 text-sm" [class]="alertTextClass(alert.severity)">
-                    {{ alert.message }}
-                    @if (alert.count !== null && alert.count !== undefined) {
-                      <span class="font-medium">({{ alert.count }})</span>
-                    }
+                    {{ alertMessageKey(alert.code) | translate: { count: alert.count ?? 0 } }}
                   </p>
                 </div>
                 @if (alert.href && isKnownRoute(alert.href)) {

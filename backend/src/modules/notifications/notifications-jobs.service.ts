@@ -73,8 +73,8 @@ export class NotificationsJobsService {
 
     for (const visitor of visitors) {
       const daysSinceVisit = this.computeDaysSinceVisit(visitor.visitDate);
-      const title = 'Follow-up de visitante pendente';
-      const body = `O visitante ${visitor.fullName} aguarda follow-up há mais de 7 dias (visita em ${visitor.visitDate}).`;
+      const title = 'Acompanhamento de visitante pendente';
+      const body = `O visitante ${visitor.fullName} aguarda acompanhamento há mais de 7 dias (visita em ${visitor.visitDate}).`;
       const payload: Record<string, unknown> = {
         visitorId: visitor.id,
         visitorFullName: visitor.fullName,
@@ -100,7 +100,7 @@ export class NotificationsJobsService {
           }
         } catch (error) {
           this.logger.error(
-            `Falha ao criar follow-up (visitor=${visitor.id}, user=${userId})`,
+            `Falha ao criar acompanhamento (visitor=${visitor.id}, user=${userId})`,
             error instanceof Error ? error.stack : undefined,
           );
         }

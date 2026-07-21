@@ -239,7 +239,13 @@
     "ALERT_EVENTS_TODAY": "Events today",
     "ALERT_BIRTHDAYS": "Upcoming birthdays",
     "ALERT_UNREAD_NOTIFICATIONS": "Unread notifications",
-    "ALERT_NEW_ANNOUNCEMENTS": "New announcements"
+    "ALERT_NEW_ANNOUNCEMENTS": "New announcements",
+    "ALERT_OVERDUE_FOLLOWUP_MESSAGE": "{{count}} visitor(s) have been awaiting follow-up for more than 7 days.",
+    "ALERT_PENDING_FOLLOWUP_MESSAGE": "{{count}} visitor(s) are awaiting follow-up.",
+    "ALERT_EVENTS_TODAY_MESSAGE": "{{count}} event(s) scheduled for today.",
+    "ALERT_BIRTHDAYS_MESSAGE": "{{count}} birthday(s) in the next 7 days.",
+    "ALERT_UNREAD_NOTIFICATIONS_MESSAGE": "You have {{count}} unread notification(s).",
+    "ALERT_NEW_ANNOUNCEMENTS_MESSAGE": "{{count}} announcement(s) published recently."
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -483,6 +489,8 @@
     "LOADING": "Loading notifications…",
     "ERROR": "Could not load notifications",
     "TYPE_VISITOR_FOLLOW_UP": "Visitor follow-up",
+    "VISITOR_FOLLOW_UP_TITLE": "Pending visitor follow-up",
+    "VISITOR_FOLLOW_UP_BODY": "Visitor {{name}} has been awaiting follow-up for more than 7 days (visit on {{visitDate}}).",
     "TYPE_SCHEDULE_REMINDER": "Schedule reminder",
     "TYPE_MEMBER_BIRTHDAY": "Member birthday",
     "TYPE_GENERIC": "Notification",

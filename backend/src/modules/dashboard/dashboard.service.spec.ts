@@ -221,7 +221,7 @@ describe('DashboardService', () => {
       expect(result.recentAnnouncements).toEqual([]);
     });
 
-    it('deve incluir alerta crítico quando há follow-ups atrasados', async () => {
+    it('deve incluir alerta crítico quando há acompanhamentos atrasados', async () => {
       const userId = 'user-123';
       const congregationId = 'cong-123';
       const permissions = ['secretariat:read'];

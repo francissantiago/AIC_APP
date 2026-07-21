@@ -36,8 +36,8 @@ describe('HomeDashboard', () => {
         id: '1',
         severity: 'critical',
         code: 'OVERDUE_FOLLOWUP',
-        title: 'Follow-ups atrasados',
-        message: 'Existem follow-ups pendentes há mais de 7 dias',
+        title: 'Acompanhamentos atrasados',
+        message: 'Existem acompanhamentos pendentes há mais de 7 dias',
         count: 3,
         href: '/secretariat/visitors',
         createdAt: '2026-07-21T08:00:00Z',
@@ -175,6 +175,13 @@ describe('HomeDashboard', () => {
 
     expect(component.membersByStatusChartData().labels).toEqual(['Active']);
     expect(component.membersSummary()).toEqual(['Active: 22']);
+  });
+
+  it('maps alert codes to localized keys', () => {
+    expect(component.alertTitleKey('OVERDUE_FOLLOWUP')).toBe('DASHBOARD.ALERT_OVERDUE_FOLLOWUP');
+    expect(component.alertMessageKey('PENDING_FOLLOWUP')).toBe(
+      'DASHBOARD.ALERT_PENDING_FOLLOWUP_MESSAGE',
+    );
   });
 
   it('should return correct alert severity classes', () => {

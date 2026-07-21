@@ -10,12 +10,12 @@ export class NotificationResponseDto {
   @ApiProperty({ enum: NotificationType })
   type!: NotificationType;
 
-  @ApiProperty({ example: 'Follow-up de visitante pendente' })
+  @ApiProperty({ example: 'Acompanhamento de visitante pendente' })
   title!: string;
 
   @ApiProperty({
     example:
-      'O visitante João aguarda follow-up há mais de 7 dias (visita em 2026-07-01).',
+      'O visitante João aguarda acompanhamento há mais de 7 dias (visita em 2026-07-01).',
   })
   body!: string;
 

@@ -171,6 +171,44 @@ export class HomeDashboard implements OnInit {
     return knownRoutes.some((route) => href.startsWith(route));
   }
 
+  alertTitleKey(code: string): string {
+    switch (code) {
+      case 'OVERDUE_FOLLOWUP':
+        return 'DASHBOARD.ALERT_OVERDUE_FOLLOWUP';
+      case 'PENDING_FOLLOWUP':
+        return 'DASHBOARD.ALERT_PENDING_FOLLOWUP';
+      case 'EVENTS_TODAY':
+        return 'DASHBOARD.ALERT_EVENTS_TODAY';
+      case 'UPCOMING_BIRTHDAYS':
+        return 'DASHBOARD.ALERT_BIRTHDAYS';
+      case 'UNREAD_NOTIFICATIONS':
+        return 'DASHBOARD.ALERT_UNREAD_NOTIFICATIONS';
+      case 'NEW_ANNOUNCEMENTS':
+        return 'DASHBOARD.ALERT_NEW_ANNOUNCEMENTS';
+      default:
+        return 'DASHBOARD.ALERTS_TITLE';
+    }
+  }
+
+  alertMessageKey(code: string): string {
+    switch (code) {
+      case 'OVERDUE_FOLLOWUP':
+        return 'DASHBOARD.ALERT_OVERDUE_FOLLOWUP_MESSAGE';
+      case 'PENDING_FOLLOWUP':
+        return 'DASHBOARD.ALERT_PENDING_FOLLOWUP_MESSAGE';
+      case 'EVENTS_TODAY':
+        return 'DASHBOARD.ALERT_EVENTS_TODAY_MESSAGE';
+      case 'UPCOMING_BIRTHDAYS':
+        return 'DASHBOARD.ALERT_BIRTHDAYS_MESSAGE';
+      case 'UNREAD_NOTIFICATIONS':
+        return 'DASHBOARD.ALERT_UNREAD_NOTIFICATIONS_MESSAGE';
+      case 'NEW_ANNOUNCEMENTS':
+        return 'DASHBOARD.ALERT_NEW_ANNOUNCEMENTS_MESSAGE';
+      default:
+        return 'DASHBOARD.ALERTS_EMPTY';
+    }
+  }
+
   #memberStatusLabel(status: string): string {
     const key = `MEMBERS.STATUS_${status.toUpperCase()}`;
     const translated = this.#translate.instant(key);

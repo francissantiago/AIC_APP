@@ -49,7 +49,21 @@ describe('NotificationsBell', () => {
           provide: Router,
           useValue: { navigateByUrl: vi.fn() },
         },
-        { provide: TranslateService, useValue: translateServiceStub() },
+        {
+          provide: TranslateService,
+          useValue: {
+            ...translateServiceStub(),
+            instant: (key: string, params?: Record<string, string>) => {
+              if (key === 'NOTIFICATIONS.VISITOR_FOLLOW_UP_TITLE') {
+                return 'Acompanhamento de visitante pendente';
+              }
+              if (key === 'NOTIFICATIONS.VISITOR_FOLLOW_UP_BODY') {
+                return `O visitante ${params?.['name'] ?? ''} aguarda acompanhamento`;
+              }
+              return key;
+            },
+          },
+        },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
       ],
     })
@@ -82,5 +96,24 @@ describe('NotificationsBell', () => {
     component.openPanel();
     expect(notificationsService.panelOpen()).toBe(true);
     expect(notificationsService.list).toHaveBeenCalledWith({ page: 1, limit: 20 });
+  });
+
+  it('localizes visitor follow-up notification copy', () => {
+    const notification = {
+      id: 'n1',
+      type: 'visitor_follow_up' as const,
+      title: 'Follow-up de visitante pendente',
+      body: 'raw',
+      payload: { visitorFullName: 'Maria', visitDate: '2026-07-01' },
+      referenceType: 'visitor' as const,
+      referenceId: 'v1',
+      readAt: null,
+      createdAt: '2026-07-21T10:00:00.000Z',
+    };
+
+    expect(component.notificationTitle(notification)).toBe('Acompanhamento de visitante pendente');
+    expect(component.notificationBody(notification)).toBe(
+      'O visitante Maria aguarda acompanhamento',
+    );
   });
 });

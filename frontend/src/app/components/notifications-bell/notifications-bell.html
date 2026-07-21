@@ -99,7 +99,7 @@
                       [class.font-semibold]="!item.readAt"
                       [class.font-medium]="!!item.readAt"
                     >
-                      {{ item.title }}
+                      {{ notificationTitle(item) }}
                     </span>
                     <span class="shrink-0 text-[0.6875rem] text-slate-500">
                       {{ formatCreatedAt(item.createdAt) }}
@@ -108,8 +108,8 @@
                   <span class="text-[0.6875rem] font-medium text-slate-500">
                     {{ typeLabelKey(item.type) | translate }}
                   </span>
-                  @if (item.body) {
-                    <span class="line-clamp-2 text-xs text-slate-600">{{ item.body }}</span>
+                  @if (notificationBody(item); as body) {
+                    <span class="line-clamp-2 text-xs text-slate-600">{{ body }}</span>
                   }
                 </button>
               </li>

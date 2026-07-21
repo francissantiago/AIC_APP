@@ -239,7 +239,13 @@
     "ALERT_EVENTS_TODAY": "Eventos hoy",
     "ALERT_BIRTHDAYS": "Cumpleaños próximos",
     "ALERT_UNREAD_NOTIFICATIONS": "Notificaciones no leídas",
-    "ALERT_NEW_ANNOUNCEMENTS": "Nuevos avisos"
+    "ALERT_NEW_ANNOUNCEMENTS": "Nuevos avisos",
+    "ALERT_OVERDUE_FOLLOWUP_MESSAGE": "{{count}} visitante(s) esperan seguimiento desde hace más de 7 días.",
+    "ALERT_PENDING_FOLLOWUP_MESSAGE": "{{count}} visitante(s) esperan seguimiento.",
+    "ALERT_EVENTS_TODAY_MESSAGE": "{{count}} evento(s) programado(s) para hoy.",
+    "ALERT_BIRTHDAYS_MESSAGE": "{{count}} cumpleaños en los próximos 7 días.",
+    "ALERT_UNREAD_NOTIFICATIONS_MESSAGE": "Tienes {{count}} notificación(es) sin leer.",
+    "ALERT_NEW_ANNOUNCEMENTS_MESSAGE": "{{count}} aviso(s) publicado(s) recientemente."
   },
   "COMMON": {
     "LOADING": "Cargando...",
@@ -483,6 +489,8 @@
     "LOADING": "Cargando notificaciones…",
     "ERROR": "No se pudieron cargar las notificaciones",
     "TYPE_VISITOR_FOLLOW_UP": "Seguimiento de visitante",
+    "VISITOR_FOLLOW_UP_TITLE": "Seguimiento de visitante pendiente",
+    "VISITOR_FOLLOW_UP_BODY": "El visitante {{name}} espera seguimiento desde hace más de 7 días (visita el {{visitDate}}).",
     "TYPE_SCHEDULE_REMINDER": "Recordatorio de escala",
     "TYPE_MEMBER_BIRTHDAY": "Cumpleaños de miembro",
     "TYPE_GENERIC": "Notificación",

@@ -158,7 +158,7 @@ describe('EventsGateway', () => {
       const payload: NotificationNewPayload = {
         id: '11111111-2222-3333-4444-555555555555',
         type: 'visitor_follow_up',
-        title: 'Follow-up de visitante pendente',
+        title: 'Acompanhamento de visitante pendente',
         createdAt: '2026-07-18T12:00:00.000Z',
       };
 

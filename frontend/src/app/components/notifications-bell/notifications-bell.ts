@@ -8,7 +8,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { INotification, NotificationType } from '@interfaces/INotification';
 import { NotificationsService } from '@services/notifications-service';
 import { NotificationsSocketService } from '@services/notifications-socket-service';
@@ -26,6 +26,7 @@ export class NotificationsBell implements OnInit {
   readonly #notificationsService = inject(NotificationsService);
   readonly #socketService = inject(NotificationsSocketService);
   readonly #router = inject(Router);
+  readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #host = inject(ElementRef<HTMLElement>);
 
@@ -125,6 +126,25 @@ export class NotificationsBell implements OnInit {
       default:
         return 'NOTIFICATIONS.TYPE_GENERIC';
     }
+  }
+
+  notificationTitle(notification: INotification): string {
+    if (notification.type === 'visitor_follow_up') {
+      return this.#translate.instant('NOTIFICATIONS.VISITOR_FOLLOW_UP_TITLE');
+    }
+    return notification.title;
+  }
+
+  notificationBody(notification: INotification): string | null {
+    if (notification.type === 'visitor_follow_up') {
+      const name = String(notification.payload?.['visitorFullName'] ?? '');
+      const visitDate = String(notification.payload?.['visitDate'] ?? '');
+      return this.#translate.instant('NOTIFICATIONS.VISITOR_FOLLOW_UP_BODY', {
+        name,
+        visitDate,
+      });
+    }
+    return notification.body || null;
   }
 
   formatCreatedAt(iso: string): string {
