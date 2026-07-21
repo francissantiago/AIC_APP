@@ -63,6 +63,44 @@ describe('SecretariatService', () => {
     );
   });
 
+  it('exports calendar range as ICS blob', () => {
+    http.get.mockReturnValue(of(new Blob(['BEGIN:VCALENDAR'])));
+
+    service
+      .exportCalendarRangeIcs('2026-07-01T00:00:00.000Z', '2026-07-31T23:59:59.999Z')
+      .subscribe();
+
+    expect(http.get).toHaveBeenCalledWith(
+      `${baseUrl}/calendar-events/export.ics`,
+      expect.objectContaining({ responseType: 'blob' }),
+    );
+  });
+
+  it('exports a single calendar event as ICS blob', () => {
+    http.get.mockReturnValue(of(new Blob(['BEGIN:VCALENDAR'])));
+
+    service.exportCalendarEventIcs('series-1').subscribe();
+
+    expect(http.get).toHaveBeenCalledWith(
+      `${baseUrl}/calendar-events/series-1/export.ics`,
+      expect.objectContaining({ responseType: 'blob' }),
+    );
+  });
+
+  it('imports calendar ICS with FormData field file', () => {
+    const file = new File(['BEGIN:VCALENDAR'], 'agenda.ics', { type: 'text/calendar' });
+    http.post.mockReturnValue(of({ created: 1, skipped: [], warnings: [], createdIds: ['evt-1'] }));
+
+    service.importCalendarIcs(file).subscribe();
+
+    expect(http.post).toHaveBeenCalledWith(
+      `${baseUrl}/calendar-events/import.ics`,
+      expect.any(FormData),
+    );
+    const formData = http.post.mock.calls[0][1] as FormData;
+    expect(formData.get('file')).toBe(file);
+  });
+
   it('removes a document file', () => {
     http.delete.mockReturnValue(
       of({

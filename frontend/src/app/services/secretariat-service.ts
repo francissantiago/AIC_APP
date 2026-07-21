@@ -11,6 +11,7 @@ import {
   ICreateVisitor,
   IConvertVisitorToMember,
   IConvertVisitorToMemberResponse,
+  IImportCalendarEventsResponse,
   IPaginatedAttendance,
   IPaginatedCalendarEvents,
   IPaginatedSecretariatDocuments,
@@ -62,6 +63,34 @@ export class SecretariatService {
 
   removeCalendarEvent(id: string): Observable<void> {
     return this.#request(this.#http.delete<void>(`${this.#apiUrl}/calendar-events/${id}`));
+  }
+
+  exportCalendarRangeIcs(from: string, to: string): Observable<Blob> {
+    return this.#request(
+      this.#http.get(`${this.#apiUrl}/calendar-events/export.ics`, {
+        params: this.#params({ from, to }),
+        responseType: 'blob',
+      }),
+    );
+  }
+
+  exportCalendarEventIcs(seriesId: string): Observable<Blob> {
+    return this.#request(
+      this.#http.get(`${this.#apiUrl}/calendar-events/${seriesId}/export.ics`, {
+        responseType: 'blob',
+      }),
+    );
+  }
+
+  importCalendarIcs(file: File): Observable<IImportCalendarEventsResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.#request(
+      this.#http.post<IImportCalendarEventsResponse>(
+        `${this.#apiUrl}/calendar-events/import.ics`,
+        formData,
+      ),
+    );
   }
 
   visitors(query: IVisitorsQuery): Observable<IPaginatedVisitors> {

@@ -2,7 +2,11 @@ import { Repository } from 'typeorm';
 import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
-import { CalendarEventType } from '../enums/secretariat.enums';
+import {
+  CalendarEventType,
+  CalendarRecurrenceFrequency,
+} from '../enums/secretariat.enums';
+import { ICS_IMPORT_MAX_VEVENTS } from './calendar-ics.util';
 import { CalendarService } from './calendar.service';
 import { CalendarEvent } from './entities/calendar-event.entity';
 
@@ -20,8 +24,12 @@ describe('CalendarService', () => {
   const getOrCreateBaseMock = jest
     .fn()
     .mockResolvedValue({ id: 'congregation-1' });
+  const getByIdMock = jest
+    .fn()
+    .mockResolvedValue({ id: 'congregation-1', name: 'Igreja Central' });
   const congregationsService = {
     getOrCreateBase: getOrCreateBaseMock,
+    getById: getByIdMock,
   } as unknown as CongregationsService;
   const service = new CalendarService(
     calendarEventsRepository,
@@ -126,5 +134,79 @@ describe('CalendarService', () => {
         congregationId: explicitId,
       },
     );
+  });
+
+  it('exportEventAsIcs gera VEVENT com UID virtual', async () => {
+    findOne.mockResolvedValue({
+      id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      congregationId: 'congregation-1',
+      title: 'Culto',
+      type: CalendarEventType.SERVICE,
+      startsAt: new Date('2026-07-20T19:00:00.000Z'),
+      endsAt: new Date('2026-07-20T21:00:00.000Z'),
+      allDay: false,
+      location: null,
+      description: null,
+      recurrenceFrequency: CalendarRecurrenceFrequency.NONE,
+      recurrenceInterval: 1,
+      recurrenceUntil: null,
+    });
+
+    const ics = await service.exportEventAsIcs(
+      'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+    );
+    expect(ics).toContain(
+      'UID:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@igreja-central',
+    );
+    expect(ics).toContain('PRODID:-//Igreja Central//Secretariat Calendar//EN');
+    expect(ics).toContain('SUMMARY:Culto');
+    expect(getByIdMock).toHaveBeenCalledWith('congregation-1');
+  });
+
+  it('exportRangeAsIcs rejeita from >= to', async () => {
+    await expect(
+      service.exportRangeAsIcs({
+        from: '2026-07-31T00:00:00.000Z',
+        to: '2026-07-01T00:00:00.000Z',
+      }),
+    ).rejects.toBeInstanceOf(ApiException);
+  });
+
+  it('importFromIcs processa até 100 e marca o restante LIMIT_EXCEEDED', async () => {
+    let counter = 0;
+    save.mockImplementation((value: object) => {
+      counter += 1;
+      return {
+        ...value,
+        id: `00000000-0000-4000-8000-${String(counter).padStart(12, '0')}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sourceMemberId: null,
+      };
+    });
+
+    const blocks = Array.from({ length: ICS_IMPORT_MAX_VEVENTS + 3 }, (_, i) =>
+      [
+        'BEGIN:VEVENT',
+        `SUMMARY:Evento ${i}`,
+        'DTSTART:20260720T190000Z',
+        'DTEND:20260720T200000Z',
+        'END:VEVENT',
+      ].join('\r\n'),
+    );
+    const raw = `BEGIN:VCALENDAR\r\n${blocks.join('\r\n')}\r\nEND:VCALENDAR\r\n`;
+
+    const result = await service.importFromIcs(raw, user);
+    expect(result.created).toBe(ICS_IMPORT_MAX_VEVENTS);
+    expect(result.createdIds).toHaveLength(ICS_IMPORT_MAX_VEVENTS);
+    expect(
+      result.skipped.filter((s) => s.reason === 'LIMIT_EXCEEDED'),
+    ).toHaveLength(3);
+  });
+
+  it('importFromIcs rejeita arquivo sem VEVENT', async () => {
+    await expect(
+      service.importFromIcs('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n', user),
+    ).rejects.toBeInstanceOf(ApiException);
   });
 });

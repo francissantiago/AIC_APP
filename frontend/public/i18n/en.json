@@ -738,6 +738,25 @@
     "UPCOMING_EVENTS": "Upcoming events",
     "BIRTHDAYS_THIS_WEEK": "Birthdays this week",
     "AGENDA_TITLE": "Agenda",
+    "AGENDA": {
+      "ICS": {
+        "EXPORT": "Export (.ics)",
+        "EXPORT_EVENT": "Export this event (.ics)",
+        "EXPORT_RANGE": "Export current view (.ics)",
+        "IMPORT": "Import (.ics)",
+        "IMPORT_SUCCESS": "{{count}} event(s) imported.",
+        "IMPORT_PARTIAL": "{{created}} imported; {{skipped}} skipped.",
+        "IMPORT_ERROR": "Could not import the calendar file.",
+        "EXPORT_SUCCESS": "Calendar exported.",
+        "EXPORT_ERROR": "Could not export the calendar.",
+        "SKIPPED": "Skipped: {{reason}}",
+        "PERMISSION_DENIED": "You do not have permission to import events.",
+        "FILE_INVALID": "Invalid or empty .ics file.",
+        "LIMIT_EXCEEDED": "Import limit is 100 events per file.",
+        "FILE_INPUT_LABEL": "Choose an .ics file",
+        "INCLUDE_BIRTHDAYS_HINT": "Range export includes birthdays."
+      }
+    },
     "EVENT_NEW": "New event",
     "EVENT_EDIT": "Edit event",
     "EVENT_PREVIEW": "Event details",

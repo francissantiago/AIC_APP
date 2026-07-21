@@ -105,6 +105,12 @@ export const ApiErrorCode = {
   SECRETARIAT_EVENT_RECURRENCE_UNTIL_INVALID:
     'SECRETARIAT.EVENT_RECURRENCE_UNTIL_INVALID',
   SECRETARIAT_EVENT_SYSTEM_MANAGED: 'SECRETARIAT.EVENT_SYSTEM_MANAGED',
+  SECRETARIAT_ICS_EXPORT_LIMIT_EXCEEDED:
+    'SECRETARIAT.ICS_EXPORT_LIMIT_EXCEEDED',
+  SECRETARIAT_ICS_EMPTY_OR_INVALID: 'SECRETARIAT.ICS_EMPTY_OR_INVALID',
+  SECRETARIAT_ICS_RANGE_INVALID: 'SECRETARIAT.ICS_RANGE_INVALID',
+  SECRETARIAT_ICS_FILE_TOO_LARGE: 'SECRETARIAT.ICS_FILE_TOO_LARGE',
+  SECRETARIAT_ICS_FILE_REQUIRED: 'SECRETARIAT.ICS_FILE_REQUIRED',
 
   MINISTRIES_NOT_FOUND: 'MINISTRIES.NOT_FOUND',
   MINISTRIES_NAME_IN_USE: 'MINISTRIES.NAME_IN_USE',
@@ -290,6 +296,15 @@ export const ApiErrorMessage = {
     'A data final da recorrência deve ser posterior ou igual à data de início.',
   [ApiErrorCode.SECRETARIAT_EVENT_SYSTEM_MANAGED]:
     'Este evento é gerenciado automaticamente pelo cadastro de membro.',
+  [ApiErrorCode.SECRETARIAT_ICS_EXPORT_LIMIT_EXCEEDED]:
+    'A exportação ICS excede o limite de 500 séries por arquivo.',
+  [ApiErrorCode.SECRETARIAT_ICS_EMPTY_OR_INVALID]:
+    'Arquivo ICS vazio ou sem VEVENT válido.',
+  [ApiErrorCode.SECRETARIAT_ICS_RANGE_INVALID]:
+    'O intervalo de exportação é inválido: from deve ser anterior a to.',
+  [ApiErrorCode.SECRETARIAT_ICS_FILE_TOO_LARGE]:
+    'Arquivo ICS excede o tamanho máximo de 1 MB.',
+  [ApiErrorCode.SECRETARIAT_ICS_FILE_REQUIRED]: 'Arquivo ICS é obrigatório.',
   [ApiErrorCode.MINISTRIES_NOT_FOUND]: 'Ministério não encontrado.',
   [ApiErrorCode.MINISTRIES_NAME_IN_USE]:
     'Já existe um ministério com este nome.',

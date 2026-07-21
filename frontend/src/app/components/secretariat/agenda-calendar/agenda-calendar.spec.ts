@@ -72,9 +72,13 @@ describe('agenda-calendar.util', () => {
   });
 
   it('treats birthday events as month banners', () => {
-    expect(isMonthBannerEvent({ allDay: false, start: '2026-07-19T00:00:00', meta: { sourceMemberId: 'm1' } })).toBe(
-      true,
-    );
+    expect(
+      isMonthBannerEvent({
+        allDay: false,
+        start: '2026-07-19T00:00:00',
+        meta: { sourceMemberId: 'm1' },
+      }),
+    ).toBe(true);
   });
 
   it('uses solid banner colors for all-day display', () => {

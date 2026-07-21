@@ -65,6 +65,20 @@ export interface IPaginatedCalendarEvents {
   limit: number;
 }
 
+export interface IImportCalendarEventSkipped {
+  uid?: string | null;
+  summary?: string | null;
+  reason: string;
+  detail?: string;
+}
+
+export interface IImportCalendarEventsResponse {
+  created: number;
+  skipped: IImportCalendarEventSkipped[];
+  warnings: IImportCalendarEventSkipped[];
+  createdIds: string[];
+}
+
 // ---------------------------------------------------------------------------
 // Visitors
 // ---------------------------------------------------------------------------

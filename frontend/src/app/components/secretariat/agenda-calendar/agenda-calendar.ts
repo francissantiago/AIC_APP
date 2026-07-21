@@ -34,12 +34,20 @@ import {
   CalendarRecurrenceFrequency,
   MANUAL_CALENDAR_EVENT_TYPES,
 } from '@enums/secretariat';
-import { ICalendarEvent } from '@interfaces/ISecretariat';
+import { ICalendarEvent, IImportCalendarEventsResponse } from '@interfaces/ISecretariat';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
 import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
-import { endOfDay, endOfMonth, endOfWeek, isSameDay, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
+import {
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  isSameDay,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 import {
   AGENDA_WEEK_STARTS_ON,
   buildAgendaPrintHtml,
@@ -61,12 +69,32 @@ const EVENT_COLORS: Record<
   CalendarEventType,
   { primary: string; secondary: string; secondaryText: string }
 > = {
-  [CalendarEventType.SERVICE]: { primary: '#0369a1', secondary: '#e0f2fe', secondaryText: '#0c4a6e' },
-  [CalendarEventType.MEETING]: { primary: '#9a3412', secondary: '#ffedd5', secondaryText: '#7c2d12' },
-  [CalendarEventType.REHEARSAL]: { primary: '#6b21a8', secondary: '#f3e8ff', secondaryText: '#581c87' },
-  [CalendarEventType.WEDDING]: { primary: '#be123c', secondary: '#ffe4e6', secondaryText: '#9f1239' },
+  [CalendarEventType.SERVICE]: {
+    primary: '#0369a1',
+    secondary: '#e0f2fe',
+    secondaryText: '#0c4a6e',
+  },
+  [CalendarEventType.MEETING]: {
+    primary: '#9a3412',
+    secondary: '#ffedd5',
+    secondaryText: '#7c2d12',
+  },
+  [CalendarEventType.REHEARSAL]: {
+    primary: '#6b21a8',
+    secondary: '#f3e8ff',
+    secondaryText: '#581c87',
+  },
+  [CalendarEventType.WEDDING]: {
+    primary: '#be123c',
+    secondary: '#ffe4e6',
+    secondaryText: '#9f1239',
+  },
   [CalendarEventType.OTHER]: { primary: '#334155', secondary: '#e2e8f0', secondaryText: '#1e293b' },
-  [CalendarEventType.BIRTHDAY]: { primary: '#db2777', secondary: '#fce7f3', secondaryText: '#9d174d' },
+  [CalendarEventType.BIRTHDAY]: {
+    primary: '#db2777',
+    secondary: '#fce7f3',
+    secondaryText: '#9d174d',
+  },
 };
 
 @Component({
@@ -86,7 +114,12 @@ const EVENT_COLORS: Record<
   providers: [provideCalendar({ provide: DateAdapter, useFactory: adapterFactory })],
   styleUrl: './agenda-calendar.scss',
   template: `
-    <ng-template #monthCellTemplate let-day="day" let-locale="locale" let-eventClicked="eventClicked">
+    <ng-template
+      #monthCellTemplate
+      let-day="day"
+      let-locale="locale"
+      let-eventClicked="eventClicked"
+    >
       <div class="agenda-month-cell">
         <span
           class="agenda-month-day-number"
@@ -195,17 +228,61 @@ const EVENT_COLORS: Record<
         <h1 class="text-xl font-semibold text-slate-900">
           {{ 'SECRETARIAT.AGENDA_TITLE' | translate }}
         </h1>
-        @if (canWrite()) {
+        <div class="flex flex-wrap items-center gap-2">
           <button
-            class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
             type="button"
-            data-testid="agenda-create-btn"
-            (click)="openCreate()"
+            data-testid="agenda-export-range-ics"
+            [disabled]="icsBusy()"
+            [attr.aria-label]="'SECRETARIAT.AGENDA.ICS.EXPORT_RANGE' | translate"
+            [attr.title]="'SECRETARIAT.AGENDA.ICS.INCLUDE_BIRTHDAYS_HINT' | translate"
+            (click)="exportCurrentViewIcs()"
           >
-            {{ 'SECRETARIAT.EVENT_NEW' | translate }}
+            {{ 'SECRETARIAT.AGENDA.ICS.EXPORT_RANGE' | translate }}
           </button>
-        }
+          @if (canWrite()) {
+            <button
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+              type="button"
+              data-testid="agenda-import-ics"
+              [disabled]="icsBusy()"
+              [attr.aria-label]="'SECRETARIAT.AGENDA.ICS.IMPORT' | translate"
+              (click)="triggerImportIcs()"
+            >
+              {{ 'SECRETARIAT.AGENDA.ICS.IMPORT' | translate }}
+            </button>
+            <input
+              #icsFileInput
+              class="sr-only"
+              type="file"
+              accept=".ics,text/calendar"
+              data-testid="agenda-import-ics-input"
+              [attr.aria-label]="'SECRETARIAT.AGENDA.ICS.FILE_INPUT_LABEL' | translate"
+              (change)="onIcsFileSelected($event)"
+            />
+            <button
+              class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+              type="button"
+              data-testid="agenda-create-btn"
+              (click)="openCreate()"
+            >
+              {{ 'SECRETARIAT.EVENT_NEW' | translate }}
+            </button>
+          }
+        </div>
       </div>
+
+      @if (icsFeedback(); as feedback) {
+        <p
+          class="mb-3 text-sm"
+          [class.text-red-700]="feedback.tone === 'error'"
+          [class.text-slate-700]="feedback.tone !== 'error'"
+          [attr.role]="feedback.tone === 'error' ? 'alert' : 'status'"
+          data-testid="agenda-ics-feedback"
+        >
+          {{ feedback.message }}
+        </p>
+      }
 
       @if (previewEvent(); as preview) {
         <div
@@ -231,7 +308,14 @@ const EVENT_COLORS: Record<
                   [attr.title]="'COMMON.EDIT' | translate"
                   (click)="editFromPreview()"
                 >
-                  <svg class="size-[1.05rem]" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="size-[1.05rem]"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M12 20h9" />
                     <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
                   </svg>
@@ -244,7 +328,14 @@ const EVENT_COLORS: Record<
                   [attr.title]="'COMMON.DELETE' | translate"
                   (click)="deleteFromPreview()"
                 >
-                  <svg class="size-[1.05rem]" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="size-[1.05rem]"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M3 6h18" />
                     <path d="M8 6V4h8v2" />
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
@@ -254,15 +345,46 @@ const EVENT_COLORS: Record<
               }
               <button
                 type="button"
+                class="inline-flex size-9 items-center justify-center rounded-full bg-slate-600 text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+                data-testid="agenda-event-preview-export-ics"
+                [disabled]="icsBusy()"
+                [attr.aria-label]="'SECRETARIAT.AGENDA.ICS.EXPORT_EVENT' | translate"
+                [attr.title]="'SECRETARIAT.AGENDA.ICS.EXPORT_EVENT' | translate"
+                (click)="exportPreviewEventIcs()"
+              >
+                <svg
+                  class="size-[1.05rem]"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 3v12" />
+                  <path d="m7 10 5 5 5-5" />
+                  <path d="M5 21h14" />
+                </svg>
+              </button>
+              <button
+                type="button"
                 class="inline-flex size-9 items-center justify-center rounded-full bg-slate-600 text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                 data-testid="agenda-event-preview-print"
                 [attr.aria-label]="'SECRETARIAT.EVENT_PRINT' | translate"
                 [attr.title]="'SECRETARIAT.EVENT_PRINT' | translate"
                 (click)="printPreview()"
               >
-                <svg class="size-[1.05rem]" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  class="size-[1.05rem]"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M6 9V3h12v6" />
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <path
+                    d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                  />
                   <path d="M6 14h12v7H6z" />
                 </svg>
               </button>
@@ -274,7 +396,14 @@ const EVENT_COLORS: Record<
                 [attr.title]="'COMMON.DIALOG.CLOSE' | translate"
                 (click)="closePreview()"
               >
-                <svg class="size-[1.05rem]" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  class="size-[1.05rem]"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M18 6 6 18M6 6l12 12" />
                 </svg>
               </button>
@@ -292,7 +421,9 @@ const EVENT_COLORS: Record<
                 </h2>
               </div>
 
-              <p class="m-0 ml-[1.625rem] text-sm leading-snug text-slate-600">{{ previewWhenLabel(preview) }}</p>
+              <p class="m-0 ml-[1.625rem] text-sm leading-snug text-slate-600">
+                {{ previewWhenLabel(preview) }}
+              </p>
 
               @if (preview.recurrenceFrequency !== recurrenceNone) {
                 <p class="m-0 ml-[1.625rem] text-sm leading-snug text-slate-600">
@@ -304,7 +435,14 @@ const EVENT_COLORS: Record<
               }
 
               <div class="flex items-start gap-3 text-sm leading-snug text-slate-700">
-                <svg class="mt-0.5 size-[1.125rem] shrink-0 text-slate-500" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  class="mt-0.5 size-[1.125rem] shrink-0 text-slate-500"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <rect x="3" y="5" width="18" height="16" rx="2" />
                   <path d="M16 3v4M8 3v4M3 11h18" />
                 </svg>
@@ -313,7 +451,14 @@ const EVENT_COLORS: Record<
 
               @if (preview.location) {
                 <div class="flex items-start gap-3 text-sm leading-snug text-slate-700">
-                  <svg class="mt-0.5 size-[1.125rem] shrink-0 text-slate-500" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="mt-0.5 size-[1.125rem] shrink-0 text-slate-500"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z" />
                     <circle cx="12" cy="10" r="2.5" />
                   </svg>
@@ -323,7 +468,14 @@ const EVENT_COLORS: Record<
 
               @if (preview.description) {
                 <div class="flex items-start gap-3 text-sm leading-snug text-slate-700">
-                  <svg class="mt-0.5 size-[1.125rem] shrink-0 text-slate-500" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="mt-0.5 size-[1.125rem] shrink-0 text-slate-500"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
                   </svg>
                   <span class="whitespace-pre-wrap">{{ preview.description }}</span>
@@ -521,7 +673,11 @@ const EVENT_COLORS: Record<
             </p>
           }
           @if (isSystemBirthdayEvent()) {
-            <p class="text-sm text-slate-600 md:col-span-2" role="status" data-testid="agenda-birthday-readonly">
+            <p
+              class="text-sm text-slate-600 md:col-span-2"
+              role="status"
+              data-testid="agenda-birthday-readonly"
+            >
               {{ 'SECRETARIAT.BIRTHDAY_EVENT_READONLY' | translate }}
               @if (editing()?.sourceMemberId; as memberId) {
                 <a
@@ -698,9 +854,18 @@ const EVENT_COLORS: Record<
             [attr.title]="'SECRETARIAT.PRINT_CALENDAR' | translate"
             (click)="printCalendarView()"
           >
-            <svg class="size-4" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M6 9V3h12v6" />
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <path
+                d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+              />
               <path d="M6 14h12v7H6z" />
             </svg>
             {{ 'SECRETARIAT.PRINT_CALENDAR' | translate }}
@@ -714,7 +879,10 @@ const EVENT_COLORS: Record<
         <p role="alert" class="text-sm text-red-700">{{ 'SECRETARIAT.LOAD_ERROR' | translate }}</p>
       }
 
-      <div class="agenda-calendar-surface rounded-md border border-slate-200 p-2" data-testid="agenda-calendar-view">
+      <div
+        class="agenda-calendar-surface rounded-md border border-slate-200 p-2"
+        data-testid="agenda-calendar-view"
+      >
         @switch (view()) {
           @case (calendarView.Month) {
             <mwl-calendar-month-view
@@ -793,6 +961,7 @@ export class AgendaCalendar implements OnInit {
   readonly #dateFormatter = inject(CalendarDateFormatter);
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly agendaScroll = viewChild<ElementRef<HTMLElement>>('agendaScroll');
+  protected readonly icsFileInput = viewChild<ElementRef<HTMLInputElement>>('icsFileInput');
 
   readonly calendarView = CalendarView;
   readonly eventTypes = MANUAL_CALENDAR_EVENT_TYPES;
@@ -819,15 +988,15 @@ export class AgendaCalendar implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly supportHint = signal<string | null>(null);
   readonly pendingDelete = signal<string | null>(null);
+  readonly icsBusy = signal(false);
+  readonly icsFeedback = signal<{ message: string; tone: 'success' | 'error' } | null>(null);
   readonly #formRangeVersion = signal(0);
 
   readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly canViewSchedules = computed(() => this.#auth.hasPermission('schedules:read'));
-  readonly isSystemBirthdayEvent = computed(() =>
-    Boolean(this.editing()?.sourceMemberId),
-  );
-  readonly deleteTargetIsRecurring = computed(
-    () => Boolean(this.editing()?.isRecurring || this.previewEvent()?.isRecurring),
+  readonly isSystemBirthdayEvent = computed(() => Boolean(this.editing()?.sourceMemberId));
+  readonly deleteTargetIsRecurring = computed(() =>
+    Boolean(this.editing()?.isRecurring || this.previewEvent()?.isRecurring),
   );
   readonly locale = computed(() => this.#translate.currentLang() || 'en');
 
@@ -1031,7 +1200,9 @@ export class AgendaCalendar implements OnInit {
     const recurrence =
       event.recurrenceFrequency === CalendarRecurrenceFrequency.NONE
         ? ''
-        : this.#escapeHtml(this.#translate.instant(this.recurrenceLabel(event.recurrenceFrequency)));
+        : this.#escapeHtml(
+            this.#translate.instant(this.recurrenceLabel(event.recurrenceFrequency)),
+          );
     const location = event.location ? this.#escapeHtml(event.location) : '';
     const description = event.description ? this.#escapeHtml(event.description) : '';
     this.#printHtml(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
@@ -1094,7 +1265,11 @@ ${description ? `<p>${description}</p>` : ''}
     );
   }
 
-  eventColor(type: CalendarEventType): { primary: string; secondary: string; secondaryText: string } {
+  eventColor(type: CalendarEventType): {
+    primary: string;
+    secondary: string;
+    secondaryText: string;
+  } {
     return EVENT_COLORS[type];
   }
 
@@ -1117,10 +1292,7 @@ ${description ? `<p>${description}</p>` : ''}
   }
 
   onEventClicked(event: CalendarEvent<ICalendarEvent>): void {
-    if (
-      event.meta &&
-      (this.canWrite() || this.canViewSchedules() || event.meta.sourceMemberId)
-    ) {
+    if (event.meta && (this.canWrite() || this.canViewSchedules() || event.meta.sourceMemberId)) {
       this.openPreview(event.meta);
     }
   }
@@ -1261,6 +1433,134 @@ ${description ? `<p>${description}</p>` : ''}
 
   recurrenceLabel(frequency: CalendarRecurrenceFrequency): string {
     return `SECRETARIAT.RECURRENCE_${frequency.toUpperCase()}`;
+  }
+
+  exportCurrentViewIcs(): void {
+    const { from, to } = this.#rangeFor(this.view(), this.viewDate());
+    this.icsBusy.set(true);
+    this.icsFeedback.set(null);
+    this.#secretariat
+      .exportCalendarRangeIcs(from.toISOString(), to.toISOString())
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (blob) => {
+          this.icsBusy.set(false);
+          this.#downloadBlob(blob, `aic-agenda-${from.toISOString().slice(0, 10)}.ics`);
+          this.icsFeedback.set({
+            message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.EXPORT_SUCCESS'),
+            tone: 'success',
+          });
+        },
+        error: () => {
+          this.icsBusy.set(false);
+          this.icsFeedback.set({
+            message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.EXPORT_ERROR'),
+            tone: 'error',
+          });
+        },
+      });
+  }
+
+  exportPreviewEventIcs(): void {
+    const preview = this.previewEvent();
+    if (!preview) {
+      return;
+    }
+    const seriesId = preview.seriesId || preview.id;
+    this.icsBusy.set(true);
+    this.icsFeedback.set(null);
+    this.#secretariat
+      .exportCalendarEventIcs(seriesId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (blob) => {
+          this.icsBusy.set(false);
+          this.#downloadBlob(blob, `aic-event-${seriesId}.ics`);
+          this.icsFeedback.set({
+            message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.EXPORT_SUCCESS'),
+            tone: 'success',
+          });
+        },
+        error: () => {
+          this.icsBusy.set(false);
+          this.icsFeedback.set({
+            message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.EXPORT_ERROR'),
+            tone: 'error',
+          });
+        },
+      });
+  }
+
+  triggerImportIcs(): void {
+    if (!this.canWrite()) {
+      this.icsFeedback.set({
+        message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.PERMISSION_DENIED'),
+        tone: 'error',
+      });
+      return;
+    }
+    this.icsFileInput()?.nativeElement.click();
+  }
+
+  onIcsFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+    if (!file.size) {
+      this.icsFeedback.set({
+        message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.FILE_INVALID'),
+        tone: 'error',
+      });
+      return;
+    }
+    this.icsBusy.set(true);
+    this.icsFeedback.set(null);
+    this.#secretariat
+      .importCalendarIcs(file)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.icsBusy.set(false);
+          this.icsFeedback.set({
+            message: this.#importFeedbackMessage(result),
+            tone: 'success',
+          });
+          if (result.created > 0) {
+            this.#load(this.view(), this.viewDate());
+          }
+        },
+        error: () => {
+          this.icsBusy.set(false);
+          this.icsFeedback.set({
+            message: this.#translate.instant('SECRETARIAT.AGENDA.ICS.IMPORT_ERROR'),
+            tone: 'error',
+          });
+        },
+      });
+  }
+
+  #importFeedbackMessage(result: IImportCalendarEventsResponse): string {
+    if (result.skipped.length > 0) {
+      return this.#translate.instant('SECRETARIAT.AGENDA.ICS.IMPORT_PARTIAL', {
+        created: result.created,
+        skipped: result.skipped.length,
+      });
+    }
+    return this.#translate.instant('SECRETARIAT.AGENDA.ICS.IMPORT_SUCCESS', {
+      count: result.created,
+    });
+  }
+
+  #downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   #load(view: CalendarView, date: Date): void {

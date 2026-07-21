@@ -208,6 +208,65 @@ export class PaginatedCalendarEventsResponseDto {
   limit!: number;
 }
 
+export class ExportCalendarIcsQueryDto {
+  @ApiProperty({
+    format: 'date-time',
+    example: '2026-07-01T00:00:00.000Z',
+    description: 'Início do intervalo (obrigatório, ISO date-time)',
+  })
+  @IsDateString()
+  from!: string;
+
+  @ApiProperty({
+    format: 'date-time',
+    example: '2026-07-31T23:59:59.999Z',
+    description:
+      'Fim do intervalo (obrigatório, ISO date-time; deve ser > from)',
+  })
+  @IsDateString()
+  to!: string;
+}
+
+export class ImportCalendarEventSkippedDto {
+  @ApiPropertyOptional({ nullable: true })
+  uid?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  summary?: string | null;
+
+  @ApiProperty({
+    description:
+      'Código estável: MISSING_SUMMARY | MISSING_DTSTART | INVALID_DTSTART | UNSUPPORTED_FREQ | UNSUPPORTED_RRULE | UNSUPPORTED_RRULE_PARTS | VALIDATION_FAILED | LIMIT_EXCEEDED | CREATE_FAILED',
+  })
+  reason!: string;
+
+  @ApiPropertyOptional()
+  detail?: string;
+}
+
+export class ImportCalendarEventsResponseDto {
+  @ApiProperty({ description: 'Quantidade de eventos criados com sucesso' })
+  created!: number;
+
+  @ApiProperty({ type: ImportCalendarEventSkippedDto, isArray: true })
+  skipped!: ImportCalendarEventSkippedDto[];
+
+  @ApiProperty({
+    type: ImportCalendarEventSkippedDto,
+    isArray: true,
+    description:
+      'Avisos não fatais (ex.: IMPORTED_AS_SINGLE / UNSUPPORTED_RRULE_PARTS)',
+  })
+  warnings!: ImportCalendarEventSkippedDto[];
+
+  @ApiProperty({
+    type: String,
+    isArray: true,
+    description: 'UUIDs mestres criados (máx. 100)',
+  })
+  createdIds!: string[];
+}
+
 // ---------------------------------------------------------------------------
 // Visitors
 // ---------------------------------------------------------------------------

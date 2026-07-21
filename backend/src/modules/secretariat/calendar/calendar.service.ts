@@ -11,11 +11,22 @@ import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   CalendarEventResponseDto,
   CreateCalendarEventDto,
+  ExportCalendarIcsQueryDto,
+  ImportCalendarEventsResponseDto,
   PaginatedCalendarEventsResponseDto,
   QueryCalendarEventsDto,
   UpdateCalendarEventDto,
 } from '../dto/secretariat.dto';
 import { CalendarRecurrenceFrequency } from '../enums/secretariat.enums';
+import {
+  buildIcsCalendar,
+  ICS_EXPORT_MAX_SERIES,
+  ICS_IMPORT_MAX_BYTES,
+  ICS_IMPORT_MAX_VEVENTS,
+  IcsExportEvent,
+  mapParsedVEventToCreateInput,
+  parseIcsCalendar,
+} from './calendar-ics.util';
 import {
   expandCalendarEvent,
   ExpandedCalendarOccurrence,
@@ -187,6 +198,208 @@ export class CalendarService {
     this.assertNotSystemManaged(event);
     await this.calendarEventsRepository.softRemove(event);
     this.logger.log(`Evento de agenda removido (soft delete): ${id}`);
+  }
+
+  async exportEventAsIcs(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<string> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    const [event, congregation] = await Promise.all([
+      this.getEventOrFail(id, congregationId),
+      this.congregationsService.getById(congregationId),
+    ]);
+    return buildIcsCalendar([this.toIcsExportEvent(event)], {
+      congregationName: congregation.name,
+    });
+  }
+
+  async exportRangeAsIcs(
+    query: ExportCalendarIcsQueryDto,
+    activeCongregationId?: string,
+  ): Promise<string> {
+    const rangeFrom = new Date(query.from);
+    const rangeTo = new Date(query.to);
+    if (
+      Number.isNaN(rangeFrom.getTime()) ||
+      Number.isNaN(rangeTo.getTime()) ||
+      rangeFrom.getTime() >= rangeTo.getTime()
+    ) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_ICS_RANGE_INVALID,
+        message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_ICS_RANGE_INVALID],
+      });
+    }
+
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    const [masters, congregation] = await Promise.all([
+      this.findMasterEventsInRange(congregationId, rangeFrom, rangeTo),
+      this.congregationsService.getById(congregationId),
+    ]);
+
+    const intersecting: CalendarEvent[] = [];
+    for (const event of masters) {
+      if (expandCalendarEvent(event, rangeFrom, rangeTo).length > 0) {
+        intersecting.push(event);
+      }
+    }
+
+    if (intersecting.length > ICS_EXPORT_MAX_SERIES) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_ICS_EXPORT_LIMIT_EXCEEDED,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_ICS_EXPORT_LIMIT_EXCEEDED],
+      });
+    }
+
+    return buildIcsCalendar(
+      intersecting.map((e) => this.toIcsExportEvent(e)),
+      { congregationName: congregation.name },
+    );
+  }
+
+  async importFromIcs(
+    raw: string,
+    user: UserResponseDto,
+    activeCongregationId?: string,
+  ): Promise<ImportCalendarEventsResponseDto> {
+    if (Buffer.byteLength(raw, 'utf8') > ICS_IMPORT_MAX_BYTES) {
+      throw new ApiException(HttpStatus.PAYLOAD_TOO_LARGE, {
+        code: ApiErrorCode.SECRETARIAT_ICS_FILE_TOO_LARGE,
+        message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_ICS_FILE_TOO_LARGE],
+      });
+    }
+
+    const parsed = parseIcsCalendar(raw);
+    if (parsed.length === 0) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_ICS_EMPTY_OR_INVALID,
+        message: ApiErrorMessage[ApiErrorCode.SECRETARIAT_ICS_EMPTY_OR_INVALID],
+      });
+    }
+
+    const response: ImportCalendarEventsResponseDto = {
+      created: 0,
+      skipped: [],
+      warnings: [],
+      createdIds: [],
+    };
+
+    const processable = parsed.slice(0, ICS_IMPORT_MAX_VEVENTS);
+    for (const excess of parsed.slice(ICS_IMPORT_MAX_VEVENTS)) {
+      response.skipped.push({
+        uid: excess.uid,
+        summary: excess.summary,
+        reason: 'LIMIT_EXCEEDED',
+        detail: `Máximo de ${ICS_IMPORT_MAX_VEVENTS} VEVENTs por importação`,
+      });
+    }
+
+    for (const vevent of processable) {
+      const mapped = mapParsedVEventToCreateInput(vevent);
+      if (mapped.skip || !mapped.dto) {
+        response.skipped.push(
+          mapped.skip ?? {
+            uid: vevent.uid,
+            summary: vevent.summary,
+            reason: 'VALIDATION_FAILED',
+          },
+        );
+        continue;
+      }
+      if (mapped.warning) {
+        response.warnings.push(mapped.warning);
+      }
+      try {
+        const created = await this.createEvent(
+          mapped.dto,
+          user,
+          activeCongregationId,
+        );
+        response.created += 1;
+        response.createdIds.push(created.seriesId);
+      } catch (error) {
+        response.skipped.push({
+          uid: vevent.uid,
+          summary: mapped.dto.title,
+          reason: 'CREATE_FAILED',
+          detail: this.resolveErrorDetail(error),
+        });
+      }
+    }
+
+    return response;
+  }
+
+  private async findMasterEventsInRange(
+    congregationId: string,
+    rangeFrom: Date,
+    rangeTo: Date,
+  ): Promise<CalendarEvent[]> {
+    const qb = this.calendarEventsRepository
+      .createQueryBuilder('event')
+      .where('event.congregationId = :congregationId', { congregationId });
+
+    qb.andWhere(
+      new Brackets((nested) => {
+        nested
+          .where(
+            `(event.recurrenceFrequency = :none
+              AND event.endsAt >= :from
+              AND event.startsAt <= :to)`,
+            {
+              none: CalendarRecurrenceFrequency.NONE,
+              from: rangeFrom.toISOString(),
+              to: rangeTo.toISOString(),
+            },
+          )
+          .orWhere(
+            `(event.recurrenceFrequency != :none
+              AND event.startsAt <= :to
+              AND (event.recurrenceUntil IS NULL OR event.recurrenceUntil >= :fromDate))`,
+            {
+              none: CalendarRecurrenceFrequency.NONE,
+              to: rangeTo.toISOString(),
+              fromDate: this.toIsoDate(rangeFrom),
+            },
+          );
+      }),
+    );
+
+    return qb.orderBy('event.startsAt', 'ASC').getMany();
+  }
+
+  private toIcsExportEvent(event: CalendarEvent): IcsExportEvent {
+    return {
+      id: event.id,
+      title: event.title,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      allDay: Boolean(event.allDay),
+      location: event.location,
+      description: event.description,
+      type: event.type,
+      recurrenceFrequency: event.recurrenceFrequency,
+      recurrenceInterval: event.recurrenceInterval,
+      recurrenceUntil: event.recurrenceUntil,
+    };
+  }
+
+  private resolveErrorDetail(error: unknown): string {
+    if (error instanceof ApiException) {
+      const payload = error.getResponse();
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'message' in payload
+      ) {
+        return String((payload as { message: string }).message);
+      }
+    }
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return 'Falha ao criar evento';
   }
 
   private async getCongregationId(
