@@ -32,12 +32,12 @@ function buildUser(permissions: string[]): IUser {
 }
 
 describe('authorization utils', () => {
-  it('getDefaultRouteForUser returns first matching route', () => {
-    expect(getDefaultRouteForUser(['members:read'])).toBe('/members');
+  it('getDefaultRouteForUser returns dashboard for any authenticated user', () => {
+    expect(getDefaultRouteForUser(['members:read'])).toBe('/dashboard');
   });
 
-  it('getDefaultRouteForUser falls back to no-access', () => {
-    expect(getDefaultRouteForUser([])).toBe('/no-access');
+  it('getDefaultRouteForUser returns dashboard even with no permissions', () => {
+    expect(getDefaultRouteForUser([])).toBe('/dashboard');
   });
 
   it('hasAnyPermission uses OR semantics', () => {
@@ -75,7 +75,7 @@ describe('permission guards', () => {
     const result = TestBed.runInInjectionContext(() =>
       financePermissionGuard({} as never, {} as never),
     );
-    expect(result).toBe('tree:/secretariat');
+    expect(result).toBe('tree:/dashboard');
   });
 
   it('usersPermissionGuard allows users with users:read', () => {
@@ -91,7 +91,7 @@ describe('permission guards', () => {
     const result = TestBed.runInInjectionContext(() =>
       membersPermissionGuard({} as never, {} as never),
     );
-    expect(result).toBe('tree:/finance');
+    expect(result).toBe('tree:/dashboard');
   });
 
   it('rolesPermissionGuard allows users with roles:read', () => {
@@ -123,13 +123,13 @@ describe('permission guards', () => {
     const result = TestBed.runInInjectionContext(() =>
       assetsPermissionGuard({} as never, {} as never),
     );
-    expect(result).toBe('tree:/finance');
+    expect(result).toBe('tree:/dashboard');
   });
 
-  it('defaultRouteGuard redirects to first accessible route', () => {
+  it('defaultRouteGuard redirects to dashboard for any authenticated user', () => {
     currentUser.set(buildUser(['members:read']));
     const result = TestBed.runInInjectionContext(() => defaultRouteGuard({} as never, {} as never));
-    expect(result).toBe('tree:/members');
+    expect(result).toBe('tree:/dashboard');
   });
 
   it('redirects to no-access when there is no authenticated user', () => {

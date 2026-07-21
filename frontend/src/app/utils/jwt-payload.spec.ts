@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { decodeJwtPayload } from './jwt-payload';
 
 function buildToken(payload: Record<string, unknown>): string {

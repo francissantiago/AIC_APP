@@ -10,6 +10,7 @@ import { AssetsModule } from './modules/assets/assets.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClassesModule } from './modules/classes/classes.module';
 import { CongregationsModule } from './modules/congregations/congregations.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { FamiliesModule } from './modules/families/families.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { MemberTransfersModule } from './modules/member-transfers/member-transfers.module';
@@ -61,6 +62,7 @@ import { UsersModule } from './modules/users/users.module';
     FinanceModule,
     AssetsModule,
     SecretariatModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}

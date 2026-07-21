@@ -75,7 +75,7 @@ export class Login {
             this.totpSubmitted.set(false);
             return;
           }
-          void this.#router.navigateByUrl('/users');
+          void this.#router.navigateByUrl('/dashboard');
         },
         error: (_error: HttpErrorResponse) => {
           // Mensagem já mapeada em AuthService.loginError
@@ -104,7 +104,7 @@ export class Login {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: () => {
-          void this.#router.navigateByUrl('/users');
+          void this.#router.navigateByUrl('/dashboard');
         },
         error: (_error: HttpErrorResponse) => {
           // Mensagem já mapeada em AuthService.loginError

@@ -9,7 +9,8 @@ export function hasPermission(permissionCodes: readonly string[], code: string):
   return permissionCodes.includes(code);
 }
 
-const DEFAULT_ROUTE_CANDIDATES: readonly { route: string; permission: string }[] = [
+const DEFAULT_ROUTE_CANDIDATES: readonly { route: string; permission?: string }[] = [
+  { route: '/dashboard' },
   { route: '/announcements', permission: 'announcements:read' },
   { route: '/users', permission: 'users:read' },
   { route: '/members', permission: 'members:read' },
@@ -26,7 +27,7 @@ const DEFAULT_ROUTE_CANDIDATES: readonly { route: string; permission: string }[]
 
 export function getDefaultRouteForUser(permissions: readonly string[]): string {
   for (const candidate of DEFAULT_ROUTE_CANDIDATES) {
-    if (hasPermission(permissions, candidate.permission)) {
+    if (!candidate.permission || hasPermission(permissions, candidate.permission)) {
       return candidate.route;
     }
   }

@@ -6,7 +6,13 @@ import { getDefaultRouteForUser, hasAnyPermission, hasPermission } from '@utils/
 function redirectFallback(): ReturnType<Router['parseUrl']> {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const permissions = authService.currentUser()?.permissions ?? [];
+  const currentUser = authService.currentUser();
+
+  if (!currentUser) {
+    return router.parseUrl('/no-access');
+  }
+
+  const permissions = currentUser.permissions ?? [];
   return router.parseUrl(getDefaultRouteForUser(permissions));
 }
 

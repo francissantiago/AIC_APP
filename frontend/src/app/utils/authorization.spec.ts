@@ -14,17 +14,17 @@ describe('authorization', () => {
     expect(hasAnyPermission(['members:read'], ['finance:read', 'finance:write'])).toBe(false);
   });
 
-  it('getDefaultRouteForUser prefers announcements over users', () => {
+  it('getDefaultRouteForUser returns dashboard for any authenticated user', () => {
     expect(getDefaultRouteForUser(['announcements:read', 'users:read', 'members:read'])).toBe(
-      '/announcements',
+      '/dashboard',
     );
   });
 
-  it('getDefaultRouteForUser prefers users over members when announcements absent', () => {
-    expect(getDefaultRouteForUser(['users:read', 'members:read'])).toBe('/users');
+  it('getDefaultRouteForUser returns dashboard even with no permissions', () => {
+    expect(getDefaultRouteForUser([])).toBe('/dashboard');
   });
 
-  it('getDefaultRouteForUser supports assets-only users', () => {
-    expect(getDefaultRouteForUser(['assets:read'])).toBe('/finance/assets');
+  it('getDefaultRouteForUser returns dashboard for assets-only users', () => {
+    expect(getDefaultRouteForUser(['assets:read'])).toBe('/dashboard');
   });
 });

@@ -54,8 +54,9 @@ describe('SidebarNav', () => {
     expect(component).toBeTruthy();
   });
 
-  it('hides all cadastro items without read permissions', () => {
-    expect(component.items().length).toBe(0);
+  it('shows only dashboard item without read permissions', () => {
+    expect(component.items().length).toBe(1);
+    expect(component.items()[0]?.route).toBe('/dashboard');
   });
 
   it('canViewFinanceSection is false without finance or assets read', () => {
@@ -121,9 +122,10 @@ describe('SidebarNav with permissions', () => {
     fixture.detectChanges();
   });
 
-  it('shows five cadastro items when user has all read permissions', () => {
-    expect(component.items().length).toBe(5);
+  it('shows six items including dashboard when user has all read permissions', () => {
+    expect(component.items().length).toBe(6);
     expect(component.items().map((item) => item.route)).toEqual([
+      '/dashboard',
       '/users',
       '/roles',
       '/members',

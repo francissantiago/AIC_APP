@@ -10,8 +10,6 @@ import { environment } from 'environments/environment';
 import { authInterceptor } from './auth-interceptor';
 
 describe('authInterceptor', () => {
-  let http: HttpClient;
-  let httpMock: HttpTestingController;
   const accessToken = signal<string | null>('token-abc');
   const activeCongregationId = signal<string | null>('cong-123');
 
@@ -42,35 +40,38 @@ describe('authInterceptor', () => {
         },
       ],
     });
-
-    http = TestBed.inject(HttpClient);
-    httpMock = TestBed.inject(HttpTestingController);
-  });
-
-  afterEach(() => {
-    httpMock.verify();
   });
 
   it('adds Authorization and X-Congregation-Id for authenticated API requests', () => {
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
     http.get(`${environment.apiUrl}/members`).subscribe();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/members`);
     expect(req.request.headers.get('Authorization')).toBe('Bearer token-abc');
     expect(req.request.headers.get('X-Congregation-Id')).toBe('cong-123');
     req.flush([]);
+    httpMock.verify();
   });
 
   it('does not add congregation header on login requests', () => {
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
     http.post(`${environment.apiUrl}/auth/login`, {}).subscribe();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
     expect(req.request.headers.get('Authorization')).toBe('Bearer token-abc');
     expect(req.request.headers.has('X-Congregation-Id')).toBe(false);
     req.flush({});
+    httpMock.verify();
   });
 
   it('does not add headers when token is absent', () => {
     accessToken.set(null);
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
 
     http.get(`${environment.apiUrl}/members`).subscribe();
 
@@ -78,5 +79,6 @@ describe('authInterceptor', () => {
     expect(req.request.headers.has('Authorization')).toBe(false);
     expect(req.request.headers.has('X-Congregation-Id')).toBe(false);
     req.flush([]);
+    httpMock.verify();
   });
 });

@@ -50,6 +50,13 @@ export const routes: Routes = [
         loadComponent: () => import('@components/auth/no-access/no-access').then((m) => m.NoAccess),
       },
       {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('@components/dashboard/home-dashboard/home-dashboard').then(
+            (m) => m.HomeDashboard,
+          ),
+      },
+      {
         path: 'no-access',
         loadComponent: () => import('@components/auth/no-access/no-access').then((m) => m.NoAccess),
       },

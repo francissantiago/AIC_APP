@@ -17,8 +17,15 @@ export type SidebarNavItem = {
   route: string;
   labelKey: string;
   icon:
-    'announcements' | 'users' | 'roles' | 'members' | 'families' | 'ministries' | 'congregation';
-  permission: string;
+    | 'dashboard'
+    | 'announcements'
+    | 'users'
+    | 'roles'
+    | 'members'
+    | 'families'
+    | 'ministries'
+    | 'congregation';
+  permission?: string;
 };
 
 export type SidebarFinanceItem = {
@@ -66,6 +73,11 @@ export class SidebarNav {
 
   readonly allItems: readonly SidebarNavItem[] = [
     {
+      route: '/dashboard',
+      labelKey: 'NAV.DASHBOARD',
+      icon: 'dashboard',
+    },
+    {
       route: '/announcements',
       labelKey: 'NAV.ANNOUNCEMENTS',
       icon: 'announcements',
@@ -109,7 +121,7 @@ export class SidebarNav {
   ] as const;
 
   readonly items = computed(() =>
-    this.allItems.filter((item) => this.#auth.hasPermission(item.permission)),
+    this.allItems.filter((item) => !item.permission || this.#auth.hasPermission(item.permission)),
   );
 
   readonly allFinanceItems: readonly SidebarFinanceItem[] = [
