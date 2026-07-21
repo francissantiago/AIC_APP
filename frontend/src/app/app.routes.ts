@@ -19,6 +19,21 @@ import {
 
 export const routes: Routes = [
   {
+    path: 'home',
+    loadComponent: () =>
+      import('@components/legal/public-home/public-home').then((m) => m.PublicHome),
+  },
+  {
+    path: 'privacy',
+    loadComponent: () =>
+      import('@components/legal/privacy-policy/privacy-policy').then((m) => m.PrivacyPolicy),
+  },
+  {
+    path: 'terms',
+    loadComponent: () =>
+      import('@components/legal/terms-of-service/terms-of-service').then((m) => m.TermsOfService),
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('@components/auth/login/login').then((m) => m.Login),

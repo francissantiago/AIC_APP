@@ -1,0 +1,72 @@
+<div class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="border-b border-slate-200 bg-white">
+    <div
+      class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6"
+    >
+      <a
+        routerLink="/home"
+        class="text-base font-semibold tracking-tight text-slate-900 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 sm:text-lg"
+      >
+        {{ 'LEGAL.HOME_APP_NAME' | translate }}
+      </a>
+
+      <nav
+        class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
+        [attr.aria-label]="'LEGAL.NAV_LABEL' | translate"
+      >
+        <a
+          routerLink="/home"
+          class="text-slate-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_HOME' | translate }}
+        </a>
+        <a
+          routerLink="/privacy"
+          class="text-slate-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_PRIVACY' | translate }}
+        </a>
+        <a
+          routerLink="/terms"
+          class="text-slate-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_TERMS' | translate }}
+        </a>
+        <a
+          routerLink="/login"
+          class="rounded-md bg-slate-900 px-3 py-1.5 font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+        >
+          {{ 'LEGAL.NAV_LOGIN' | translate }}
+        </a>
+        <app-language-switcher />
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <h1 class="text-3xl font-semibold tracking-tight text-slate-900">
+      {{ pageTitle() | translate }}
+    </h1>
+    <p class="mt-2 text-sm text-slate-600">
+      {{ 'LEGAL.LAST_UPDATED' | translate: { date: lastUpdated() } }}
+    </p>
+
+    <div class="prose-legal mt-8 space-y-6 text-sm leading-relaxed text-slate-700 sm:text-base">
+      <ng-content />
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div
+      class="mx-auto flex max-w-3xl flex-wrap gap-x-4 gap-y-2 px-4 py-6 text-sm text-slate-600 sm:px-6"
+    >
+      <span>{{ 'LEGAL.HOME_APP_NAME' | translate }}</span>
+      <a routerLink="/privacy" class="underline-offset-2 hover:underline">{{
+        'LEGAL.NAV_PRIVACY' | translate
+      }}</a>
+      <a routerLink="/terms" class="underline-offset-2 hover:underline">{{
+        'LEGAL.NAV_TERMS' | translate
+      }}</a>
+    </div>
+  </footer>
+</div>

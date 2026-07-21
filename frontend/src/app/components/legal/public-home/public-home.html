@@ -1,0 +1,202 @@
+<div class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="border-b border-slate-200 bg-white">
+    <div
+      class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6"
+    >
+      <p class="text-base font-semibold tracking-tight sm:text-lg">
+        {{ 'LEGAL.HOME_APP_NAME' | translate }}
+      </p>
+      <nav
+        class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm"
+        [attr.aria-label]="'LEGAL.NAV_LABEL' | translate"
+      >
+        <a
+          routerLink="/privacy"
+          class="font-medium text-slate-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_PRIVACY' | translate }}
+        </a>
+        <a
+          routerLink="/terms"
+          class="text-slate-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_TERMS' | translate }}
+        </a>
+        <a
+          routerLink="/login"
+          class="rounded-md bg-slate-900 px-3 py-1.5 font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+        >
+          {{ 'LEGAL.NAV_LOGIN' | translate }}
+        </a>
+        <app-language-switcher />
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+    <p class="text-sm font-medium text-slate-600">{{ 'LEGAL.HOME_BRAND_LABEL' | translate }}</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+      {{ 'LEGAL.HOME_APP_NAME' | translate }}
+    </h1>
+    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700">
+      {{ 'LEGAL.HOME_TAGLINE' | translate }}
+    </p>
+
+    <p class="mt-6 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+      {{ 'LEGAL.HOME_PRIVACY_CALLOUT' | translate }}
+      <a
+        routerLink="/privacy"
+        class="font-medium text-slate-900 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        {{ 'LEGAL.NAV_PRIVACY' | translate }}
+      </a>
+      .
+    </p>
+
+    <section
+      class="mt-12 space-y-4 text-sm leading-relaxed text-slate-700 sm:text-base"
+      aria-labelledby="home-identity-heading"
+    >
+      <h2 id="home-identity-heading" class="text-xl font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_IDENTITY_TITLE' | translate }}
+      </h2>
+      <p>{{ 'LEGAL.HOME_IDENTITY_P1' | translate }}</p>
+      <p>{{ 'LEGAL.HOME_IDENTITY_P2' | translate }}</p>
+    </section>
+
+    <section
+      class="mt-12 space-y-4 text-sm leading-relaxed text-slate-700 sm:text-base"
+      aria-labelledby="home-purpose-heading"
+    >
+      <h2 id="home-purpose-heading" class="text-xl font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_PURPOSE_TITLE' | translate }}
+      </h2>
+      <p>{{ 'LEGAL.HOME_PURPOSE_P1' | translate }}</p>
+      <p>{{ 'LEGAL.HOME_PURPOSE_P2' | translate }}</p>
+      <p>{{ 'LEGAL.HOME_PURPOSE_P3' | translate }}</p>
+    </section>
+
+    <section
+      class="mt-12 space-y-4 text-sm leading-relaxed text-slate-700 sm:text-base"
+      aria-labelledby="home-features-heading"
+    >
+      <h2 id="home-features-heading" class="text-xl font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_FEATURES_TITLE' | translate }}
+      </h2>
+      <p>{{ 'LEGAL.HOME_FEATURES_INTRO' | translate }}</p>
+      <ul class="list-disc space-y-2 pl-5">
+        <li>{{ 'LEGAL.HOME_FEATURE_1' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_2' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_3' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_4' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_5' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_6' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_7' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_FEATURE_8' | translate }}</li>
+      </ul>
+    </section>
+
+    <section
+      class="mt-12 space-y-4 text-sm leading-relaxed text-slate-700 sm:text-base"
+      aria-labelledby="home-google-heading"
+    >
+      <h2 id="home-google-heading" class="text-xl font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_GOOGLE_TITLE' | translate }}
+      </h2>
+      <p>{{ 'LEGAL.HOME_GOOGLE_INTRO' | translate }}</p>
+
+      <h3 class="pt-2 text-base font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_GOOGLE_WHO_TITLE' | translate }}
+      </h3>
+      <p>{{ 'LEGAL.HOME_GOOGLE_WHO_BODY' | translate }}</p>
+
+      <h3 class="pt-2 text-base font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_GOOGLE_WHAT_TITLE' | translate }}
+      </h3>
+      <p>{{ 'LEGAL.HOME_GOOGLE_WHAT_BODY' | translate }}</p>
+      <ul class="list-disc space-y-2 pl-5">
+        <li>{{ 'LEGAL.HOME_GOOGLE_WHAT_1' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_GOOGLE_WHAT_2' | translate }}</li>
+        <li>{{ 'LEGAL.HOME_GOOGLE_WHAT_3' | translate }}</li>
+      </ul>
+
+      <h3 class="pt-2 text-base font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_GOOGLE_WHY_TITLE' | translate }}
+      </h3>
+      <p>{{ 'LEGAL.HOME_GOOGLE_WHY_BODY' | translate }}</p>
+
+      <h3 class="pt-2 text-base font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_GOOGLE_LIMITED_TITLE' | translate }}
+      </h3>
+      <p>{{ 'LEGAL.HOME_GOOGLE_LIMITED_BODY' | translate }}</p>
+
+      <p class="rounded-md border border-slate-200 bg-white px-4 py-3">
+        {{ 'LEGAL.HOME_GOOGLE_PRIVACY_LINK_PREFIX' | translate }}
+        <a
+          routerLink="/privacy"
+          class="font-medium text-slate-900 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_PRIVACY' | translate }}
+        </a>
+        {{ 'LEGAL.HOME_GOOGLE_PRIVACY_LINK_SUFFIX' | translate }}
+      </p>
+    </section>
+
+    <section
+      class="mt-12 space-y-4 text-sm leading-relaxed text-slate-700 sm:text-base"
+      aria-labelledby="home-access-heading"
+    >
+      <h2 id="home-access-heading" class="text-xl font-semibold text-slate-900">
+        {{ 'LEGAL.HOME_ACCESS_TITLE' | translate }}
+      </h2>
+      <p>{{ 'LEGAL.HOME_ACCESS_BODY' | translate }}</p>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a
+          routerLink="/login"
+          class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+        >
+          {{ 'LEGAL.HOME_CTA_LOGIN' | translate }}
+        </a>
+        <a
+          routerLink="/privacy"
+          class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_PRIVACY' | translate }}
+        </a>
+        <a
+          routerLink="/terms"
+          class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_TERMS' | translate }}
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto max-w-3xl space-y-3 px-4 py-6 text-sm text-slate-600 sm:px-6">
+      <p class="font-medium text-slate-800">{{ 'LEGAL.HOME_APP_NAME' | translate }}</p>
+      <p>{{ 'LEGAL.HOME_FOOTER_BRANDING' | translate }}</p>
+      <div class="flex flex-wrap gap-x-4 gap-y-2">
+        <a
+          routerLink="/privacy"
+          class="font-medium text-slate-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_PRIVACY' | translate }}
+        </a>
+        <a
+          routerLink="/terms"
+          class="underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_TERMS' | translate }}
+        </a>
+        <a
+          routerLink="/home"
+          class="underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'LEGAL.NAV_HOME' | translate }}
+        </a>
+      </div>
+    </div>
+  </footer>
+</div>
