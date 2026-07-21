@@ -36,6 +36,7 @@
         <span>{{ 'FAMILIES.RELATION' | translate }}</span>
         <select
           formControlName="relation"
+          data-testid="family-add-relation-select"
           class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         >
           @for (relation of relations; track relation) {
@@ -111,12 +112,15 @@
                 @if (canWrite()) {
                   <select
                     class="rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    [value]="member.relation"
+                    data-testid="family-member-relation-select"
                     (change)="onRelationSelect(member.memberId, $event)"
                     [attr.aria-label]="'FAMILIES.RELATION' | translate"
                   >
                     @for (relation of relations; track relation) {
-                      <option [value]="relation">
+                      <option
+                        [value]="relation"
+                        [selected]="member.relation === relation"
+                      >
                         {{ relationLabelKey(relation) | translate }}
                       </option>
                     }
