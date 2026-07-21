@@ -1,4 +1,8 @@
-<section class="w-full" data-testid="family-members-panel" [attr.aria-label]="'FAMILIES.MEMBERS' | translate">
+<section
+  class="w-full"
+  data-testid="family-members-panel"
+  [attr.aria-label]="'FAMILIES.MEMBERS' | translate"
+>
   @if (feedback(); as messageKey) {
     <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
       {{ messageKey | translate }}
@@ -106,7 +110,10 @@
         </thead>
         <tbody>
           @for (member of members(); track member.memberId) {
-            <tr class="border-t border-slate-100" [attr.data-testid]="'family-member-row-' + member.memberId">
+            <tr
+              class="border-t border-slate-100"
+              [attr.data-testid]="'family-member-row-' + member.memberId"
+            >
               <td class="px-3 py-2 text-slate-900">{{ member.memberFullName }}</td>
               <td class="px-3 py-2 text-slate-700">
                 @if (canWrite()) {
@@ -117,10 +124,7 @@
                     [attr.aria-label]="'FAMILIES.RELATION' | translate"
                   >
                     @for (relation of relations; track relation) {
-                      <option
-                        [value]="relation"
-                        [selected]="member.relation === relation"
-                      >
+                      <option [value]="relation" [selected]="member.relation === relation">
                         {{ relationLabelKey(relation) | translate }}
                       </option>
                     }
