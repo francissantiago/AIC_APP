@@ -2,21 +2,25 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ReadStream } from 'fs';
 import * as path from 'path';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import {
   ApiErrorCode,
   ApiErrorMessage,
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
+import { FamiliesService } from '../families/families.service';
 import { FileStorageService } from '../secretariat/storage/file-storage.service';
 import { UploadedFile } from '../secretariat/storage/uploaded-file.interface';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
+import { FamilyLinkResultDto } from './dto/family-link-result.dto';
+import { MemberOptionDto } from './dto/member-option.dto';
 import {
   MemberResponseDto,
   PaginatedMembersResponseDto,
 } from './dto/member-response.dto';
+import { QueryMemberOptionsDto } from './dto/query-member-options.dto';
 import { QueryMembersDto } from './dto/query-members.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { Member } from './entities/member.entity';
@@ -27,6 +31,14 @@ import { MemberBirthdayCalendarSyncService } from './member-birthday-calendar.sy
 
 const MEMBER_PHOTOS_SUBDIR = 'members/photos';
 const REGISTRATION_NUMBER_MAX = 999_999;
+const FILIATION_OPTION_STATUSES = [MemberStatus.ACTIVE, MemberStatus.INACTIVE];
+
+interface ResolvedFiliation {
+  fatherName: string | null;
+  motherName: string | null;
+  fatherMemberId: string | null;
+  motherMemberId: string | null;
+}
 
 function formatRegistrationNumber(sequence: number): string {
   return String(sequence).padStart(6, '0');
@@ -37,6 +49,11 @@ function mimeFromPath(relativePath: string): string {
   if (ext === '.png') return 'image/png';
   if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
   return 'application/octet-stream';
+}
+
+function normalizeName(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 @Injectable()
@@ -51,6 +68,7 @@ export class MembersService {
     private readonly congregationsService: CongregationsService,
     private readonly birthdayCalendarSync: MemberBirthdayCalendarSyncService,
     private readonly fileStorageService: FileStorageService,
+    private readonly familiesService: FamiliesService,
   ) {}
 
   private async getCongregationId(
@@ -68,11 +86,23 @@ export class MembersService {
     actorUserId?: string,
   ): Promise<MemberResponseDto> {
     const congregationId = await this.getCongregationId(activeCongregationId);
+    const filiation = await this.resolveFiliationForCreate(dto, congregationId);
     const saved = await this.membersRepository.manager.transaction(
       async (manager) =>
-        this.createInTransaction(manager, dto, congregationId, actorUserId),
+        this.createInTransaction(
+          manager,
+          dto,
+          congregationId,
+          actorUserId,
+          filiation,
+        ),
     );
-    return MemberResponseDto.fromEntity(saved);
+    const familyLink = await this.maybeLinkFamily(
+      saved,
+      filiation,
+      dto.linkFamily,
+    );
+    return MemberResponseDto.fromEntity(saved, { familyLink });
   }
 
   async createInTransaction(
@@ -80,12 +110,16 @@ export class MembersService {
     dto: CreateMemberDto,
     congregationId: string,
     actorUserId?: string,
+    filiation?: ResolvedFiliation,
   ): Promise<Member> {
     await this.assertEmailDocumentUniqueness(dto.email, dto.document);
     if (dto.userId) {
       await this.assertUserExists(dto.userId);
       await this.assertUserIdUniqueness(dto.userId);
     }
+
+    const resolved =
+      filiation ?? (await this.resolveFiliationForCreate(dto, congregationId));
 
     const registrationNumber = await this.allocateNextRegistrationNumber(
       manager,
@@ -112,8 +146,10 @@ export class MembersService {
       registrationNumber,
       placeOfBirth: dto.placeOfBirth ?? null,
       bloodType: dto.bloodType ?? null,
-      fatherName: dto.fatherName ?? null,
-      motherName: dto.motherName ?? null,
+      fatherName: resolved.fatherName,
+      motherName: resolved.motherName,
+      fatherMemberId: resolved.fatherMemberId,
+      motherMemberId: resolved.motherMemberId,
       positionTitle: dto.positionTitle ?? null,
       photoPath: null,
       congregationId,
@@ -168,6 +204,41 @@ export class MembersService {
       page,
       limit,
     };
+  }
+
+  async listOptions(
+    query: QueryMemberOptionsDto,
+    activeCongregationId?: string,
+  ): Promise<MemberOptionDto[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    const qb = this.membersRepository
+      .createQueryBuilder('member')
+      .select([
+        'member.id',
+        'member.fullName',
+        'member.status',
+        'member.gender',
+      ])
+      .where('member.congregationId = :congregationId', { congregationId })
+      .andWhere('member.status IN (:...statuses)', {
+        statuses: FILIATION_OPTION_STATUSES,
+      })
+      .andWhere('member.fullName LIKE :q', { q: `%${query.q}%` })
+      .orderBy('member.fullName', 'ASC')
+      .take(query.limit);
+
+    if (query.excludeMemberId) {
+      qb.andWhere('member.id != :excludeMemberId', {
+        excludeMemberId: query.excludeMemberId,
+      });
+    }
+
+    return (await qb.getMany()).map((member) => ({
+      id: member.id,
+      fullName: member.fullName,
+      status: member.status,
+      gender: member.gender,
+    }));
   }
 
   async findOne(
@@ -251,14 +322,34 @@ export class MembersService {
     if (dto.bloodType !== undefined) {
       member.bloodType = dto.bloodType ?? null;
     }
-    if (dto.fatherName !== undefined) {
-      member.fatherName = dto.fatherName ?? null;
-    }
-    if (dto.motherName !== undefined) {
-      member.motherName = dto.motherName ?? null;
-    }
     if (dto.positionTitle !== undefined) {
       member.positionTitle = dto.positionTitle ?? null;
+    }
+
+    const filiationTouched =
+      dto.fatherName !== undefined ||
+      dto.motherName !== undefined ||
+      dto.fatherMemberId !== undefined ||
+      dto.motherMemberId !== undefined ||
+      dto.linkFamily !== undefined;
+
+    let filiation: ResolvedFiliation = {
+      fatherName: member.fatherName,
+      motherName: member.motherName,
+      fatherMemberId: member.fatherMemberId,
+      motherMemberId: member.motherMemberId,
+    };
+
+    if (filiationTouched) {
+      filiation = await this.resolveFiliationForUpdate(
+        member,
+        dto,
+        member.congregationId,
+      );
+      member.fatherName = filiation.fatherName;
+      member.motherName = filiation.motherName;
+      member.fatherMemberId = filiation.fatherMemberId;
+      member.motherMemberId = filiation.motherMemberId;
     }
 
     const saved = await this.membersRepository.save(member);
@@ -269,7 +360,10 @@ export class MembersService {
         congregationId: saved.congregationId,
       });
     }
-    return MemberResponseDto.fromEntity(saved);
+    const familyLink = filiationTouched
+      ? await this.maybeLinkFamily(saved, filiation, dto.linkFamily)
+      : undefined;
+    return MemberResponseDto.fromEntity(saved, { familyLink });
   }
 
   async remove(
@@ -354,6 +448,202 @@ export class MembersService {
     return this.getMemberOrFail(id, activeCongregationId);
   }
 
+  private async maybeLinkFamily(
+    member: Member,
+    filiation: ResolvedFiliation,
+    linkFamily?: boolean,
+  ): Promise<FamilyLinkResultDto | undefined> {
+    const hasParentLink =
+      !!filiation.fatherMemberId || !!filiation.motherMemberId;
+    if (!hasParentLink) {
+      return undefined;
+    }
+    if (linkFamily === false) {
+      return { attempted: false, linked: false };
+    }
+    return this.familiesService.linkFiliationFamily({
+      childMemberId: member.id,
+      fatherMemberId: filiation.fatherMemberId,
+      motherMemberId: filiation.motherMemberId,
+      congregationId: member.congregationId,
+    });
+  }
+
+  private async resolveFiliationForCreate(
+    dto: CreateMemberDto,
+    congregationId: string,
+  ): Promise<ResolvedFiliation> {
+    return this.resolveFiliation({
+      congregationId,
+      selfMemberId: null,
+      currentFatherMemberId: null,
+      currentMotherMemberId: null,
+      currentFatherName: null,
+      currentMotherName: null,
+      fatherMemberId: dto.fatherMemberId,
+      motherMemberId: dto.motherMemberId,
+      fatherName: dto.fatherName,
+      motherName: dto.motherName,
+      fatherMemberIdProvided: dto.fatherMemberId !== undefined,
+      motherMemberIdProvided: dto.motherMemberId !== undefined,
+      fatherNameProvided: dto.fatherName !== undefined,
+      motherNameProvided: dto.motherName !== undefined,
+    });
+  }
+
+  private async resolveFiliationForUpdate(
+    member: Member,
+    dto: UpdateMemberDto,
+    congregationId: string,
+  ): Promise<ResolvedFiliation> {
+    return this.resolveFiliation({
+      congregationId,
+      selfMemberId: member.id,
+      currentFatherMemberId: member.fatherMemberId,
+      currentMotherMemberId: member.motherMemberId,
+      currentFatherName: member.fatherName,
+      currentMotherName: member.motherName,
+      fatherMemberId: dto.fatherMemberId,
+      motherMemberId: dto.motherMemberId,
+      fatherName: dto.fatherName,
+      motherName: dto.motherName,
+      fatherMemberIdProvided: dto.fatherMemberId !== undefined,
+      motherMemberIdProvided: dto.motherMemberId !== undefined,
+      fatherNameProvided: dto.fatherName !== undefined,
+      motherNameProvided: dto.motherName !== undefined,
+    });
+  }
+
+  private async resolveFiliation(input: {
+    congregationId: string;
+    selfMemberId: string | null;
+    currentFatherMemberId: string | null;
+    currentMotherMemberId: string | null;
+    currentFatherName: string | null;
+    currentMotherName: string | null;
+    fatherMemberId?: string | null;
+    motherMemberId?: string | null;
+    fatherName?: string | null;
+    motherName?: string | null;
+    fatherMemberIdProvided: boolean;
+    motherMemberIdProvided: boolean;
+    fatherNameProvided: boolean;
+    motherNameProvided: boolean;
+  }): Promise<ResolvedFiliation> {
+    let fatherMemberId = input.fatherMemberIdProvided
+      ? (input.fatherMemberId ?? null)
+      : input.currentFatherMemberId;
+    let motherMemberId = input.motherMemberIdProvided
+      ? (input.motherMemberId ?? null)
+      : input.currentMotherMemberId;
+    let fatherName = input.fatherNameProvided
+      ? normalizeName(input.fatherName)
+      : input.currentFatherName;
+    let motherName = input.motherNameProvided
+      ? normalizeName(input.motherName)
+      : input.currentMotherName;
+
+    if (fatherMemberId && fatherMemberId === input.selfMemberId) {
+      this.throwFiliationValidation(
+        'fatherMemberId',
+        'O membro não pode ser vinculado como próprio pai.',
+      );
+    }
+    if (motherMemberId && motherMemberId === input.selfMemberId) {
+      this.throwFiliationValidation(
+        'motherMemberId',
+        'O membro não pode ser vinculado como própria mãe.',
+      );
+    }
+    if (fatherMemberId && motherMemberId && fatherMemberId === motherMemberId) {
+      this.throwFiliationValidation(
+        'motherMemberId',
+        'Pai e mãe devem ser membros distintos.',
+      );
+    }
+
+    const parentIds = [fatherMemberId, motherMemberId].filter(
+      (id): id is string => !!id,
+    );
+    const parentsById = new Map<string, Member>();
+    if (parentIds.length > 0) {
+      const parents = await this.membersRepository.find({
+        where: { id: In(parentIds), congregationId: input.congregationId },
+      });
+      for (const parent of parents) {
+        parentsById.set(parent.id, parent);
+      }
+    }
+
+    if (fatherMemberId) {
+      const father = parentsById.get(fatherMemberId);
+      if (!father) {
+        this.throwFiliationParentNotFound('fatherMemberId');
+      }
+      if (
+        input.fatherNameProvided &&
+        fatherName !== null &&
+        fatherName !== father.fullName
+      ) {
+        fatherMemberId = null;
+      } else {
+        fatherName = father.fullName;
+      }
+    }
+
+    if (motherMemberId) {
+      const mother = parentsById.get(motherMemberId);
+      if (!mother) {
+        this.throwFiliationParentNotFound('motherMemberId');
+      }
+      if (
+        input.motherNameProvided &&
+        motherName !== null &&
+        motherName !== mother.fullName
+      ) {
+        motherMemberId = null;
+      } else {
+        motherName = mother.fullName;
+      }
+    }
+
+    return {
+      fatherName,
+      motherName,
+      fatherMemberId,
+      motherMemberId,
+    };
+  }
+
+  private throwFiliationParentNotFound(field: string): never {
+    throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+      code: ApiErrorCode.SYS_VALIDATION,
+      message: ApiErrorMessage[ApiErrorCode.SYS_VALIDATION],
+      details: [
+        {
+          field,
+          code: ApiErrorCode.SYS_VALIDATION,
+          message:
+            'Membro de filiação não encontrado na congregação ativa ou foi removido.',
+        },
+      ],
+    });
+  }
+
+  private throwFiliationValidation(field: string, message: string): never {
+    throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+      code: ApiErrorCode.SYS_VALIDATION,
+      message: ApiErrorMessage[ApiErrorCode.SYS_VALIDATION],
+      details: [
+        {
+          field,
+          code: ApiErrorCode.SYS_VALIDATION,
+          message,
+        },
+      ],
+    });
+  }
+
   /**
    * Próximo número sequencial por congregação (000001–999999).
    * Inclui soft-deleted para não reutilizar números.
@@ -367,7 +657,7 @@ export class MembersService {
       [congregationId],
     );
 
-    const rows = (await manager.query(
+    const rowsUnknown: unknown = await manager.query(
       `
         SELECT COALESCE(MAX(CAST(\`registration_number\` AS UNSIGNED)), 0) AS \`max_seq\`
         FROM \`members\`
@@ -375,7 +665,10 @@ export class MembersService {
           AND \`registration_number\` REGEXP '^[0-9]{1,6}$'
       `,
       [congregationId],
-    )) as Array<{ max_seq: number | string }>;
+    );
+    const rows = Array.isArray(rowsUnknown)
+      ? (rowsUnknown as Array<{ max_seq?: number | string | null }>)
+      : [];
 
     const maxSeq = Number(rows[0]?.max_seq ?? 0);
     const next = maxSeq + 1;

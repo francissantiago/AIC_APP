@@ -412,8 +412,9 @@ export class MembershipCardsService {
     const placeOfBirth = this.resolvePlaceOfBirth(member);
     const positionTitle = await this.resolvePositionTitle(member);
     const photoDataUrl = await this.toDataUrl(member.photoPath);
-    const { verificationUrl, qrCodeDataUrl } =
-      await this.buildVerificationQr(member.id);
+    const { verificationUrl, qrCodeDataUrl } = await this.buildVerificationQr(
+      member.id,
+    );
 
     const missingFields: string[] = [];
     if (!member.photoPath) missingFields.push('photo');

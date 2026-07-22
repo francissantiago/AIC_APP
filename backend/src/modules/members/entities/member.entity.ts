@@ -108,6 +108,40 @@ export class Member {
   @Column({ name: 'mother_name', type: 'varchar', length: 150, nullable: true })
   motherName!: string | null;
 
+  @Index('IDX_members_father_member_id')
+  @Column({
+    name: 'father_member_id',
+    type: 'char',
+    length: 36,
+    nullable: true,
+  })
+  fatherMemberId!: string | null;
+
+  @ManyToOne(() => Member, {
+    nullable: true,
+    onDelete: 'SET NULL',
+    eager: false,
+  })
+  @JoinColumn({ name: 'father_member_id' })
+  fatherMember!: Member | null;
+
+  @Index('IDX_members_mother_member_id')
+  @Column({
+    name: 'mother_member_id',
+    type: 'char',
+    length: 36,
+    nullable: true,
+  })
+  motherMemberId!: string | null;
+
+  @ManyToOne(() => Member, {
+    nullable: true,
+    onDelete: 'SET NULL',
+    eager: false,
+  })
+  @JoinColumn({ name: 'mother_member_id' })
+  motherMember!: Member | null;
+
   @Column({
     name: 'position_title',
     type: 'varchar',

@@ -480,23 +480,42 @@
               class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             />
           </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'MEMBERS.FATHER_NAME' | translate }}</span>
-            <input
-              type="text"
-              formControlName="fatherName"
-              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'MEMBERS.MOTHER_NAME' | translate }}</span>
-            <input
-              type="text"
-              formControlName="motherName"
-              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-            />
-          </label>
+          <app-member-filiation-autocomplete
+            labelKey="MEMBERS.FATHER_NAME"
+            inputId="member-father-name"
+            [nameControl]="form.controls.fatherName"
+            [excludeMemberId]="memberId()"
+            [(linkedMemberId)]="fatherMemberId"
+          />
+          <app-member-filiation-autocomplete
+            labelKey="MEMBERS.MOTHER_NAME"
+            inputId="member-mother-name"
+            [nameControl]="form.controls.motherName"
+            [excludeMemberId]="memberId()"
+            [(linkedMemberId)]="motherMemberId"
+          />
         </div>
+
+        @if (showLinkFamilyCheckbox()) {
+          <label class="flex items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              class="mt-1"
+              [checked]="linkFamily()"
+              (change)="onLinkFamilyChange($event)"
+            />
+            <span>{{ 'MEMBERS.FILIATION_LINK_FAMILY' | translate }}</span>
+          </label>
+        }
+
+        @if (familyLinkFeedback(); as familyFeedback) {
+          <p
+            class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            role="status"
+          >
+            {{ familyFeedback }}
+          </p>
+        }
 
         @if (canWriteMembers()) {
           <div class="rounded-md border border-slate-200 p-3">

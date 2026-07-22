@@ -109,4 +109,18 @@ describe('MembersService', () => {
       expect.objectContaining({ headers: expect.any(Object) }),
     );
   });
+
+  it('options should GET members/options with query params', () => {
+    http.get.mockReturnValue(of([{ id: '1', fullName: 'José' }]));
+    const excludeMemberId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+
+    service.options({ q: 'Jos', limit: 15, excludeMemberId }).subscribe();
+
+    expect(http.get).toHaveBeenCalledTimes(1);
+    const [url, options] = http.get.mock.calls[0] as [string, { params: HttpParams }];
+    expect(url).toBe(`${baseUrl}/options`);
+    expect(options.params.get('q')).toBe('Jos');
+    expect(options.params.get('limit')).toBe('15');
+    expect(options.params.get('excludeMemberId')).toBe(excludeMemberId);
+  });
 });

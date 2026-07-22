@@ -318,6 +318,124 @@ describe('FamiliesService', () => {
     });
   });
 
+  describe('linkFiliationFamily', () => {
+    it('cria família e vincula filho/pai quando ninguém tem família', async () => {
+      const childId = 'cccccccc-1111-2222-3333-444444444401';
+      const father = baseMember({
+        id: memberId,
+        fullName: 'José da Silva',
+      });
+      const child = baseMember({
+        id: childId,
+        fullName: 'Pedro da Silva',
+      });
+      membersRepository.findOne
+        .mockResolvedValueOnce(child)
+        .mockResolvedValueOnce(father);
+
+      const emptyFamilyQb = {
+        innerJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      };
+      familyMembersRepository.createQueryBuilder.mockReturnValue(emptyFamilyQb);
+
+      const createdFamily = baseFamily({
+        headMemberId: memberId,
+        name: 'Família Silva',
+      });
+      familiesRepository.create.mockReturnValue(createdFamily);
+      familiesRepository.save.mockResolvedValue(createdFamily);
+      familyMembersRepository.findOne.mockResolvedValue(null);
+      familyMembersRepository.create.mockImplementation(
+        (data: Partial<FamilyMember>) =>
+          Object.assign(new FamilyMember(), data),
+      );
+      familyMembersRepository.save.mockImplementation((entity: FamilyMember) =>
+        Promise.resolve(entity),
+      );
+
+      const result = await service.linkFiliationFamily({
+        childMemberId: childId,
+        fatherMemberId: memberId,
+        motherMemberId: null,
+        congregationId: baseCongregationId,
+      });
+
+      expect(result.linked).toBe(true);
+      expect(result.familyName).toBe('Família Silva');
+      expect(familyMembersRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          memberId: childId,
+          relation: FamilyRelation.CHILD,
+        }),
+      );
+      expect(familyMembersRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          memberId: memberId,
+          relation: FamilyRelation.PARENT,
+        }),
+      );
+    });
+
+    it('retorna skippedReason quando pai e mãe estão em famílias distintas', async () => {
+      const childId = 'cccccccc-1111-2222-3333-444444444401';
+      const fatherId = memberId;
+      const motherId = 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff';
+      membersRepository.findOne
+        .mockResolvedValueOnce(baseMember({ id: childId }))
+        .mockResolvedValueOnce(baseMember({ id: fatherId }))
+        .mockResolvedValueOnce(
+          baseMember({ id: motherId, fullName: 'Ana da Silva' }),
+        );
+
+      familyMembersRepository.createQueryBuilder
+        .mockReturnValueOnce({
+          innerJoin: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValue(null),
+        })
+        .mockReturnValueOnce({
+          innerJoin: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValue(
+            Object.assign(new FamilyMember(), {
+              familyId,
+              memberId: fatherId,
+            }),
+          ),
+        })
+        .mockReturnValueOnce({
+          innerJoin: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValue(
+            Object.assign(new FamilyMember(), {
+              familyId: otherFamilyId,
+              memberId: motherId,
+            }),
+          ),
+        });
+
+      const result = await service.linkFiliationFamily({
+        childMemberId: childId,
+        fatherMemberId: fatherId,
+        motherMemberId: motherId,
+        congregationId: baseCongregationId,
+      });
+
+      expect(result).toEqual({
+        attempted: true,
+        linked: false,
+        skippedReason: 'PARENTS_IN_DIFFERENT_FAMILIES',
+      });
+      expect(familiesRepository.save).not.toHaveBeenCalled();
+    });
+  });
+
   describe('contexto de congregação ativa', () => {
     it('findBirthdays com activeCongregationId não chama getOrCreateBase', async () => {
       const explicitId = '22222222-3333-4444-5555-666666666666';

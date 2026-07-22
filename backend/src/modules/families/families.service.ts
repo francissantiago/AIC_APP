@@ -27,9 +27,20 @@ import { QueryFamilyBirthdaysDto } from './dto/query-family-birthdays.dto';
 import { QueryFamilyMembersDto } from './dto/query-family-members.dto';
 import { UpdateFamilyMemberDto } from './dto/update-family-member.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
+import {
+  FamilyLinkResultDto,
+  FamilyLinkSkippedReason,
+} from '../members/dto/family-link-result.dto';
 import { FamilyMember } from './entities/family-member.entity';
 import { Family } from './entities/family.entity';
 import { FamilyRelation } from './enums/family-relation.enum';
+
+export interface LinkFiliationFamilyParams {
+  childMemberId: string;
+  fatherMemberId?: string | null;
+  motherMemberId?: string | null;
+  congregationId: string;
+}
 
 @Injectable()
 export class FamiliesService {
@@ -410,6 +421,169 @@ export class FamiliesService {
     }
 
     this.logger.log(`Membro ${memberId} desvinculado da família ${familyId}`);
+  }
+
+  /**
+   * Orquestra criação/vínculo familiar a partir da filiação (pai/mãe).
+   * Best-effort: conflitos retornam skippedReason sem lançar exceção.
+   */
+  async linkFiliationFamily(
+    params: LinkFiliationFamilyParams,
+  ): Promise<FamilyLinkResultDto> {
+    const { childMemberId, congregationId } = params;
+    const fatherMemberId = params.fatherMemberId ?? null;
+    const motherMemberId = params.motherMemberId ?? null;
+
+    if (!fatherMemberId && !motherMemberId) {
+      return { attempted: false, linked: false };
+    }
+
+    try {
+      const child = await this.assertMemberEligible(
+        childMemberId,
+        congregationId,
+      );
+      const father = fatherMemberId
+        ? await this.assertMemberEligible(fatherMemberId, congregationId)
+        : null;
+      const mother = motherMemberId
+        ? await this.assertMemberEligible(motherMemberId, congregationId)
+        : null;
+
+      const childFamilyId =
+        await this.findActiveFamilyIdForMember(childMemberId);
+      const fatherFamilyId = fatherMemberId
+        ? await this.findActiveFamilyIdForMember(fatherMemberId)
+        : null;
+      const motherFamilyId = motherMemberId
+        ? await this.findActiveFamilyIdForMember(motherMemberId)
+        : null;
+
+      if (
+        fatherFamilyId &&
+        motherFamilyId &&
+        fatherFamilyId !== motherFamilyId
+      ) {
+        return this.skipFamilyLink('PARENTS_IN_DIFFERENT_FAMILIES');
+      }
+
+      let targetFamilyId: string | null = childFamilyId;
+      if (!targetFamilyId) {
+        targetFamilyId = fatherFamilyId ?? motherFamilyId ?? null;
+      }
+
+      if (targetFamilyId) {
+        if (fatherFamilyId && fatherFamilyId !== targetFamilyId) {
+          return this.skipFamilyLink(
+            childFamilyId
+              ? 'CHILD_IN_OTHER_FAMILY'
+              : 'PARENTS_IN_DIFFERENT_FAMILIES',
+          );
+        }
+        if (motherFamilyId && motherFamilyId !== targetFamilyId) {
+          return this.skipFamilyLink(
+            childFamilyId
+              ? 'CHILD_IN_OTHER_FAMILY'
+              : 'PARENTS_IN_DIFFERENT_FAMILIES',
+          );
+        }
+        if (childFamilyId && childFamilyId !== targetFamilyId) {
+          return this.skipFamilyLink('CHILD_IN_OTHER_FAMILY');
+        }
+      }
+
+      let family: Family;
+      if (targetFamilyId) {
+        family = await this.getFamilyOrFail(
+          targetFamilyId,
+          true,
+          congregationId,
+        );
+      } else {
+        const surnameSource =
+          father?.fullName ?? mother?.fullName ?? child.fullName;
+        const surname = this.extractSurname(surnameSource);
+        const familyName = `Família ${surname}`.slice(0, 120);
+        const headMemberId = fatherMemberId ?? motherMemberId;
+        const created = this.familiesRepository.create({
+          congregationId,
+          name: familyName,
+          notes: null,
+          headMemberId,
+        });
+        family = await this.familiesRepository.save(created);
+        this.logger.log(
+          `Família criada por filiação: ${family.id} (${family.name})`,
+        );
+      }
+
+      await this.ensureMemberLinked(
+        family.id,
+        childMemberId,
+        FamilyRelation.CHILD,
+      );
+      if (fatherMemberId) {
+        await this.ensureMemberLinked(
+          family.id,
+          fatherMemberId,
+          FamilyRelation.PARENT,
+        );
+      }
+      if (motherMemberId) {
+        await this.ensureMemberLinked(
+          family.id,
+          motherMemberId,
+          FamilyRelation.PARENT,
+        );
+      }
+
+      return {
+        attempted: true,
+        linked: true,
+        familyId: family.id,
+        familyName: family.name,
+      };
+    } catch (error) {
+      if (
+        error instanceof ApiException &&
+        error.getStatus() === Number(HttpStatus.CONFLICT)
+      ) {
+        return this.skipFamilyLink('MEMBER_ALREADY_IN_OTHER_FAMILY');
+      }
+      this.logger.warn(
+        `Orquestração familiar falhou para membro ${childMemberId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return this.skipFamilyLink('MEMBER_ALREADY_IN_OTHER_FAMILY');
+    }
+  }
+
+  private skipFamilyLink(
+    skippedReason: FamilyLinkSkippedReason,
+  ): FamilyLinkResultDto {
+    return {
+      attempted: true,
+      linked: false,
+      skippedReason,
+    };
+  }
+
+  private extractSurname(fullName: string): string {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    return parts.length > 0 ? parts[parts.length - 1] : 'Sem Nome';
+  }
+
+  private async findActiveFamilyIdForMember(
+    memberId: string,
+  ): Promise<string | null> {
+    const link = await this.familyMembersRepository
+      .createQueryBuilder('link')
+      .innerJoin('link.family', 'family')
+      .where('link.memberId = :memberId', { memberId })
+      .andWhere('family.deletedAt IS NULL')
+      .getOne();
+    return link?.familyId ?? null;
   }
 
   private async getCongregationId(

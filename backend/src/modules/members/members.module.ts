@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClassesModule } from '../classes/classes.module';
 import { CongregationsModule } from '../congregations/congregations.module';
+import { FamiliesModule } from '../families/families.module';
 import { MinistriesModule } from '../ministries/ministries.module';
 import { StorageModule } from '../secretariat/storage/storage.module';
 import { User } from '../users/entities/user.entity';
@@ -15,6 +16,7 @@ import { CalendarEvent } from '../secretariat/calendar/entities/calendar-event.e
   imports: [
     TypeOrmModule.forFeature([Member, User, CalendarEvent]),
     CongregationsModule,
+    FamiliesModule,
     MinistriesModule,
     ClassesModule,
     StorageModule,

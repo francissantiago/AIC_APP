@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -9,6 +10,7 @@ import {
   IsUUID,
   MaxLength,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { MemberGender } from '../enums/member-gender.enum';
 import { MemberMaritalStatus } from '../enums/member-marital-status.enum';
@@ -142,6 +144,35 @@ export class CreateMemberDto {
   @IsString()
   @MaxLength(150)
   motherName?: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'Membro cadastrado vinculado como pai',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID()
+  fatherMemberId?: string | null;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'Membro cadastrado vinculado como mãe',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID()
+  motherMemberId?: string | null;
+
+  @ApiPropertyOptional({
+    default: true,
+    description:
+      'Quando true e houver pai/mãe vinculados, tenta criar/vincular família (best-effort)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  linkFamily?: boolean;
 
   @ApiPropertyOptional({ example: 'Diácono', maxLength: 100 })
   @IsOptional()

@@ -1,6 +1,7 @@
 import { MemberGender } from '@enums/member-gender';
 import { MemberMaritalStatus } from '@enums/member-marital-status';
 import { MemberStatus } from '@enums/member-status';
+import { IFamilyLinkResult } from '@interfaces/IFamilyLinkResult';
 
 /** Espelha MemberResponseDto do backend. */
 export interface IMember {
@@ -26,6 +27,9 @@ export interface IMember {
   bloodType: string | null;
   fatherName: string | null;
   motherName: string | null;
+  fatherMemberId: string | null;
+  motherMemberId: string | null;
+  familyLink?: IFamilyLinkResult;
   positionTitle: string | null;
   photoUrl: string | null;
   userId: string | null;

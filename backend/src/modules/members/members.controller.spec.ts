@@ -52,14 +52,16 @@ describe('MembersController (PermissionsGuard aplicado)', () => {
       guard.canActivate(buildContext(handlerOf(methodName), permissions)),
     ).toThrow(ApiException);
 
-  describe('GET /members e GET /members/:id exigem members:read', () => {
+  describe('GET /members, options e :id exigem members:read', () => {
     it('permite com members:read', () => {
       expectAllowed('findAll', ['members:read']);
+      expectAllowed('listOptions', ['members:read']);
       expectAllowed('findOne', ['members:read']);
     });
 
     it('nega com 403 AUTH.FORBIDDEN sem members:read', () => {
       expectForbidden('findAll', ['users:read']);
+      expectForbidden('listOptions', []);
       expectForbidden('findOne', []);
     });
   });

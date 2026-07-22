@@ -32,7 +32,8 @@ export class MembershipCardFrontDto {
 
   @ApiPropertyOptional({
     nullable: true,
-    description: 'Data URL (base64) da foto para preview/impressão sem GET binário',
+    description:
+      'Data URL (base64) da foto para preview/impressão sem GET binário',
   })
   photoDataUrl!: string | null;
 }

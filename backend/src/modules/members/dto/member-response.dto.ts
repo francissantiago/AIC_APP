@@ -3,6 +3,7 @@ import { Member } from '../entities/member.entity';
 import { MemberGender } from '../enums/member-gender.enum';
 import { MemberMaritalStatus } from '../enums/member-marital-status.enum';
 import { MemberStatus } from '../enums/member-status.enum';
+import { FamilyLinkResultDto } from './family-link-result.dto';
 
 export class MemberResponseDto {
   @ApiProperty({ example: '4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f' })
@@ -79,6 +80,26 @@ export class MemberResponseDto {
   @ApiPropertyOptional({ example: 'Ana da Silva', nullable: true })
   motherName!: string | null;
 
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'ID do membro vinculado como pai',
+  })
+  fatherMemberId!: string | null;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'ID do membro vinculado como mãe',
+  })
+  motherMemberId!: string | null;
+
+  @ApiPropertyOptional({
+    type: FamilyLinkResultDto,
+    description: 'Feedback da orquestração familiar no create/update',
+  })
+  familyLink?: FamilyLinkResultDto;
+
   @ApiPropertyOptional({ example: 'Diácono', nullable: true })
   positionTitle!: string | null;
 
@@ -107,7 +128,10 @@ export class MemberResponseDto {
   @ApiProperty()
   updatedAt!: Date;
 
-  static fromEntity(member: Member): MemberResponseDto {
+  static fromEntity(
+    member: Member,
+    options?: { familyLink?: FamilyLinkResultDto },
+  ): MemberResponseDto {
     const dto = new MemberResponseDto();
     dto.id = member.id;
     dto.fullName = member.fullName;
@@ -131,12 +155,17 @@ export class MemberResponseDto {
     dto.bloodType = member.bloodType;
     dto.fatherName = member.fatherName;
     dto.motherName = member.motherName;
+    dto.fatherMemberId = member.fatherMemberId ?? null;
+    dto.motherMemberId = member.motherMemberId ?? null;
     dto.positionTitle = member.positionTitle;
     dto.photoUrl = member.photoPath ? `/api/members/${member.id}/photo` : null;
     dto.congregationId = member.congregationId;
     dto.userId = member.userId;
     dto.createdAt = member.createdAt;
     dto.updatedAt = member.updatedAt;
+    if (options?.familyLink) {
+      dto.familyLink = options.familyLink;
+    }
     return dto;
   }
 }

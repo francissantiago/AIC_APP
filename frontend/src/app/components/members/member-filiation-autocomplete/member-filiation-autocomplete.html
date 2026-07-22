@@ -1,0 +1,65 @@
+<div class="flex flex-col gap-1 text-sm text-slate-700">
+  <label [attr.for]="inputId()" class="font-medium">{{ labelKey() | translate }}</label>
+
+  <div class="relative">
+    <input
+      [id]="inputId()"
+      type="text"
+      role="combobox"
+      [attr.aria-expanded]="listOpen()"
+      aria-autocomplete="list"
+      [attr.aria-controls]="listboxId()"
+      [attr.aria-activedescendant]="activeOptionId()"
+      [formControl]="nameControl()"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      (keydown)="onKeydown($event)"
+      maxlength="150"
+      class="w-full rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    />
+
+    @if (listOpen()) {
+      <ul
+        [id]="listboxId()"
+        role="listbox"
+        class="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-md border border-slate-200 bg-white py-1 shadow-md"
+      >
+        @if (loading()) {
+          <li class="px-3 py-2 text-xs text-slate-500">{{ 'COMMON.LOADING' | translate }}</li>
+        } @else if (options().length === 0) {
+          <li class="px-3 py-2 text-xs text-slate-500">
+            {{ 'MEMBERS.FILIATION_NO_RESULTS' | translate }}
+          </li>
+        } @else {
+          @for (option of options(); track option.id; let i = $index) {
+            <li
+              [id]="listboxId() + '-option-' + i"
+              role="option"
+              [attr.aria-selected]="activeIndex() === i"
+              class="cursor-pointer px-3 py-2 text-sm text-slate-800 hover:bg-slate-100"
+              [class.bg-slate-100]="activeIndex() === i"
+              (mousedown)="selectOption(option)"
+            >
+              {{ option.fullName }}
+            </li>
+          }
+        }
+      </ul>
+    }
+  </div>
+
+  <p class="text-xs text-slate-500">{{ 'MEMBERS.FILIATION_SEARCH_HINT' | translate }}</p>
+
+  @if (isLinked()) {
+    <div class="flex flex-wrap items-center gap-2 text-xs text-emerald-700">
+      <span>{{ 'MEMBERS.FILIATION_LINKED' | translate }}</span>
+      <button
+        type="button"
+        class="rounded border border-emerald-300 px-2 py-0.5 text-emerald-800 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+        (click)="clearLink()"
+      >
+        {{ 'MEMBERS.FILIATION_CLEAR_LINK' | translate }}
+      </button>
+    </div>
+  }
+</div>

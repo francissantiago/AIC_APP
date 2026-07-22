@@ -4,6 +4,7 @@ import { environment } from 'environments/environment';
 import { Observable, retry, timer } from 'rxjs';
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IMember } from '@interfaces/IMember';
+import { IMemberOption, IQueryMemberOptions } from '@interfaces/IMemberOption';
 import { IPaginatedMembers } from '@interfaces/IPaginatedMembers';
 import { IQueryMembers } from '@interfaces/IQueryMembers';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
@@ -49,6 +50,22 @@ export class MembersService {
   getById(id: string): Observable<IMember> {
     return this.#http
       .get<IMember>(`${this.#apiUrl}/${id}`, { headers: this.#headers })
+      .pipe(this.#withRetry());
+  }
+
+  options(query: IQueryMemberOptions): Observable<IMemberOption[]> {
+    let params = new HttpParams().set('q', query.q);
+    if (query.limit != null) {
+      params = params.set('limit', String(query.limit));
+    }
+    if (query.excludeMemberId) {
+      params = params.set('excludeMemberId', query.excludeMemberId);
+    }
+    return this.#http
+      .get<IMemberOption[]>(`${this.#apiUrl}/options`, {
+        headers: this.#headers,
+        params,
+      })
       .pipe(this.#withRetry());
   }
 

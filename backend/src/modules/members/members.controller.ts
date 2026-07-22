@@ -48,10 +48,12 @@ import { MinistryResponseDto } from '../ministries/dto/ministry-response.dto';
 import { MinistriesService } from '../ministries/ministries.service';
 import { UploadedFile as MemberUploadedFile } from '../secretariat/storage/uploaded-file.interface';
 import { CreateMemberDto } from './dto/create-member.dto';
+import { MemberOptionDto } from './dto/member-option.dto';
 import {
   MemberResponseDto,
   PaginatedMembersResponseDto,
 } from './dto/member-response.dto';
+import { QueryMemberOptionsDto } from './dto/query-member-options.dto';
 import { QueryMembersDto } from './dto/query-members.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { MembersService } from './members.service';
@@ -104,6 +106,19 @@ export class MembersController {
     @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedMembersResponseDto> {
     return this.membersService.findAll(query, activeCongregationId);
+  }
+
+  @Get('options')
+  @ApiOperation({
+    summary:
+      'Autocomplete leve de membros (filiação). Mínimo 3 caracteres; active+inactive.',
+  })
+  @ApiOkResponse({ type: MemberOptionDto, isArray: true })
+  listOptions(
+    @Query() query: QueryMemberOptionsDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MemberOptionDto[]> {
+    return this.membersService.listOptions(query, activeCongregationId);
   }
 
   @Get(':id/ministries')

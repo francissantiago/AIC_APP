@@ -13,7 +13,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
 import { MEMBER_GENDERS, MemberGender } from '@enums/member-gender';
 import { MEMBER_MARITAL_STATUSES, MemberMaritalStatus } from '@enums/member-marital-status';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
@@ -22,8 +21,10 @@ import { ClassAgeGroup } from '@enums/class-age-group';
 import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { ClassStatus } from '@enums/class-status';
 import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IFamily } from '@interfaces/IFamily';
+import { IFamilyLinkResult } from '@interfaces/IFamilyLinkResult';
 import { IMemberClassSummary } from '@interfaces/IMemberClassSummary';
 import { IMemberTransfer } from '@interfaces/IMemberTransfer';
 import { IMinistry } from '@interfaces/IMinistry';
@@ -35,6 +36,7 @@ import { FamiliesService } from '@services/families-service';
 import { MemberTransfersService } from '@services/member-transfers-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
+import { MemberFiliationAutocomplete } from '../member-filiation-autocomplete/member-filiation-autocomplete';
 import { MemberTransferHistory } from '../member-transfer-history/member-transfer-history';
 import { MemberTransferWizard } from '../member-transfer-wizard/member-transfer-wizard';
 
@@ -46,6 +48,7 @@ type MemberFormTab = 'details' | 'ministries' | 'ebd' | 'family' | 'transfers';
     ReactiveFormsModule,
     RouterLink,
     TranslatePipe,
+    MemberFiliationAutocomplete,
     MemberTransferHistory,
     MemberTransferWizard,
   ],
@@ -61,6 +64,7 @@ export class MemberForm implements OnInit {
   readonly #transfersService = inject(MemberTransfersService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
+  readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly memberId = input<string | null>(null);
@@ -232,6 +236,15 @@ export class MemberForm implements OnInit {
   readonly photoUploading = signal(false);
   readonly pendingPhotoFile = signal<File | null>(null);
   readonly registrationNumber = signal<string | null>(null);
+
+  readonly fatherMemberId = signal<string | null>(null);
+  readonly motherMemberId = signal<string | null>(null);
+  readonly linkFamily = signal(true);
+  readonly familyLinkFeedback = signal<string | null>(null);
+
+  readonly showLinkFamilyCheckbox = computed(
+    () => !!this.fatherMemberId() || !!this.motherMemberId(),
+  );
 
   ngOnInit(): void {
     const id = this.memberId();
@@ -504,6 +517,9 @@ export class MemberForm implements OnInit {
             positionTitle: member.positionTitle ?? '',
             userId: member.userId ?? '',
           });
+          this.fatherMemberId.set(member.fatherMemberId ?? null);
+          this.motherMemberId.set(member.motherMemberId ?? null);
+          this.linkFamily.set(true);
           this.memberStatus.set(member.status);
           this.memberFullName.set(member.fullName);
           this.registrationNumber.set(member.registrationNumber);
@@ -522,12 +538,14 @@ export class MemberForm implements OnInit {
   #submitCreate(): void {
     const body = this.#buildPayload();
     this.saving.set(true);
+    this.familyLinkFeedback.set(null);
 
     this.#membersService
       .create(body)
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (member) => {
+          this.#applyFamilyLinkFeedback(member.familyLink);
           const pendingPhoto = this.pendingPhotoFile();
           if (!pendingPhoto) {
             this.saving.set(false);
@@ -565,14 +583,16 @@ export class MemberForm implements OnInit {
 
     const body: IUpdateMember = this.#buildPayload();
     this.saving.set(true);
+    this.familyLinkFeedback.set(null);
 
     this.#membersService
       .update(id, body)
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: () => {
+        next: (member) => {
           this.saving.set(false);
           this.feedbackKey.set('MEMBERS.SAVE_SUCCESS');
+          this.#applyFamilyLinkFeedback(member.familyLink);
           this.saved.emit();
         },
         error: (error: HttpErrorResponse) => {
@@ -652,6 +672,11 @@ export class MemberForm implements OnInit {
     if (motherName) {
       payload.motherName = motherName;
     }
+    payload.fatherMemberId = this.fatherMemberId();
+    payload.motherMemberId = this.motherMemberId();
+    if (this.showLinkFamilyCheckbox()) {
+      payload.linkFamily = this.linkFamily();
+    }
     const positionTitle = raw.positionTitle.trim();
     if (positionTitle) {
       payload.positionTitle = positionTitle;
@@ -662,6 +687,36 @@ export class MemberForm implements OnInit {
     }
 
     return payload;
+  }
+
+  onLinkFamilyChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.linkFamily.set(input.checked);
+  }
+
+  #applyFamilyLinkFeedback(familyLink: IFamilyLinkResult | undefined): void {
+    if (!familyLink?.attempted) {
+      return;
+    }
+    if (familyLink.linked && familyLink.familyName) {
+      this.familyLinkFeedback.set(
+        this.#translate.instant('MEMBERS.FILIATION_FAMILY_LINKED', {
+          name: familyLink.familyName,
+        }),
+      );
+      return;
+    }
+    if (!familyLink.linked && familyLink.skippedReason) {
+      const reasonKey =
+        familyLink.skippedReason === 'PARENTS_IN_DIFFERENT_FAMILIES'
+          ? 'MEMBERS.FILIATION_FAMILY_SKIPPED_PARENTS'
+          : familyLink.skippedReason === 'CHILD_IN_OTHER_FAMILY'
+            ? 'MEMBERS.FILIATION_FAMILY_SKIPPED_CHILD'
+            : 'MEMBERS.FILIATION_FAMILY_SKIPPED';
+      this.familyLinkFeedback.set(
+        `${this.#translate.instant('MEMBERS.FILIATION_FAMILY_SKIPPED')} ${this.#translate.instant(reasonKey)}`,
+      );
+    }
   }
 
   #loadPhotoBlob(memberId: string, photoUrl: string | null): void {

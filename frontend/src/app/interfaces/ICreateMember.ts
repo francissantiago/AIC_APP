@@ -24,6 +24,9 @@ export interface ICreateMember {
   bloodType?: string;
   fatherName?: string;
   motherName?: string;
+  fatherMemberId?: string | null;
+  motherMemberId?: string | null;
+  linkFamily?: boolean;
   positionTitle?: string;
   userId?: string;
 }

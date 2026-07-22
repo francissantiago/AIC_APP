@@ -1,29 +1,36 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@services/auth-service';
 import { CongregationContextService } from '@services/congregation-context-service';
 import { environment } from 'environments/environment';
+import { of, throwError } from 'rxjs';
 import { authInterceptor } from './auth-interceptor';
 
 describe('authInterceptor', () => {
   const accessToken = signal<string | null>('token-abc');
   const activeCongregationId = signal<string | null>('cong-123');
+  const clearSession = vi.fn();
+  const navigateByUrl = vi.fn();
+  const reresolveAfterDenied = vi.fn();
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
+    accessToken.set('token-abc');
+    activeCongregationId.set('cong-123');
+    clearSession.mockReset();
+    navigateByUrl.mockReset();
+    reresolveAfterDenied.mockReset();
+
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptors([authInterceptor as HttpInterceptorFn])),
-        provideHttpClientTesting(),
         {
           provide: AuthService,
           useValue: {
             accessToken,
             isAuthenticated: () => !!accessToken(),
-            clearSession: vi.fn(),
+            clearSession,
           },
         },
         {
@@ -31,54 +38,75 @@ describe('authInterceptor', () => {
           useValue: {
             activeCongregationId,
             memberships: signal([]),
-            reresolveAfterDenied: vi.fn(),
+            reresolveAfterDenied,
           },
         },
         {
           provide: Router,
-          useValue: { navigateByUrl: vi.fn() },
+          useValue: { navigateByUrl },
         },
       ],
     });
   });
 
+  function runInterceptor(url: string): HttpRequest<unknown> {
+    const req = new HttpRequest('GET', url);
+    let captured!: HttpRequest<unknown>;
+
+    TestBed.runInInjectionContext(() => {
+      authInterceptor(req, (nextReq) => {
+        captured = nextReq;
+        return of(new HttpResponse({ status: 200, body: [] }));
+      }).subscribe();
+    });
+
+    expect(captured).toBeTruthy();
+    return captured;
+  }
+
   it('adds Authorization and X-Congregation-Id for authenticated API requests', () => {
-    const http = TestBed.inject(HttpClient);
-    const httpMock = TestBed.inject(HttpTestingController);
-
-    http.get(`${environment.apiUrl}/members`).subscribe();
-
-    const req = httpMock.expectOne(`${environment.apiUrl}/members`);
-    expect(req.request.headers.get('Authorization')).toBe('Bearer token-abc');
-    expect(req.request.headers.get('X-Congregation-Id')).toBe('cong-123');
-    req.flush([]);
-    httpMock.verify();
+    const out = runInterceptor(`${environment.apiUrl}/members`);
+    expect(out.headers.get('Authorization')).toBe('Bearer token-abc');
+    expect(out.headers.get('X-Congregation-Id')).toBe('cong-123');
   });
 
   it('does not add congregation header on login requests', () => {
-    const http = TestBed.inject(HttpClient);
-    const httpMock = TestBed.inject(HttpTestingController);
-
-    http.post(`${environment.apiUrl}/auth/login`, {}).subscribe();
-
-    const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-    expect(req.request.headers.get('Authorization')).toBe('Bearer token-abc');
-    expect(req.request.headers.has('X-Congregation-Id')).toBe(false);
-    req.flush({});
-    httpMock.verify();
+    const out = runInterceptor(`${environment.apiUrl}/auth/login`);
+    expect(out.headers.get('Authorization')).toBe('Bearer token-abc');
+    expect(out.headers.has('X-Congregation-Id')).toBe(false);
   });
 
   it('does not add headers when token is absent', () => {
     accessToken.set(null);
-    const http = TestBed.inject(HttpClient);
-    const httpMock = TestBed.inject(HttpTestingController);
+    const out = runInterceptor(`${environment.apiUrl}/members`);
+    expect(out.headers.has('Authorization')).toBe(false);
+    expect(out.headers.has('X-Congregation-Id')).toBe(false);
+  });
 
-    http.get(`${environment.apiUrl}/members`).subscribe();
+  it('clears session and redirects on 401 for authenticated API requests', () => {
+    const req = new HttpRequest('GET', `${environment.apiUrl}/members`);
+    let sawError = false;
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/members`);
-    expect(req.request.headers.has('Authorization')).toBe(false);
-    expect(req.request.headers.has('X-Congregation-Id')).toBe(false);
-    req.flush([]);
-    httpMock.verify();
+    TestBed.runInInjectionContext(() => {
+      authInterceptor(req, () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 401,
+              statusText: 'Unauthorized',
+              url: req.url,
+              headers: new HttpHeaders(),
+            }),
+        ),
+      ).subscribe({
+        error: () => {
+          sawError = true;
+        },
+      });
+    });
+
+    expect(sawError).toBe(true);
+    expect(clearSession).toHaveBeenCalledTimes(1);
+    expect(navigateByUrl).toHaveBeenCalledWith('/login');
   });
 });

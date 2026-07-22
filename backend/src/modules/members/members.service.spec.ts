@@ -5,6 +5,7 @@ import { CongregationsService } from '../congregations/congregations.service';
 import { Congregation } from '../congregations/entities/congregation.entity';
 import { CongregationStatus } from '../congregations/enums/congregation-status.enum';
 import { CongregationType } from '../congregations/enums/congregation-type.enum';
+import { FamiliesService } from '../families/families.service';
 import { FileStorageService } from '../secretariat/storage/file-storage.service';
 import { User } from '../users/entities/user.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -19,27 +20,47 @@ describe('MembersService', () => {
   let service: MembersService;
 
   const baseCongregationId = 'cccccccc-dddd-eeee-ffff-000000000001';
+  const fatherId = '11111111-2222-3333-4444-555555555501';
+  const motherId = '11111111-2222-3333-4444-555555555502';
 
+  const managerCreate = jest.fn();
+  const managerSave = jest.fn();
+  const managerQuery = jest.fn();
+  type MockEntityManager = {
+    create: jest.Mock;
+    save: jest.Mock;
+    query: jest.Mock;
+    transaction: jest.Mock;
+  };
+  const manager: MockEntityManager = {
+    create: managerCreate,
+    save: managerSave,
+    query: managerQuery,
+    transaction: jest.fn((cb: (m: MockEntityManager) => Promise<unknown>) =>
+      cb(manager),
+    ),
+  };
+  const membersFindOne = jest.fn();
+  const membersFind = jest.fn();
+  const membersSave = jest.fn();
+  const membersSoftRemove = jest.fn();
+  const membersCreateQueryBuilder = jest.fn();
   const membersRepository = {
-    findOne: jest.fn(),
+    findOne: membersFindOne,
+    find: membersFind,
     create: jest.fn(),
-    save: jest.fn(),
-    softRemove: jest.fn(),
-    createQueryBuilder: jest.fn(),
-    manager: {
-      create: jest.fn(),
-      save: jest.fn(),
-      query: jest.fn(),
-      transaction: jest.fn(async (cb: (m: unknown) => Promise<unknown>) =>
-        cb(membersRepository.manager),
-      ),
-    },
+    save: membersSave,
+    softRemove: membersSoftRemove,
+    createQueryBuilder: membersCreateQueryBuilder,
+    manager,
   };
+  const usersFindOne = jest.fn();
   const usersRepository = {
-    findOne: jest.fn(),
+    findOne: usersFindOne,
   };
+  const getOrCreateBase = jest.fn();
   const congregationsService = {
-    getOrCreateBase: jest.fn(),
+    getOrCreateBase,
   };
   const birthdayCalendarSync = {
     syncOnCreate: jest.fn(),
@@ -51,6 +72,10 @@ describe('MembersService', () => {
     deleteIfExists: jest.fn(),
     openReadStream: jest.fn(),
   };
+  const linkFiliationFamily = jest.fn();
+  const familiesService = {
+    linkFiliationFamily,
+  };
 
   const baseCongregation = (): Congregation => {
     const congregation = new Congregation();
@@ -61,7 +86,7 @@ describe('MembersService', () => {
     return congregation;
   };
 
-  const baseMember = (): Member => {
+  const baseMember = (overrides?: Partial<Member>): Member => {
     const member = new Member();
     member.id = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
     member.fullName = 'Maria da Silva';
@@ -85,6 +110,8 @@ describe('MembersService', () => {
     member.bloodType = null;
     member.fatherName = null;
     member.motherName = null;
+    member.fatherMemberId = null;
+    member.motherMemberId = null;
     member.positionTitle = null;
     member.photoPath = null;
     member.congregationId = baseCongregationId;
@@ -93,6 +120,7 @@ describe('MembersService', () => {
     member.createdAt = new Date('2026-07-17T00:00:00Z');
     member.updatedAt = new Date('2026-07-17T00:00:00Z');
     member.deletedAt = null;
+    Object.assign(member, overrides);
     return member;
   };
 
@@ -105,7 +133,14 @@ describe('MembersService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    congregationsService.getOrCreateBase.mockResolvedValue(baseCongregation());
+    getOrCreateBase.mockResolvedValue(baseCongregation());
+    membersFind.mockResolvedValue([]);
+    linkFiliationFamily.mockResolvedValue({
+      attempted: true,
+      linked: true,
+      familyId: 'ffffffff-1111-2222-3333-444444444444',
+      familyName: 'Família Silva',
+    });
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MembersService,
@@ -117,6 +152,7 @@ describe('MembersService', () => {
           useValue: birthdayCalendarSync,
         },
         { provide: FileStorageService, useValue: fileStorageService },
+        { provide: FamiliesService, useValue: familiesService },
       ],
     }).compile();
 
@@ -125,19 +161,19 @@ describe('MembersService', () => {
 
   describe('create', () => {
     it('deve criar membro associado à congregação-base', async () => {
-      membersRepository.findOne.mockResolvedValue(null);
+      membersFindOne.mockResolvedValue(null);
       const saved = baseMember();
       saved.registrationNumber = '000001';
-      membersRepository.manager.create.mockReturnValue(saved);
-      membersRepository.manager.save.mockResolvedValue(saved);
-      membersRepository.manager.query
+      managerCreate.mockReturnValue(saved);
+      managerSave.mockResolvedValue(saved);
+      managerQuery
         .mockResolvedValueOnce([{ id: baseCongregationId }])
         .mockResolvedValueOnce([{ max_seq: 0 }]);
 
       const result = await service.create(createDto());
 
-      expect(congregationsService.getOrCreateBase).toHaveBeenCalled();
-      expect(membersRepository.manager.create).toHaveBeenCalledWith(
+      expect(getOrCreateBase).toHaveBeenCalled();
+      expect(managerCreate).toHaveBeenCalledWith(
         Member,
         expect.objectContaining({
           fullName: 'Maria da Silva',
@@ -155,8 +191,8 @@ describe('MembersService', () => {
     });
 
     it('deve lançar 422 quando userId aponta para usuário inexistente', async () => {
-      membersRepository.findOne.mockResolvedValue(null);
-      usersRepository.findOne.mockResolvedValue(null);
+      membersFindOne.mockResolvedValue(null);
+      usersFindOne.mockResolvedValue(null);
 
       await expect(
         service.create({
@@ -164,7 +200,7 @@ describe('MembersService', () => {
           userId: '4f6c1c1e-4a5b-4f0e-9d2a-9a3b8c7d6e5f',
         }),
       ).rejects.toThrow(ApiException);
-      expect(membersRepository.manager.save).not.toHaveBeenCalled();
+      expect(managerSave).not.toHaveBeenCalled();
     });
   });
 
@@ -179,7 +215,7 @@ describe('MembersService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getManyAndCount: jest.fn().mockResolvedValue([[member], 1]),
       };
-      membersRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+      membersCreateQueryBuilder.mockReturnValue(queryBuilder);
 
       const result = await service.findAll({
         page: 1,
@@ -188,7 +224,7 @@ describe('MembersService', () => {
         q: 'silva',
       });
 
-      expect(congregationsService.getOrCreateBase).toHaveBeenCalled();
+      expect(getOrCreateBase).toHaveBeenCalled();
       expect(queryBuilder.where).toHaveBeenCalledWith(
         'member.congregationId = :congregationId',
         { congregationId: baseCongregationId },
@@ -205,9 +241,7 @@ describe('MembersService', () => {
       const member = baseMember();
       const other = baseMember();
       other.id = '11111111-2222-3333-4444-555555555555';
-      membersRepository.findOne
-        .mockResolvedValueOnce(member)
-        .mockResolvedValueOnce(other);
+      membersFindOne.mockResolvedValueOnce(member).mockResolvedValueOnce(other);
 
       await expect(
         service.update(member.id, { email: 'outro@igreja.org' }),
@@ -215,7 +249,7 @@ describe('MembersService', () => {
     });
 
     it('deve lançar 404 quando o membro está fora do escopo da base', async () => {
-      membersRepository.findOne.mockResolvedValue(null);
+      membersFindOne.mockResolvedValue(null);
 
       await expect(
         service.update('id-fora-do-escopo', { fullName: 'Outro' }),
@@ -226,34 +260,213 @@ describe('MembersService', () => {
   describe('remove', () => {
     it('deve fazer soft delete via softRemove', async () => {
       const member = baseMember();
-      membersRepository.findOne.mockResolvedValue(member);
-      membersRepository.softRemove.mockResolvedValue(member);
+      membersFindOne.mockResolvedValue(member);
+      membersSoftRemove.mockResolvedValue(member);
 
       await service.remove(member.id);
 
-      expect(membersRepository.findOne).toHaveBeenCalledWith({
+      expect(membersFindOne).toHaveBeenCalledWith({
         where: { id: member.id, congregationId: baseCongregationId },
       });
-      expect(membersRepository.softRemove).toHaveBeenCalledWith(member);
+      expect(membersSoftRemove).toHaveBeenCalledWith(member);
     });
 
     it('deve lançar 404 quando o membro não existe', async () => {
-      membersRepository.findOne.mockResolvedValue(null);
+      membersFindOne.mockResolvedValue(null);
 
       await expect(service.remove('id-inexistente')).rejects.toThrow(
         ApiException,
       );
-      expect(membersRepository.softRemove).not.toHaveBeenCalled();
+      expect(membersSoftRemove).not.toHaveBeenCalled();
     });
   });
 
   describe('findOne', () => {
     it('deve lançar 404 quando o membro não existe no escopo da base', async () => {
-      membersRepository.findOne.mockResolvedValue(null);
+      membersFindOne.mockResolvedValue(null);
 
       await expect(service.findOne('id-inexistente')).rejects.toThrow(
         ApiException,
       );
+    });
+  });
+
+  describe('listOptions', () => {
+    it('deve buscar active+inactive, excluir deceased/transferred e excludeMemberId', async () => {
+      const queryBuilder = {
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([
+          baseMember({
+            id: fatherId,
+            fullName: 'José da Silva',
+            gender: MemberGender.MALE,
+          }),
+        ]),
+      };
+      membersCreateQueryBuilder.mockReturnValue(queryBuilder);
+
+      const result = await service.listOptions({
+        q: 'Jos',
+        limit: 15,
+        excludeMemberId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'member.status IN (:...statuses)',
+        { statuses: [MemberStatus.ACTIVE, MemberStatus.INACTIVE] },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'member.id != :excludeMemberId',
+        { excludeMemberId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' },
+      );
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: fatherId,
+          fullName: 'José da Silva',
+        }),
+      ]);
+    });
+  });
+
+  describe('filiação', () => {
+    it('create com pai selecionado sincroniza nome e orquestra família', async () => {
+      const father = baseMember({
+        id: fatherId,
+        fullName: 'José da Silva',
+        gender: MemberGender.MALE,
+      });
+      membersFind.mockResolvedValue([father]);
+      membersFindOne.mockResolvedValue(null);
+      const saved = baseMember({
+        fatherMemberId: fatherId,
+        fatherName: 'José da Silva',
+        registrationNumber: '000001',
+      });
+      managerCreate.mockReturnValue(saved);
+      managerSave.mockResolvedValue(saved);
+      managerQuery
+        .mockResolvedValueOnce([{ id: baseCongregationId }])
+        .mockResolvedValueOnce([{ max_seq: 0 }]);
+
+      const result = await service.create({
+        ...createDto(),
+        fatherMemberId: fatherId,
+      });
+
+      expect(managerCreate).toHaveBeenCalledWith(
+        Member,
+        expect.objectContaining({
+          fatherMemberId: fatherId,
+          fatherName: 'José da Silva',
+        }),
+      );
+      expect(linkFiliationFamily).toHaveBeenCalledWith({
+        childMemberId: saved.id,
+        fatherMemberId: fatherId,
+        motherMemberId: null,
+        congregationId: baseCongregationId,
+      });
+      expect(result.familyLink?.linked).toBe(true);
+    });
+
+    it('create com conflito familiar não quebra o save do membro', async () => {
+      const father = baseMember({
+        id: fatherId,
+        fullName: 'José da Silva',
+      });
+      const mother = baseMember({
+        id: motherId,
+        fullName: 'Ana da Silva',
+        gender: MemberGender.FEMALE,
+      });
+      membersFind.mockResolvedValue([father, mother]);
+      membersFindOne.mockResolvedValue(null);
+      const saved = baseMember({
+        fatherMemberId: fatherId,
+        motherMemberId: motherId,
+        fatherName: 'José da Silva',
+        motherName: 'Ana da Silva',
+        registrationNumber: '000001',
+      });
+      managerCreate.mockReturnValue(saved);
+      managerSave.mockResolvedValue(saved);
+      managerQuery
+        .mockResolvedValueOnce([{ id: baseCongregationId }])
+        .mockResolvedValueOnce([{ max_seq: 0 }]);
+      linkFiliationFamily.mockResolvedValue({
+        attempted: true,
+        linked: false,
+        skippedReason: 'PARENTS_IN_DIFFERENT_FAMILIES',
+      });
+
+      const result = await service.create({
+        ...createDto(),
+        fatherMemberId: fatherId,
+        motherMemberId: motherId,
+      });
+
+      expect(result.id).toBe(saved.id);
+      expect(result.familyLink).toEqual({
+        attempted: true,
+        linked: false,
+        skippedReason: 'PARENTS_IN_DIFFERENT_FAMILIES',
+      });
+    });
+
+    it('update limpa ID quando o nome diverge do vínculo', async () => {
+      const father = baseMember({
+        id: fatherId,
+        fullName: 'José da Silva',
+      });
+      const member = baseMember({
+        fatherMemberId: fatherId,
+        fatherName: 'José da Silva',
+      });
+      membersFindOne.mockResolvedValue(member);
+      membersFind.mockResolvedValue([father]);
+      membersSave.mockImplementation((entity: Member) =>
+        Promise.resolve(entity),
+      );
+
+      const result = await service.update(member.id, {
+        fatherName: 'Nome Livre Digitado',
+      });
+
+      expect(result.fatherMemberId).toBeNull();
+      expect(result.fatherName).toBe('Nome Livre Digitado');
+      expect(linkFiliationFamily).not.toHaveBeenCalled();
+    });
+
+    it('create com linkFamily=false não orquestra família', async () => {
+      const father = baseMember({
+        id: fatherId,
+        fullName: 'José da Silva',
+      });
+      membersFind.mockResolvedValue([father]);
+      membersFindOne.mockResolvedValue(null);
+      const saved = baseMember({
+        fatherMemberId: fatherId,
+        fatherName: 'José da Silva',
+        registrationNumber: '000001',
+      });
+      managerCreate.mockReturnValue(saved);
+      managerSave.mockResolvedValue(saved);
+      managerQuery
+        .mockResolvedValueOnce([{ id: baseCongregationId }])
+        .mockResolvedValueOnce([{ max_seq: 0 }]);
+
+      const result = await service.create({
+        ...createDto(),
+        fatherMemberId: fatherId,
+        linkFamily: false,
+      });
+
+      expect(linkFiliationFamily).not.toHaveBeenCalled();
+      expect(result.familyLink).toEqual({ attempted: false, linked: false });
     });
   });
 
@@ -269,15 +482,13 @@ describe('MembersService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getManyAndCount: jest.fn().mockResolvedValue([[member], 1]),
       };
-      membersRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+      membersCreateQueryBuilder.mockReturnValue(queryBuilder);
       jest.clearAllMocks();
-      congregationsService.getOrCreateBase.mockResolvedValue(
-        baseCongregation(),
-      );
+      getOrCreateBase.mockResolvedValue(baseCongregation());
 
       await service.findAll({ page: 1, limit: 20 }, explicitId);
 
-      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(getOrCreateBase).not.toHaveBeenCalled();
       expect(queryBuilder.where).toHaveBeenCalledWith(
         'member.congregationId = :congregationId',
         { congregationId: explicitId },
