@@ -26,6 +26,11 @@ import { MemberStatus } from './enums/member-status.enum';
 import { MemberBirthdayCalendarSyncService } from './member-birthday-calendar.sync.service';
 
 const MEMBER_PHOTOS_SUBDIR = 'members/photos';
+const REGISTRATION_NUMBER_MAX = 999_999;
+
+function formatRegistrationNumber(sequence: number): string {
+  return String(sequence).padStart(6, '0');
+}
 
 function mimeFromPath(relativePath: string): string {
   const ext = path.extname(relativePath).toLowerCase();
@@ -63,11 +68,9 @@ export class MembersService {
     actorUserId?: string,
   ): Promise<MemberResponseDto> {
     const congregationId = await this.getCongregationId(activeCongregationId);
-    const saved = await this.createInTransaction(
-      this.membersRepository.manager,
-      dto,
-      congregationId,
-      actorUserId,
+    const saved = await this.membersRepository.manager.transaction(
+      async (manager) =>
+        this.createInTransaction(manager, dto, congregationId, actorUserId),
     );
     return MemberResponseDto.fromEntity(saved);
   }
@@ -83,6 +86,11 @@ export class MembersService {
       await this.assertUserExists(dto.userId);
       await this.assertUserIdUniqueness(dto.userId);
     }
+
+    const registrationNumber = await this.allocateNextRegistrationNumber(
+      manager,
+      congregationId,
+    );
 
     const member = manager.create(Member, {
       fullName: dto.fullName,
@@ -101,6 +109,7 @@ export class MembersService {
       zipCode: dto.zipCode ?? null,
       notes: dto.notes ?? null,
       rg: dto.rg ?? null,
+      registrationNumber,
       placeOfBirth: dto.placeOfBirth ?? null,
       bloodType: dto.bloodType ?? null,
       fatherName: dto.fatherName ?? null,
@@ -343,6 +352,41 @@ export class MembersService {
     activeCongregationId?: string,
   ): Promise<Member> {
     return this.getMemberOrFail(id, activeCongregationId);
+  }
+
+  /**
+   * Próximo número sequencial por congregação (000001–999999).
+   * Inclui soft-deleted para não reutilizar números.
+   */
+  private async allocateNextRegistrationNumber(
+    manager: EntityManager,
+    congregationId: string,
+  ): Promise<string> {
+    await manager.query(
+      'SELECT `id` FROM `congregations` WHERE `id` = ? FOR UPDATE',
+      [congregationId],
+    );
+
+    const rows = (await manager.query(
+      `
+        SELECT COALESCE(MAX(CAST(\`registration_number\` AS UNSIGNED)), 0) AS \`max_seq\`
+        FROM \`members\`
+        WHERE \`congregation_id\` = ?
+          AND \`registration_number\` REGEXP '^[0-9]{1,6}$'
+      `,
+      [congregationId],
+    )) as Array<{ max_seq: number | string }>;
+
+    const maxSeq = Number(rows[0]?.max_seq ?? 0);
+    const next = maxSeq + 1;
+    if (next > REGISTRATION_NUMBER_MAX) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SYS_BAD_REQUEST,
+        message:
+          'Limite de números de registro atingido para esta congregação (999999).',
+      });
+    }
+    return formatRegistrationNumber(next);
   }
 
   private async getMemberOrFail(

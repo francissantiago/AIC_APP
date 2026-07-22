@@ -7,6 +7,7 @@ import {
   IMembershipCardSettings,
   IUpdateMembershipCardSettings,
 } from '@interfaces/IMembershipCard';
+import { IMembershipCardVerify } from '@interfaces/IMembershipCardVerify';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +26,14 @@ export class MembershipCardsService {
   getCard(memberId: string): Observable<IMembershipCard> {
     return this.#http
       .get<IMembershipCard>(`${this.#apiUrl}/${memberId}`, { headers: this.#headers })
+      .pipe(this.#withRetry());
+  }
+
+  verifyPublic(memberId: string): Observable<IMembershipCardVerify> {
+    return this.#http
+      .get<IMembershipCardVerify>(`${this.#apiUrl}/public/verify/${memberId}`, {
+        headers: this.#headers,
+      })
       .pipe(this.#withRetry());
   }
 
@@ -52,31 +61,22 @@ export class MembershipCardsService {
   uploadLogo(file: File): Observable<IMembershipCardSettings> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.#http
-      .post<IMembershipCardSettings>(`${this.#apiUrl}/settings/logo`, formData)
-      .pipe(this.#withRetry());
+    // Sem retry: upload não deve martelar o servidor em caso de falha.
+    return this.#http.post<IMembershipCardSettings>(`${this.#apiUrl}/settings/logo`, formData);
   }
 
   uploadSignature(file: File): Observable<IMembershipCardSettings> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.#http
-      .post<IMembershipCardSettings>(`${this.#apiUrl}/settings/signature`, formData)
-      .pipe(this.#withRetry());
+    return this.#http.post<IMembershipCardSettings>(`${this.#apiUrl}/settings/signature`, formData);
   }
 
-  getLogoBlob(): Observable<Blob> {
-    const params = new HttpParams().set('_', String(Date.now()));
-    return this.#http
-      .get(`${this.#apiUrl}/settings/logo`, { responseType: 'blob', params })
-      .pipe(this.#withRetry());
+  removeLogo(): Observable<IMembershipCardSettings> {
+    return this.#http.delete<IMembershipCardSettings>(`${this.#apiUrl}/settings/logo`);
   }
 
-  getSignatureBlob(): Observable<Blob> {
-    const params = new HttpParams().set('_', String(Date.now()));
-    return this.#http
-      .get(`${this.#apiUrl}/settings/signature`, { responseType: 'blob', params })
-      .pipe(this.#withRetry());
+  removeSignature(): Observable<IMembershipCardSettings> {
+    return this.#http.delete<IMembershipCardSettings>(`${this.#apiUrl}/settings/signature`);
   }
 
   #withRetry<T>() {

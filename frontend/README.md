@@ -29,10 +29,45 @@ A aplicação sobe em http://localhost:4200.
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm start` | Servidor de desenvolvimento (`ng serve`) |
+| `npm start` | Servidor de desenvolvimento (`ng serve`, porta 4200) |
+| `npm run dev` | Dev em `0.0.0.0:83` (acesso local/rede) |
+| `npm run dev:remote` | Dev atrás de HTTPS reverse proxy (`dev-application.lightburden.net`) |
+| `npm run dev:no-hmr` | Igual ao `dev`, sem WebSocket/HMR (evita erro no console se o proxy não fizer upgrade WS) |
 | `npm run build` | Build de produção |
 | `npm run watch` | Build em watch (modo development) |
 | `npm test` | Testes unitários |
+
+### HMR atrás de reverse proxy (HTTPS)
+
+O Vite/Angular precisa de **WebSocket** para hot reload. Se o browser carrega
+`https://dev-application.lightburden.net` e o proxy só encaminha HTTP para
+`localhost:83`, o HMR falha com `WebSocket connection to 'wss://…' failed`.
+
+1. Use `npm run dev:remote` (configura o cliente HMR para `wss` na porta 443).
+2. No reverse proxy, habilite upgrade de WebSocket. Exemplo Nginx:
+
+```nginx
+location / {
+  proxy_pass http://127.0.0.1:83;
+  proxy_http_version 1.1;
+  proxy_set_header Host $host;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection "upgrade";
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+3. Se o proxy **não** puder fazer upgrade WS, use `npm run dev:no-hmr` e atualize
+   a página manualmente — o app funciona; só o hot reload fica desligado.
+
+Variáveis opcionais (`dev:remote`):
+
+| Variável | Padrão | Uso |
+|----------|--------|-----|
+| `AIC_DEV_PUBLIC_HOST` | `dev-application.lightburden.net` | Host público do HMR |
+| `AIC_HMR_PROTOCOL` | `wss` | Protocolo do cliente |
+| `AIC_HMR_CLIENT_PORT` | `443` | Porta vista pelo browser |
 
 ## Idiomas (i18n)
 

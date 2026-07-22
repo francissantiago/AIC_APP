@@ -404,41 +404,68 @@
           }
         </label>
 
-        <div class="grid gap-4 md:grid-cols-2">
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'MEMBERS.PHONE' | translate }}</span>
-            <input
-              type="tel"
-              formControlName="phone"
-              autocomplete="tel"
-              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-            />
-          </label>
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MEMBERS.PHONE' | translate }}</span>
+          <input
+            type="tel"
+            formControlName="phone"
+            autocomplete="tel"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
 
+        <div class="grid gap-4 md:grid-cols-2">
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'MEMBERS.DOCUMENT' | translate }}</span>
             <input
               type="text"
               formControlName="document"
+              inputmode="numeric"
+              autocomplete="off"
               class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             />
+            <span class="text-xs text-slate-500">{{ 'MEMBERS.DOCUMENT_HINT' | translate }}</span>
           </label>
-        </div>
-
-        <div class="grid gap-4 md:grid-cols-2">
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'MEMBERS.RG' | translate }}</span>
             <input
               type="text"
               formControlName="rg"
+              autocomplete="off"
               class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             />
+            <span class="text-xs text-slate-500">{{ 'MEMBERS.RG_HINT' | translate }}</span>
           </label>
+        </div>
+
+        @if (isEditMode() && registrationNumber(); as reg) {
+          <div class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.REGISTRATION_NUMBER' | translate }}</span>
+            <p
+              class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono tracking-wider text-slate-900"
+            >
+              {{ reg }}
+            </p>
+            <span class="text-xs text-slate-500">{{
+              'MEMBERS.REGISTRATION_NUMBER_HINT' | translate
+            }}</span>
+          </div>
+        }
+
+        <div class="grid gap-4 md:grid-cols-2">
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'MEMBERS.PLACE_OF_BIRTH' | translate }}</span>
             <input
               type="text"
               formControlName="placeOfBirth"
+              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'MEMBERS.POSITION_TITLE' | translate }}</span>
+            <input
+              type="text"
+              formControlName="positionTitle"
               class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             />
           </label>
@@ -471,20 +498,12 @@
           </label>
         </div>
 
-        <label class="flex flex-col gap-1 text-sm text-slate-700">
-          <span>{{ 'MEMBERS.POSITION_TITLE' | translate }}</span>
-          <input
-            type="text"
-            formControlName="positionTitle"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          />
-        </label>
-
-        @if (isEditMode() && canWriteMembers()) {
+        @if (canWriteMembers()) {
           <div class="rounded-md border border-slate-200 p-3">
-            <p class="mb-2 text-sm font-medium text-slate-800">
+            <p class="mb-1 text-sm font-medium text-slate-800">
               {{ 'MEMBERS.PHOTO' | translate }}
             </p>
+            <p class="mb-2 text-xs text-slate-500">{{ 'MEMBERS.PHOTO_HINT' | translate }}</p>
             @if (photoObjectUrl(); as photo) {
               <img
                 [src]="photo"
@@ -507,7 +526,7 @@
                   (change)="onPhotoSelected($event)"
                 />
               </label>
-              @if (photoUrl()) {
+              @if (photoUrl() || pendingPhotoFile()) {
                 <button
                   type="button"
                   class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"

@@ -105,7 +105,10 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "allowedHosts": ["dev-application.lightburden.net"],
+            "allowedHosts": [
+              "dev-application.lightburden.net",
+              ".lightburden.net"
+            ],
             "proxyConfig": "proxy.conf.json"
           }
         },

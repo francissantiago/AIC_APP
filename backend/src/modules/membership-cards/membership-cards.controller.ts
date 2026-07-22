@@ -1,13 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
-  Res,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -26,7 +28,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -156,42 +157,66 @@ export class MembershipCardsController {
     );
   }
 
+  @Delete('settings/logo')
+  @RequirePermission('membership-cards:write')
+  @ApiOperation({ summary: 'Remover logo institucional' })
+  @ApiOkResponse({ type: MembershipCardSettingsResponseDto })
+  removeLogo(
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MembershipCardSettingsResponseDto> {
+    return this.membershipCardsService.removeLogo(activeCongregationId);
+  }
+
+  @Delete('settings/signature')
+  @RequirePermission('membership-cards:write')
+  @ApiOperation({ summary: 'Remover assinatura institucional' })
+  @ApiOkResponse({ type: MembershipCardSettingsResponseDto })
+  removeSignature(
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<MembershipCardSettingsResponseDto> {
+    return this.membershipCardsService.removeSignature(activeCongregationId);
+  }
+
   @Get('settings/logo')
+  @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ summary: 'Obter logo institucional' })
   @ApiProduces('image/png', 'image/jpeg')
   @ApiOkResponse({
-    description: 'Stream da logo',
+    description: 'Arquivo da logo',
     schema: { type: 'string', format: 'binary' },
   })
   @ApiNotFoundResponse({ description: 'Logo não encontrada' })
   async getLogo(
-    @Res() response: Response,
     @ActiveCongregation() activeCongregationId?: string,
-  ): Promise<void> {
+  ): Promise<StreamableFile> {
     const file =
-      await this.membershipCardsService.getLogoStream(activeCongregationId);
-    response.setHeader('Content-Type', file.mimeType);
-    file.stream.pipe(response);
+      await this.membershipCardsService.getLogoFile(activeCongregationId);
+    return new StreamableFile(file.buffer, {
+      type: file.mimeType,
+      disposition: 'inline; filename="logo"',
+      length: file.buffer.length,
+    });
   }
 
   @Get('settings/signature')
+  @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ summary: 'Obter assinatura institucional' })
   @ApiProduces('image/png', 'image/jpeg')
   @ApiOkResponse({
-    description: 'Stream da assinatura',
+    description: 'Arquivo da assinatura',
     schema: { type: 'string', format: 'binary' },
   })
   @ApiNotFoundResponse({ description: 'Assinatura não encontrada' })
   async getSignature(
-    @Res() response: Response,
     @ActiveCongregation() activeCongregationId?: string,
-  ): Promise<void> {
+  ): Promise<StreamableFile> {
     const file =
-      await this.membershipCardsService.getSignatureStream(
-        activeCongregationId,
-      );
-    response.setHeader('Content-Type', file.mimeType);
-    file.stream.pipe(response);
+      await this.membershipCardsService.getSignatureFile(activeCongregationId);
+    return new StreamableFile(file.buffer, {
+      type: file.mimeType,
+      disposition: 'inline; filename="signature"',
+      length: file.buffer.length,
+    });
   }
 
   @Get()

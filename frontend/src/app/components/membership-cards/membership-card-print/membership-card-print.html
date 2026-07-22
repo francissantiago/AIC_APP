@@ -1,10 +1,20 @@
 <section class="membership-card-print" data-testid="membership-card-print" aria-hidden="true">
   @for (card of cards(); track card.memberId) {
     <div class="membership-card-print__sheet">
-      <app-membership-card-preview [card]="card" side="front" />
+      <app-membership-card-preview
+        [card]="card"
+        side="front"
+        [logoSrc]="logoSrc()"
+        [signatureSrc]="signatureSrc()"
+      />
     </div>
     <div class="membership-card-print__sheet">
-      <app-membership-card-preview [card]="card" side="back" />
+      <app-membership-card-preview
+        [card]="card"
+        side="back"
+        [logoSrc]="logoSrc()"
+        [signatureSrc]="signatureSrc()"
+      />
     </div>
   }
 </section>

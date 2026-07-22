@@ -13,6 +13,10 @@ import { FileStorageService } from '../secretariat/storage/file-storage.service'
 import { MembershipCardSettings } from './entities/membership-card-settings.entity';
 import { MembershipCardsService } from './membership-cards.service';
 
+jest.mock('qrcode', () => ({
+  toDataURL: jest.fn().mockResolvedValue('data:image/png;base64,qr'),
+}));
+
 describe('MembershipCardsService', () => {
   let service: MembershipCardsService;
 
@@ -43,9 +47,14 @@ describe('MembershipCardsService', () => {
     saveImageAsset: jest.fn(),
     deleteIfExists: jest.fn(),
     openReadStream: jest.fn(),
+    readFileBuffer: jest.fn().mockResolvedValue(Buffer.from('img')),
   };
   const configService = {
-    get: jest.fn().mockReturnValue('America/Sao_Paulo'),
+    get: jest.fn((key: string) => {
+      if (key === 'APP_TIMEZONE') return 'America/Sao_Paulo';
+      if (key === 'FRONTEND_APP_URL') return 'http://localhost:4200';
+      return undefined;
+    }),
   };
 
   const baseSettings = (): MembershipCardSettings => {
@@ -86,6 +95,7 @@ describe('MembershipCardsService', () => {
     member.zipCode = null;
     member.notes = null;
     member.rg = '12.345.678-9';
+    member.registrationNumber = '000001';
     member.placeOfBirth = 'Campinas / SP';
     member.bloodType = 'O+';
     member.fatherName = 'José da Silva';
@@ -167,10 +177,16 @@ describe('MembershipCardsService', () => {
         congregationId,
       );
 
-      expect(card.front.filiation).toBe('José da Silva / Ana da Silva');
+      expect(card.front.filiation).toBe('José da Silva\nAna da Silva');
       expect(card.front.placeOfBirth).toBe('Campinas / SP');
       expect(card.front.positionTitle).toBe('Diácono');
+      expect(card.front.registrationNumber).toBe('000001');
+      expect(card.front.photoDataUrl).toMatch(/^data:image\/png;base64,/);
       expect(card.back.cpf).toBe('12345678900');
+      expect(card.back.verificationUrl).toContain(
+        '/verify-membership-card/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      );
+      expect(card.back.qrCodeDataUrl).toBe('data:image/png;base64,qr');
       expect(card.missingFields).toEqual([]);
       expect(card.validUntil).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
@@ -264,8 +280,28 @@ describe('MembershipCardsService', () => {
       const result = await service.uploadLogo(file, congregationId);
 
       expect(result.logoUrl).toBe('/api/membership-cards/settings/logo');
+      expect(result.logoDataUrl).toMatch(/^data:image\/png;base64,/);
       expect(fileStorageService.deleteIfExists).toHaveBeenCalledWith(
         'membership-cards/logos/old.png',
+      );
+    });
+  });
+
+  describe('removeLogo', () => {
+    it('limpa logo_path e apaga arquivo', async () => {
+      const settings = baseSettings();
+      settings.logoPath = 'membership-cards/logos/current.png';
+      settingsRepository.findOne.mockResolvedValue(settings);
+      settingsRepository.save.mockImplementation((s: MembershipCardSettings) =>
+        Promise.resolve(s),
+      );
+
+      const result = await service.removeLogo(congregationId);
+
+      expect(result.logoUrl).toBeNull();
+      expect(result.logoDataUrl).toBeNull();
+      expect(fileStorageService.deleteIfExists).toHaveBeenCalledWith(
+        'membership-cards/logos/current.png',
       );
     });
   });

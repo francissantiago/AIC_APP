@@ -59,6 +59,14 @@ export class MemberResponseDto {
   @ApiPropertyOptional({ example: '12.345.678-9', nullable: true })
   rg!: string | null;
 
+  @ApiPropertyOptional({
+    example: '000239',
+    nullable: true,
+    description:
+      'Número de registro sequencial (6 dígitos). Gerado automaticamente na criação.',
+  })
+  registrationNumber!: string | null;
+
   @ApiPropertyOptional({ example: 'São Paulo / SP', nullable: true })
   placeOfBirth!: string | null;
 
@@ -118,6 +126,7 @@ export class MemberResponseDto {
     dto.zipCode = member.zipCode;
     dto.notes = member.notes;
     dto.rg = member.rg;
+    dto.registrationNumber = member.registrationNumber;
     dto.placeOfBirth = member.placeOfBirth;
     dto.bloodType = member.bloodType;
     dto.fatherName = member.fatherName;

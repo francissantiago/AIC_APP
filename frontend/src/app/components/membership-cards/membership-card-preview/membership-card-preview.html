@@ -13,7 +13,7 @@
         aria-hidden="true"
       />
 
-      @if (logoObjectUrl(); as logo) {
+      @if (resolvedLogoSrc(); as logo) {
         <div class="membership-card__logo membership-card__logo--front">
           <img [src]="logo" alt="" />
         </div>
@@ -29,30 +29,61 @@
         }
       </div>
 
+      <p class="membership-card__vertical membership-card__vertical--front" aria-hidden="true">
+        {{ 'MEMBERSHIP_CARDS.CARD_LABEL' | translate }}
+      </p>
+
       <div class="membership-card__photo membership-card__photo--front">
-        @if (photoObjectUrl(); as photo) {
+        @if (photoSrc(); as photo) {
           <img [src]="photo" [alt]="card().front.fullName" />
         }
       </div>
 
-      <span class="membership-card__value membership-card__value--name">{{
-        card().front.fullName
-      }}</span>
-      <span class="membership-card__value membership-card__value--filiation">{{
-        card().front.filiation || ''
-      }}</span>
-      <span class="membership-card__value membership-card__value--birth">{{
-        formatDate(card().front.birthDate)
-      }}</span>
-      <span class="membership-card__value membership-card__value--birthplace">{{
-        card().front.placeOfBirth || ''
-      }}</span>
-      <span class="membership-card__value membership-card__value--position">{{
-        card().front.positionTitle || ''
-      }}</span>
-      <span class="membership-card__value membership-card__value--blood">{{
-        card().front.bloodType || ''
-      }}</span>
+      <div class="membership-card__field membership-card__field--registration">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_REGISTRATION' | translate
+        }}</span>
+        <span class="membership-card__value">{{ registrationNumber() }}</span>
+      </div>
+
+      <div class="membership-card__field membership-card__field--name">
+        <span class="membership-card__label">{{ 'MEMBERSHIP_CARDS.FIELD_NAME' | translate }}</span>
+        <span class="membership-card__value">{{ card().front.fullName }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--filiation">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_FILIATION' | translate
+        }}</span>
+        <span class="membership-card__value membership-card__value--multiline">
+          @for (line of filiationLines(); track $index) {
+            <span class="membership-card__filiation-line">{{ line }}</span>
+          }
+        </span>
+      </div>
+      <div class="membership-card__field membership-card__field--birth">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_BIRTH_DATE' | translate
+        }}</span>
+        <span class="membership-card__value">{{ formatDate(card().front.birthDate) }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--birthplace">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_PLACE_OF_BIRTH' | translate
+        }}</span>
+        <span class="membership-card__value">{{ card().front.placeOfBirth || '' }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--position">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_POSITION' | translate
+        }}</span>
+        <span class="membership-card__value">{{ card().front.positionTitle || '' }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--blood">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_BLOOD_TYPE' | translate
+        }}</span>
+        <span class="membership-card__value">{{ card().front.bloodType || '' }}</span>
+      </div>
     </div>
   } @else {
     <div class="membership-card__face membership-card__face--back">
@@ -63,7 +94,7 @@
         aria-hidden="true"
       />
 
-      @if (logoObjectUrl(); as logo) {
+      @if (resolvedLogoSrc(); as logo) {
         <div class="membership-card__logo membership-card__logo--back">
           <img [src]="logo" alt="" />
         </div>
@@ -79,21 +110,44 @@
         }
       </div>
 
-      <span class="membership-card__value membership-card__value--cpf">{{
-        card().back.cpf || ''
-      }}</span>
-      <span class="membership-card__value membership-card__value--rg">{{
-        card().back.rg || ''
-      }}</span>
-      <span class="membership-card__value membership-card__value--marital">{{
-        maritalLabelKey(card().back.maritalStatus) | translate
-      }}</span>
-      <span class="membership-card__value membership-card__value--validity">{{
-        formatDate(card().back.validUntil)
-      }}</span>
+      <p class="membership-card__vertical membership-card__vertical--back" aria-hidden="true">
+        {{ 'MEMBERSHIP_CARDS.CARD_LABEL' | translate }}
+      </p>
 
-      <div class="membership-card__president">
-        @if (signatureObjectUrl(); as signature) {
+      <div class="membership-card__field membership-card__field--cpf">
+        <span class="membership-card__label">{{ 'MEMBERSHIP_CARDS.FIELD_CPF' | translate }}</span>
+        <span class="membership-card__value">{{ card().back.cpf || '' }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--rg">
+        <span class="membership-card__label">{{ 'MEMBERSHIP_CARDS.FIELD_RG' | translate }}</span>
+        <span class="membership-card__value">{{ card().back.rg || '' }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--marital">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_MARITAL_STATUS' | translate
+        }}</span>
+        <span class="membership-card__value">{{
+          maritalLabelKey(card().back.maritalStatus) | translate
+        }}</span>
+      </div>
+      <div class="membership-card__field membership-card__field--validity">
+        <span class="membership-card__label">{{
+          'MEMBERSHIP_CARDS.FIELD_VALIDITY' | translate
+        }}</span>
+        <span class="membership-card__value">{{ formatDate(card().back.validUntil) }}</span>
+      </div>
+
+      <div class="membership-card__qr" aria-hidden="true">
+        @if (card().back.qrCodeDataUrl; as qr) {
+          <img [src]="qr" alt="" />
+        }
+      </div>
+
+      <div
+        class="membership-card__president"
+        [class.membership-card__president--with-signature]="!!resolvedSignatureSrc()"
+      >
+        @if (resolvedSignatureSrc(); as signature) {
           <img class="membership-card__sig-img" [src]="signature" alt="" />
         }
         <p class="membership-card__president-name">
@@ -103,6 +157,8 @@
           {{ card().institution.presidentTitle }}
         </p>
       </div>
+
+      <p class="membership-card__footer">{{ card().institution.footerNotice }}</p>
     </div>
   }
 </article>

@@ -5,7 +5,9 @@
 .membership-card {
   --card-red: #d32f2f;
   --card-green: #2e7d32;
+  --card-blue: #1565c0;
   --card-mask: #e6e6e6;
+  --card-white: #ffffff;
   position: relative;
   width: 100%;
   max-width: 720px;
@@ -41,32 +43,23 @@
   z-index: 0;
 }
 
-.membership-card__header-mask {
-  display: none;
-}
-
 .membership-card__logo {
   position: absolute;
   z-index: 3;
-  width: 11.5%;
+  width: 14%;
   aspect-ratio: 1;
-  border-radius: 50%;
   overflow: hidden;
   background: transparent;
 }
 
-.membership-card__logo-mask {
-  display: none;
-}
-
 .membership-card__logo--front {
-  left: 2.2%;
-  top: 3.8%;
+  left: 3%;
+  top: 3%;
 }
 
 .membership-card__logo--back {
-  right: 2.4%;
-  top: 3.8%;
+  right: 3%;
+  top: 3%;
 }
 
 .membership-card__logo img {
@@ -85,7 +78,7 @@
 }
 
 .membership-card__titles--front {
-  left: 16%;
+  left: 19%;
 }
 
 .membership-card__titles--back {
@@ -110,21 +103,44 @@
   line-height: 1.15;
 }
 
+.membership-card__vertical {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  font-size: clamp(0.5rem, 1.45cqi, 0.8rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--card-blue);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.membership-card__vertical--front {
+  left: 0.2%;
+  top: 38%;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.membership-card__vertical--back {
+  right: 0.2%;
+  top: 38%;
+  writing-mode: vertical-rl;
+}
+
 .membership-card__photo {
   position: absolute;
   z-index: 2;
   overflow: hidden;
-  border-radius: 0.45rem;
+  border-radius: 0.55rem;
   background: transparent;
 }
 
 .membership-card__photo--front {
-  /* interior da moldura azul (à direita do texto vertical) */
-  left: 7.2%;
-  top: 30.8%;
-  width: 24.8%;
-  height: 55.5%;
-  border-radius: 0.55rem;
+  left: 3%;
+  top: 28%;
+  width: 29.5%;
+  height: 55%;
 }
 
 .membership-card__photo img {
@@ -134,105 +150,176 @@
   display: block;
 }
 
-.membership-card__value {
+.membership-card__field--registration {
+  left: 3%;
+  top: 82%;
+  width: 29.5%;
+  height: 12%;
+  z-index: 3;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.1rem 0.2rem;
+  overflow: visible;
+
+}
+
+.membership-card__field--registration .membership-card__label {
+  font-size: clamp(0.38rem, 1cqi, 0.5rem);
+}
+
+.membership-card__field--registration .membership-card__value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  font-size: clamp(0.7rem, 2.1cqi, 1.4rem);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  min-height: 0;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.membership-card__field {
   position: absolute;
   z-index: 2;
-  font-size: clamp(0.58rem, 1.55cqi, 0.82rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  box-sizing: border-box;
+  padding: 0.2rem 0.45rem 0.25rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.membership-card__label {
+  color: var(--card-blue);
+  font-size: clamp(0.42rem, 1.15cqi, 0.58rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.membership-card__value {
+  font-size: clamp(0.58rem, 1.5cqi, 0.82rem);
   font-weight: 600;
   line-height: 1.15;
   color: #111;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-height: 0.9em;
+}
+
+.membership-card__value--multiline {
+  white-space: normal;
   display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  padding: 0 0.4rem;
+  flex-direction: column;
+  gap: 0.12em;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.membership-card__filiation-line {
+  display: block;
+  overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.membership-card__value--filiation {
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  align-items: unset;
-  line-height: 1.2;
+/* Frente — boxes do template em branco */
+.membership-card__field--name {
+  left: 36.2%;
+  top: 27.2%;
+  width: 61%;
+  height: 11%;
+}
+
+.membership-card__field--filiation {
+  left: 36.2%;
+  top: 41.5%;
+  width: 61%;
+  height: 22.5%;
+}
+
+.membership-card__field--birth {
+  left: 36.2%;
+  top: 67.2%;
+  width: 30%;
+  height: 11%;
+}
+
+.membership-card__field--birthplace {
+  left: 67.5%;
+  top: 67.2%;
+  width: 30%;
+  height: 11%;
+}
+
+.membership-card__field--position {
+  left: 36.2%;
+  top: 81.2%;
+  width: 30%;
+  height: 8%;
+}
+
+.membership-card__field--blood {
+  left: 67.5%;
+  top: 81.2%;
+  width: 30%;
+  height: 8%;
+}
+
+/* Verso */
+.membership-card__field--cpf {
+  left: 4.5%;
+  top: 29.5%;
+  width: 30%;
+  height: 11%;
+}
+
+.membership-card__field--rg {
+  left: 37.5%;
+  top: 29.5%;
+  width: 30%;
+  height: 11%;
+}
+
+.membership-card__field--marital {
+  left: 4.5%;
+  top: 43.6%;
+  width: 30%;
+  height: 11%;
+}
+
+.membership-card__field--validity {
+  left: 37.5%;
+  top: 43.6%;
+  width: 30%;
+  height: 11%;
+}
+
+.membership-card__qr {
+  position: absolute;
+  z-index: 2;
+  left: 71%;
+  top: 29.5%;
+  width: 22%;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  padding: 0.2rem;
+  background: #fff;
+  border-radius: 0.25rem;
   overflow: hidden;
 }
 
-/* Valores calibrados nos boxes do template 1024×642 */
-.membership-card__value--name {
-  left: 38%;
-  top: 33%;
-  width: 58%;
-  height: 4.4%;
-}
-
-.membership-card__value--filiation {
-  left: 38%;
-  top: 49%;
-  width: 58%;
-  height: 9.5%;
-}
-
-.membership-card__value--birth {
-  left: 36.8%;
-  top: 67.2%;
-  width: 29%;
-  height: 4.4%;
-}
-
-.membership-card__value--birthplace {
-  left: 68.1%;
-  top: 67.2%;
-  width: 29%;
-  height: 4.4%;
-}
-
-.membership-card__value--position {
-  left: 36.8%;
-  top: 78.8%;
-  width: 29%;
-  height: 4.5%;
-}
-
-.membership-card__value--blood {
-  left: 68.1%;
-  top: 78.8%;
-  width: 29%;
-  height: 4.4%;
-}
-
-.membership-card__value--cpf {
-  left: 5.3%;
-  top: 32.5%;
-  width: 28.7%;
-  height: 4.4%;
-}
-
-.membership-card__value--rg {
-  left: 38.3%;
-  top: 32.5%;
-  width: 28.6%;
-  height: 4.4%;
-}
-
-.membership-card__value--marital {
-  left: 5.3%;
-  top: 43.1%;
-  width: 28.6%;
-  height: 4.4%;
-}
-
-.membership-card__value--validity {
-  left: 38.3%;
-  top: 43.1%;
-  width: 28.6%;
-  height: 4.4%;
-}
-
-.membership-card__president-mask {
-  display: none;
+.membership-card__qr img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .membership-card__president {
@@ -247,6 +334,10 @@
   text-align: center;
 }
 
+.membership-card__president--with-signature {
+  top: 70%;
+}
+
 .membership-card__sig-img {
   max-width: 70%;
   max-height: 2.2rem;
@@ -257,7 +348,7 @@
 .membership-card__president-name,
 .membership-card__president-title {
   margin: 0;
-  color: #1565c0;
+  color: var(--card-blue);
   font-weight: 800;
   text-transform: uppercase;
   line-height: 1.15;
@@ -274,13 +365,16 @@
 }
 
 .membership-card__footer {
-  display: none;
-}
-
-@media print {
-  .membership-card {
-    max-width: 86mm;
-    width: 86mm;
-    box-shadow: none;
-  }
+  position: absolute;
+  z-index: 2;
+  left: 6%;
+  right: 10%;
+  bottom: 2.8%;
+  margin: 0;
+  text-align: center;
+  color: var(--card-blue);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(0.38rem, 1.05cqi, 0.52rem);
+  line-height: 1.2;
 }

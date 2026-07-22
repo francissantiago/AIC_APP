@@ -34,7 +34,11 @@ export class CreateMemberDto {
   @MaxLength(30)
   phone?: string;
 
-  @ApiPropertyOptional({ example: '12345678900', maxLength: 30 })
+  @ApiPropertyOptional({
+    example: '12345678900',
+    maxLength: 30,
+    description: 'CPF brasileiro (opcional; documento exclusivo do Brasil)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(30)
@@ -105,7 +109,11 @@ export class CreateMemberDto {
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ example: '12.345.678-9', maxLength: 30 })
+  @ApiPropertyOptional({
+    example: '12.345.678-9',
+    maxLength: 30,
+    description: 'RG brasileiro (opcional; documento exclusivo do Brasil)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(30)

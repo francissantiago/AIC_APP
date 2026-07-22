@@ -62,12 +62,16 @@ describe('MembershipCardsController (PermissionsGuard aplicado)', () => {
       expectAllowed('updateSettings', ['membership-cards:write']);
       expectAllowed('uploadLogo', ['membership-cards:write']);
       expectAllowed('uploadSignature', ['membership-cards:write']);
+      expectAllowed('removeLogo', ['membership-cards:write']);
+      expectAllowed('removeSignature', ['membership-cards:write']);
     });
 
     it('nega com apenas membership-cards:read', () => {
       expectForbidden('updateSettings', ['membership-cards:read']);
       expectForbidden('uploadLogo', ['membership-cards:read']);
       expectForbidden('uploadSignature', ['membership-cards:read']);
+      expectForbidden('removeLogo', ['membership-cards:read']);
+      expectForbidden('removeSignature', ['membership-cards:read']);
     });
   });
 });

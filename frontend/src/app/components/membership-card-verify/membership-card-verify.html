@@ -1,0 +1,79 @@
+<section class="mx-auto max-w-lg px-4 py-10" data-testid="membership-card-verify">
+  <h1 class="mb-2 text-2xl font-semibold text-slate-900">
+    {{ 'MEMBERSHIP_CARD_VERIFY.TITLE' | translate }}
+  </h1>
+  <p class="mb-6 text-sm text-slate-600">
+    {{ 'MEMBERSHIP_CARD_VERIFY.DESCRIPTION' | translate }}
+  </p>
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ 'MEMBERSHIP_CARD_VERIFY.LOAD_ERROR' | translate }}
+    </p>
+  } @else if (result(); as data) {
+    @if (data.valid) {
+      <p
+        class="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900"
+        role="status"
+      >
+        {{ data.message || ('MEMBERSHIP_CARD_VERIFY.VALID' | translate) }}
+      </p>
+    } @else {
+      <p class="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900" role="status">
+        {{ data.message || ('MEMBERSHIP_CARD_VERIFY.INVALID' | translate) }}
+      </p>
+    }
+
+    @if (data.fullName) {
+      <dl class="grid gap-3 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-800">
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {{ 'MEMBERSHIP_CARD_VERIFY.FULL_NAME' | translate }}
+          </dt>
+          <dd class="mt-0.5 font-medium">{{ data.fullName }}</dd>
+        </div>
+        @if (data.registrationNumber) {
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {{ 'MEMBERSHIP_CARD_VERIFY.REGISTRATION' | translate }}
+            </dt>
+            <dd class="mt-0.5 font-mono tracking-wider">{{ data.registrationNumber }}</dd>
+          </div>
+        }
+        @if (data.congregationName) {
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {{ 'MEMBERSHIP_CARD_VERIFY.CONGREGATION' | translate }}
+            </dt>
+            <dd class="mt-0.5">{{ data.congregationName }}</dd>
+          </div>
+        }
+        @if (data.birthDate) {
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {{ 'MEMBERSHIP_CARD_VERIFY.BIRTH_DATE' | translate }}
+            </dt>
+            <dd class="mt-0.5">{{ formatDate(data.birthDate) }}</dd>
+          </div>
+        }
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {{ 'MEMBERSHIP_CARD_VERIFY.STATUS' | translate }}
+          </dt>
+          <dd class="mt-0.5">{{ statusLabelKey(data.status) | translate }}</dd>
+        </div>
+      </dl>
+    }
+  }
+
+  <p class="mt-8 text-sm">
+    <a
+      routerLink="/home"
+      class="text-slate-700 underline underline-offset-2 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'MEMBERSHIP_CARD_VERIFY.BACK_HOME' | translate }}
+    </a>
+  </p>
+</section>

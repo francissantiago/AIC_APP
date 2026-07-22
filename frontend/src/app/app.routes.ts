@@ -35,6 +35,13 @@ export const routes: Routes = [
       import('@components/legal/terms-of-service/terms-of-service').then((m) => m.TermsOfService),
   },
   {
+    path: 'verify-membership-card/:memberId',
+    loadComponent: () =>
+      import('@components/membership-card-verify/membership-card-verify').then(
+        (m) => m.MembershipCardVerify,
+      ),
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('@components/auth/login/login').then((m) => m.Login),

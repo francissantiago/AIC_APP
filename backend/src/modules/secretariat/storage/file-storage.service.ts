@@ -186,6 +186,32 @@ export class FileStorageService {
     return { stream: createReadStream(absolutePath), absolutePath };
   }
 
+  async readFileBuffer(relativePath: string): Promise<Buffer> {
+    const absolutePath = this.resolveAbsolutePath(relativePath);
+    try {
+      return await fs.readFile(absolutePath);
+    } catch (error) {
+      const code =
+        error && typeof error === 'object' && 'code' in error
+          ? (error as NodeJS.ErrnoException).code
+          : undefined;
+      if (code === 'ENOENT') {
+        throw new ApiException(HttpStatus.NOT_FOUND, {
+          code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+          message:
+            ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+        });
+      }
+      this.logger.error(
+        `Falha ao ler arquivo ${relativePath}: ${String(error)}`,
+      );
+      throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, {
+        code: ApiErrorCode.SYS_INTERNAL,
+        message: ApiErrorMessage[ApiErrorCode.SYS_INTERNAL],
+      });
+    }
+  }
+
   assertFilePresent(
     file: Pick<UploadedFile, 'buffer' | 'size'> | undefined | null,
   ): asserts file is Pick<UploadedFile, 'buffer' | 'size'> {

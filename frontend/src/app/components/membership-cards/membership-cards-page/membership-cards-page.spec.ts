@@ -48,6 +48,8 @@ describe('MembershipCardsPage', () => {
                 presidentTitle: 'PASTORA PRESIDENTE',
                 logoUrl: null,
                 signatureUrl: null,
+                logoDataUrl: null,
+                signatureDataUrl: null,
                 validityMonths: 24,
                 footerNotice: 'notice',
                 createdAt: '',

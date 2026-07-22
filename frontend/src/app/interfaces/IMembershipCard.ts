@@ -8,7 +8,10 @@ export interface IMembershipCardFront {
   placeOfBirth: string | null;
   positionTitle: string | null;
   bloodType: string | null;
+  registrationNumber: string | null;
   photoUrl: string | null;
+  /** Data URL embutida — preferir no preview (evita GET binário). */
+  photoDataUrl: string | null;
 }
 
 export interface IMembershipCardBack {
@@ -16,6 +19,8 @@ export interface IMembershipCardBack {
   rg: string | null;
   maritalStatus: MemberMaritalStatus;
   validUntil: string;
+  verificationUrl: string;
+  qrCodeDataUrl: string;
 }
 
 export interface IMembershipCardInstitution {
@@ -51,6 +56,8 @@ export interface IMembershipCardSettings {
   presidentTitle: string;
   logoUrl: string | null;
   signatureUrl: string | null;
+  logoDataUrl: string | null;
+  signatureDataUrl: string | null;
   validityMonths: number;
   footerNotice: string;
   createdAt: string;

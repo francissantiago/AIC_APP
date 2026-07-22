@@ -159,15 +159,17 @@
               {{ 'MEMBERSHIP_CARDS.WARNING_INACTIVE' | translate }}
             </p>
           }
-          @if (card.missingFields.length > 0) {
+          @if (formatMissingFields(card.missingFields); as missing) {
             <p class="mb-3 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
-              {{
-                'MEMBERSHIP_CARDS.MISSING_FIELDS'
-                  | translate: { fields: card.missingFields.join(', ') }
-              }}
+              {{ 'MEMBERSHIP_CARDS.MISSING_FIELDS' | translate: { fields: missing } }}
             </p>
           }
-          <app-membership-card-preview [card]="card" [side]="previewSide()" />
+          <app-membership-card-preview
+            [card]="card"
+            [side]="previewSide()"
+            [logoSrc]="settings()?.logoDataUrl ?? null"
+            [signatureSrc]="settings()?.signatureDataUrl ?? null"
+          />
         }
 
         @if (selectedCards().length > 1) {
@@ -186,7 +188,9 @@
       aria-modal="true"
       [attr.aria-label]="'MEMBERSHIP_CARDS.SETTINGS_TITLE' | translate"
     >
-      <div class="mt-8 w-full max-w-xl rounded-md bg-white p-5 shadow-lg">
+      <div
+        class="my-2 w-full max-w-xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-md bg-white p-5 shadow-lg"
+      >
         <h2 class="mb-3 text-lg font-semibold text-slate-900">
           {{ 'MEMBERSHIP_CARDS.SETTINGS_TITLE' | translate }}
         </h2>
@@ -264,25 +268,86 @@
             ></textarea>
           </label>
 
-          <div class="grid gap-3 md:grid-cols-2">
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'MEMBERSHIP_CARDS.UPLOAD_LOGO' | translate }}</span>
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                class="text-sm"
-                (change)="onLogoSelected($event)"
-              />
-            </label>
-            <label class="flex flex-col gap-1 text-sm text-slate-700">
-              <span>{{ 'MEMBERSHIP_CARDS.UPLOAD_SIGNATURE' | translate }}</span>
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                class="text-sm"
-                (change)="onSignatureSelected($event)"
-              />
-            </label>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="flex flex-col gap-2 text-sm text-slate-700">
+              <span class="font-medium">{{ 'MEMBERSHIP_CARDS.UPLOAD_LOGO' | translate }}</span>
+              @if (settings()?.logoDataUrl; as logo) {
+                <img
+                  [src]="logo"
+                  alt=""
+                  class="h-20 w-20 rounded-full border border-slate-300 object-cover"
+                />
+                <p class="text-xs text-slate-600">
+                  {{ 'MEMBERSHIP_CARDS.CURRENT_LOGO' | translate }}
+                </p>
+              } @else {
+                <p class="text-xs text-slate-500">
+                  {{ 'MEMBERSHIP_CARDS.NO_LOGO' | translate }}
+                </p>
+              }
+              <div class="flex flex-wrap gap-2">
+                <label
+                  class="inline-flex cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50"
+                >
+                  {{ 'MEMBERSHIP_CARDS.UPLOAD_LOGO' | translate }}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    class="sr-only"
+                    (change)="onLogoSelected($event)"
+                  />
+                </label>
+                @if (settings()?.logoDataUrl) {
+                  <button
+                    type="button"
+                    class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                    (click)="removeLogo()"
+                  >
+                    {{ 'MEMBERSHIP_CARDS.REMOVE_LOGO' | translate }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 text-sm text-slate-700">
+              <span class="font-medium">{{ 'MEMBERSHIP_CARDS.UPLOAD_SIGNATURE' | translate }}</span>
+              @if (settings()?.signatureDataUrl; as signature) {
+                <img
+                  [src]="signature"
+                  alt=""
+                  class="h-16 max-w-full rounded border border-slate-300 bg-white object-contain p-1"
+                />
+                <p class="text-xs text-slate-600">
+                  {{ 'MEMBERSHIP_CARDS.CURRENT_SIGNATURE' | translate }}
+                </p>
+              } @else {
+                <p class="text-xs text-slate-500">
+                  {{ 'MEMBERSHIP_CARDS.NO_SIGNATURE' | translate }}
+                </p>
+              }
+              <div class="flex flex-wrap gap-2">
+                <label
+                  class="inline-flex cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50"
+                >
+                  {{ 'MEMBERSHIP_CARDS.UPLOAD_SIGNATURE' | translate }}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    class="sr-only"
+                    (change)="onSignatureSelected($event)"
+                  />
+                </label>
+                @if (settings()?.signatureDataUrl) {
+                  <button
+                    type="button"
+                    class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                    (click)="removeSignature()"
+                  >
+                    {{ 'MEMBERSHIP_CARDS.REMOVE_SIGNATURE' | translate }}
+                  </button>
+                }
+              </div>
+            </div>
           </div>
 
           <div class="mt-2 flex flex-wrap gap-2">
@@ -306,5 +371,4 @@
     </div>
   }
 
-  <app-membership-card-print [cards]="selectedCards()" />
 </section>

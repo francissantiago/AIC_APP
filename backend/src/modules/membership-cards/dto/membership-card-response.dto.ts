@@ -20,8 +20,21 @@ export class MembershipCardFrontDto {
   @ApiPropertyOptional({ nullable: true })
   bloodType!: string | null;
 
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Número de registro sequencial do membro (6 dígitos, ex.: 000239)',
+  })
+  registrationNumber!: string | null;
+
   @ApiPropertyOptional({ nullable: true })
   photoUrl!: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Data URL (base64) da foto para preview/impressão sem GET binário',
+  })
+  photoDataUrl!: string | null;
 }
 
 export class MembershipCardBackDto {
@@ -39,6 +52,16 @@ export class MembershipCardBackDto {
 
   @ApiProperty()
   validUntil!: string;
+
+  @ApiProperty({
+    description: 'URL pública de validação embutida no QR Code',
+  })
+  verificationUrl!: string;
+
+  @ApiProperty({
+    description: 'Data URL (PNG base64) do QR Code de validação',
+  })
+  qrCodeDataUrl!: string;
 }
 
 export class MembershipCardInstitutionDto {

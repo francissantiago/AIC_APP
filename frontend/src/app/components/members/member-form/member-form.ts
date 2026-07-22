@@ -230,6 +230,8 @@ export class MemberForm implements OnInit {
   readonly photoUrl = signal<string | null>(null);
   readonly photoObjectUrl = signal<string | null>(null);
   readonly photoUploading = signal(false);
+  readonly pendingPhotoFile = signal<File | null>(null);
+  readonly registrationNumber = signal<string | null>(null);
 
   ngOnInit(): void {
     const id = this.memberId();
@@ -315,11 +317,23 @@ export class MemberForm implements OnInit {
   }
 
   onPhotoSelected(event: Event): void {
-    const id = this.memberId();
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!id || !file || !this.canWriteMembers()) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.canWriteMembers()) {
       return;
     }
+
+    this.#revokePhotoObjectUrl();
+    this.photoObjectUrl.set(URL.createObjectURL(file));
+
+    const id = this.memberId();
+    if (!id) {
+      this.pendingPhotoFile.set(file);
+      input.value = '';
+      return;
+    }
+
+    this.pendingPhotoFile.set(null);
     this.photoUploading.set(true);
     this.#membersService
       .uploadPhoto(id, file)
@@ -336,13 +350,22 @@ export class MemberForm implements OnInit {
           this.#applySaveError(error);
         },
       });
+    input.value = '';
   }
 
   removePhoto(): void {
     const id = this.memberId();
-    if (!id || !this.canWriteMembers()) {
+    if (!this.canWriteMembers()) {
       return;
     }
+
+    if (!id) {
+      this.pendingPhotoFile.set(null);
+      this.photoUrl.set(null);
+      this.#revokePhotoObjectUrl();
+      return;
+    }
+
     this.photoUploading.set(true);
     this.#membersService
       .removePhoto(id)
@@ -483,6 +506,7 @@ export class MemberForm implements OnInit {
           });
           this.memberStatus.set(member.status);
           this.memberFullName.set(member.fullName);
+          this.registrationNumber.set(member.registrationNumber);
           this.photoUrl.set(member.photoUrl);
           this.#loadPhotoBlob(member.id, member.photoUrl);
           this.loading.set(false);
@@ -503,9 +527,28 @@ export class MemberForm implements OnInit {
       .create(body)
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.saved.emit();
+        next: (member) => {
+          const pendingPhoto = this.pendingPhotoFile();
+          if (!pendingPhoto) {
+            this.saving.set(false);
+            this.saved.emit();
+            return;
+          }
+
+          this.#membersService
+            .uploadPhoto(member.id, pendingPhoto)
+            .pipe(takeUntilDestroyed(this.#destroyRef))
+            .subscribe({
+              next: () => {
+                this.pendingPhotoFile.set(null);
+                this.saving.set(false);
+                this.saved.emit();
+              },
+              error: (error: HttpErrorResponse) => {
+                this.saving.set(false);
+                this.#applySaveError(error);
+              },
+            });
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);

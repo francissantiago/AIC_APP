@@ -11,4 +11,6 @@ import { MembershipCardPreview } from '../membership-card-preview/membership-car
 })
 export class MembershipCardPrint {
   readonly cards = input.required<IMembershipCard[]>();
+  readonly logoSrc = input<string | null>(null);
+  readonly signatureSrc = input<string | null>(null);
 }

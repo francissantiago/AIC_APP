@@ -21,6 +21,7 @@ export interface IMember {
   zipCode: string | null;
   notes: string | null;
   rg: string | null;
+  registrationNumber: string | null;
   placeOfBirth: string | null;
   bloodType: string | null;
   fatherName: string | null;

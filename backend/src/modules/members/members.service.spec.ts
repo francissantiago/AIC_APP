@@ -29,6 +29,10 @@ describe('MembersService', () => {
     manager: {
       create: jest.fn(),
       save: jest.fn(),
+      query: jest.fn(),
+      transaction: jest.fn(async (cb: (m: unknown) => Promise<unknown>) =>
+        cb(membersRepository.manager),
+      ),
     },
   };
   const usersRepository = {
@@ -76,6 +80,7 @@ describe('MembersService', () => {
     member.zipCode = '01310-100';
     member.notes = null;
     member.rg = null;
+    member.registrationNumber = null;
     member.placeOfBirth = null;
     member.bloodType = null;
     member.fatherName = null;
@@ -122,8 +127,12 @@ describe('MembersService', () => {
     it('deve criar membro associado à congregação-base', async () => {
       membersRepository.findOne.mockResolvedValue(null);
       const saved = baseMember();
+      saved.registrationNumber = '000001';
       membersRepository.manager.create.mockReturnValue(saved);
       membersRepository.manager.save.mockResolvedValue(saved);
+      membersRepository.manager.query
+        .mockResolvedValueOnce([{ id: baseCongregationId }])
+        .mockResolvedValueOnce([{ max_seq: 0 }]);
 
       const result = await service.create(createDto());
 
@@ -136,10 +145,12 @@ describe('MembersService', () => {
           maritalStatus: MemberMaritalStatus.OTHER,
           status: MemberStatus.ACTIVE,
           congregationId: baseCongregationId,
+          registrationNumber: '000001',
         }),
       );
       expect(result.fullName).toBe('Maria da Silva');
       expect(result.congregationId).toBe(baseCongregationId);
+      expect(result.registrationNumber).toBe('000001');
       expect(result).not.toHaveProperty('user');
     });
 

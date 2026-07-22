@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ReadStream } from 'fs';
 import * as path from 'path';
+import * as QRCode from 'qrcode';
 import { In, Repository } from 'typeorm';
 import {
   ApiErrorCode,
@@ -20,6 +21,7 @@ import { FileStorageService } from '../secretariat/storage/file-storage.service'
 import { UploadedFile } from '../secretariat/storage/uploaded-file.interface';
 import { MembershipCardResponseDto } from './dto/membership-card-response.dto';
 import { MembershipCardSettingsResponseDto } from './dto/membership-card-settings-response.dto';
+import { MembershipCardVerifyResponseDto } from './dto/membership-card-verify-response.dto';
 import { UpdateMembershipCardSettingsDto } from './dto/update-membership-card-settings.dto';
 import { MembershipCardSettings } from './entities/membership-card-settings.entity';
 
@@ -30,6 +32,7 @@ const DEFAULT_VALIDITY_MONTHS = 24;
 const MAX_BATCH = 50;
 const LOGO_SUBDIR = 'membership-cards/logos';
 const SIGNATURE_SUBDIR = 'membership-cards/signatures';
+const DEFAULT_FRONTEND_APP_URL = 'http://localhost:4200';
 
 const ROLE_LABELS: Readonly<Record<MinistryMemberRole, string>> = {
   [MinistryMemberRole.LEADER]: 'Líder',
@@ -103,7 +106,7 @@ export class MembershipCardsService {
     activeCongregationId?: string,
   ): Promise<MembershipCardSettingsResponseDto> {
     const settings = await this.getOrCreateSettings(activeCongregationId);
-    return MembershipCardSettingsResponseDto.fromEntity(settings);
+    return this.toSettingsResponse(settings);
   }
 
   async updateSettings(
@@ -136,7 +139,7 @@ export class MembershipCardsService {
 
     const saved = await this.settingsRepository.save(settings);
     this.logger.log(`Settings de carteirinha atualizados: ${saved.id}`);
-    return MembershipCardSettingsResponseDto.fromEntity(saved);
+    return this.toSettingsResponse(saved);
   }
 
   async uploadLogo(
@@ -155,7 +158,7 @@ export class MembershipCardsService {
     if (previous && previous !== saved.logoPath) {
       await this.fileStorageService.deleteIfExists(previous);
     }
-    return MembershipCardSettingsResponseDto.fromEntity(saved);
+    return this.toSettingsResponse(saved);
   }
 
   async uploadSignature(
@@ -174,7 +177,29 @@ export class MembershipCardsService {
     if (previous && previous !== saved.signaturePath) {
       await this.fileStorageService.deleteIfExists(previous);
     }
-    return MembershipCardSettingsResponseDto.fromEntity(saved);
+    return this.toSettingsResponse(saved);
+  }
+
+  async removeLogo(
+    activeCongregationId?: string,
+  ): Promise<MembershipCardSettingsResponseDto> {
+    const settings = await this.getOrCreateSettings(activeCongregationId);
+    const previous = settings.logoPath;
+    settings.logoPath = null;
+    const saved = await this.settingsRepository.save(settings);
+    await this.fileStorageService.deleteIfExists(previous);
+    return this.toSettingsResponse(saved);
+  }
+
+  async removeSignature(
+    activeCongregationId?: string,
+  ): Promise<MembershipCardSettingsResponseDto> {
+    const settings = await this.getOrCreateSettings(activeCongregationId);
+    const previous = settings.signaturePath;
+    settings.signaturePath = null;
+    const saved = await this.settingsRepository.save(settings);
+    await this.fileStorageService.deleteIfExists(previous);
+    return this.toSettingsResponse(saved);
   }
 
   async getLogoStream(activeCongregationId?: string): Promise<{
@@ -198,6 +223,24 @@ export class MembershipCardsService {
     };
   }
 
+  async getLogoFile(activeCongregationId?: string): Promise<{
+    buffer: Buffer;
+    mimeType: string;
+  }> {
+    const settings = await this.getOrCreateSettings(activeCongregationId);
+    if (!settings.logoPath) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+      });
+    }
+    const buffer = await this.fileStorageService.readFileBuffer(
+      settings.logoPath,
+    );
+    return { buffer, mimeType: mimeFromPath(settings.logoPath) };
+  }
+
   async getSignatureStream(activeCongregationId?: string): Promise<{
     stream: ReadStream;
     mimeType: string;
@@ -219,6 +262,24 @@ export class MembershipCardsService {
     };
   }
 
+  async getSignatureFile(activeCongregationId?: string): Promise<{
+    buffer: Buffer;
+    mimeType: string;
+  }> {
+    const settings = await this.getOrCreateSettings(activeCongregationId);
+    if (!settings.signaturePath) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_NOT_FOUND],
+      });
+    }
+    const buffer = await this.fileStorageService.readFileBuffer(
+      settings.signaturePath,
+    );
+    return { buffer, mimeType: mimeFromPath(settings.signaturePath) };
+  }
+
   async getCard(
     memberId: string,
     activeCongregationId?: string,
@@ -235,6 +296,46 @@ export class MembershipCardsService {
     }
     const settings = await this.getOrCreateSettings(congregationId);
     return this.assembleCard(member, settings);
+  }
+
+  /**
+   * Validação pública da carteirinha (QR Code) — sem autenticação.
+   * Expõe apenas dados necessários para conferência visual.
+   */
+  async verifyPublic(
+    memberId: string,
+  ): Promise<MembershipCardVerifyResponseDto> {
+    const member = await this.membersRepository.findOne({
+      where: { id: memberId },
+      relations: ['congregation'],
+    });
+
+    if (!member) {
+      return {
+        valid: false,
+        memberId: null,
+        registrationNumber: null,
+        fullName: null,
+        status: null,
+        congregationName: null,
+        birthDate: null,
+        message: 'Membro não encontrado',
+      };
+    }
+
+    const isActive = member.status === MemberStatus.ACTIVE;
+    return {
+      valid: isActive,
+      memberId: member.id,
+      registrationNumber: member.registrationNumber,
+      fullName: member.fullName,
+      status: member.status,
+      congregationName: member.congregation?.name ?? null,
+      birthDate: member.birthDate,
+      message: isActive
+        ? 'Carteirinha válida'
+        : 'Membro encontrado, porém não está ativo',
+    };
   }
 
   async getCardsBatch(
@@ -310,6 +411,9 @@ export class MembershipCardsService {
     const filiation = await this.resolveFiliation(member);
     const placeOfBirth = this.resolvePlaceOfBirth(member);
     const positionTitle = await this.resolvePositionTitle(member);
+    const photoDataUrl = await this.toDataUrl(member.photoPath);
+    const { verificationUrl, qrCodeDataUrl } =
+      await this.buildVerificationQr(member.id);
 
     const missingFields: string[] = [];
     if (!member.photoPath) missingFields.push('photo');
@@ -318,6 +422,7 @@ export class MembershipCardsService {
     if (!placeOfBirth) missingFields.push('placeOfBirth');
     if (!positionTitle) missingFields.push('positionTitle');
     if (!member.bloodType) missingFields.push('bloodType');
+    if (!member.registrationNumber) missingFields.push('registrationNumber');
     if (!member.document) missingFields.push('cpf');
     if (!member.rg) missingFields.push('rg');
 
@@ -337,13 +442,17 @@ export class MembershipCardsService {
         placeOfBirth,
         positionTitle,
         bloodType: member.bloodType,
+        registrationNumber: member.registrationNumber,
         photoUrl: member.photoPath ? `/api/members/${member.id}/photo` : null,
+        photoDataUrl,
       },
       back: {
         cpf: member.document,
         rg: member.rg,
         maritalStatus: member.maritalStatus,
         validUntil,
+        verificationUrl,
+        qrCodeDataUrl,
       },
       institution: {
         headerLine1: settings.headerLine1,
@@ -369,7 +478,7 @@ export class MembershipCardsService {
       (name): name is string => Boolean(name?.trim()),
     );
     if (parts.length > 0) {
-      return parts.join(' / ');
+      return parts.join('\n');
     }
 
     const selfLink = await this.familyMembersRepository.findOne({
@@ -393,7 +502,7 @@ export class MembershipCardsService {
     if (parentNames.length === 0) {
       return null;
     }
-    return parentNames.join(' / ');
+    return parentNames.join('\n');
   }
 
   private resolvePlaceOfBirth(member: Member): string | null {
@@ -423,5 +532,55 @@ export class MembershipCardsService {
     }
     const roleLabel = ROLE_LABELS[link.role] ?? link.role;
     return `${link.ministry.name} (${roleLabel})`;
+  }
+
+  private async toSettingsResponse(
+    settings: MembershipCardSettings,
+  ): Promise<MembershipCardSettingsResponseDto> {
+    const [logoDataUrl, signatureDataUrl] = await Promise.all([
+      this.toDataUrl(settings.logoPath),
+      this.toDataUrl(settings.signaturePath),
+    ]);
+    return MembershipCardSettingsResponseDto.fromEntity(settings, {
+      logoDataUrl,
+      signatureDataUrl,
+    });
+  }
+
+  private async toDataUrl(relativePath: string | null): Promise<string | null> {
+    if (!relativePath) {
+      return null;
+    }
+    try {
+      const buffer = await this.fileStorageService.readFileBuffer(relativePath);
+      const mime = mimeFromPath(relativePath);
+      return `data:${mime};base64,${buffer.toString('base64')}`;
+    } catch (error) {
+      this.logger.warn(
+        `Não foi possível embutir asset ${relativePath}: ${String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  private resolveFrontendAppUrl(): string {
+    const configured =
+      this.configService.get<string>('FRONTEND_APP_URL')?.trim() ||
+      this.configService.get<string>('CORS_ORIGIN')?.split(',')[0]?.trim() ||
+      DEFAULT_FRONTEND_APP_URL;
+    return configured.replace(/\/$/, '');
+  }
+
+  private async buildVerificationQr(
+    memberId: string,
+  ): Promise<{ verificationUrl: string; qrCodeDataUrl: string }> {
+    const verificationUrl = `${this.resolveFrontendAppUrl()}/verify-membership-card/${memberId}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 320,
+      color: { dark: '#111111', light: '#ffffff' },
+    });
+    return { verificationUrl, qrCodeDataUrl };
   }
 }

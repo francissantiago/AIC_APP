@@ -84,6 +84,14 @@ export class Member {
   rg!: string | null;
 
   @Column({
+    name: 'registration_number',
+    type: 'char',
+    length: 6,
+    nullable: true,
+  })
+  registrationNumber!: string | null;
+
+  @Column({
     name: 'place_of_birth',
     type: 'varchar',
     length: 150,

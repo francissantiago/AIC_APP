@@ -10,8 +10,9 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
+import { MemberMaritalStatus } from '@enums/member-marital-status';
 import { IMember } from '@interfaces/IMember';
 import { IMembershipCard, IMembershipCardSettings } from '@interfaces/IMembershipCard';
 import { ApiErrorService } from '@services/api-error.service';
@@ -19,13 +20,16 @@ import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
 import { MembershipCardsService } from '@services/membership-cards-service';
 import { MembershipCardPreview } from '../membership-card-preview/membership-card-preview';
-import { MembershipCardPrint } from '../membership-card-print/membership-card-print';
+import {
+  buildMembershipCardsPrintHtml,
+  printMembershipCardsHtml,
+} from '../membership-card-print.util';
 
 const MAX_SELECTION = 50;
 
 @Component({
   selector: 'app-membership-cards-page',
-  imports: [ReactiveFormsModule, TranslatePipe, MembershipCardPreview, MembershipCardPrint],
+  imports: [ReactiveFormsModule, TranslatePipe, MembershipCardPreview],
   templateUrl: './membership-cards-page.html',
   styleUrl: './membership-cards-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +40,7 @@ export class MembershipCardsPage implements OnInit {
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #translate = inject(TranslateService);
 
   readonly statuses = MEMBER_STATUSES;
   readonly canWrite = computed(() => this.#auth.hasPermission('membership-cards:write'));
@@ -93,9 +98,7 @@ export class MembershipCardsPage implements OnInit {
 
   ngOnInit(): void {
     this.#loadMembers();
-    if (this.canWrite()) {
-      this.#loadSettings();
-    }
+    this.#loadSettings();
   }
 
   onSearchInput(event: Event): void {
@@ -124,6 +127,16 @@ export class MembershipCardsPage implements OnInit {
 
   isSelected(id: string): boolean {
     return this.selectedIds().includes(id);
+  }
+
+  formatMissingFields(fields: string[]): string {
+    return fields
+      .map((field) => {
+        const key = `MEMBERSHIP_CARDS.MISSING_FIELD_${field}`;
+        const translated = this.#translate.instant(key);
+        return translated === key ? field : translated;
+      })
+      .join(', ');
   }
 
   generatePreview(): void {
@@ -165,7 +178,29 @@ export class MembershipCardsPage implements OnInit {
     if (!this.canWrite() || this.cards().length === 0) {
       return;
     }
-    window.print();
+
+    const labels = {
+      cardLabel: this.#translate.instant('MEMBERSHIP_CARDS.CARD_LABEL'),
+      fieldName: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_NAME'),
+      fieldFiliation: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_FILIATION'),
+      fieldBirthDate: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_BIRTH_DATE'),
+      fieldPlaceOfBirth: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_PLACE_OF_BIRTH'),
+      fieldPosition: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_POSITION'),
+      fieldBloodType: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_BLOOD_TYPE'),
+      fieldRegistration: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_REGISTRATION'),
+      fieldCpf: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_CPF'),
+      fieldRg: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_RG'),
+      fieldMaritalStatus: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_MARITAL_STATUS'),
+      fieldValidity: this.#translate.instant('MEMBERSHIP_CARDS.FIELD_VALIDITY'),
+      maritalStatus: (status: MemberMaritalStatus) =>
+        this.#translate.instant(`MEMBERS.MARITAL_${status.toUpperCase()}`),
+    };
+
+    const html = buildMembershipCardsPrintHtml(this.cards(), labels, {
+      logoSrc: this.settings()?.logoDataUrl ?? null,
+      signatureSrc: this.settings()?.signatureDataUrl ?? null,
+    });
+    printMembershipCardsHtml(html);
   }
 
   openSettings(): void {
@@ -217,12 +252,55 @@ export class MembershipCardsPage implements OnInit {
   }
 
   onLogoSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file || !this.canWrite()) {
       return;
     }
     this.#membershipCardsService
       .uploadLogo(file)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (settings) => {
+          this.settings.set(settings);
+          this.#applySettingsToCards(settings);
+          input.value = '';
+        },
+        error: (error: HttpErrorResponse) => {
+          this.settingsError.set(this.#apiError.resolve(error).displayMessage);
+          input.value = '';
+        },
+      });
+  }
+
+  onSignatureSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.canWrite()) {
+      return;
+    }
+    this.#membershipCardsService
+      .uploadSignature(file)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (settings) => {
+          this.settings.set(settings);
+          this.#applySettingsToCards(settings);
+          input.value = '';
+        },
+        error: (error: HttpErrorResponse) => {
+          this.settingsError.set(this.#apiError.resolve(error).displayMessage);
+          input.value = '';
+        },
+      });
+  }
+
+  removeLogo(): void {
+    if (!this.canWrite() || !this.settings()?.logoDataUrl) {
+      return;
+    }
+    this.#membershipCardsService
+      .removeLogo()
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (settings) => {
@@ -235,13 +313,12 @@ export class MembershipCardsPage implements OnInit {
       });
   }
 
-  onSignatureSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file || !this.canWrite()) {
+  removeSignature(): void {
+    if (!this.canWrite() || !this.settings()?.signatureDataUrl) {
       return;
     }
     this.#membershipCardsService
-      .uploadSignature(file)
+      .removeSignature()
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (settings) => {

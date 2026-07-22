@@ -35,6 +35,18 @@ export class MembershipCardSettingsResponseDto {
   })
   signatureUrl!: string | null;
 
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Data URL (base64) da logo para preview sem GET binário',
+  })
+  logoDataUrl!: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Data URL (base64) da assinatura para preview sem GET binário',
+  })
+  signatureDataUrl!: string | null;
+
   @ApiProperty({ example: 24 })
   validityMonths!: number;
 
@@ -49,6 +61,7 @@ export class MembershipCardSettingsResponseDto {
 
   static fromEntity(
     settings: MembershipCardSettings,
+    assets?: { logoDataUrl?: string | null; signatureDataUrl?: string | null },
   ): MembershipCardSettingsResponseDto {
     const dto = new MembershipCardSettingsResponseDto();
     dto.id = settings.id;
@@ -64,6 +77,8 @@ export class MembershipCardSettingsResponseDto {
     dto.signatureUrl = settings.signaturePath
       ? '/api/membership-cards/settings/signature'
       : null;
+    dto.logoDataUrl = assets?.logoDataUrl ?? null;
+    dto.signatureDataUrl = assets?.signatureDataUrl ?? null;
     dto.validityMonths = settings.validityMonths;
     dto.footerNotice = settings.footerNotice;
     dto.createdAt = settings.createdAt;

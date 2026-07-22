@@ -5,9 +5,11 @@
     "ng": "ng",
     "start": "ng serve",
     "dev": "ng serve --configuration development --port 83 --host 0.0.0.0",
+    "dev:remote": "node ./scripts/serve-remote.mjs",
+    "dev:no-hmr": "ng serve --configuration development --port 83 --host 0.0.0.0 --no-live-reload --hmr=false",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "postinstall": "node ./scripts/patch-angular-vitest.mjs",
+    "postinstall": "node ./scripts/patch-angular-vitest.mjs && node ./scripts/patch-angular-hmr.mjs",
     "test": "node ./scripts/patch-angular-vitest.mjs && ng test"
   },
   "private": true,

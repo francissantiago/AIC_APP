@@ -79,9 +79,8 @@ export class MembersService {
   }
 
   getPhotoBlob(id: string): Observable<Blob> {
-    return this.#http
-      .get(`${this.#apiUrl}/${id}/photo`, { responseType: 'blob' })
-      .pipe(this.#withRetry());
+    // Sem retry: 5xx em blob (ex.: 502 do proxy) não deve travar o browser.
+    return this.#http.get(`${this.#apiUrl}/${id}/photo`, { responseType: 'blob' });
   }
 
   removePhoto(id: string): Observable<void> {

@@ -7,6 +7,7 @@ import { MinistryMember } from '../ministries/entities/ministry-member.entity';
 import { StorageModule } from '../secretariat/storage/storage.module';
 import { MembershipCardSettings } from './entities/membership-card-settings.entity';
 import { MembershipCardsController } from './membership-cards.controller';
+import { MembershipCardsPublicController } from './membership-cards-public.controller';
 import { MembershipCardsService } from './membership-cards.service';
 
 @Module({
@@ -20,7 +21,7 @@ import { MembershipCardsService } from './membership-cards.service';
     CongregationsModule,
     StorageModule,
   ],
-  controllers: [MembershipCardsController],
+  controllers: [MembershipCardsController, MembershipCardsPublicController],
   providers: [MembershipCardsService],
   exports: [MembershipCardsService],
 })
