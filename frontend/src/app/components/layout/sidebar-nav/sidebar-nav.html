@@ -407,6 +407,60 @@
         }
       </li>
     }
+    @if (canViewConstructions()) {
+      <li>
+        <button
+          type="button"
+          data-testid="nav-toggle-constructions"
+          class="group flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.justify-center]="!expanded()"
+          [class.bg-slate-600]="currentUrl().startsWith('/constructions')"
+          [class.px-3]="expanded()"
+          [class.px-0]="!expanded()"
+          [attr.aria-label]="expanded() ? null : ('NAV.CONSTRUCTIONS' | translate)"
+          [attr.title]="expanded() ? null : ('NAV.CONSTRUCTIONS' | translate)"
+          [attr.aria-expanded]="expanded() ? constructionsOpen() : null"
+          [attr.aria-controls]="expanded() ? 'constructions-submenu' : null"
+          (click)="toggleConstructions()"
+        >
+          <svg
+            class="size-5 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M2 20h20M5 20V8l7-5 7 5v12M9 20v-6h6v6M9 12h6"
+            />
+          </svg>
+          @if (expanded()) {
+            <span class="flex-1 truncate text-left">{{ 'NAV.CONSTRUCTIONS' | translate }}</span>
+            <span aria-hidden="true">{{ constructionsOpen() ? '−' : '+' }}</span>
+          }
+        </button>
+        @if (expanded() && constructionsOpen()) {
+          <ul id="constructions-submenu" class="ml-5 mt-1 border-l border-slate-400 pl-3">
+            @for (item of constructionsItems; track item.route) {
+              <li>
+                <a
+                  [routerLink]="item.route"
+                  [attr.data-testid]="navLinkTestId(item.route)"
+                  routerLinkActive="bg-slate-600 text-white"
+                  [routerLinkActiveOptions]="{ exact: item.route === '/constructions' }"
+                  class="block rounded-r-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                >
+                  {{ item.labelKey | translate }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </li>
+    }
     @if (canViewFinanceSection()) {
       <li>
         <button

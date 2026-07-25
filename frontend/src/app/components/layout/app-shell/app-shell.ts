@@ -162,6 +162,12 @@ export class AppShell {
     if (path.startsWith('/missions')) {
       return 'APP_SHELL.PAGE_MISSIONS';
     }
+    if (path.startsWith('/constructions/updates')) {
+      return 'APP_SHELL.PAGE_CONSTRUCTIONS_UPDATES';
+    }
+    if (path.startsWith('/constructions')) {
+      return 'APP_SHELL.PAGE_CONSTRUCTIONS';
+    }
     if (path.startsWith('/ebd/reports')) {
       return 'APP_SHELL.PAGE_EBD_REPORTS';
     }

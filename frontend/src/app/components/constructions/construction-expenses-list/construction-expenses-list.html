@@ -1,0 +1,137 @@
+<div class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h3 class="text-base font-semibold text-slate-900">
+      {{ 'CONSTRUCTIONS.EXPENSES_TITLE' | translate }}
+    </h3>
+    @if (canWrite()) {
+      <button
+        type="button"
+        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        (click)="openCreate()"
+      >
+        {{ 'CONSTRUCTIONS.ADD_EXPENSE' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="'CONSTRUCTIONS.ADD_EXPENSE' | translate"
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-construction-expense-form
+        [projectId]="projectId()"
+        (saved)="afterSave()"
+        (cancelled)="closeForm()"
+      />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'CONSTRUCTIONS.CONFIRM_DELETE_EXPENSE' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">
+      {{ 'CONSTRUCTIONS.EXPENSES_LOAD_ERROR' | translate }}
+    </p>
+  } @else if (expenses().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'CONSTRUCTIONS.EXPENSES_EMPTY' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONSTRUCTIONS.EXPENSE_DATE' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONSTRUCTIONS.EXPENSE_DESCRIPTION' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONSTRUCTIONS.EXPENSE_AMOUNT' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONSTRUCTIONS.PAYMENT_METHOD' | translate }}
+            </th>
+            @if (canWrite()) {
+              <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (expense of expenses(); track expense.id) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-700">{{ expense.entryDate }}</td>
+              <td class="px-3 py-2 text-slate-900">{{ expense.description }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ formatCurrency(expense.amount) }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ paymentLabelKey(expense.paymentMethod) | translate }}
+              </td>
+              @if (canWrite()) {
+                <td class="px-3 py-2">
+                  <button type="button" (click)="askDelete(expense.id)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+      <p>{{ 'COMMON.PAGE' | translate }} {{ page() }} / {{ totalPages() }}</p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() <= 1"
+          (click)="previousPage()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() >= totalPages()"
+          (click)="nextPage()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -6,6 +6,7 @@ import {
   assetsPermissionGuard,
   classesPermissionGuard,
   congregationsPermissionGuard,
+  constructionsPermissionGuard,
   defaultRouteGuard,
   financePermissionGuard,
   membersPermissionGuard,
@@ -167,6 +168,30 @@ export const routes: Routes = [
               import('@components/missions/mission-fields-list/mission-fields-list').then(
                 (m) => m.MissionFieldsList,
               ),
+          },
+        ],
+      },
+      {
+        path: 'constructions',
+        canActivate: [constructionsPermissionGuard],
+        loadComponent: () =>
+          import('@components/constructions/constructions-page/constructions-page').then(
+            (m) => m.ConstructionsPage,
+          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import(
+                '@components/constructions/construction-projects-list/construction-projects-list'
+              ).then((m) => m.ConstructionProjectsList),
+          },
+          {
+            path: 'updates',
+            loadComponent: () =>
+              import(
+                '@components/constructions/construction-updates-list/construction-updates-list'
+              ).then((m) => m.ConstructionUpdatesList),
           },
         ],
       },

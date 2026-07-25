@@ -362,6 +362,22 @@ export class MinistriesService {
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
+  async getMinistryOrFailInternal(
+    id: string,
+    congregationId: string,
+  ): Promise<Ministry> {
+    const ministry = await this.ministriesRepository.findOne({
+      where: { id, congregationId },
+    });
+    if (!ministry) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.MINISTRIES_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MINISTRIES_NOT_FOUND],
+      });
+    }
+    return ministry;
+  }
+
   private async getMinistryOrFail(
     id: string,
     withLeader = true,

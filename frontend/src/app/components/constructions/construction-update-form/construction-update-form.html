@@ -1,0 +1,89 @@
+@if (loading()) {
+  <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+} @else if (loadError()) {
+  <p class="text-sm text-red-700" role="alert">{{ 'CONSTRUCTIONS.LOAD_ERROR' | translate }}</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4">
+    @if (!isEditMode()) {
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'CONSTRUCTIONS.PROJECT' | translate }}</span>
+        <select
+          formControlName="constructionProjectId"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.border-red-500]="fieldInvalid('constructionProjectId')"
+        >
+          <option value="">{{ 'CONSTRUCTIONS.PROJECT_PLACEHOLDER' | translate }}</option>
+          @for (project of projectOptions(); track project.id) {
+            <option [value]="project.id">{{ project.name }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONSTRUCTIONS.UPDATE_TITLE' | translate }}</span>
+      <input
+        type="text"
+        formControlName="title"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [class.border-red-500]="fieldInvalid('title')"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONSTRUCTIONS.DESCRIPTION_FIELD' | translate }}</span>
+      <textarea
+        formControlName="description"
+        rows="3"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      ></textarea>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONSTRUCTIONS.PROGRESS' | translate }}</span>
+      <input
+        type="number"
+        min="0"
+        max="100"
+        formControlName="progressPercent"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'CONSTRUCTIONS.RECORDED_AT' | translate }}</span>
+      <input
+        type="date"
+        formControlName="recordedAt"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [class.border-red-500]="fieldInvalid('recordedAt')"
+      />
+    </label>
+
+    @if (feedbackKey(); as key) {
+      <p class="rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+        {{ key | translate }}
+      </p>
+    }
+    @if (errorMessage(); as message) {
+      <p class="text-sm text-red-700" role="alert">{{ message }}</p>
+    }
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="submit"
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 disabled:opacity-50"
+        [disabled]="saving()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50"
+        (click)="cancelled.emit()"
+      >
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+    </div>
+  </form>
+}

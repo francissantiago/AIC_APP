@@ -16,7 +16,12 @@ import { UsersService } from '../../modules/users/users.service';
 const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:4200';
 
 export type NotificationWsType =
-  'visitor_follow_up' | 'schedule_reminder' | 'member_birthday';
+  | 'visitor_follow_up'
+  | 'schedule_reminder'
+  | 'member_birthday'
+  | 'construction_update'
+  | 'construction_status_change'
+  | 'construction_budget_alert';
 
 export interface NotificationNewPayload {
   id: string;

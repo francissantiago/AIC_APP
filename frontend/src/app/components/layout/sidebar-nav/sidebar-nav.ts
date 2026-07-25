@@ -26,6 +26,7 @@ export type SidebarNavItem = {
     | 'families'
     | 'ministries'
     | 'missions'
+    | 'constructions'
     | 'congregation';
   permission?: string;
 };
@@ -60,6 +61,7 @@ export class SidebarNav {
   readonly ebdOpen = signal(this.#router.url.startsWith('/ebd'));
   readonly smallGroupsOpen = signal(this.#router.url.startsWith('/small-groups'));
   readonly missionsOpen = signal(this.#router.url.startsWith('/missions'));
+  readonly constructionsOpen = signal(this.#router.url.startsWith('/constructions'));
   readonly congregationsOpen = signal(
     this.#router.url.startsWith('/congregation') || this.#router.url.startsWith('/congregations'),
   );
@@ -73,6 +75,7 @@ export class SidebarNav {
   readonly canViewEbd = computed(() => this.#auth.hasPermission('classes:read'));
   readonly canViewSmallGroups = computed(() => this.#auth.hasPermission('small-groups:read'));
   readonly canViewMissions = computed(() => this.#auth.hasPermission('missions:read'));
+  readonly canViewConstructions = computed(() => this.#auth.hasPermission('constructions:read'));
   readonly canViewCongregations = computed(() => this.#auth.hasPermission('congregations:read'));
 
   readonly allItems: readonly SidebarNavItem[] = [
@@ -133,6 +136,11 @@ export class SidebarNav {
   readonly missionsItems = [
     { route: '/missions', labelKey: 'NAV.MISSIONS_ASSIGNMENTS' },
     { route: '/missions/fields', labelKey: 'NAV.MISSIONS_FIELDS' },
+  ] as const;
+
+  readonly constructionsItems = [
+    { route: '/constructions', labelKey: 'NAV.CONSTRUCTIONS_PROJECTS' },
+    { route: '/constructions/updates', labelKey: 'NAV.CONSTRUCTIONS_UPDATES' },
   ] as const;
 
   readonly items = computed(() =>
@@ -210,6 +218,9 @@ export class SidebarNav {
         if (event.urlAfterRedirects.startsWith('/missions')) {
           this.missionsOpen.set(true);
         }
+        if (event.urlAfterRedirects.startsWith('/constructions')) {
+          this.constructionsOpen.set(true);
+        }
         if (
           event.urlAfterRedirects.startsWith('/congregation') ||
           event.urlAfterRedirects.startsWith('/congregations')
@@ -259,6 +270,14 @@ export class SidebarNav {
       return;
     }
     this.missionsOpen.update((value) => !value);
+  }
+
+  toggleConstructions(): void {
+    if (!this.expanded()) {
+      void this.#router.navigateByUrl('/constructions');
+      return;
+    }
+    this.constructionsOpen.update((value) => !value);
   }
 
   toggleCongregations(): void {

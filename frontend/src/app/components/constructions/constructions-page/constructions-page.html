@@ -1,0 +1,31 @@
+<section class="w-full">
+  <div class="mb-4">
+    <h1 class="text-xl font-semibold text-slate-900">{{ 'CONSTRUCTIONS.TITLE' | translate }}</h1>
+    <p class="text-sm text-slate-600">{{ 'CONSTRUCTIONS.DESCRIPTION' | translate }}</p>
+  </div>
+
+  <nav
+    class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-2"
+    [attr.aria-label]="'CONSTRUCTIONS.TABS' | translate"
+  >
+    <a
+      routerLink="/constructions"
+      routerLinkActive="border-slate-600 text-slate-900"
+      [routerLinkActiveOptions]="{ exact: true }"
+      data-testid="constructions-tab-projects"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'CONSTRUCTIONS.PROJECTS_TITLE' | translate }}
+    </a>
+    <a
+      routerLink="/constructions/updates"
+      routerLinkActive="border-slate-600 text-slate-900"
+      data-testid="constructions-tab-updates"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'CONSTRUCTIONS.UPDATES_TITLE' | translate }}
+    </a>
+  </nav>
+
+  <router-outlet />
+</section>

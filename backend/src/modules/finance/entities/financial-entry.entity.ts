@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ConstructionProject } from '../../constructions/entities/construction-project.entity';
 import { Member } from '../../members/entities/member.entity';
 import { FinancialType, PaymentMethod } from '../enums/finance.enums';
 import { FinancialCategory } from './financial-category.entity';
@@ -26,6 +27,7 @@ import { FinancialCategory } from './financial-category.entity';
 @Index('IDX_financial_entries_category', ['categoryId'])
 @Index('IDX_financial_entries_created_by', ['createdByUserId'])
 @Index('IDX_financial_entries_member_date', ['memberId', 'entryDate'])
+@Index('IDX_financial_entries_construction_project', ['constructionProjectId'])
 export class FinancialEntry {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -51,6 +53,21 @@ export class FinancialEntry {
   @ManyToOne(() => Member, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'member_id' })
   member!: Member | null;
+
+  @Column({
+    name: 'construction_project_id',
+    type: 'char',
+    length: 36,
+    nullable: true,
+  })
+  constructionProjectId!: string | null;
+
+  @ManyToOne(() => ConstructionProject, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'construction_project_id' })
+  constructionProject!: ConstructionProject | null;
 
   @Column({ type: 'enum', enum: FinancialType })
   type!: FinancialType;

@@ -9,6 +9,7 @@ import { AnnouncementsModule } from './modules/announcements/announcements.modul
 import { AssetsModule } from './modules/assets/assets.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClassesModule } from './modules/classes/classes.module';
+import { ConstructionsModule } from './modules/constructions/constructions.module';
 import { CongregationsModule } from './modules/congregations/congregations.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { FamiliesModule } from './modules/families/families.module';
@@ -59,6 +60,7 @@ import { UsersModule } from './modules/users/users.module';
     NotificationsModule,
     MinistriesModule,
     MissionsModule,
+    ConstructionsModule,
     ClassesModule,
     SmallGroupsModule,
     SchedulesModule,

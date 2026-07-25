@@ -123,6 +123,12 @@ export class NotificationsBell implements OnInit {
         return 'NOTIFICATIONS.TYPE_SCHEDULE_REMINDER';
       case 'member_birthday':
         return 'NOTIFICATIONS.TYPE_MEMBER_BIRTHDAY';
+      case 'construction_update':
+        return 'NOTIFICATIONS.TYPES.CONSTRUCTION_UPDATE';
+      case 'construction_status_change':
+        return 'NOTIFICATIONS.TYPES.CONSTRUCTION_STATUS_CHANGE';
+      case 'construction_budget_alert':
+        return 'NOTIFICATIONS.TYPES.CONSTRUCTION_BUDGET_ALERT';
       default:
         return 'NOTIFICATIONS.TYPE_GENERIC';
     }
@@ -163,6 +169,10 @@ export class NotificationsBell implements OnInit {
         return '/secretariat/schedules';
       case 'member_birthday':
         return '/families/birthdays';
+      case 'construction_update':
+      case 'construction_status_change':
+      case 'construction_budget_alert':
+        return '/constructions';
       default:
         return null;
     }
