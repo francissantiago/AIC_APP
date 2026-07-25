@@ -1,4 +1,4 @@
-<div class="flex min-h-screen bg-slate-50">
+<div class="flex h-dvh overflow-hidden bg-slate-50">
   @if (sidebarExpanded()) {
     <button
       type="button"
@@ -70,7 +70,7 @@
       </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto">
+    <div class="min-h-0 flex-1 overflow-y-auto app-scrollbar-sidebar">
       <app-sidebar-nav [expanded]="sidebarExpanded()" />
     </div>
   </aside>
@@ -158,7 +158,7 @@
     </header>
 
     <main
-      class="flex-1 p-4 md:p-6"
+      class="min-h-0 flex-1 overflow-y-auto p-4 app-scrollbar-thin md:p-6"
       data-testid="app-main"
       [attr.aria-label]="'APP_SHELL.CONTENT_AREA' | translate"
     >

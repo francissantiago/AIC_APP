@@ -48,7 +48,7 @@ export class AppShell {
   readonly pageTitleKey = computed(() => this.#resolvePageTitle(this.#currentUrl()));
   readonly contentLayoutClass = computed(() =>
     [
-      'flex min-h-screen min-w-0 flex-1 flex-col transition-[margin] duration-200',
+      'flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-200',
       this.sidebarExpanded() ? 'md:ml-60' : 'md:ml-16',
     ].join(' '),
   );
