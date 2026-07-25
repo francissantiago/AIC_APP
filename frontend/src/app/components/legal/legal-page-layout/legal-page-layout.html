@@ -57,16 +57,27 @@
   </main>
 
   <footer class="border-t border-slate-200 bg-white">
-    <div
-      class="mx-auto flex max-w-3xl flex-wrap gap-x-4 gap-y-2 px-4 py-6 text-sm text-slate-600 sm:px-6"
-    >
-      <span>{{ 'LEGAL.HOME_APP_NAME' | translate }}</span>
+    <div class="mx-auto max-w-3xl space-y-2 px-4 py-6 text-sm text-slate-600 sm:px-6">
+      <p>{{ 'LEGAL.HOME_APP_NAME' | translate }}</p>
+      <p>
+        <span>{{ 'APP_SHELL.SOFTWARE_LICENSES' | translate }}</span>
+        <a
+          href="https://github.com/francissantiago/AIC_APP"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ml-1 font-medium text-slate-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          {{ 'APP_SHELL.SOFTWARE_LICENSES_REPO' | translate }}
+        </a>
+      </p>
+      <div class="flex flex-wrap gap-x-4 gap-y-2">
       <a routerLink="/privacy" class="underline-offset-2 hover:underline">{{
         'LEGAL.NAV_PRIVACY' | translate
       }}</a>
       <a routerLink="/terms" class="underline-offset-2 hover:underline">{{
         'LEGAL.NAV_TERMS' | translate
       }}</a>
+      </div>
     </div>
   </footer>
 </div>

@@ -11,6 +11,7 @@ import {
   membersPermissionGuard,
   membershipCardsPermissionGuard,
   ministriesPermissionGuard,
+  missionsPermissionGuard,
   rolesPermissionGuard,
   schedulesPermissionGuard,
   secretariatPermissionGuard,
@@ -146,6 +147,28 @@ export const routes: Routes = [
           import('@components/ministries/ministries-list/ministries-list').then(
             (m) => m.MinistriesList,
           ),
+      },
+      {
+        path: 'missions',
+        canActivate: [missionsPermissionGuard],
+        loadComponent: () =>
+          import('@components/missions/missions-page/missions-page').then((m) => m.MissionsPage),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import(
+                '@components/missions/mission-assignments-list/mission-assignments-list'
+              ).then((m) => m.MissionAssignmentsList),
+          },
+          {
+            path: 'fields',
+            loadComponent: () =>
+              import('@components/missions/mission-fields-list/mission-fields-list').then(
+                (m) => m.MissionFieldsList,
+              ),
+          },
+        ],
       },
       {
         path: 'ebd/reports',

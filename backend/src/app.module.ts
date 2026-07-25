@@ -17,6 +17,7 @@ import { MemberTransfersModule } from './modules/member-transfers/member-transfe
 import { MembersModule } from './modules/members/members.module';
 import { MembershipCardsModule } from './modules/membership-cards/membership-cards.module';
 import { MinistriesModule } from './modules/ministries/ministries.module';
+import { MissionsModule } from './modules/missions/missions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
@@ -57,6 +58,7 @@ import { UsersModule } from './modules/users/users.module';
     AnnouncementsModule,
     NotificationsModule,
     MinistriesModule,
+    MissionsModule,
     ClassesModule,
     SmallGroupsModule,
     SchedulesModule,

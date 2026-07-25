@@ -1,0 +1,31 @@
+<section class="w-full">
+  <div class="mb-4">
+    <h1 class="text-xl font-semibold text-slate-900">{{ 'MISSIONS.TITLE' | translate }}</h1>
+    <p class="text-sm text-slate-600">{{ 'MISSIONS.DESCRIPTION' | translate }}</p>
+  </div>
+
+  <nav
+    class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-2"
+    [attr.aria-label]="'MISSIONS.TABS' | translate"
+  >
+    <a
+      routerLink="/missions"
+      routerLinkActive="border-slate-600 text-slate-900"
+      [routerLinkActiveOptions]="{ exact: true }"
+      data-testid="missions-tab-assignments"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'MISSIONS.ASSIGNMENTS_TITLE' | translate }}
+    </a>
+    <a
+      routerLink="/missions/fields"
+      routerLinkActive="border-slate-600 text-slate-900"
+      data-testid="missions-tab-fields"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'MISSIONS.FIELDS_TITLE' | translate }}
+    </a>
+  </nav>
+
+  <router-outlet />
+</section>

@@ -25,6 +25,7 @@ export type SidebarNavItem = {
     | 'membership-cards'
     | 'families'
     | 'ministries'
+    | 'missions'
     | 'congregation';
   permission?: string;
 };
@@ -58,6 +59,7 @@ export class SidebarNav {
   readonly secretariatOpen = signal(this.#router.url.startsWith('/secretariat'));
   readonly ebdOpen = signal(this.#router.url.startsWith('/ebd'));
   readonly smallGroupsOpen = signal(this.#router.url.startsWith('/small-groups'));
+  readonly missionsOpen = signal(this.#router.url.startsWith('/missions'));
   readonly congregationsOpen = signal(
     this.#router.url.startsWith('/congregation') || this.#router.url.startsWith('/congregations'),
   );
@@ -70,6 +72,7 @@ export class SidebarNav {
   );
   readonly canViewEbd = computed(() => this.#auth.hasPermission('classes:read'));
   readonly canViewSmallGroups = computed(() => this.#auth.hasPermission('small-groups:read'));
+  readonly canViewMissions = computed(() => this.#auth.hasPermission('missions:read'));
   readonly canViewCongregations = computed(() => this.#auth.hasPermission('congregations:read'));
 
   readonly allItems: readonly SidebarNavItem[] = [
@@ -125,6 +128,11 @@ export class SidebarNav {
   readonly smallGroupsItems = [
     { route: '/small-groups', labelKey: 'NAV.SMALL_GROUPS' },
     { route: '/small-groups/reports', labelKey: 'NAV.SMALL_GROUPS_REPORTS' },
+  ] as const;
+
+  readonly missionsItems = [
+    { route: '/missions', labelKey: 'NAV.MISSIONS_ASSIGNMENTS' },
+    { route: '/missions/fields', labelKey: 'NAV.MISSIONS_FIELDS' },
   ] as const;
 
   readonly items = computed(() =>
@@ -199,6 +207,9 @@ export class SidebarNav {
         if (event.urlAfterRedirects.startsWith('/small-groups')) {
           this.smallGroupsOpen.set(true);
         }
+        if (event.urlAfterRedirects.startsWith('/missions')) {
+          this.missionsOpen.set(true);
+        }
         if (
           event.urlAfterRedirects.startsWith('/congregation') ||
           event.urlAfterRedirects.startsWith('/congregations')
@@ -240,6 +251,14 @@ export class SidebarNav {
       return;
     }
     this.smallGroupsOpen.update((value) => !value);
+  }
+
+  toggleMissions(): void {
+    if (!this.expanded()) {
+      void this.#router.navigateByUrl('/missions');
+      return;
+    }
+    this.missionsOpen.update((value) => !value);
   }
 
   toggleCongregations(): void {

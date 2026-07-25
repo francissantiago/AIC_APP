@@ -1,0 +1,181 @@
+<div class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-lg font-semibold text-slate-900">
+      {{ 'MISSIONS.ASSIGNMENTS_TITLE' | translate }}
+    </h2>
+    @if (canWrite()) {
+      <button
+        type="button"
+        data-testid="mission-assignment-create-btn"
+        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        (click)="openCreate()"
+      >
+        {{ 'COMMON.CREATE' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="
+      (editingId() ? 'MISSIONS.EDIT_ASSIGNMENT_TITLE' : 'MISSIONS.CREATE_ASSIGNMENT_TITLE')
+        | translate
+    "
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-mission-assignment-form
+        [assignmentId]="editingId()"
+        (saved)="afterSave()"
+        (cancelled)="closeForm()"
+      />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'MISSIONS.CONFIRM_DELETE_ASSIGNMENT' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <form
+    [formGroup]="filterForm"
+    class="mb-4 grid gap-3 md:grid-cols-3"
+    [attr.aria-label]="'COMMON.FILTER' | translate"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'MISSIONS.SEARCH' | translate }}</span>
+      <input
+        type="search"
+        formControlName="q"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'MISSIONS.FILTER_STATUS' | translate }}</span>
+      <select
+        formControlName="status"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+        }
+      </select>
+    </label>
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'MISSIONS.FILTER_ROLE' | translate }}</span>
+      <select
+        formControlName="role"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (role of roles; track role) {
+          <option [value]="role">{{ roleLabelKey(role) | translate }}</option>
+        }
+      </select>
+    </label>
+  </form>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'MISSIONS.LOAD_ERROR' | translate }}</p>
+  } @else if (assignments().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'MISSIONS.EMPTY_ASSIGNMENTS' | translate }}</p>
+  } @else {
+    <div class="overflow-x-auto rounded-md border border-slate-200">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.MEMBER' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.FIELD' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.ROLE' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.STATUS' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.START_DATE' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (assignment of assignments(); track assignment.id) {
+            <tr class="border-t border-slate-100">
+              <td class="px-3 py-2 text-slate-900">{{ assignment.memberName }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ assignment.missionFieldName }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ roleLabelKey(assignment.role) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ statusLabelKey(assignment.status) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ assignment.startDate }}</td>
+              <td class="px-3 py-2">
+                @if (canWrite()) {
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openEdit(assignment.id)"
+                    >
+                      {{ 'COMMON.EDIT' | translate }}
+                    </button>
+                    <button type="button" (click)="askDelete(assignment.id)">
+                      {{ 'COMMON.DELETE' | translate }}
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+      <p>{{ 'COMMON.PAGE' | translate }} {{ page() }} / {{ totalPages() }}</p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() <= 1"
+          (click)="previousPage()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() >= totalPages()"
+          (click)="nextPage()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

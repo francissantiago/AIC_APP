@@ -1,0 +1,133 @@
+<section class="w-full" data-testid="mission-field-form">
+  @if (feedbackKey(); as key) {
+    <p
+      class="mb-4 rounded-md px-3 py-2 text-sm"
+      [class.bg-emerald-50]="key === 'MISSIONS.SAVE_SUCCESS'"
+      [class.text-emerald-900]="key === 'MISSIONS.SAVE_SUCCESS'"
+      [class.bg-red-50]="key !== 'MISSIONS.SAVE_SUCCESS'"
+      [class.text-red-800]="key !== 'MISSIONS.SAVE_SUCCESS'"
+      role="alert"
+    >
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'MISSIONS.LOAD_ERROR' | translate }}</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.NAME' | translate }}</span>
+        <input
+          type="text"
+          data-testid="mission-field-form-name"
+          formControlName="name"
+          maxlength="120"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('name')"
+        />
+        @if (fieldInvalid('name')) {
+          <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.COUNTRY' | translate }}</span>
+        <input
+          type="text"
+          formControlName="country"
+          maxlength="100"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.aria-invalid]="fieldInvalid('country')"
+        />
+        @if (fieldInvalid('country')) {
+          <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.CITY' | translate }}</span>
+        <input
+          type="text"
+          formControlName="city"
+          maxlength="100"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        />
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.REGION' | translate }}</span>
+        <input
+          type="text"
+          formControlName="region"
+          maxlength="100"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        />
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.DESCRIPTION_FIELD' | translate }}</span>
+        <textarea
+          formControlName="description"
+          rows="3"
+          maxlength="255"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        ></textarea>
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.COORDINATOR' | translate }}</span>
+        <select
+          formControlName="coordinatorMemberId"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          <option value="">{{ 'MISSIONS.COORDINATOR_PLACEHOLDER' | translate }}</option>
+          @for (member of coordinatorOptions(); track member.id) {
+            <option [value]="member.id">{{ member.fullName }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.STATUS' | translate }}</span>
+        <select
+          formControlName="status"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="mt-2 flex flex-wrap gap-3">
+        <button
+          type="submit"
+          data-testid="mission-field-form-save"
+          class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          (click)="cancelled.emit()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</section>
