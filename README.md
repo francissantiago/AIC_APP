@@ -49,6 +49,32 @@ npm start
 
 Detalhes em [frontend/README.md](frontend/README.md).
 
+## Instalação com Docker (produção)
+
+Para instalar ou atualizar a stack completa (MySQL + API + frontend) com um único comando:
+
+```bash
+git clone https://github.com/francissantiago/AIC_APP.git /opt/aic-app
+cd /opt/aic-app
+chmod +x deploy/scripts/aic-app.sh
+./deploy/scripts/aic-app.sh install
+```
+
+Atualizar para a última versão do GitHub:
+
+```bash
+./deploy/scripts/aic-app.sh update
+```
+
+No Windows (PowerShell 7+):
+
+```powershell
+.\deploy\scripts\aic-app.ps1 -Action Install
+.\deploy\scripts\aic-app.ps1 -Action Update
+```
+
+Guia completo para administradores: [deploy/scripts/README.md](deploy/scripts/README.md).
+
 ### MCP (Cursor)
 
 Servidor MCP na pasta [`mcp/`](mcp/) para queries MySQL (somente SELECT), blueprints Angular/Nest e guidelines do projeto.

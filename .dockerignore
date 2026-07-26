@@ -1,0 +1,14 @@
+**/node_modules
+**/.git
+**/.angular
+**/dist
+**/coverage
+**/.env
+**/.env.local
+deploy/.env
+backend/uploads
+e2e/test-results
+e2e/playwright-report
+*.log
+.DS_Store
+Thumbs.db

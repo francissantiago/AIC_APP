@@ -1,0 +1,14 @@
+# Exemplo de override para desenvolvimento local com hot-reload.
+# Copie para docker-compose.override.yml na raiz (gitignored) se necessário.
+#
+# cp docker-compose.override.example.yml docker-compose.override.yml
+
+services:
+  backend:
+    environment:
+      CORS_ORIGIN: http://localhost:8080
+      FRONTEND_APP_URL: http://localhost:8080
+
+  web:
+    ports:
+      - '8080:80'
