@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 import { LoginPage } from '../../pages/login.page';
 import { AppShellPage } from '../../pages/app-shell.page';
-import { tutorialPause } from '../../fixtures/tutorial.fixture';
+import { tutorialIntroPause, tutorialPause, prepareTutorialPage } from '../../fixtures/tutorial.fixture';
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -12,6 +12,9 @@ test('auth-login — entrar na plataforma', async ({ page }) => {
   const email = process.env.E2E_ADMIN_EMAIL ?? 'admin@admin.com';
   const password = process.env.E2E_ADMIN_PASSWORD ?? '';
   test.skip(!password, 'E2E_ADMIN_PASSWORD não configurado');
+
+  await prepareTutorialPage(page);
+  await tutorialIntroPause(page);
 
   await test.step('Abrir tela de login', async () => {
     const loginPage = new LoginPage(page);
@@ -33,5 +36,6 @@ test('auth-login — entrar na plataforma', async ({ page }) => {
     await shell.expectLoaded();
     await expect(page.getByTestId('app-sidebar-nav')).toBeVisible();
     await expect(page.getByTestId('notifications-bell')).toBeVisible();
+    await tutorialPause(page);
   });
 });

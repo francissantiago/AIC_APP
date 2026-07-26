@@ -6,6 +6,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env.e2e') });
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:83';
 const slowMo = Number(process.env.E2E_SLOW_MO_MS ?? '0');
+const tutorialSlowMo = Number(process.env.E2E_TUTORIAL_SLOW_MO_MS ?? '900');
 const authFile = path.join(__dirname, '.auth', 'admin.json');
 
 export default defineConfig({
@@ -55,7 +56,7 @@ export default defineConfig({
         storageState: authFile,
         video: 'on',
         trace: 'on',
-        launchOptions: { slowMo: slowMo || 400 },
+        launchOptions: { slowMo: tutorialSlowMo },
         viewport: { width: 1440, height: 900 },
       },
       timeout: 600_000,

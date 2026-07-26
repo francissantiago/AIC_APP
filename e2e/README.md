@@ -28,9 +28,13 @@ O `postinstall` instala o Chromium do Playwright.
 | `E2E_API_URL` | URL da API (cleanup/seed) | `http://localhost:3002/api` |
 | `E2E_ADMIN_EMAIL` | E-mail admin | `admin@admin.com` |
 | `E2E_ADMIN_PASSWORD` | Senha admin | *(obrigatório)* |
-| `E2E_SLOW_MO_MS` | Delay entre ações (demo/tutorials) | `300` / `400` |
-| `E2E_TUTORIAL_PAUSE_MS` | Pausa após cada passo tutorial | `800` |
-| `E2E_TUTORIAL_INTRO_PAUSE_MS` | Pausa inicial antes do tutorial | `1000` |
+| `E2E_SLOW_MO_MS` | Delay entre ações (demo legado) | `300` |
+| `E2E_TUTORIAL_SLOW_MO_MS` | Delay entre ações nos tutorials | `900` |
+| `E2E_TUTORIAL_PRE_STEP_PAUSE_MS` | Pausa antes de cada passo tutorial | `1500` |
+| `E2E_TUTORIAL_PAUSE_MS` | Pausa após cada passo tutorial | `2800` |
+| `E2E_TUTORIAL_INTRO_PAUSE_MS` | Pausa inicial antes do tutorial | `2000` |
+| `E2E_TUTORIAL_HIGHLIGHT_MS` | Destaque do alvo antes de clicar/preencher | `1400` |
+| `E2E_TUTORIAL_CURSOR_MOVE_MS` | Animação do cursor tutorial até o alvo | `450` |
 
 ## Comandos
 
@@ -97,8 +101,9 @@ Consulte `catalog/features.json` para o catálogo completo com `featureId`, rota
 Cada arquivo `tests/tutorials/{featureId}.tutorial.spec.ts` contém **um único teste** que:
 
 1. Executa fluxo curto e legível (dados `TUTORIAL-*`).
-2. Grava vídeo `.webm` (1440×900, slowMo ~400 ms).
-3. Após `npm run test:e2e:tutorials:publish`, o script copia para:
+2. Grava vídeo `.webm` (1440×900, slowMo ~900 ms + pausas entre passos).
+3. Antes de cada clique/preenchimento, injeta **cursor tutorial** e **destaque pulsante** no elemento alvo (automático via `tutorial.fixture`).
+4. Após `npm run test:e2e:tutorials:publish`, o script copia para:
    - `e2e/public/help-videos/{featureId}.webm`
    - `frontend/public/help-videos/{featureId}.webm` (com `--copy-to-frontend`)
    - Gera `help-videos.manifest.json` para uso futuro na UI de ajuda.
