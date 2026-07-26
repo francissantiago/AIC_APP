@@ -7,10 +7,11 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { MemberMaritalStatus } from '@enums/member-marital-status';
 import { IMembershipCard } from '@interfaces/IMembershipCard';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-membership-card-preview',
-  imports: [TranslatePipe],
+  imports: [AppDatePipe, TranslatePipe],
   templateUrl: './membership-card-preview.html',
   styleUrl: './membership-card-preview.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,16 +45,5 @@ export class MembershipCardPreview {
 
   maritalLabelKey(status: MemberMaritalStatus): string {
     return `MEMBERS.MARITAL_${status.toUpperCase()}`;
-  }
-
-  formatDate(value: string | null): string {
-    if (!value) {
-      return '';
-    }
-    const [y, m, d] = value.split('-');
-    if (!y || !m || !d) {
-      return value;
-    }
-    return `${d}/${m}/${y}`;
   }
 }

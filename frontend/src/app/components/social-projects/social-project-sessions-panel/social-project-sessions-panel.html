@@ -115,7 +115,7 @@
           <tbody>
             @for (session of sessions(); track session.id) {
               <tr class="border-t border-slate-100">
-                <td class="px-3 py-2 text-slate-900">{{ session.sessionDate }}</td>
+                <td class="px-3 py-2 text-slate-900">{{ session.sessionDate | appDate }}</td>
                 <td class="px-3 py-2 text-slate-900">{{ session.title }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ session.theme || '' }}</td>
                 <td class="px-3 py-2">

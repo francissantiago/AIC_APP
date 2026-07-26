@@ -120,7 +120,7 @@
               <td class="px-3 py-2 text-slate-700">
                 {{ statusLabelKey(member.status) | translate }}
               </td>
-              <td class="px-3 py-2 text-slate-700">{{ member.membershipDate || '' }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ member.membershipDate | appDate }}</td>
               <td class="px-3 py-2">
                 @if (canWrite()) {
                   <div class="flex flex-wrap gap-2">

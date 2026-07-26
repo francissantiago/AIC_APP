@@ -29,10 +29,10 @@
               {{ statusLabelKey(item.status) | translate }}
             </span>
           </div>
-          <p class="whitespace-pre-wrap text-sm text-slate-700">{{ item.body }}</p>
+          <p class="whitespace-pre-wrap text-sm text-slate-700">{{ formatBody(item.body) }}</p>
           <p class="mt-2 text-xs text-slate-500">
             {{ 'ANNOUNCEMENTS.AUTHOR' | translate }}: {{ item.authorFullName }} ·
-            {{ formatDate(item.publishedAt) }}
+            {{ item.publishedAt | appDateTime }}
           </p>
         </li>
       }

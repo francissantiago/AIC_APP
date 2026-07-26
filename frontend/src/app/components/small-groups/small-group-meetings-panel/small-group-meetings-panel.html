@@ -139,7 +139,7 @@
           <tbody>
             @for (meeting of meetings(); track meeting.id) {
               <tr class="border-t border-slate-100" [attr.data-testid]="'small-group-meeting-row-' + meeting.id">
-                <td class="px-3 py-2 text-slate-900">{{ meeting.meetingDate }}</td>
+                <td class="px-3 py-2 text-slate-900">{{ meeting.meetingDate | appDate }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ meeting.theme || '' }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ meeting.notes || '' }}</td>
                 <td class="px-3 py-2">

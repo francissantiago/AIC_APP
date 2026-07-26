@@ -17,10 +17,11 @@ import { IMemberTransfer } from '@interfaces/IMemberTransfer';
 import { ApiErrorService } from '@services/api-error.service';
 import { MemberTransfersService } from '@services/member-transfers-service';
 import { SecretariatService } from '@services/secretariat-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 @Component({
   selector: 'app-member-transfer-history',
-  imports: [TranslatePipe],
+  imports: [AppDateTimePipe, TranslatePipe],
   templateUrl: './member-transfer-history.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -55,17 +56,6 @@ export class MemberTransferHistory implements OnChanges {
 
   statusLabelKey(status: MemberTransferStatus): string {
     return `MEMBER_TRANSFERS.STATUS_${status.toUpperCase()}`;
-  }
-
-  formatDate(iso: string | null): string {
-    if (!iso) {
-      return '—';
-    }
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) {
-      return '—';
-    }
-    return date.toLocaleString();
   }
 
   askComplete(id: string): void {

@@ -85,7 +85,7 @@
             <div>
               <h2 class="text-lg font-semibold text-slate-900">{{ event.title }}</h2>
               <p class="text-sm text-slate-600">
-                {{ event.startsAt | date: 'short' }} — {{ event.endsAt | date: 'short' }}
+                {{ event.startsAt | appDateTime }} — {{ event.endsAt | appDateTime }}
               </p>
             </div>
             <button

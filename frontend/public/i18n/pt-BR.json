@@ -534,7 +534,12 @@
     "VISITOR_FOLLOW_UP_TITLE": "Acompanhamento de visitante pendente",
     "VISITOR_FOLLOW_UP_BODY": "O visitante {{name}} aguarda acompanhamento há mais de 7 dias (visita em {{visitDate}}).",
     "TYPE_SCHEDULE_REMINDER": "Lembrete de escala",
+    "SCHEDULE_REMINDER_TITLE": "Confirmação de escala pendente",
+    "SCHEDULE_REMINDER_BODY_MEMBER": "Você está escalado(a) como {{roleLabel}} em \"{{eventTitle}}\" ({{startsAt}}). Confirme sua presença.",
+    "SCHEDULE_REMINDER_BODY_SECRETARIAT": "O membro {{memberFullName}} está escalado(a) como {{roleLabel}} em \"{{eventTitle}}\" ({{startsAt}}) sem confirmação.",
     "TYPE_MEMBER_BIRTHDAY": "Aniversário de membro",
+    "MEMBER_BIRTHDAY_TITLE": "Aniversariante do dia",
+    "MEMBER_BIRTHDAY_BODY": "{{name}} faz aniversário hoje ({{birthDate}}).",
     "TYPE_GENERIC": "Notificação",
     "TYPES": {
       "CONSTRUCTION_UPDATE": "Andamento de obra",

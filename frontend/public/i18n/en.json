@@ -534,7 +534,12 @@
     "VISITOR_FOLLOW_UP_TITLE": "Pending visitor follow-up",
     "VISITOR_FOLLOW_UP_BODY": "Visitor {{name}} has been awaiting follow-up for more than 7 days (visit on {{visitDate}}).",
     "TYPE_SCHEDULE_REMINDER": "Schedule reminder",
+    "SCHEDULE_REMINDER_TITLE": "Pending schedule confirmation",
+    "SCHEDULE_REMINDER_BODY_MEMBER": "You are scheduled as {{roleLabel}} for \"{{eventTitle}}\" ({{startsAt}}). Please confirm your attendance.",
+    "SCHEDULE_REMINDER_BODY_SECRETARIAT": "Member {{memberFullName}} is scheduled as {{roleLabel}} for \"{{eventTitle}}\" ({{startsAt}}) without confirmation.",
     "TYPE_MEMBER_BIRTHDAY": "Member birthday",
+    "MEMBER_BIRTHDAY_TITLE": "Birthday today",
+    "MEMBER_BIRTHDAY_BODY": "{{name}} has a birthday today ({{birthDate}}).",
     "TYPE_GENERIC": "Notification",
     "TYPES": {
       "CONSTRUCTION_UPDATE": "Construction update",

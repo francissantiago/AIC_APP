@@ -20,6 +20,7 @@ import { CLASS_STATUSES, ClassStatus } from '@enums/class-status';
 import { IEbdClass } from '@interfaces/IEbdClass';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
+import { AppTimePipe } from '@pipes/app-time-pipe';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 const DAY_OF_WEEK_VALUES = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -38,6 +39,7 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
   selector: 'app-classes-list',
   imports: [
     AppDialog,
+    AppTimePipe,
     ClassAttendance,
     ClassEnrollmentsPanel,
     ClassForm,

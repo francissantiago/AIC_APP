@@ -299,7 +299,7 @@ describe('AnnouncementsService', () => {
       mockQueryBuilder([], 0, null);
       const saved = baseAnnouncement({
         title: BIRTHDAY_BOARD_TITLE,
-        body: 'Juliana Bezerra Facre faz aniversário hoje (19/07).',
+        body: 'Juliana Bezerra Facre (1945-07-19)',
       });
       announcementsRepository.create.mockReturnValue(saved);
       announcementsRepository.save.mockResolvedValue(saved);
@@ -343,7 +343,7 @@ describe('AnnouncementsService', () => {
     it('deve retornar unchanged quando corpo já está atualizado', async () => {
       const existing = baseAnnouncement({
         title: BIRTHDAY_BOARD_TITLE,
-        body: 'Juliana Bezerra Facre faz aniversário hoje (19/07).',
+        body: 'Juliana Bezerra Facre (1945-07-19)',
       });
       mockQueryBuilder([], 0, existing);
 

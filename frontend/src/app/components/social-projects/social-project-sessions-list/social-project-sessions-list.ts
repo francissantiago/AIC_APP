@@ -19,10 +19,11 @@ import { AuthService } from '@services/auth-service';
 import { SocialProjectSessionsService } from '@services/social-project-sessions-service';
 import { SocialProjectsService } from '@services/social-projects-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-social-project-sessions-list',
-  imports: [AppDialog, ReactiveFormsModule, SocialProjectSessionForm, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, SocialProjectSessionForm, TranslatePipe],
   templateUrl: './social-project-sessions-list.html',
   styleUrl: './social-project-sessions-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

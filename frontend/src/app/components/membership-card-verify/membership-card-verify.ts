@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +16,7 @@ import { MembershipCardsService } from '@services/membership-cards-service';
 
 @Component({
   selector: 'app-membership-card-verify',
-  imports: [TranslatePipe, RouterLink],
+  imports: [AppDatePipe, TranslatePipe, RouterLink],
   templateUrl: './membership-card-verify.html',
   styleUrl: './membership-card-verify.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,16 +58,5 @@ export class MembershipCardVerify implements OnInit {
       return 'COMMON.NOT_AVAILABLE';
     }
     return `MEMBERS.STATUS_${status.toUpperCase()}`;
-  }
-
-  formatDate(value: string | null): string {
-    if (!value) {
-      return '';
-    }
-    const [y, m, d] = value.split('-');
-    if (!y || !m || !d) {
-      return value;
-    }
-    return `${d}/${m}/${y}`;
   }
 }

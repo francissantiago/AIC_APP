@@ -18,10 +18,11 @@ import { AuthService } from '@services/auth-service';
 import { ConstructionProjectsService } from '@services/construction-projects-service';
 import { ConstructionUpdatesService } from '@services/construction-updates-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-construction-updates-list',
-  imports: [AppDialog, ConstructionUpdateForm, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, ConstructionUpdateForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './construction-updates-list.html',
   styleUrl: './construction-updates-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

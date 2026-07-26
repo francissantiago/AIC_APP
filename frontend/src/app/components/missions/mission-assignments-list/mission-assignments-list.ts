@@ -24,10 +24,11 @@ import { IMissionAssignment } from '@interfaces/IMissionAssignment';
 import { AuthService } from '@services/auth-service';
 import { MissionAssignmentsService } from '@services/mission-assignments-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-mission-assignments-list',
-  imports: [AppDialog, MissionAssignmentForm, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, MissionAssignmentForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './mission-assignments-list.html',
   styleUrl: './mission-assignments-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

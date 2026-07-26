@@ -10,6 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { INotification, NotificationType } from '@interfaces/INotification';
+import { DateDisplayService } from '@services/date-display-service';
 import { NotificationsService } from '@services/notifications-service';
 import { NotificationsSocketService } from '@services/notifications-socket-service';
 
@@ -25,6 +26,7 @@ const PANEL_ID = 'notifications-panel';
 export class NotificationsBell implements OnInit {
   readonly #notificationsService = inject(NotificationsService);
   readonly #socketService = inject(NotificationsSocketService);
+  readonly #dates = inject(DateDisplayService);
   readonly #router = inject(Router);
   readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
@@ -145,30 +147,87 @@ export class NotificationsBell implements OnInit {
   }
 
   notificationTitle(notification: INotification): string {
-    if (notification.type === 'visitor_follow_up') {
-      return this.#translate.instant('NOTIFICATIONS.VISITOR_FOLLOW_UP_TITLE');
+    switch (notification.type) {
+      case 'visitor_follow_up':
+        return this.#translate.instant('NOTIFICATIONS.VISITOR_FOLLOW_UP_TITLE');
+      case 'schedule_reminder':
+        return this.#translate.instant('NOTIFICATIONS.SCHEDULE_REMINDER_TITLE');
+      case 'member_birthday':
+        return this.#translate.instant('NOTIFICATIONS.MEMBER_BIRTHDAY_TITLE');
+      default:
+        return notification.title;
     }
-    return notification.title;
   }
 
   notificationBody(notification: INotification): string | null {
-    if (notification.type === 'visitor_follow_up') {
-      const name = String(notification.payload?.['visitorFullName'] ?? '');
-      const visitDate = String(notification.payload?.['visitDate'] ?? '');
-      return this.#translate.instant('NOTIFICATIONS.VISITOR_FOLLOW_UP_BODY', {
-        name,
-        visitDate,
-      });
+    switch (notification.type) {
+      case 'visitor_follow_up': {
+        const name = String(notification.payload?.['visitorFullName'] ?? '');
+        const visitDateRaw = String(notification.payload?.['visitDate'] ?? '');
+        const visitDate = visitDateRaw
+          ? this.#dates.format(visitDateRaw, 'date')
+          : visitDateRaw;
+        return this.#translate.instant('NOTIFICATIONS.VISITOR_FOLLOW_UP_BODY', {
+          name,
+          visitDate,
+        });
+      }
+      case 'schedule_reminder': {
+        const eventTitle = String(notification.payload?.['eventTitle'] ?? '');
+        const roleLabel = String(notification.payload?.['roleLabel'] ?? '');
+        const memberFullName = String(notification.payload?.['memberFullName'] ?? '');
+        const startsAtRaw = String(notification.payload?.['startsAt'] ?? '');
+        if (!eventTitle || !startsAtRaw) {
+          return notification.body
+            ? this.#dates.formatIsoDatesInText(notification.body)
+            : null;
+        }
+        const startsAt = this.#dates.format(startsAtRaw, 'datetimeShort');
+        const isMemberRecipient = Boolean(notification.payload?.['isMemberRecipient']);
+        if (isMemberRecipient) {
+          return this.#translate.instant('NOTIFICATIONS.SCHEDULE_REMINDER_BODY_MEMBER', {
+            roleLabel,
+            eventTitle,
+            startsAt,
+          });
+        }
+        return this.#translate.instant('NOTIFICATIONS.SCHEDULE_REMINDER_BODY_SECRETARIAT', {
+          memberFullName,
+          roleLabel,
+          eventTitle,
+          startsAt,
+        });
+      }
+      case 'member_birthday': {
+        const name = String(
+          notification.payload?.['memberFullName'] ?? notification.payload?.['memberId'] ?? '',
+        );
+        const birthDateRaw = String(notification.payload?.['birthDate'] ?? '');
+        const birthDate = birthDateRaw
+          ? this.#dates.format(birthDateRaw, 'date')
+          : birthDateRaw;
+        if (name && birthDate) {
+          return this.#translate.instant('NOTIFICATIONS.MEMBER_BIRTHDAY_BODY', {
+            name,
+            birthDate,
+          });
+        }
+        return notification.body
+          ? this.#dates.formatIsoDatesInText(notification.body)
+          : null;
+      }
+      default:
+        break;
     }
-    return notification.body || null;
+
+    if (!notification.body) {
+      return null;
+    }
+    return this.#dates.formatIsoDatesInText(notification.body);
   }
 
   formatCreatedAt(iso: string): string {
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) {
-      return iso;
-    }
-    return date.toLocaleString();
+    return this.#dates.format(iso, 'datetimeShort');
   }
 
   #deepLinkFor(type: NotificationType): string | null {

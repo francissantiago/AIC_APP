@@ -11,16 +11,19 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AnnouncementStatus } from '@enums/announcement-status';
 import { IAnnouncement } from '@interfaces/IAnnouncement';
 import { AnnouncementsService } from '@services/announcements-service';
+import { DateDisplayService } from '@services/date-display-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 @Component({
   selector: 'app-announcements-board',
-  imports: [TranslatePipe],
+  imports: [AppDateTimePipe, TranslatePipe],
   templateUrl: './announcements-board.html',
   styleUrl: './announcements-board.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnnouncementsBoard implements OnInit {
   readonly #announcementsService = inject(AnnouncementsService);
+  readonly #dates = inject(DateDisplayService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly announcements = signal<IAnnouncement[]>([]);
@@ -55,11 +58,7 @@ export class AnnouncementsBoard implements OnInit {
     return `ANNOUNCEMENTS.STATUS_${status.toUpperCase()}`;
   }
 
-  formatDate(iso: string): string {
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) {
-      return '';
-    }
-    return date.toLocaleString();
+  formatBody(body: string): string {
+    return this.#dates.formatIsoDatesInText(body);
   }
 }

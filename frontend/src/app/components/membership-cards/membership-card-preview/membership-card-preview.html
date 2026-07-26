@@ -64,7 +64,7 @@
         <span class="membership-card__label">{{
           'MEMBERSHIP_CARDS.FIELD_BIRTH_DATE' | translate
         }}</span>
-        <span class="membership-card__value">{{ formatDate(card().front.birthDate) }}</span>
+        <span class="membership-card__value">{{ card().front.birthDate | appDate }}</span>
       </div>
       <div class="membership-card__field membership-card__field--birthplace">
         <span class="membership-card__label">{{
@@ -134,7 +134,7 @@
         <span class="membership-card__label">{{
           'MEMBERSHIP_CARDS.FIELD_VALIDITY' | translate
         }}</span>
-        <span class="membership-card__value">{{ formatDate(card().back.validUntil) }}</span>
+        <span class="membership-card__value">{{ card().back.validUntil | appDate }}</span>
       </div>
 
       <div class="membership-card__qr" aria-hidden="true">

@@ -1,3 +1,4 @@
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,7 +22,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-announcements-list',
-  imports: [AppDialog, AnnouncementForm, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDateTimePipe, AppDialog, AnnouncementForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './announcements-list.html',
   styleUrl: './announcements-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,17 +78,6 @@ export class AnnouncementsList implements OnInit {
 
   statusLabelKey(status: AnnouncementStatus): string {
     return `ANNOUNCEMENTS.STATUS_${status.toUpperCase()}`;
-  }
-
-  formatDate(iso: string | null): string {
-    if (!iso) {
-      return '—';
-    }
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) {
-      return '—';
-    }
-    return date.toLocaleString();
   }
 
   openCreate(): void {

@@ -23,6 +23,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
 import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 const PAGE_SIZE = 20;
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -39,7 +40,7 @@ const ALLOWED_MIME_TYPES = new Set([
 
 @Component({
   selector: 'app-documents-list',
-  imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full" data-testid="documents-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -395,7 +396,7 @@ const ALLOWED_MIME_TYPES = new Set([
                 <tr class="border-t border-slate-100" [attr.data-testid]="'document-row-' + doc.id">
                   <td class="px-3 py-2 text-slate-900">{{ doc.title }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ typeLabel(doc.type) | translate }}</td>
-                  <td class="px-3 py-2 text-slate-700">{{ doc.documentDate }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ doc.documentDate | appDate }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ statusLabel(doc.status) | translate }}
                   </td>

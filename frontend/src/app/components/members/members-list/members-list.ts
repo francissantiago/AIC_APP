@@ -17,10 +17,11 @@ import { IMember } from '@interfaces/IMember';
 import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-members-list',
-  imports: [AppDialog, MemberForm, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, MemberForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './members-list.html',
   styleUrl: './members-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

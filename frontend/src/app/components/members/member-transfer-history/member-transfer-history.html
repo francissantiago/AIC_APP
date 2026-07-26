@@ -89,12 +89,12 @@
               </p>
               <p class="text-slate-600">
                 {{ 'MEMBER_TRANSFERS.REQUESTED_AT' | translate }}:
-                {{ formatDate(transfer.requestedAt) }}
+                {{ transfer.requestedAt | appDateTime }}
               </p>
               @if (transfer.approvedAt) {
                 <p class="text-slate-600">
                   {{ 'MEMBER_TRANSFERS.APPROVED_AT' | translate }}:
-                  {{ formatDate(transfer.approvedAt) }}
+                  {{ transfer.approvedAt | appDateTime }}
                 </p>
               }
               @if (transfer.document) {

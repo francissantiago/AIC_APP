@@ -15,6 +15,7 @@ import { ISmallGroupAttendanceEntry } from '@interfaces/ISmallGroupAttendance';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { SmallGroupsService } from '@services/small-groups-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 type AttendanceDraft = {
   memberId: string;
@@ -25,7 +26,7 @@ type AttendanceDraft = {
 
 @Component({
   selector: 'app-small-group-attendance',
-  imports: [TranslatePipe],
+  imports: [AppDatePipe, TranslatePipe],
   templateUrl: './small-group-attendance.html',
   styleUrl: './small-group-attendance.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

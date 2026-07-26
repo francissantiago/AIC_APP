@@ -1,4 +1,6 @@
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '@pipes/app-date-pipe';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
+import { AppMonthDayPipe } from '@pipes/app-month-day-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,12 +15,13 @@ import { RouterLink } from '@angular/router';
 import { ChartCanvas } from '@components/finance/chart-canvas/chart-canvas';
 import { ISecretariatDashboard } from '@interfaces/ISecretariat';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { DateDisplayService } from '@services/date-display-service';
 import { SecretariatService } from '@services/secretariat-service';
 import { ChartData } from 'chart.js';
 
 @Component({
   selector: 'app-secretariat-dashboard',
-  imports: [ChartCanvas, DatePipe, RouterLink, TranslatePipe],
+  imports: [AppDatePipe, AppDateTimePipe, AppMonthDayPipe, ChartCanvas, RouterLink, TranslatePipe],
   template: `
     <section class="w-full" data-testid="secretariat-dashboard">
       <div class="mb-5">
@@ -62,7 +65,7 @@ import { ChartData } from 'chart.js';
               {{ value.lastAttendanceTotal ?? ('COMMON.NOT_AVAILABLE' | translate) }}
             </p>
             @if (value.lastAttendanceDate) {
-              <p class="text-xs text-slate-500">{{ value.lastAttendanceDate }}</p>
+              <p class="text-xs text-slate-500">{{ value.lastAttendanceDate | appDate }}</p>
             }
           </article>
         </div>
@@ -110,7 +113,7 @@ import { ChartData } from 'chart.js';
                       event.title
                     }}</span>
                     <span class="shrink-0 text-slate-500">{{
-                      event.startsAt | date: 'short'
+                      event.startsAt | appDateTime
                     }}</span>
                   </li>
                 }
@@ -139,7 +142,7 @@ import { ChartData } from 'chart.js';
                       {{ birthday.fullName }}
                     </span>
                     <span class="shrink-0 text-slate-500">{{
-                      birthday.birthDate | date: 'MMM d'
+                      birthday.birthDate | appMonthDay
                     }}</span>
                   </li>
                 }
@@ -156,6 +159,7 @@ import { ChartData } from 'chart.js';
 })
 export class SecretariatDashboard implements OnInit {
   readonly #secretariat = inject(SecretariatService);
+  readonly #dates = inject(DateDisplayService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
   readonly loading = signal(false);
@@ -165,7 +169,7 @@ export class SecretariatDashboard implements OnInit {
   readonly attendanceChartData = computed<ChartData<'bar'>>(() => {
     const rows = this.dashboard()?.attendanceByMonth ?? [];
     return {
-      labels: rows.map((row) => row.month),
+      labels: rows.map((row) => this.#dates.formatMonthYear(row.month)),
       datasets: [
         {
           label: this.#translate.instant('SECRETARIAT.CHART_ATTENDANCE_MONTH'),
@@ -179,7 +183,7 @@ export class SecretariatDashboard implements OnInit {
   readonly visitorsChartData = computed<ChartData<'bar'>>(() => {
     const rows = this.dashboard()?.visitorsByMonth ?? [];
     return {
-      labels: rows.map((row) => row.month),
+      labels: rows.map((row) => this.#dates.formatMonthYear(row.month)),
       datasets: [
         {
           label: this.#translate.instant('SECRETARIAT.CHART_VISITORS_MONTH'),
@@ -191,11 +195,15 @@ export class SecretariatDashboard implements OnInit {
   });
 
   readonly attendanceSummary = computed(() =>
-    (this.dashboard()?.attendanceByMonth ?? []).map((row) => `${row.month}: ${row.total}`),
+    (this.dashboard()?.attendanceByMonth ?? []).map(
+      (row) => `${this.#dates.formatMonthYear(row.month)}: ${row.total}`,
+    ),
   );
 
   readonly visitorsSummary = computed(() =>
-    (this.dashboard()?.visitorsByMonth ?? []).map((row) => `${row.month}: ${row.total}`),
+    (this.dashboard()?.visitorsByMonth ?? []).map(
+      (row) => `${this.#dates.formatMonthYear(row.month)}: ${row.total}`,
+    ),
   );
 
   ngOnInit(): void {

@@ -20,6 +20,7 @@ import {
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
+import { DateDisplayService } from '@services/date-display-service';
 import { GoogleCalendarService } from '@services/google-calendar-service';
 
 type FeedbackTone = 'success' | 'error';
@@ -37,6 +38,7 @@ export class GoogleCalendarPanel implements OnInit {
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #translate = inject(TranslateService);
+  readonly #dates = inject(DateDisplayService);
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
@@ -260,11 +262,7 @@ export class GoogleCalendarPanel implements OnInit {
     if (!iso) {
       return '—';
     }
-    try {
-      return new Date(iso).toLocaleString(this.#translate.currentLang() || 'en');
-    } catch {
-      return iso;
-    }
+    return this.#dates.format(iso, 'datetimeShort');
   }
 
   #handleOAuthQuery(): void {

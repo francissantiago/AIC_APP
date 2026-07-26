@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,18 +17,23 @@ import { IScheduleWeekViewEvent } from '@interfaces/IScheduleWeekView';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
 import { MinistriesService } from '@services/ministries-service';
+import { DateDisplayService } from '@services/date-display-service';
+import { I18nService } from '@services/i18n-service';
 import { SchedulesService } from '@services/schedules-service';
-import { addDays, endOfWeek, format, startOfWeek } from 'date-fns';
+import { addDays, endOfWeek, startOfWeek } from 'date-fns';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 @Component({
   selector: 'app-schedules-board',
-  imports: [DatePipe, ReactiveFormsModule, ScheduleEventEditor, TranslatePipe],
+  imports: [AppDateTimePipe, ReactiveFormsModule, ScheduleEventEditor, TranslatePipe],
   templateUrl: './schedules-board.html',
   styleUrl: './schedules-board.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SchedulesBoard implements OnInit {
   readonly #schedules = inject(SchedulesService);
+  readonly #dates = inject(DateDisplayService);
+  readonly #i18n = inject(I18nService);
   readonly #ministries = inject(MinistriesService);
   readonly #auth = inject(AuthService);
   readonly #route = inject(ActivatedRoute);
@@ -50,9 +54,10 @@ export class SchedulesBoard implements OnInit {
 
   readonly weekFrom = computed(() => this.weekAnchor());
   readonly weekTo = computed(() => endOfWeek(this.weekAnchor(), { weekStartsOn: 0 }));
-  readonly weekLabel = computed(
-    () => `${format(this.weekFrom(), 'yyyy-MM-dd')} – ${format(this.weekTo(), 'yyyy-MM-dd')}`,
-  );
+  readonly weekLabel = computed(() => {
+    this.#i18n.currentLang();
+    return `${this.#dates.format(this.weekFrom(), 'date')} – ${this.#dates.format(this.weekTo(), 'date')}`;
+  });
 
   readonly filterForm = new FormGroup({
     ministryId: new FormControl('', { nonNullable: true }),

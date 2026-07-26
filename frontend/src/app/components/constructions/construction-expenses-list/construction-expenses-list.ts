@@ -16,10 +16,11 @@ import { PaymentMethod } from '@enums/finance';
 import { IConstructionExpense } from '@interfaces/IConstructionExpense';
 import { AuthService } from '@services/auth-service';
 import { ConstructionExpensesService } from '@services/construction-expenses-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-construction-expenses-list',
-  imports: [AppDialog, ConstructionExpenseForm, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, ConstructionExpenseForm, TranslatePipe],
   templateUrl: './construction-expenses-list.html',
   styleUrl: './construction-expenses-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

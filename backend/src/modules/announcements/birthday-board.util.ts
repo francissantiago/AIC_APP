@@ -5,23 +5,22 @@ export interface BirthdayBoardMember {
   birthDate: string;
 }
 
+/** ISO date-only label kept in stored text; frontend localizes on display. */
 export function formatBirthdayLabel(birthDate: string): string {
-  const day = birthDate.slice(8, 10);
-  const month = birthDate.slice(5, 7);
-  return `${day}/${month}`;
+  return birthDate;
 }
 
 export function buildBirthdayBoardBody(members: BirthdayBoardMember[]): string {
   if (members.length === 1) {
     const member = members[0];
-    return `${member.fullName} faz aniversário hoje (${formatBirthdayLabel(member.birthDate)}).`;
+    return `${member.fullName} (${formatBirthdayLabel(member.birthDate)})`;
   }
 
   const lines = members.map(
     (member) =>
       `• ${member.fullName} (${formatBirthdayLabel(member.birthDate)})`,
   );
-  return `Hoje celebramos aniversário de:\n${lines.join('\n')}`;
+  return lines.join('\n');
 }
 
 export function buildBirthdayBoardExpiresAt(from: Date = new Date()): Date {

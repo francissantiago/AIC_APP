@@ -19,6 +19,7 @@ import { SMALL_GROUP_STATUSES, SmallGroupStatus } from '@enums/small-group-statu
 import { ISmallGroup } from '@interfaces/ISmallGroup';
 import { AuthService } from '@services/auth-service';
 import { SmallGroupsService } from '@services/small-groups-service';
+import { AppTimePipe } from '@pipes/app-time-pipe';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 const DAY_OF_WEEK_VALUES = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -37,6 +38,7 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
   selector: 'app-small-groups-list',
   imports: [
     AppDialog,
+    AppTimePipe,
     ReactiveFormsModule,
     RouterLink,
     SmallGroupForm,

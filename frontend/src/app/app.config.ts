@@ -2,6 +2,7 @@ import { registerLocaleData } from '@angular/common';
 import {
   ApplicationConfig,
   inject,
+  LOCALE_ID,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
@@ -45,5 +46,9 @@ export const appConfig: ApplicationConfig = {
         await congregationContext.initialize();
       }
     }),
+    {
+      provide: LOCALE_ID,
+      useFactory: () => inject(I18nService).currentLang(),
+    },
   ],
 };

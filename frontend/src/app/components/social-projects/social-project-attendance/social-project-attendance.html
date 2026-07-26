@@ -25,7 +25,7 @@
       <p class="text-sm text-slate-600">{{ sessionTitle() }}</p>
     }
     @if (sessionDate()) {
-      <p class="text-sm text-slate-600">{{ sessionDate() }}</p>
+      <p class="text-sm text-slate-600">{{ sessionDate() | appDate }}</p>
     }
   </div>
 

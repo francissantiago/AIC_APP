@@ -19,6 +19,7 @@ import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
 import { MembershipCardsService } from '@services/membership-cards-service';
+import { I18nService } from '@services/i18n-service';
 import { MembershipCardPreview } from '../membership-card-preview/membership-card-preview';
 import {
   buildMembershipCardsPrintHtml,
@@ -41,6 +42,7 @@ export class MembershipCardsPage implements OnInit {
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
+  readonly #i18n = inject(I18nService);
 
   readonly statuses = MEMBER_STATUSES;
   readonly canWrite = computed(() => this.#auth.hasPermission('membership-cards:write'));
@@ -199,6 +201,7 @@ export class MembershipCardsPage implements OnInit {
     const html = buildMembershipCardsPrintHtml(this.cards(), labels, {
       logoSrc: this.settings()?.logoDataUrl ?? null,
       signatureSrc: this.settings()?.signatureDataUrl ?? null,
+      locale: this.#i18n.currentLang(),
     });
     printMembershipCardsHtml(html);
   }

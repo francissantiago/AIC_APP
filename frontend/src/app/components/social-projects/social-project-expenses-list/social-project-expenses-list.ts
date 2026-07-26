@@ -17,10 +17,11 @@ import { PaymentMethod } from '@enums/finance';
 import { ISocialProjectExpense } from '@interfaces/ISocialProjectExpense';
 import { AuthService } from '@services/auth-service';
 import { SocialProjectExpensesService } from '@services/social-project-expenses-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-social-project-expenses-list',
-  imports: [AppDialog, SocialProjectExpenseForm, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, SocialProjectExpenseForm, TranslatePipe],
   templateUrl: './social-project-expenses-list.html',
   styleUrl: './social-project-expenses-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

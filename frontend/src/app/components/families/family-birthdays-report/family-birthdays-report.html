@@ -27,7 +27,7 @@
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         @for (month of months; track month) {
-          <option [value]="month">{{ month }}</option>
+          <option [value]="month">{{ monthLabel(month) }}</option>
         }
       </select>
     </label>

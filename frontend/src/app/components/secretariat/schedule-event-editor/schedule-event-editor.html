@@ -18,7 +18,7 @@
           <option value="">{{ 'SCHEDULES.FILTER_EVENT' | translate }}</option>
           @for (event of events(); track event.id) {
             <option [value]="event.id">
-              {{ event.title }} — {{ event.startsAt | date: 'short' }}
+              {{ event.title }} — {{ event.startsAt | appDateTime }}
             </option>
           }
         </select>

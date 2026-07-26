@@ -116,7 +116,7 @@
               <td class="px-3 py-2 text-slate-700">
                 {{ update.progressPercent != null ? update.progressPercent + '%' : '—' }}
               </td>
-              <td class="px-3 py-2 text-slate-700">{{ update.recordedAt }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ update.recordedAt | appDate }}</td>
               <td class="px-3 py-2">
                 @if (canWrite()) {
                   <div class="flex flex-wrap gap-2">

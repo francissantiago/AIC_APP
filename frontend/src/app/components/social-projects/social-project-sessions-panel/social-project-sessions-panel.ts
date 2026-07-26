@@ -18,10 +18,11 @@ import { ISocialProjectSession } from '@interfaces/ISocialProjectSession';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { SocialProjectSessionsService } from '@services/social-project-sessions-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-social-project-sessions-panel',
-  imports: [AppDialog, SocialProjectAttendance, SocialProjectSessionForm, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, SocialProjectAttendance, SocialProjectSessionForm, TranslatePipe],
   templateUrl: './social-project-sessions-panel.html',
   styleUrl: './social-project-sessions-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

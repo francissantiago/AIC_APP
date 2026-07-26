@@ -1,5 +1,6 @@
 import { MemberMaritalStatus } from '@enums/member-marital-status';
 import { IMembershipCard } from '@interfaces/IMembershipCard';
+import { formatDateForLocale } from '@utils/date-display.util';
 
 export interface IMembershipCardPrintLabels {
   cardLabel: string;
@@ -26,15 +27,8 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function formatDate(value: string | null): string {
-  if (!value) {
-    return '';
-  }
-  const [y, m, d] = value.split('-');
-  if (!y || !m || !d) {
-    return value;
-  }
-  return `${d}/${m}/${y}`;
+function formatDate(value: string | null, locale: string): string {
+  return formatDateForLocale(value, locale, 'date');
 }
 
 function filiationLines(value: string | null): string[] {
@@ -59,6 +53,7 @@ function buildFrontFace(
   labels: IMembershipCardPrintLabels,
   origin: string,
   logoSrc: string | null,
+  locale: string,
 ): string {
   const lines = filiationLines(card.front.filiation)
     .map((line) => `<span class="filiation-line">${escapeHtml(line)}</span>`)
@@ -90,7 +85,7 @@ function buildFrontFace(
       ${fieldHtml('registration', labels.fieldRegistration, escapeHtml(card.front.registrationNumber ?? ''))}
       ${fieldHtml('name', labels.fieldName, escapeHtml(card.front.fullName))}
       ${fieldHtml('filiation', labels.fieldFiliation, `<span class="multiline">${lines}</span>`)}
-      ${fieldHtml('birth', labels.fieldBirthDate, escapeHtml(formatDate(card.front.birthDate)))}
+      ${fieldHtml('birth', labels.fieldBirthDate, escapeHtml(formatDate(card.front.birthDate, locale)))}
       ${fieldHtml('birthplace', labels.fieldPlaceOfBirth, escapeHtml(card.front.placeOfBirth ?? ''))}
       ${fieldHtml('position', labels.fieldPosition, escapeHtml(card.front.positionTitle ?? ''))}
       ${fieldHtml('blood', labels.fieldBloodType, escapeHtml(card.front.bloodType ?? ''))}
@@ -104,6 +99,7 @@ function buildBackFace(
   origin: string,
   logoSrc: string | null,
   signatureSrc: string | null,
+  locale: string,
 ): string {
   const logo = logoSrc
     ? `<div class="logo logo--back"><img src="${logoSrc}" alt="" /></div>`
@@ -137,7 +133,7 @@ function buildBackFace(
       ${fieldHtml('cpf', labels.fieldCpf, escapeHtml(card.back.cpf ?? ''))}
       ${fieldHtml('rg', labels.fieldRg, escapeHtml(card.back.rg ?? ''))}
       ${fieldHtml('marital', labels.fieldMaritalStatus, escapeHtml(labels.maritalStatus(card.back.maritalStatus)))}
-      ${fieldHtml('validity', labels.fieldValidity, escapeHtml(formatDate(card.back.validUntil)))}
+      ${fieldHtml('validity', labels.fieldValidity, escapeHtml(formatDate(card.back.validUntil, locale)))}
       ${qr}
       <div class="${presidentClass}">
         ${signature}
@@ -353,20 +349,22 @@ body {
 export function buildMembershipCardsPrintHtml(
   cards: IMembershipCard[],
   labels: IMembershipCardPrintLabels,
-  assets: { logoSrc: string | null; signatureSrc: string | null },
+  assets: { logoSrc: string | null; signatureSrc: string | null; locale?: string },
 ): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const locale = assets.locale ?? 'en';
   const layout = computeMembershipCardPrintLayout();
   // Frente | Verso na mesma linha — ao dobrar ao meio, o verso fica atrás da frente.
   const sheets = cards
     .map((card) => {
-      const front = buildFrontFace(card, labels, origin, assets.logoSrc);
+      const front = buildFrontFace(card, labels, origin, assets.logoSrc, locale);
       const back = buildBackFace(
         card,
         labels,
         origin,
         assets.logoSrc,
         assets.signatureSrc,
+        locale,
       );
       return `<div class="sheet-slot"><div class="sheet">${front}<div class="fold-guide" aria-hidden="true"></div>${back}</div></div>`;
     })

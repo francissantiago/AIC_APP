@@ -16,6 +16,7 @@ import { IBirthdayReportItem } from '@interfaces/IBirthdayReportItem';
 import { IFamily } from '@interfaces/IFamily';
 import { ApiErrorService } from '@services/api-error.service';
 import { FamiliesService } from '@services/families-service';
+import { I18nService } from '@services/i18n-service';
 
 const MONTH_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 
@@ -32,6 +33,7 @@ function currentMonth(): number {
 })
 export class FamilyBirthdaysReport implements OnInit {
   readonly #familiesService = inject(FamiliesService);
+  readonly #i18n = inject(I18nService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
 
@@ -58,6 +60,12 @@ export class FamilyBirthdaysReport implements OnInit {
 
   relationLabelKey(relation: FamilyRelation): string {
     return `FAMILIES.RELATION_${relation.toUpperCase()}`;
+  }
+
+  monthLabel(month: number): string {
+    this.#i18n.currentLang();
+    const date = new Date(2000, month - 1, 1, 12, 0, 0, 0);
+    return new Intl.DateTimeFormat(this.#i18n.currentLang(), { month: 'long' }).format(date);
   }
 
   ageFromBirthDate(birthDate: string): number | null {

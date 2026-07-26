@@ -12,6 +12,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ChartCanvas } from '@components/finance/chart-canvas/chart-canvas';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { IFinancialDashboard } from '@interfaces/IFinance';
+import { DateDisplayService } from '@services/date-display-service';
 import { FinanceService } from '@services/finance-service';
 import { ChartData } from 'chart.js';
 
@@ -112,6 +113,7 @@ import { ChartData } from 'chart.js';
 })
 export class FinancialDashboard implements OnInit {
   readonly #finance = inject(FinanceService);
+  readonly #dates = inject(DateDisplayService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
   readonly loading = signal(false);
@@ -148,7 +150,7 @@ export class FinancialDashboard implements OnInit {
   readonly monthlyData = computed<ChartData<'bar'>>(() => {
     const rows = this.dashboard()?.monthly ?? [];
     return {
-      labels: rows.map((row) => row.month),
+      labels: rows.map((row) => this.#dates.formatMonthYear(row.month)),
       datasets: [
         {
           label: this.#translate.instant('FINANCE.INCOME'),
@@ -189,7 +191,7 @@ export class FinancialDashboard implements OnInit {
   readonly monthlySummary = computed(() =>
     (this.dashboard()?.monthly ?? []).map(
       (row) =>
-        `${row.month}: ${this.#translate.instant('FINANCE.INCOME')} ${this.money(row.income)}, ${this.#translate.instant('FINANCE.EXPENSE')} ${this.money(row.expense)}`,
+        `${this.#dates.formatMonthYear(row.month)}: ${this.#translate.instant('FINANCE.INCOME')} ${this.money(row.income)}, ${this.#translate.instant('FINANCE.EXPENSE')} ${this.money(row.expense)}`,
     ),
   );
   readonly categorySummary = computed(() =>

@@ -18,10 +18,11 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
 import { FinanceService } from '@services/finance-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-financial-entries',
-  imports: [
+  imports: [AppDatePipe, 
     AppDialog,
     FinancialCategoryManager,
     FinancialEntryForm,
@@ -224,7 +225,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
             <tbody>
               @for (entry of entries(); track entry.id) {
                 <tr class="border-t border-slate-100" [attr.data-testid]="'finance-entry-row-' + entry.id">
-                  <td class="px-3 py-2 text-slate-700">{{ entry.entryDate }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ entry.entryDate | appDate }}</td>
                   <td class="px-3 py-2 text-slate-900">{{ entry.description }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ entry.category.name }}</td>
                   <td class="px-3 py-2 text-slate-700">

@@ -17,12 +17,13 @@ import { IAttendanceRecord } from '@interfaces/ISecretariat';
 import { AuthService } from '@services/auth-service';
 import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-attendance-list',
-  imports: [AppDialog, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full" data-testid="attendance-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -277,7 +278,7 @@ const PAGE_SIZE = 20;
             <tbody>
               @for (record of records(); track record.id) {
                 <tr class="border-t border-slate-100" [attr.data-testid]="'attendance-row-' + record.id">
-                  <td class="px-3 py-2 text-slate-700">{{ record.eventDate }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ record.eventDate | appDate }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ typeLabel(record.eventType) | translate }}
                   </td>

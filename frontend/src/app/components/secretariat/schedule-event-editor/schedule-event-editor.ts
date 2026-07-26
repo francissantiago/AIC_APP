@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,6 +24,7 @@ import { MinistriesService } from '@services/ministries-service';
 import { SchedulesService } from '@services/schedules-service';
 import { SecretariatService } from '@services/secretariat-service';
 import { forkJoin } from 'rxjs';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 type AssignmentRowForm = FormGroup<{
   memberId: FormControl<string>;
@@ -35,7 +35,7 @@ type AssignmentRowForm = FormGroup<{
 
 @Component({
   selector: 'app-schedule-event-editor',
-  imports: [AppDialog, DatePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDateTimePipe, AppDialog, ReactiveFormsModule, TranslatePipe],
   templateUrl: './schedule-event-editor.html',
   styleUrl: './schedule-event-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -6,8 +6,8 @@ import {
 
 describe('birthday-board.util', () => {
   describe('formatBirthdayLabel', () => {
-    it('deve formatar dia/mês a partir de ISO date', () => {
-      expect(formatBirthdayLabel('1945-07-19')).toBe('19/07');
+    it('deve manter ISO date-only para formatação no frontend', () => {
+      expect(formatBirthdayLabel('1945-07-19')).toBe('1945-07-19');
     });
   });
 
@@ -17,7 +17,7 @@ describe('birthday-board.util', () => {
         buildBirthdayBoardBody([
           { fullName: 'Juliana Bezerra Facre', birthDate: '1945-07-19' },
         ]),
-      ).toBe('Juliana Bezerra Facre faz aniversário hoje (19/07).');
+      ).toBe('Juliana Bezerra Facre (1945-07-19)');
     });
 
     it('deve montar corpo para vários aniversariantes', () => {
@@ -26,7 +26,7 @@ describe('birthday-board.util', () => {
           { fullName: 'Ana', birthDate: '1990-07-19' },
           { fullName: 'Bruno', birthDate: '1988-07-19' },
         ]),
-      ).toBe('Hoje celebramos aniversário de:\n• Ana (19/07)\n• Bruno (19/07)');
+      ).toBe('• Ana (1990-07-19)\n• Bruno (1988-07-19)');
     });
   });
 

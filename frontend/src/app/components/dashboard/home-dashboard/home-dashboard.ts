@@ -1,4 +1,6 @@
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '@pipes/app-date-pipe';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
+import { AppMonthDayPipe } from '@pipes/app-month-day-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,18 +16,20 @@ import { ChartCanvas } from '@components/finance/chart-canvas/chart-canvas';
 import { IDashboardOverview } from '@interfaces/IDashboard';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { DashboardService } from '@services/dashboard-service';
+import { DateDisplayService } from '@services/date-display-service';
 import { I18nService } from '@services/i18n-service';
 import { ChartData } from 'chart.js';
 
 @Component({
   selector: 'app-home-dashboard',
-  imports: [ChartCanvas, DatePipe, RouterLink, TranslatePipe],
+  imports: [AppDatePipe, AppDateTimePipe, AppMonthDayPipe, ChartCanvas, RouterLink, TranslatePipe],
   templateUrl: './home-dashboard.html',
   styleUrl: './home-dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeDashboard implements OnInit {
   readonly #dashboard = inject(DashboardService);
+  readonly #dates = inject(DateDisplayService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
   readonly #i18n = inject(I18nService);
@@ -64,7 +68,7 @@ export class HomeDashboard implements OnInit {
     this.#i18n.currentLang();
     const data = this.overview()?.charts.attendanceByMonth ?? [];
     return {
-      labels: data.map((item) => item.month),
+      labels: data.map((item) => this.#dates.formatMonthYear(item.month)),
       datasets: [
         {
           label: this.#translate.instant('DASHBOARD.CHART_ATTENDANCE'),
@@ -79,7 +83,7 @@ export class HomeDashboard implements OnInit {
     this.#i18n.currentLang();
     const data = this.overview()?.charts.financeByMonth ?? [];
     return {
-      labels: data.map((item) => item.month),
+      labels: data.map((item) => this.#dates.formatMonthYear(item.month)),
       datasets: [
         {
           label: this.#translate.instant('DASHBOARD.KPI_INCOME'),
@@ -103,7 +107,7 @@ export class HomeDashboard implements OnInit {
 
   readonly attendanceSummary = computed(() => {
     const data = this.overview()?.charts.attendanceByMonth ?? [];
-    return data.map((item) => `${item.month}: ${item.total}`);
+    return data.map((item) => `${this.#dates.formatMonthYear(item.month)}: ${item.total}`);
   });
 
   readonly financeSummary = computed(() => {
@@ -111,7 +115,7 @@ export class HomeDashboard implements OnInit {
     const data = this.overview()?.charts.financeByMonth ?? [];
     return data.map(
       (item) =>
-        `${item.month}: ${this.#translate.instant('DASHBOARD.KPI_INCOME')} ${item.income}, ${this.#translate.instant('DASHBOARD.KPI_EXPENSE')} ${item.expense}`,
+        `${this.#dates.formatMonthYear(item.month)}: ${this.#translate.instant('DASHBOARD.KPI_INCOME')} ${item.income}, ${this.#translate.instant('DASHBOARD.KPI_EXPENSE')} ${item.expense}`,
     );
   });
 

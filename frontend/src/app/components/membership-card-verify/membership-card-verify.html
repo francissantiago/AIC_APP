@@ -55,7 +55,7 @@
             <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {{ 'MEMBERSHIP_CARD_VERIFY.BIRTH_DATE' | translate }}
             </dt>
-            <dd class="mt-0.5">{{ formatDate(data.birthDate) }}</dd>
+            <dd class="mt-0.5">{{ data.birthDate | appDate }}</dd>
           </div>
         }
         <div>

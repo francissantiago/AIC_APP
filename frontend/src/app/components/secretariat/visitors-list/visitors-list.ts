@@ -17,12 +17,13 @@ import { IVisitor } from '@interfaces/ISecretariat';
 import { AuthService } from '@services/auth-service';
 import { ApiErrorService } from '@services/api-error.service';
 import { SecretariatService } from '@services/secretariat-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-visitors-list',
-  imports: [AppDialog, ReactiveFormsModule, TranslatePipe, RouterLink],
+  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, TranslatePipe, RouterLink],
   template: `
     <section class="w-full" data-testid="visitors-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -364,7 +365,7 @@ const PAGE_SIZE = 20;
                   <td class="px-3 py-2 text-slate-700">
                     {{ visitor.phone || ('COMMON.NOT_AVAILABLE' | translate) }}
                   </td>
-                  <td class="px-3 py-2 text-slate-700">{{ visitor.visitDate }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ visitor.visitDate | appDate }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ (visitor.followUpDone ? 'COMMON.YES' : 'COMMON.NO') | translate }}
                   </td>

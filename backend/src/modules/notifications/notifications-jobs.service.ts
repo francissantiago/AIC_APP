@@ -170,6 +170,11 @@ export class NotificationsJobsService {
           row.memberUserStatus === UserStatus.ACTIVE &&
           userId === row.memberUserId;
 
+        const payloadForRecipient: Record<string, unknown> = {
+          ...payload,
+          isMemberRecipient,
+        };
+
         const title = 'Confirmação de escala pendente';
         const body = isMemberRecipient
           ? `Você está escalado(a) como ${row.roleLabel} em "${row.eventTitle}" (${startsAtIso}). Confirme sua presença.`
@@ -181,7 +186,7 @@ export class NotificationsJobsService {
             type: NotificationType.SCHEDULE_REMINDER,
             title,
             body,
-            payload,
+            payload: payloadForRecipient,
             referenceType: NotificationReferenceType.SCHEDULE_ASSIGNMENT,
             referenceId: row.assignmentId,
           });

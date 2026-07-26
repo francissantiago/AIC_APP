@@ -17,6 +17,7 @@ import { ISocialProjectAttendanceEntry } from '@interfaces/ISocialProjectAttenda
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { SocialProjectSessionsService } from '@services/social-project-sessions-service';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 type AttendanceDraft = {
   memberId: string;
@@ -27,7 +28,7 @@ type AttendanceDraft = {
 
 @Component({
   selector: 'app-social-project-attendance',
-  imports: [RouterLink, TranslatePipe],
+  imports: [AppDatePipe, RouterLink, TranslatePipe],
   templateUrl: './social-project-attendance.html',
   styleUrl: './social-project-attendance.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

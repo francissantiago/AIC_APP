@@ -534,7 +534,12 @@
     "VISITOR_FOLLOW_UP_TITLE": "Seguimiento de visitante pendiente",
     "VISITOR_FOLLOW_UP_BODY": "El visitante {{name}} espera seguimiento desde hace más de 7 días (visita el {{visitDate}}).",
     "TYPE_SCHEDULE_REMINDER": "Recordatorio de escala",
+    "SCHEDULE_REMINDER_TITLE": "Confirmación de escala pendiente",
+    "SCHEDULE_REMINDER_BODY_MEMBER": "Estás asignado(a) como {{roleLabel}} en \"{{eventTitle}}\" ({{startsAt}}). Confirma tu presencia.",
+    "SCHEDULE_REMINDER_BODY_SECRETARIAT": "El miembro {{memberFullName}} está asignado(a) como {{roleLabel}} en \"{{eventTitle}}\" ({{startsAt}}) sin confirmación.",
     "TYPE_MEMBER_BIRTHDAY": "Cumpleaños de miembro",
+    "MEMBER_BIRTHDAY_TITLE": "Cumpleaños del día",
+    "MEMBER_BIRTHDAY_BODY": "{{name}} cumple años hoy ({{birthDate}}).",
     "TYPE_GENERIC": "Notificación",
     "TYPES": {
       "CONSTRUCTION_UPDATE": "Avance de obra",

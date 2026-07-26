@@ -88,7 +88,7 @@
             {{ data.kpis.lastAttendanceTotal }}
           </p>
           @if (data.kpis.lastAttendanceDate) {
-            <p class="text-xs text-slate-500">{{ data.kpis.lastAttendanceDate }}</p>
+            <p class="text-xs text-slate-500">{{ data.kpis.lastAttendanceDate | appDate }}</p>
           }
         </article>
       }
@@ -175,7 +175,7 @@
               @for (event of data.upcomingEvents; track event.id) {
                 <li class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2">
                   <span class="min-w-0 truncate font-medium text-slate-900">{{ event.title }}</span>
-                  <span class="shrink-0 text-slate-500">{{ event.startsAt | date: 'short' }}</span>
+                  <span class="shrink-0 text-slate-500">{{ event.startsAt | appDateTime }}</span>
                 </li>
               }
             </ul>
@@ -203,7 +203,7 @@
                     {{ birthday.fullName }}
                   </span>
                   <span class="shrink-0 text-slate-500">{{
-                    birthday.birthDate | date: 'MMM d'
+                    birthday.birthDate | appMonthDay
                   }}</span>
                 </li>
               }
@@ -235,7 +235,7 @@
                     {{ announcement.title }}
                   </span>
                   <span class="shrink-0 text-slate-500">{{
-                    announcement.publishedAt | date: 'short'
+                    announcement.publishedAt | appDateTime
                   }}</span>
                 </li>
               }

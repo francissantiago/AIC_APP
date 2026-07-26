@@ -18,10 +18,11 @@ import { IEnrollmentOption } from '@interfaces/IEnrollmentOption';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 @Component({
   selector: 'app-class-enrollments-panel',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './class-enrollments-panel.html',
   styleUrl: './class-enrollments-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
