@@ -17,6 +17,7 @@ Thumbs.db
 **/dist/
 **/coverage/
 **/.angular/
+frontend/src/environments/version.generated.ts
 
 # Logs
 *.log

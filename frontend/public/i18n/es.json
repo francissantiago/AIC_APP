@@ -3,6 +3,18 @@
     "NAME": "AIC",
     "TITLE": "AIC — Administración de Iglesias"
   },
+  "APP_VERSION": {
+    "LABEL": "Versión",
+    "APP_LABEL": "Versión de la aplicación",
+    "API_LABEL": "Versión de la API",
+    "BUILD_LABEL": "Fecha de compilación",
+    "BANNER_TITLE": "Actualización disponible",
+    "BANNER_MESSAGE": "Hay una nueva versión de la aplicación. Recargue para obtener las últimas funciones y correcciones.",
+    "RELOAD_NOW": "Recargar ahora",
+    "DISMISS": "Más tarde",
+    "SECTION_TITLE": "Acerca de la aplicación",
+    "UNAVAILABLE": "No disponible"
+  },
   "AUTH": {
     "LOGIN_TITLE": "Iniciar sesión",
     "LOGIN_SUBTITLE": "Accede a la plataforma AIC",

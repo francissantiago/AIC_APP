@@ -299,4 +299,35 @@
       </form>
     }
   </section>
+
+  <section
+    class="space-y-4 border-t border-slate-200 pt-6"
+    aria-labelledby="profile-about-title"
+    data-testid="profile-app-version"
+  >
+    <h3 id="profile-about-title" class="text-base font-semibold text-slate-900">
+      {{ 'APP_VERSION.SECTION_TITLE' | translate }}
+    </h3>
+
+    <dl class="grid max-w-xl gap-3 text-sm">
+      <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
+        <dt class="font-medium text-slate-700">{{ 'APP_VERSION.APP_LABEL' | translate }}</dt>
+        <dd class="text-slate-900">{{ appVersion() }}</dd>
+      </div>
+      <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
+        <dt class="font-medium text-slate-700">{{ 'APP_VERSION.BUILD_LABEL' | translate }}</dt>
+        <dd class="text-slate-900">{{ formatBuildDate(appBuiltAt()) }}</dd>
+      </div>
+      <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
+        <dt class="font-medium text-slate-700">{{ 'APP_VERSION.API_LABEL' | translate }}</dt>
+        <dd class="text-slate-900">
+          @if (backendVersion(); as apiVersion) {
+            {{ apiVersion }}
+          } @else {
+            {{ 'APP_VERSION.UNAVAILABLE' | translate }}
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
 </section>

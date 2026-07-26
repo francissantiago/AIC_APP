@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
+import { AppVersionService } from '@services/app-version-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { Subject } from 'rxjs';
 import { AppShell } from './app-shell';
@@ -36,6 +37,14 @@ describe('AppShell', () => {
         },
         { provide: TranslateService, useValue: translateServiceStub() },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
+        {
+          provide: AppVersionService,
+          useValue: {
+            startPolling: vi.fn(),
+            fetchBackendVersion: vi.fn(),
+            currentVersion: signal('1.0.0'),
+          },
+        },
       ],
     })
       .overrideComponent(AppShell, {

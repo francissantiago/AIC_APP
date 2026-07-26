@@ -160,6 +160,8 @@
       </div>
     </header>
 
+    <app-app-update-banner />
+
     <main
       class="min-h-0 flex-1 overflow-y-auto p-4 app-scrollbar-thin md:p-6"
       data-testid="app-main"
@@ -192,6 +194,9 @@
         >
           {{ 'APP_SHELL.SOFTWARE_LICENSES_REPO' | translate }}
         </a>
+      </p>
+      <p class="mt-1" data-testid="app-version-footer">
+        {{ 'APP_VERSION.LABEL' | translate }}: {{ appVersion() }}
       </p>
     </footer>
   </div>

@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
+    "prebuild": "node ./scripts/generate-version.mjs",
+    "prestart": "node ./scripts/generate-version.mjs",
     "start": "ng serve",
-    "dev": "ng serve --configuration development --port 83 --host 0.0.0.0",
+    "dev": "node ./scripts/generate-version.mjs && ng serve --configuration development --port 83 --host 0.0.0.0",
     "dev:remote": "node ./scripts/serve-remote.mjs",
     "dev:no-hmr": "ng serve --configuration development --port 83 --host 0.0.0.0 --no-live-reload --hmr=false",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "postinstall": "node ./scripts/patch-angular-vitest.mjs && node ./scripts/patch-angular-hmr.mjs",
-    "test": "node ./scripts/patch-angular-vitest.mjs && ng test"
+    "test": "node ./scripts/generate-version.mjs && node ./scripts/patch-angular-vitest.mjs && ng test"
   },
   "private": true,
   "packageManager": "npm@11.11.0",

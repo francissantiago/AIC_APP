@@ -3,6 +3,18 @@
     "NAME": "AIC",
     "TITLE": "AIC — Administração de Igrejas Cristãs"
   },
+  "APP_VERSION": {
+    "LABEL": "Versão",
+    "APP_LABEL": "Versão do aplicativo",
+    "API_LABEL": "Versão da API",
+    "BUILD_LABEL": "Data do build",
+    "BANNER_TITLE": "Atualização disponível",
+    "BANNER_MESSAGE": "Uma nova versão do aplicativo está disponível. Recarregue para obter os recursos e correções mais recentes.",
+    "RELOAD_NOW": "Atualizar agora",
+    "DISMISS": "Depois",
+    "SECTION_TITLE": "Sobre o aplicativo",
+    "UNAVAILABLE": "Indisponível"
+  },
   "AUTH": {
     "LOGIN_TITLE": "Entrar",
     "LOGIN_SUBTITLE": "Acesse a plataforma AIC",

@@ -9,12 +9,14 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AppUpdateBanner } from '@components/layout/app-update-banner/app-update-banner';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
 import { SidebarNav } from '@components/layout/sidebar-nav/sidebar-nav';
 import { CongregationSelector } from '@components/congregation-selector/congregation-selector';
 import { HelpVideoTrigger } from '@components/help-video-trigger/help-video-trigger';
 import { NotificationsBell } from '@components/notifications-bell/notifications-bell';
 import { AuthService } from '@services/auth-service';
+import { AppVersionService } from '@services/app-version-service';
 import { HelpVideoService } from '@services/help-video-service';
 import { filter, startWith } from 'rxjs';
 
@@ -32,6 +34,7 @@ const SIDEBAR_ID = 'app-sidebar';
     SidebarNav,
     NotificationsBell,
     HelpVideoTrigger,
+    AppUpdateBanner,
   ],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
@@ -42,6 +45,7 @@ export class AppShell {
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
   readonly #helpVideoService = inject(HelpVideoService);
+  readonly #appVersionService = inject(AppVersionService);
 
   readonly sidebarId = SIDEBAR_ID;
   readonly sidebarExpanded = signal(this.#initialExpanded());
@@ -51,6 +55,7 @@ export class AppShell {
 
   readonly pageTitleKey = computed(() => this.#resolvePageTitle(this.#currentUrl()));
   readonly currentHelpVideo = computed(() => this.#helpVideoService.resolveByUrl(this.#currentUrl()));
+  readonly appVersion = this.#appVersionService.currentVersion;
   readonly contentLayoutClass = computed(() =>
     [
       'flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-200',
@@ -60,6 +65,8 @@ export class AppShell {
 
   constructor() {
     this.#helpVideoService.ensureLoaded();
+    this.#appVersionService.startPolling();
+    this.#appVersionService.fetchBackendVersion();
 
     this.#router.events
       .pipe(

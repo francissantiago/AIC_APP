@@ -18,8 +18,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { format } from 'date-fns';
 import { ITwoFactorSetupResponse } from '@interfaces/ITwoFactorSetupResponse';
 import { ApiErrorService } from '@services/api-error.service';
+import { AppVersionService } from '@services/app-version-service';
 import { AuthService } from '@services/auth-service';
 
 function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
@@ -42,8 +44,12 @@ export class ProfilePage implements OnInit {
   readonly #authService = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #appVersionService = inject(AppVersionService);
 
   readonly currentUser = this.#authService.currentUser;
+  readonly appVersion = this.#appVersionService.currentVersion;
+  readonly appBuiltAt = this.#appVersionService.currentBuiltAt;
+  readonly backendVersion = this.#appVersionService.backendVersion;
   readonly twoFactorEnabled = computed(() => !!this.currentUser()?.twoFactorEnabled);
 
   readonly profileSaving = signal(false);
@@ -110,6 +116,8 @@ export class ProfilePage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.#appVersionService.fetchBackendVersion();
+
     const user = this.currentUser();
     if (user) {
       this.#patchProfileForm(user.username, user.fullName, user.email);
@@ -286,6 +294,15 @@ export class ProfilePage implements OnInit {
           this.errorMessage.set(this.#apiError.resolve(error).displayMessage);
         },
       });
+  }
+
+  formatBuildDate(isoDate: string): string {
+    const parsed = new Date(isoDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return isoDate;
+    }
+
+    return format(parsed, 'dd/MM/yyyy HH:mm');
   }
 
   #patchProfileForm(username: string, fullName: string, email: string): void {

@@ -3,6 +3,18 @@
     "NAME": "AIC",
     "TITLE": "AIC — Church Administration"
   },
+  "APP_VERSION": {
+    "LABEL": "Version",
+    "APP_LABEL": "App version",
+    "API_LABEL": "API version",
+    "BUILD_LABEL": "Build date",
+    "BANNER_TITLE": "Update available",
+    "BANNER_MESSAGE": "A new version of the app is available. Reload to get the latest features and fixes.",
+    "RELOAD_NOW": "Reload now",
+    "DISMISS": "Later",
+    "SECTION_TITLE": "About the app",
+    "UNAVAILABLE": "Unavailable"
+  },
   "AUTH": {
     "LOGIN_TITLE": "Sign in",
     "LOGIN_SUBTITLE": "Access the AIC platform",

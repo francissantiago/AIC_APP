@@ -1,0 +1,32 @@
+@if (visible()) {
+  <div
+    class="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+    role="status"
+    data-testid="app-update-banner"
+  >
+    <div class="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="space-y-1">
+        <p class="font-semibold">{{ 'APP_VERSION.BANNER_TITLE' | translate }}</p>
+        <p>{{ 'APP_VERSION.BANNER_MESSAGE' | translate }}</p>
+      </div>
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          data-testid="app-update-reload"
+          (click)="reloadNow()"
+        >
+          {{ 'APP_VERSION.RELOAD_NOW' | translate }}
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          data-testid="app-update-dismiss"
+          (click)="dismiss()"
+        >
+          {{ 'APP_VERSION.DISMISS' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
