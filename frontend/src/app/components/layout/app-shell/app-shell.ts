@@ -162,6 +162,9 @@ export class AppShell {
     if (path.startsWith('/social-projects')) {
       return 'APP_SHELL.PAGE_SOCIAL_PROJECTS';
     }
+    if (path.startsWith('/missions/booklets')) {
+      return 'APP_SHELL.PAGE_MISSIONS_BOOKLETS';
+    }
     if (path.startsWith('/missions/fields')) {
       return 'APP_SHELL.PAGE_MISSIONS_FIELDS';
     }

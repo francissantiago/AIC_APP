@@ -143,6 +143,7 @@ export class SidebarNav {
   readonly missionsItems = [
     { route: '/missions', labelKey: 'NAV.MISSIONS_ASSIGNMENTS' },
     { route: '/missions/fields', labelKey: 'NAV.MISSIONS_FIELDS' },
+    { route: '/missions/booklets', labelKey: 'NAV.MISSIONS_BOOKLETS' },
   ] as const;
 
   readonly constructionsItems = [

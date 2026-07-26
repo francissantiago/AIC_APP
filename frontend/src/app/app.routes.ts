@@ -201,6 +201,13 @@ export const routes: Routes = [
                 (m) => m.MissionFieldsList,
               ),
           },
+          {
+            path: 'booklets',
+            loadComponent: () =>
+              import('@components/missions/mission-booklets-list/mission-booklets-list').then(
+                (m) => m.MissionBookletsList,
+              ),
+          },
         ],
       },
       {

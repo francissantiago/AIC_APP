@@ -30,6 +30,10 @@ import { FinancialCategory } from './financial-category.entity';
 @Index('IDX_financial_entries_member_date', ['memberId', 'entryDate'])
 @Index('IDX_financial_entries_construction_project', ['constructionProjectId'])
 @Index('IDX_financial_entries_social_project', ['socialProjectId'])
+@Index('IDX_financial_entries_mission_field', ['missionFieldId'])
+@Index('IDX_financial_entries_mission_booklet_installment', [
+  'missionBookletInstallmentId',
+])
 export class FinancialEntry {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -85,6 +89,22 @@ export class FinancialEntry {
   })
   @JoinColumn({ name: 'social_project_id' })
   socialProject!: SocialProject | null;
+
+  @Column({
+    name: 'mission_field_id',
+    type: 'char',
+    length: 36,
+    nullable: true,
+  })
+  missionFieldId!: string | null;
+
+  @Column({
+    name: 'mission_booklet_installment_id',
+    type: 'char',
+    length: 36,
+    nullable: true,
+  })
+  missionBookletInstallmentId!: string | null;
 
   @Column({ type: 'enum', enum: FinancialType })
   type!: FinancialType;

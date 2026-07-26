@@ -25,6 +25,14 @@
     >
       {{ 'MISSIONS.FIELDS_TITLE' | translate }}
     </a>
+    <a
+      routerLink="/missions/booklets"
+      routerLinkActive="border-slate-600 text-slate-900"
+      data-testid="missions-tab-booklets"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'MISSIONS.BOOKLETS.TITLE' | translate }}
+    </a>
   </nav>
 
   <router-outlet />

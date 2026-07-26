@@ -206,6 +206,23 @@ export class MissionAssignmentsService {
     this.logger.log(`Envio missionário removido (soft delete): ${id}`);
   }
 
+  async getAssignmentOrFailInternal(
+    id: string,
+    congregationId: string,
+  ): Promise<MissionAssignment> {
+    const assignment = await this.assignmentsRepository.findOne({
+      where: { id, congregationId },
+      relations: { member: true, missionField: true },
+    });
+    if (!assignment) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.MISSIONS_ASSIGNMENT_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MISSIONS_ASSIGNMENT_NOT_FOUND],
+      });
+    }
+    return assignment;
+  }
+
   private async getCongregationId(
     activeCongregationId?: string,
   ): Promise<string> {

@@ -1,0 +1,147 @@
+@if (loading()) {
+  <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+} @else if (loadError()) {
+  <p class="text-sm text-red-700" role="alert">{{ 'MISSIONS.LOAD_ERROR' | translate }}</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4">
+    @if (!isEditMode()) {
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.MEMBER' | translate }}</span>
+        <select
+          formControlName="memberId"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.border-red-500]="fieldInvalid('memberId')"
+        >
+          <option value="">{{ 'MISSIONS.MEMBER_PLACEHOLDER' | translate }}</option>
+          @for (member of memberOptions(); track member.id) {
+            <option [value]="member.id">{{ member.fullName }}</option>
+          }
+        </select>
+      </label>
+
+      <fieldset class="grid gap-2">
+        <legend class="text-sm font-medium text-slate-700">
+          {{ 'MISSIONS.BOOKLETS.DESTINATION' | translate }}
+        </legend>
+        @for (type of destinationTypes; track type) {
+          <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input type="radio" formControlName="destinationType" [value]="type" />
+            <span>{{ destinationLabelKey(type) | translate }}</span>
+          </label>
+        }
+      </fieldset>
+
+      @if (form.controls.destinationType.value === DestinationType.FIELD) {
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MISSIONS.FIELD' | translate }}</span>
+          <select
+            formControlName="missionFieldId"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.border-red-500]="fieldInvalid('missionFieldId')"
+          >
+            <option value="">{{ 'MISSIONS.FIELD_PLACEHOLDER' | translate }}</option>
+            @for (field of fieldOptions(); track field.id) {
+              <option [value]="field.id">{{ field.name }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      @if (form.controls.destinationType.value === DestinationType.ASSIGNMENT) {
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MISSIONS.BOOKLETS.ASSIGNMENT' | translate }}</span>
+          <select
+            formControlName="missionAssignmentId"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.border-red-500]="fieldInvalid('missionAssignmentId')"
+          >
+            <option value="">{{ 'MISSIONS.BOOKLETS.ASSIGNMENT_PLACEHOLDER' | translate }}</option>
+            @for (assignment of assignmentOptions(); track assignment.id) {
+              <option [value]="assignment.id">
+                {{ assignment.memberName }} — {{ assignment.missionFieldName }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MISSIONS.BOOKLETS.INSTALLMENT_COUNT' | translate }}</span>
+          <input
+            type="number"
+            min="1"
+            max="120"
+            formControlName="installmentCount"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.border-red-500]="fieldInvalid('installmentCount')"
+          />
+        </label>
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MISSIONS.BOOKLETS.INSTALLMENT_AMOUNT' | translate }}</span>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            formControlName="installmentAmount"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [class.border-red-500]="fieldInvalid('installmentAmount')"
+          />
+        </label>
+      </div>
+
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        <span>{{ 'MISSIONS.BOOKLETS.FIRST_DUE_DATE' | translate }}</span>
+        <input
+          type="date"
+          formControlName="firstDueDate"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.border-red-500]="fieldInvalid('firstDueDate')"
+        />
+      </label>
+    }
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'MISSIONS.BOOKLETS.BOOKLET_TITLE' | translate }}</span>
+      <input
+        type="text"
+        formControlName="title"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [placeholder]="'MISSIONS.BOOKLETS.TITLE_PLACEHOLDER' | translate"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'MISSIONS.NOTES' | translate }}</span>
+      <textarea
+        rows="3"
+        formControlName="notes"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      ></textarea>
+    </label>
+
+    @if (errorMessage(); as message) {
+      <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{{ message }}</p>
+    }
+    @if (supportHint(); as hint) {
+      <p class="text-xs text-slate-600">{{ hint }}</p>
+    }
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="submit"
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+        [disabled]="saving()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        (click)="cancelled.emit()"
+      >
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+    </div>
+  </form>
+}
