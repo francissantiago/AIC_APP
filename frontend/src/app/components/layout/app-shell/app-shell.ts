@@ -12,8 +12,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
 import { SidebarNav } from '@components/layout/sidebar-nav/sidebar-nav';
 import { CongregationSelector } from '@components/congregation-selector/congregation-selector';
+import { HelpVideoTrigger } from '@components/help-video-trigger/help-video-trigger';
 import { NotificationsBell } from '@components/notifications-bell/notifications-bell';
 import { AuthService } from '@services/auth-service';
+import { HelpVideoService } from '@services/help-video-service';
 import { filter, startWith } from 'rxjs';
 
 const AUTO_COLLAPSE_MS = 2000;
@@ -29,6 +31,7 @@ const SIDEBAR_ID = 'app-sidebar';
     CongregationSelector,
     SidebarNav,
     NotificationsBell,
+    HelpVideoTrigger,
   ],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
@@ -38,6 +41,7 @@ export class AppShell {
   readonly #authService = inject(AuthService);
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #helpVideoService = inject(HelpVideoService);
 
   readonly sidebarId = SIDEBAR_ID;
   readonly sidebarExpanded = signal(this.#initialExpanded());
@@ -46,6 +50,7 @@ export class AppShell {
   #collapseTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly pageTitleKey = computed(() => this.#resolvePageTitle(this.#currentUrl()));
+  readonly currentHelpVideo = computed(() => this.#helpVideoService.resolveByUrl(this.#currentUrl()));
   readonly contentLayoutClass = computed(() =>
     [
       'flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-200',
@@ -54,6 +59,8 @@ export class AppShell {
   );
 
   constructor() {
+    this.#helpVideoService.ensureLoaded();
+
     this.#router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),

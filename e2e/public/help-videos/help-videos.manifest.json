@@ -1,0 +1,246 @@
+{
+  "version": "2026.07.26",
+  "locale": "pt-BR",
+  "videos": [
+    {
+      "featureId": "announcements-board",
+      "route": "/announcements",
+      "path": "/help-videos/announcements-board.webm",
+      "titleKey": "HELP_VIDEOS.ANNOUNCEMENTS_BOARD.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "auth-login",
+      "route": "/login",
+      "path": "/help-videos/auth-login.webm",
+      "titleKey": "HELP_VIDEOS.AUTH_LOGIN.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "congregation-active",
+      "route": "/congregation",
+      "path": "/help-videos/congregation-active.webm",
+      "titleKey": "HELP_VIDEOS.CONGREGATION_ACTIVE.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "congregations-branches",
+      "route": "/congregations",
+      "path": "/help-videos/congregations-branches.webm",
+      "titleKey": "HELP_VIDEOS.CONGREGATIONS_BRANCHES.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "constructions-projects",
+      "route": "/constructions",
+      "path": "/help-videos/constructions-projects.webm",
+      "titleKey": "HELP_VIDEOS.CONSTRUCTIONS_PROJECTS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "dashboard",
+      "route": "/dashboard",
+      "path": "/help-videos/dashboard.webm",
+      "titleKey": "HELP_VIDEOS.DASHBOARD.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "ebd-classes",
+      "route": "/ebd",
+      "path": "/help-videos/ebd-classes.webm",
+      "titleKey": "HELP_VIDEOS.EBD_CLASSES.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "ebd-frequency-report",
+      "route": "/ebd/reports",
+      "path": "/help-videos/ebd-frequency-report.webm",
+      "titleKey": "HELP_VIDEOS.EBD_FREQUENCY_REPORT.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "families-birthdays",
+      "route": "/families/birthdays",
+      "path": "/help-videos/families-birthdays.webm",
+      "titleKey": "HELP_VIDEOS.FAMILIES_BIRTHDAYS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "families-list",
+      "route": "/families",
+      "path": "/help-videos/families-list.webm",
+      "titleKey": "HELP_VIDEOS.FAMILIES_LIST.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "finance-assets",
+      "route": "/finance/assets",
+      "path": "/help-videos/finance-assets.webm",
+      "titleKey": "HELP_VIDEOS.FINANCE_ASSETS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "finance-dashboard",
+      "route": "/finance",
+      "path": "/help-videos/finance-dashboard.webm",
+      "titleKey": "HELP_VIDEOS.FINANCE_DASHBOARD.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "finance-entries",
+      "route": "/finance/entries",
+      "path": "/help-videos/finance-entries.webm",
+      "titleKey": "HELP_VIDEOS.FINANCE_ENTRIES.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "finance-reports",
+      "route": "/finance/reports",
+      "path": "/help-videos/finance-reports.webm",
+      "titleKey": "HELP_VIDEOS.FINANCE_REPORTS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "members-list",
+      "route": "/members",
+      "path": "/help-videos/members-list.webm",
+      "titleKey": "HELP_VIDEOS.MEMBERS_LIST.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "membership-cards",
+      "route": "/membership-cards",
+      "path": "/help-videos/membership-cards.webm",
+      "titleKey": "HELP_VIDEOS.MEMBERSHIP_CARDS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "ministries-list",
+      "route": "/ministries",
+      "path": "/help-videos/ministries-list.webm",
+      "titleKey": "HELP_VIDEOS.MINISTRIES_LIST.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "missions-assignments",
+      "route": "/missions",
+      "path": "/help-videos/missions-assignments.webm",
+      "titleKey": "HELP_VIDEOS.MISSIONS_ASSIGNMENTS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "profile",
+      "route": "/profile",
+      "path": "/help-videos/profile.webm",
+      "titleKey": "HELP_VIDEOS.PROFILE.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "roles-catalog",
+      "route": "/roles",
+      "path": "/help-videos/roles-catalog.webm",
+      "titleKey": "HELP_VIDEOS.ROLES_CATALOG.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "secretariat-agenda",
+      "route": "/secretariat/agenda",
+      "path": "/help-videos/secretariat-agenda.webm",
+      "titleKey": "HELP_VIDEOS.SECRETARIAT_AGENDA.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "secretariat-attendance",
+      "route": "/secretariat/attendance",
+      "path": "/help-videos/secretariat-attendance.webm",
+      "titleKey": "HELP_VIDEOS.SECRETARIAT_ATTENDANCE.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "secretariat-dashboard",
+      "route": "/secretariat",
+      "path": "/help-videos/secretariat-dashboard.webm",
+      "titleKey": "HELP_VIDEOS.SECRETARIAT_DASHBOARD.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "secretariat-documents",
+      "route": "/secretariat/documents",
+      "path": "/help-videos/secretariat-documents.webm",
+      "titleKey": "HELP_VIDEOS.SECRETARIAT_DOCUMENTS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "secretariat-schedules",
+      "route": "/secretariat/schedules",
+      "path": "/help-videos/secretariat-schedules.webm",
+      "titleKey": "HELP_VIDEOS.SECRETARIAT_SCHEDULES.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "secretariat-visitors",
+      "route": "/secretariat/visitors",
+      "path": "/help-videos/secretariat-visitors.webm",
+      "titleKey": "HELP_VIDEOS.SECRETARIAT_VISITORS.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "small-groups-frequency-report",
+      "route": "/small-groups/reports",
+      "path": "/help-videos/small-groups-frequency-report.webm",
+      "titleKey": "HELP_VIDEOS.SMALL_GROUPS_FREQUENCY_REPORT.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "small-groups-list",
+      "route": "/small-groups",
+      "path": "/help-videos/small-groups-list.webm",
+      "titleKey": "HELP_VIDEOS.SMALL_GROUPS_LIST.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "social-projects-list",
+      "route": "/social-projects",
+      "path": "/help-videos/social-projects-list.webm",
+      "titleKey": "HELP_VIDEOS.SOCIAL_PROJECTS_LIST.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    },
+    {
+      "featureId": "users-list",
+      "route": "/users",
+      "path": "/help-videos/users-list.webm",
+      "titleKey": "HELP_VIDEOS.USERS_LIST.TITLE",
+      "recordedAt": "2026-07-26T18:52:28.758Z",
+      "durationMs": null
+    }
+  ]
+}

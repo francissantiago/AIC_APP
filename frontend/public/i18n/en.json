@@ -1713,6 +1713,11 @@
     "BACK_HOME": "Back to home"
   },
   "HELP_VIDEOS": {
+    "DIALOG": {
+      "OPEN_ARIA": "Open video tutorial",
+      "DESCRIPTION": "Watch a step-by-step walkthrough of this feature.",
+      "MOBILE_HINT": "Use the video controls to pause, seek, or watch in fullscreen."
+    },
     "AUTH_LOGIN": {
       "TITLE": "How to sign in"
     },
@@ -1773,6 +1778,9 @@
     "CONGREGATIONS_BRANCHES": {
       "TITLE": "Congregation branches"
     },
+    "FINANCE_DASHBOARD": {
+      "TITLE": "Finance dashboard"
+    },
     "FINANCE_ENTRIES": {
       "TITLE": "Financial entries"
     },
@@ -1781,6 +1789,9 @@
     },
     "FINANCE_REPORTS": {
       "TITLE": "Financial reports"
+    },
+    "SECRETARIAT_DASHBOARD": {
+      "TITLE": "Secretariat dashboard"
     },
     "SECRETARIAT_AGENDA": {
       "TITLE": "Secretariat calendar"

@@ -3,6 +3,7 @@ import path from 'path';
 
 export interface CatalogFeature {
   id: string;
+  route: string;
   videoFile: string;
   i18nTitleKey: string;
   status: string;
@@ -16,6 +17,7 @@ export interface CatalogFile {
 
 export interface HelpVideoManifestEntry {
   featureId: string;
+  route: string;
   path: string;
   titleKey: string;
   recordedAt: string;
@@ -197,6 +199,7 @@ export function publishTutorialVideos(options: {
     published.add(entry.featureId);
     manifestVideos.push({
       featureId: feature.id,
+      route: feature.route,
       path: `/help-videos/${feature.videoFile}`,
       titleKey: feature.i18nTitleKey,
       recordedAt,
@@ -220,6 +223,7 @@ export function publishTutorialVideos(options: {
     published.add(featureId);
     manifestVideos.push({
       featureId: feature.id,
+      route: feature.route,
       path: `/help-videos/${feature.videoFile}`,
       titleKey: feature.i18nTitleKey,
       recordedAt,

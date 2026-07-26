@@ -5,12 +5,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
+import { HelpVideoTrigger } from '@components/help-video-trigger/help-video-trigger';
 import { isTwoFactorChallenge } from '@interfaces/ILoginResult';
 import { AuthService } from '@services/auth-service';
+import { HelpVideoService } from '@services/help-video-service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, LanguageSwitcher],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, LanguageSwitcher, HelpVideoTrigger],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,6 +21,7 @@ export class Login {
   readonly #authService = inject(AuthService);
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #helpVideoService = inject(HelpVideoService);
 
   readonly loginLoading = this.#authService.loginLoading;
   readonly loginError = this.#authService.loginError;
@@ -43,6 +46,10 @@ export class Login {
       validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
     }),
   });
+
+  constructor() {
+    this.#helpVideoService.ensureLoaded();
+  }
 
   fieldInvalid(controlName: 'email' | 'password'): boolean {
     const control = this.form.controls[controlName];

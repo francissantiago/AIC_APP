@@ -1713,6 +1713,11 @@
     "BACK_HOME": "Voltar ao início"
   },
   "HELP_VIDEOS": {
+    "DIALOG": {
+      "OPEN_ARIA": "Abrir tutorial em vídeo",
+      "DESCRIPTION": "Assista ao passo a passo desta funcionalidade.",
+      "MOBILE_HINT": "Use os controles do vídeo para pausar, avançar ou assistir em tela cheia."
+    },
     "AUTH_LOGIN": {
       "TITLE": "Como fazer login"
     },
@@ -1773,6 +1778,9 @@
     "CONGREGATIONS_BRANCHES": {
       "TITLE": "Filiais da congregação"
     },
+    "FINANCE_DASHBOARD": {
+      "TITLE": "Painel financeiro"
+    },
     "FINANCE_ENTRIES": {
       "TITLE": "Lançamentos financeiros"
     },
@@ -1781,6 +1789,9 @@
     },
     "FINANCE_REPORTS": {
       "TITLE": "Relatórios financeiros"
+    },
+    "SECRETARIAT_DASHBOARD": {
+      "TITLE": "Painel da secretaria"
     },
     "SECRETARIAT_AGENDA": {
       "TITLE": "Agenda da secretaria"

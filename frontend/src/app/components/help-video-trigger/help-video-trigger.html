@@ -1,0 +1,30 @@
+@if (resolvedVideo(); as current) {
+  <button
+    type="button"
+    data-testid="help-video-trigger"
+    class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    [attr.aria-label]="'HELP_VIDEOS.DIALOG.OPEN_ARIA' | translate"
+    (click)="openDialog()"
+  >
+    <svg
+      class="size-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M10 9.5v5l4.5-2.5L10 9.5z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+    <span class="sr-only">{{ current.titleKey | translate }}</span>
+  </button>
+
+  <app-help-video-dialog [(open)]="dialogOpen" [video]="current" />
+}
