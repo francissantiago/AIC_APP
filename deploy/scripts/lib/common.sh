@@ -107,7 +107,26 @@ aic_generate_secrets() {
 aic_compose() {
   local install_dir="$1"
   shift
-  docker compose --project-directory "${install_dir}" --env-file "${install_dir}/deploy/.env" "$@"
+  # BuildKit + limite paralelo: evita OOM no Docker Desktop ao compilar Nest e Angular juntos
+  DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 COMPOSE_PARALLEL_LIMIT=1 \
+    docker compose --project-directory "${install_dir}" --env-file "${install_dir}/deploy/.env" "$@"
+}
+
+aic_compose_build_and_up() {
+  local install_dir="$1"
+  shift
+  local pull_flag=()
+  if [[ "${1:-}" == "--pull" ]]; then
+    pull_flag=(--pull)
+    shift
+  fi
+
+  aic_info "Build sequencial (mysql → backend → web) para reduzir uso de memória..."
+  aic_compose "${install_dir}" pull mysql || true
+  aic_compose "${install_dir}" build "${pull_flag[@]}" backend
+  aic_compose "${install_dir}" build "${pull_flag[@]}" web
+  aic_info "Iniciando containers..."
+  aic_compose "${install_dir}" up -d
 }
 
 aic_load_env() {
@@ -206,8 +225,7 @@ aic_action_install() {
   aic_set_env_value "${env_file}" "INSTALL_DIR" "${target_dir}"
   aic_load_env "${env_file}"
 
-  aic_info "Construindo e iniciando containers ..."
-  aic_compose "${target_dir}" up -d --build
+  aic_compose_build_and_up "${target_dir}"
 
   aic_wait_for_health "${target_dir}" "${APP_HTTP_PORT:-80}" || true
   aic_show_summary "${target_dir}"
@@ -243,14 +261,7 @@ aic_action_update() {
   aic_info "Atualizando de ${local_sha:0:7} para ${remote_sha:0:7} ..."
   git -C "${target_dir}" pull --ff-only origin "${branch}"
 
-  aic_info "Rebuild das imagens ..."
-  aic_compose "${target_dir}" build --pull
-
-  aic_info "Executando migrations ..."
-  aic_compose "${target_dir}" run --rm backend npm run migration:run
-
-  aic_info "Reiniciando containers ..."
-  aic_compose "${target_dir}" up -d
+  aic_compose_build_and_up "${target_dir}" --pull
 
   aic_wait_for_health "${target_dir}" "${APP_HTTP_PORT:-80}" || true
   aic_show_summary "${target_dir}"

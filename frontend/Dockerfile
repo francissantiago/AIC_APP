@@ -2,14 +2,15 @@
 
 FROM node:20-alpine AS builder
 
-# ng build consome bastante heap; evita OOM em Docker Desktop com memória limitada
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Build sequencial no script de install — um serviço por vez no Docker Desktop
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 
 WORKDIR /app
 
 COPY frontend/package.json frontend/package-lock.json ./
 # postinstall aplica patches de dev (Vitest/HMR) — desnecessário na imagem de produção
-RUN npm ci --ignore-scripts
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --ignore-scripts
 
 COPY frontend/ ./
 RUN npm run build

@@ -11,7 +11,7 @@ done
 echo "[entrypoint] MySQL disponível."
 
 echo "[entrypoint] Executando migrations..."
-npm run migration:run
+npm run migration:run:prod
 
 echo "[entrypoint] Iniciando API..."
 exec node dist/main.js

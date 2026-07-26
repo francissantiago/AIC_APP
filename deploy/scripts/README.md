@@ -7,9 +7,10 @@ Guia para administradores instalarem e atualizarem a aplicação **AIC — Admin
 | Recurso | Recomendado |
 |---------|-------------|
 | CPU | 2 vCPU |
-| RAM | 4 GB |
+| RAM | **6 GB** no Docker Desktop (mínimo 4 GB) |
 | Disco | 10 GB livres |
 | Software | Docker 24+, Docker Compose v2, Git |
+| Tempo 1ª instalação | ~15–30 min (build sequencial backend → frontend) |
 
 - **Linux/macOS:** Bash 4+
 - **Windows:** PowerShell 7+ e [Docker Desktop](https://www.docker.com/products/docker-desktop/)
@@ -121,6 +122,8 @@ Substitua `db_aic` se alterou `DB_NAME`.
 | Porta 80 ocupada | Altere `APP_HTTP_PORT` em `deploy/.env` e reinicie |
 | Update com conflito Git | Resolva manualmente ou restaure backup; updates usam `--ff-only` |
 | Google OAuth | Configure `GOOGLE_*` e URIs no Google Cloud Console |
+| Build falha com `heap out of memory` ou `EOF` | Aumente a memória do Docker Desktop para **6 GB** (Settings → Resources). Reinicie o Docker Desktop e rode o install de novo — o script faz **build sequencial** (nunca Nest + Angular ao mesmo tempo) |
+| Build parece “travado” > 1 h | Quase sempre o Docker Desktop reiniciou por falta de memória. Pare o build (`Ctrl+C`), aumente a RAM e rode `Install` novamente |
 
 ## Primeiro acesso
 

@@ -130,10 +130,50 @@ function Invoke-AicCompose {
     )
 
     $envFile = Join-Path $InstallDir 'deploy/.env'
-    & docker compose --project-directory $InstallDir --env-file $envFile @Args
-    if ($LASTEXITCODE -ne 0) {
-        Stop-AicWithError "docker compose falhou: $($Args -join ' ')"
+    $prevBuildkit = $env:DOCKER_BUILDKIT
+    $prevCliBuild = $env:COMPOSE_DOCKER_CLI_BUILD
+    $prevParallel = $env:COMPOSE_PARALLEL_LIMIT
+    $env:DOCKER_BUILDKIT = '1'
+    $env:COMPOSE_DOCKER_CLI_BUILD = '1'
+    $env:COMPOSE_PARALLEL_LIMIT = '1'
+    try {
+        & docker compose --project-directory $InstallDir --env-file $envFile @Args
+        if ($LASTEXITCODE -ne 0) {
+            Stop-AicWithError "docker compose falhou: $($Args -join ' ')"
+        }
     }
+    finally {
+        if ($null -ne $prevBuildkit) { $env:DOCKER_BUILDKIT = $prevBuildkit } else { Remove-Item Env:DOCKER_BUILDKIT -ErrorAction SilentlyContinue }
+        if ($null -ne $prevCliBuild) { $env:COMPOSE_DOCKER_CLI_BUILD = $prevCliBuild } else { Remove-Item Env:COMPOSE_DOCKER_CLI_BUILD -ErrorAction SilentlyContinue }
+        if ($null -ne $prevParallel) { $env:COMPOSE_PARALLEL_LIMIT = $prevParallel } else { Remove-Item Env:COMPOSE_PARALLEL_LIMIT -ErrorAction SilentlyContinue }
+    }
+}
+
+function Invoke-AicComposeBuildAndUp {
+    param(
+        [Parameter(Mandatory)]
+        [string] $InstallDir,
+        [switch] $Pull
+    )
+
+    Write-AicInfo 'Build sequencial (mysql → backend → web) para reduzir uso de memória...'
+    $envFile = Join-Path $InstallDir 'deploy/.env'
+    & docker compose --project-directory $InstallDir --env-file $envFile pull mysql
+    if ($LASTEXITCODE -ne 0) {
+        Write-AicWarn 'Pull do MySQL falhou ou foi ignorado; continuando com cache local.'
+    }
+
+    if ($Pull) {
+        Invoke-AicCompose -InstallDir $InstallDir build --pull backend
+        Invoke-AicCompose -InstallDir $InstallDir build --pull web
+    }
+    else {
+        Invoke-AicCompose -InstallDir $InstallDir build backend
+        Invoke-AicCompose -InstallDir $InstallDir build web
+    }
+
+    Write-AicInfo 'Iniciando containers...'
+    Invoke-AicCompose -InstallDir $InstallDir up -d
 }
 
 function Wait-AicHealth {
@@ -240,8 +280,7 @@ function Invoke-AicInstall {
     Set-AicEnvValue -FilePath $envFile -Key 'INSTALL_DIR' -Value $targetDir
     Import-AicEnvFile -FilePath $envFile
 
-    Write-AicInfo 'Construindo e iniciando containers ...'
-    Invoke-AicCompose -InstallDir $targetDir up -d --build
+    Invoke-AicComposeBuildAndUp -InstallDir $targetDir
 
     $port = if ($env:APP_HTTP_PORT) { [int]$env:APP_HTTP_PORT } else { 80 }
     Wait-AicHealth -InstallDir $targetDir -Port $port
@@ -287,14 +326,7 @@ function Invoke-AicUpdate {
         Pop-Location
     }
 
-    Write-AicInfo 'Rebuild das imagens ...'
-    Invoke-AicCompose -InstallDir $targetDir build --pull
-
-    Write-AicInfo 'Executando migrations ...'
-    Invoke-AicCompose -InstallDir $targetDir run --rm backend npm run migration:run
-
-    Write-AicInfo 'Reiniciando containers ...'
-    Invoke-AicCompose -InstallDir $targetDir up -d
+    Invoke-AicComposeBuildAndUp -InstallDir $targetDir -Pull
 
     $port = if ($env:APP_HTTP_PORT) { [int]$env:APP_HTTP_PORT } else { 80 }
     Wait-AicHealth -InstallDir $targetDir -Port $port
