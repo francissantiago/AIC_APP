@@ -118,6 +118,26 @@ export interface AnnouncementSummary {
   title: string;
 }
 
+export interface SocialProjectSummary {
+  id: string;
+  name: string;
+}
+
+export interface MissionFieldSummary {
+  id: string;
+  name: string;
+}
+
+export interface MissionAssignmentSummary {
+  id: string;
+  memberId: string;
+}
+
+export interface ConstructionProjectSummary {
+  id: string;
+  name: string;
+}
+
 export class ApiClient {
   constructor(
     private readonly token: string,
@@ -673,5 +693,70 @@ export class ApiClient {
       'GET',
       `/announcements?search=${encodeURIComponent(title)}&includeExpired=true`,
     ).then((response) => response.data.find((item) => item.title === title)?.id ?? null);
+  }
+
+  createSocialProject(payload: { name: string; description?: string }): Promise<SocialProjectSummary> {
+    return this.request<SocialProjectSummary>('POST', '/social-projects', payload);
+  }
+
+  deleteSocialProject(id: string): Promise<void> {
+    return this.request<void>('DELETE', `/social-projects/${id}`);
+  }
+
+  findSocialProjectIdByName(name: string): Promise<string | null> {
+    return this.request<{ data: SocialProjectSummary[] }>(
+      'GET',
+      `/social-projects?q=${encodeURIComponent(name)}`,
+    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+  }
+
+  createMissionField(payload: {
+    name: string;
+    country: string;
+    city?: string;
+  }): Promise<MissionFieldSummary> {
+    return this.request<MissionFieldSummary>('POST', '/mission-fields', payload);
+  }
+
+  deleteMissionField(id: string): Promise<void> {
+    return this.request<void>('DELETE', `/mission-fields/${id}`);
+  }
+
+  findMissionFieldIdByName(name: string): Promise<string | null> {
+    return this.request<{ data: MissionFieldSummary[] }>(
+      'GET',
+      `/mission-fields?q=${encodeURIComponent(name)}`,
+    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+  }
+
+  createMissionAssignment(payload: {
+    memberId: string;
+    missionFieldId: string;
+    startDate: string;
+  }): Promise<MissionAssignmentSummary> {
+    return this.request<MissionAssignmentSummary>('POST', '/mission-assignments', payload);
+  }
+
+  deleteMissionAssignment(id: string): Promise<void> {
+    return this.request<void>('DELETE', `/mission-assignments/${id}`);
+  }
+
+  createConstructionProject(payload: {
+    name: string;
+    ministryId: string;
+    description?: string;
+  }): Promise<ConstructionProjectSummary> {
+    return this.request<ConstructionProjectSummary>('POST', '/construction-projects', payload);
+  }
+
+  deleteConstructionProject(id: string): Promise<void> {
+    return this.request<void>('DELETE', `/construction-projects/${id}`);
+  }
+
+  findConstructionProjectIdByName(name: string): Promise<string | null> {
+    return this.request<{ data: ConstructionProjectSummary[] }>(
+      'GET',
+      `/construction-projects?q=${encodeURIComponent(name)}`,
+    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
   }
 }

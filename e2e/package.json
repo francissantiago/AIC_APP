@@ -3,14 +3,18 @@
   "private": true,
   "scripts": {
     "test:e2e": "playwright test --project=chromium",
+    "test:e2e:tutorials": "playwright test --project=tutorials",
+    "test:e2e:tutorials:publish": "playwright test --project=tutorials && tsx scripts/publish-tutorial-videos.ts --copy-to-frontend",
     "test:e2e:demo": "playwright test --project=demo",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report test-results/html-report",
+    "publish:tutorial-videos": "tsx scripts/publish-tutorial-videos.ts --copy-to-frontend",
     "postinstall": "playwright install chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
     "dotenv": "^16.4.7",
+    "tsx": "^4.19.4",
     "typescript": "~5.9.2"
   }
 }

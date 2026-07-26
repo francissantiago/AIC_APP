@@ -1,6 +1,6 @@
 # AIC — Testes E2E (Playwright)
 
-Suite end-to-end da aplicação AIC: smoke CI, módulos CRUD, permissões ACL e roteiro demo filmável.
+Suite end-to-end da aplicação AIC: smoke CI, módulos CRUD, permissões ACL, **tutorials filmáveis por funcionalidade** e roteiro demo legado.
 
 ## Pré-requisitos
 
@@ -28,18 +28,9 @@ O `postinstall` instala o Chromium do Playwright.
 | `E2E_API_URL` | URL da API (cleanup/seed) | `http://localhost:3002/api` |
 | `E2E_ADMIN_EMAIL` | E-mail admin | `admin@admin.com` |
 | `E2E_ADMIN_PASSWORD` | Senha admin | *(obrigatório)* |
-| `E2E_SLOW_MO_MS` | Delay entre ações no demo | `300` |
-
-### Staging (gravação remota)
-
-Descomente no `.env.e2e`:
-
-```
-E2E_BASE_URL=https://dev-application.lightburden.net
-E2E_API_URL=https://dev-application.lightburden.net/api
-```
-
-Confirme manualmente que o admin tem permissões completas antes de gravar o demo.
+| `E2E_SLOW_MO_MS` | Delay entre ações (demo/tutorials) | `300` / `400` |
+| `E2E_TUTORIAL_PAUSE_MS` | Pausa após cada passo tutorial | `800` |
+| `E2E_TUTORIAL_INTRO_PAUSE_MS` | Pausa inicial antes do tutorial | `1000` |
 
 ## Comandos
 
@@ -47,7 +38,16 @@ Confirme manualmente que o admin tem permissões completas antes de gravar o dem
 # Smoke + módulos (projeto chromium, auth via storageState)
 npm run test:e2e
 
-# Roteiro comercial com vídeo .webm (projeto demo, login UI)
+# Tutorials — 1 spec = 1 funcionalidade = 1 vídeo .webm
+npm run test:e2e:tutorials
+
+# Gravar tutorials e publicar vídeos + manifest em frontend/public/help-videos/
+npm run test:e2e:tutorials:publish
+
+# Apenas republicar vídeos do último run (sem reexecutar testes)
+npm run publish:tutorial-videos
+
+# Demo comercial monolítico (legado)
 npm run test:e2e:demo
 
 # Modo interativo
@@ -61,39 +61,57 @@ npm run test:e2e:report
 
 ```
 e2e/
-├── fixtures/          # auth, arquivos de upload
-├── helpers/           # ApiClient, dados E2E, cleanup demo
+├── catalog/
+│   ├── features.json              # catálogo mestre (IDs, fases, rotas)
+│   └── help-videos.manifest.json  # gerado após publish
+├── fixtures/          # auth, tutorial
+├── helpers/           # ApiClient, dados E2E, publish de vídeos
 ├── pages/             # Page objects por módulo
+├── public/help-videos/ # destino local dos .webm publicados
+├── scripts/           # publish-tutorial-videos.ts
 ├── tests/
-│   ├── smoke/         # 7 specs CI (~≤10 min)
+│   ├── smoke/         # specs CI (~≤10 min)
 │   ├── modules/       # CRUD por domínio
 │   ├── permissions/   # ACL read-only
-│   └── demo/          # full-walkthrough.spec.ts (10 capítulos)
-└── test-results/      # gitignored — vídeos, traces, HTML report
+│   ├── tutorials/     # 1 teste por featureId → vídeo separado
+│   └── demo/          # full-walkthrough.spec.ts (legado)
+└── test-results/      # gitignored — vídeos brutos, traces, HTML report
 ```
 
-## Demo comercial
+## Roteiro progressivo (fases)
 
-O spec `tests/demo/full-walkthrough.spec.ts` executa **um único teste serial** com 10 `test.step`:
+| Fase | Escopo | Status |
+|------|--------|--------|
+| **0** | Infra: catalog, fixture, publish, manifest | ✅ |
+| **1** | Núcleo: login, dashboard, avisos, pessoas, governança, perfil | ✅ tutorials |
+| **2** | Organização: EBD, células, congregação, carteirinhas | parcial |
+| **3** | Finanças e patrimônio | planned |
+| **4** | Secretaria | planned |
+| **5** | Projetos sociais, missões, obras | ✅ tutorials + modules |
+| **6** | Público, notificações, ACL | planned |
 
-1. Intro (login + shell)
-2. Comunicação (avisos)
-3. Pessoas (membros, famílias, aniversários)
-4. Organização (ministérios, EBD, células)
-5. Congregação (sede + filial)
-6. Finanças (dashboard, dízimo, patrimônio, relatórios)
-7. Secretaria (agenda, visitantes, presença, documentos, escalas)
-8. Governança (usuários, papéis)
-9. Perfil (nome revertido)
-10. Logout
+Consulte `catalog/features.json` para o catálogo completo com `featureId`, rota e arquivo de teste.
 
-- **Vídeo:** `test-results/artifacts/` (`.webm`, viewport 1440×900, slowMo 300 ms)
-- **Cleanup:** batch no `afterAll` via API (`E2E-*` / `DEMO-*`)
-- **Duração:** ~15–45 min local; timeout configurado em 60 min
+## Tutorials — vídeos por funcionalidade
+
+Cada arquivo `tests/tutorials/{featureId}.tutorial.spec.ts` contém **um único teste** que:
+
+1. Executa fluxo curto e legível (dados `TUTORIAL-*`).
+2. Grava vídeo `.webm` (1440×900, slowMo ~400 ms).
+3. Após `npm run test:e2e:tutorials:publish`, o script copia para:
+   - `e2e/public/help-videos/{featureId}.webm`
+   - `frontend/public/help-videos/{featureId}.webm` (com `--copy-to-frontend`)
+   - Gera `help-videos.manifest.json` para uso futuro na UI de ajuda.
+
+**Contrato futuro (UI):** botão por view abrirá modal com vídeo mapeado via `featureId` no manifest.
+
+## Demo comercial (legado)
+
+O spec `tests/demo/full-walkthrough.spec.ts` grava **um vídeo monolítico** com 10 capítulos. Preferir `test:e2e:tutorials` para tutoriais modulares.
 
 ## Dados de teste
 
-Registros criados usam prefixos `E2E-*` ou `DEMO-*` e são removidos via `ApiClient.asAdmin()` nos hooks de cleanup ou no final do demo.
+Registros criados usam prefixos `E2E-*`, `TUTORIAL-*` ou `DEMO-*` e são removidos via `ApiClient.asAdmin()` nos hooks de cleanup.
 
 ## Troubleshooting
 
@@ -102,4 +120,5 @@ Registros criados usam prefixos `E2E-*` ou `DEMO-*` e são removidos via `ApiCli
 | `E2E_ADMIN_PASSWORD não configurado` | Preencher `.env.e2e` |
 | Timeout na agenda | Usar vista **Dia** (já no page object) |
 | Porta errada | Frontend deve estar em **83** (`npm run dev`) |
-| Demo falhou no meio | Reexecutar `npm run test:e2e:demo` (retries=1) |
+| Vídeo não publicado | Verificar `test-results/artifacts/**/video.webm` e rodar `publish:tutorial-videos` |
+| Tutorial falhou no meio | Reexecutar `npm run test:e2e:tutorials` (retries=1) |

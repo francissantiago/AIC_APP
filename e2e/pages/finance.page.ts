@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import { BasePage } from './base.page';
 import { waitForAppShell } from '../helpers/wait.helper';
@@ -51,6 +51,7 @@ export class FinanceEntriesPage extends BasePage {
     description: string;
     amount: string;
     memberId?: string;
+    memberSearch?: string;
   }): Promise<void> {
     await this.page.getByTestId('finance-entry-form-type').selectOption(options.type);
     const categorySelect = this.page.getByTestId('finance-entry-form-category');
@@ -58,8 +59,18 @@ export class FinanceEntriesPage extends BasePage {
     await this.page.getByTestId('finance-entry-form-description').fill(options.description);
     await this.page.getByTestId('finance-entry-form-amount').fill(options.amount);
     if (options.memberId) {
-      await this.page.getByTestId('finance-entry-form-member').waitFor({ state: 'visible' });
-      await this.page.getByTestId('finance-entry-form-member').selectOption(options.memberId);
+      const memberSelect = this.page.getByTestId('finance-entry-form-member');
+      await memberSelect.waitFor({ state: 'visible' });
+      if (options.memberSearch) {
+        await this.page
+          .getByTestId('finance-entry-form')
+          .locator('[formcontrolname="memberQuery"]')
+          .fill(options.memberSearch);
+        await expect(memberSelect.locator(`option[value="${options.memberId}"]`)).toHaveCount(1, {
+          timeout: 15_000,
+        });
+      }
+      await memberSelect.selectOption(options.memberId);
     }
   }
 

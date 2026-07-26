@@ -32,6 +32,12 @@ e2e/.auth/
 e2e/.env.e2e
 !e2e/.auth/.gitkeep
 
+# Tutorial help videos (gerados por npm run test:e2e:tutorials:publish)
+e2e/public/help-videos/*.webm
+frontend/public/help-videos/*.webm
+e2e/public/help-videos/help-videos.manifest.json
+frontend/public/help-videos/help-videos.manifest.json
+
 # MCP
 mcp/dist/
 .cursor/agents/

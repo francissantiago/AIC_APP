@@ -17,6 +17,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { outputFolder: 'test-results/html-report', open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
   ],
   use: {
     baseURL,
@@ -40,7 +41,24 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: authFile,
       },
-      testIgnore: [/demo\//, /.*\.setup\.ts/],
+      testIgnore: [/demo\//, /tutorials\//, /.*\.setup\.ts/],
+    },
+    {
+      name: 'tutorials',
+      testMatch: /tutorials\/.*\.tutorial\.spec\.ts/,
+      dependencies: ['setup'],
+      fullyParallel: false,
+      workers: 1,
+      retries: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: authFile,
+        video: 'on',
+        trace: 'on',
+        launchOptions: { slowMo: slowMo || 400 },
+        viewport: { width: 1440, height: 900 },
+      },
+      timeout: 600_000,
     },
     {
       name: 'demo',

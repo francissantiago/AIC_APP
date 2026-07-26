@@ -1711,5 +1711,91 @@
     "BIRTH_DATE": "Data de nascimento",
     "STATUS": "Status",
     "BACK_HOME": "Voltar ao início"
+  },
+  "HELP_VIDEOS": {
+    "AUTH_LOGIN": {
+      "TITLE": "Como fazer login"
+    },
+    "DASHBOARD": {
+      "TITLE": "Visão geral do painel"
+    },
+    "ANNOUNCEMENTS_BOARD": {
+      "TITLE": "Mural de avisos"
+    },
+    "MEMBERS_LIST": {
+      "TITLE": "Lista de membros"
+    },
+    "FAMILIES_LIST": {
+      "TITLE": "Lista de famílias"
+    },
+    "FAMILIES_BIRTHDAYS": {
+      "TITLE": "Relatório de aniversários"
+    },
+    "MINISTRIES_LIST": {
+      "TITLE": "Lista de ministérios"
+    },
+    "USERS_LIST": {
+      "TITLE": "Gestão de usuários"
+    },
+    "ROLES_CATALOG": {
+      "TITLE": "Papéis e permissões"
+    },
+    "PROFILE": {
+      "TITLE": "Perfil do usuário"
+    },
+    "MEMBERSHIP_CARDS": {
+      "TITLE": "Carteirinhas de membros"
+    },
+    "SOCIAL_PROJECTS_LIST": {
+      "TITLE": "Projetos sociais"
+    },
+    "MISSIONS_ASSIGNMENTS": {
+      "TITLE": "Designações missionárias"
+    },
+    "CONSTRUCTIONS_PROJECTS": {
+      "TITLE": "Obras e projetos"
+    },
+    "EBD_CLASSES": {
+      "TITLE": "Classes da EBD"
+    },
+    "EBD_FREQUENCY_REPORT": {
+      "TITLE": "Relatório de frequência EBD"
+    },
+    "SMALL_GROUPS_LIST": {
+      "TITLE": "Lista de células"
+    },
+    "SMALL_GROUPS_FREQUENCY_REPORT": {
+      "TITLE": "Relatório de frequência de células"
+    },
+    "CONGREGATION_ACTIVE": {
+      "TITLE": "Congregação sede"
+    },
+    "CONGREGATIONS_BRANCHES": {
+      "TITLE": "Filiais da congregação"
+    },
+    "FINANCE_ENTRIES": {
+      "TITLE": "Lançamentos financeiros"
+    },
+    "FINANCE_ASSETS": {
+      "TITLE": "Patrimônio e bens"
+    },
+    "FINANCE_REPORTS": {
+      "TITLE": "Relatórios financeiros"
+    },
+    "SECRETARIAT_AGENDA": {
+      "TITLE": "Agenda da secretaria"
+    },
+    "SECRETARIAT_VISITORS": {
+      "TITLE": "Gestão de visitantes"
+    },
+    "SECRETARIAT_ATTENDANCE": {
+      "TITLE": "Presença nos cultos"
+    },
+    "SECRETARIAT_DOCUMENTS": {
+      "TITLE": "Gestão de documentos"
+    },
+    "SECRETARIAT_SCHEDULES": {
+      "TITLE": "Escalas ministeriais"
+    }
   }
 }

@@ -113,6 +113,7 @@ test.describe('Finance module', () => {
       description,
       amount: '200',
       memberId: member.id,
+      memberSearch: 'FIN03',
     });
     await entries.saveEntryForm();
 

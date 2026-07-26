@@ -67,6 +67,22 @@ export function e2eAnnouncementTitle(prefix = 'E2E Aviso'): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
+export function e2eSocialProjectName(prefix = 'E2E Projeto'): string {
+  return `${prefix} ${e2eSuffix()}`;
+}
+
+export function e2eMissionFieldName(prefix = 'E2E Campo'): string {
+  return `${prefix} ${e2eSuffix()}`;
+}
+
+export function e2eConstructionProjectName(prefix = 'E2E Obra'): string {
+  return `${prefix} ${e2eSuffix()}`;
+}
+
+export function tutorialLabel(prefix: string): string {
+  return `TUTORIAL ${prefix} ${e2eSuffix()}`;
+}
+
 export function localDateTimeInput(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');

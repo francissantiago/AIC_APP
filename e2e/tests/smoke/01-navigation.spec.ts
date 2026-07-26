@@ -2,12 +2,15 @@ import { test, expect } from '../../fixtures/authenticated.fixture';
 import { AppShellPage } from '../../pages/app-shell.page';
 
 const topLevelRoutes = [
+  { testId: 'nav-dashboard', path: '/dashboard' },
   { testId: 'nav-announcements', path: '/announcements' },
   { testId: 'nav-users', path: '/users' },
   { testId: 'nav-roles', path: '/roles' },
   { testId: 'nav-members', path: '/members' },
+  { testId: 'nav-membership-cards', path: '/membership-cards' },
   { testId: 'nav-families', path: '/families' },
   { testId: 'nav-ministries', path: '/ministries' },
+  { testId: 'nav-social-projects', path: '/social-projects' },
 ] as const;
 
 const submenuGroups = [
@@ -30,6 +33,21 @@ const submenuGroups = [
     links: [
       { testId: 'nav-small-groups', path: '/small-groups' },
       { testId: 'nav-small-groups-reports', path: '/small-groups/reports' },
+    ],
+  },
+  {
+    toggle: 'nav-toggle-missions',
+    links: [
+      { testId: 'nav-missions', path: '/missions' },
+      { testId: 'nav-missions-fields', path: '/missions/fields' },
+      { testId: 'nav-missions-booklets', path: '/missions/booklets' },
+    ],
+  },
+  {
+    toggle: 'nav-toggle-constructions',
+    links: [
+      { testId: 'nav-constructions', path: '/constructions' },
+      { testId: 'nav-constructions-updates', path: '/constructions/updates' },
     ],
   },
   {
@@ -69,6 +87,14 @@ test.describe('Navigation smoke', () => {
       await expect(shell.mainContent).toBeVisible();
     });
   }
+
+  test('loads /families/birthdays', async ({ page }) => {
+    await page.goto('/families/birthdays');
+    const shell = new AppShellPage(page);
+    await shell.expectLoaded();
+    await expect(page).toHaveURL(/\/families\/birthdays$/);
+    await expect(page.getByTestId('family-birthdays-report')).toBeVisible();
+  });
 
   for (const group of submenuGroups) {
     for (const link of group.links) {

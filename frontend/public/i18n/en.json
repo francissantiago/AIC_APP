@@ -1711,5 +1711,91 @@
     "BIRTH_DATE": "Birth date",
     "STATUS": "Status",
     "BACK_HOME": "Back to home"
+  },
+  "HELP_VIDEOS": {
+    "AUTH_LOGIN": {
+      "TITLE": "How to sign in"
+    },
+    "DASHBOARD": {
+      "TITLE": "Dashboard overview"
+    },
+    "ANNOUNCEMENTS_BOARD": {
+      "TITLE": "Announcements board"
+    },
+    "MEMBERS_LIST": {
+      "TITLE": "Members list"
+    },
+    "FAMILIES_LIST": {
+      "TITLE": "Families list"
+    },
+    "FAMILIES_BIRTHDAYS": {
+      "TITLE": "Birthdays report"
+    },
+    "MINISTRIES_LIST": {
+      "TITLE": "Ministries list"
+    },
+    "USERS_LIST": {
+      "TITLE": "Users management"
+    },
+    "ROLES_CATALOG": {
+      "TITLE": "Roles and permissions"
+    },
+    "PROFILE": {
+      "TITLE": "User profile"
+    },
+    "MEMBERSHIP_CARDS": {
+      "TITLE": "Membership cards"
+    },
+    "SOCIAL_PROJECTS_LIST": {
+      "TITLE": "Social projects"
+    },
+    "MISSIONS_ASSIGNMENTS": {
+      "TITLE": "Mission assignments"
+    },
+    "CONSTRUCTIONS_PROJECTS": {
+      "TITLE": "Construction projects"
+    },
+    "EBD_CLASSES": {
+      "TITLE": "EBD classes"
+    },
+    "EBD_FREQUENCY_REPORT": {
+      "TITLE": "EBD frequency report"
+    },
+    "SMALL_GROUPS_LIST": {
+      "TITLE": "Small groups list"
+    },
+    "SMALL_GROUPS_FREQUENCY_REPORT": {
+      "TITLE": "Small groups frequency report"
+    },
+    "CONGREGATION_ACTIVE": {
+      "TITLE": "Active congregation"
+    },
+    "CONGREGATIONS_BRANCHES": {
+      "TITLE": "Congregation branches"
+    },
+    "FINANCE_ENTRIES": {
+      "TITLE": "Financial entries"
+    },
+    "FINANCE_ASSETS": {
+      "TITLE": "Assets and patrimony"
+    },
+    "FINANCE_REPORTS": {
+      "TITLE": "Financial reports"
+    },
+    "SECRETARIAT_AGENDA": {
+      "TITLE": "Secretariat calendar"
+    },
+    "SECRETARIAT_VISITORS": {
+      "TITLE": "Visitors management"
+    },
+    "SECRETARIAT_ATTENDANCE": {
+      "TITLE": "Service attendance"
+    },
+    "SECRETARIAT_DOCUMENTS": {
+      "TITLE": "Document management"
+    },
+    "SECRETARIAT_SCHEDULES": {
+      "TITLE": "Ministry schedules"
+    }
   }
 }
