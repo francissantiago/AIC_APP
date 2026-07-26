@@ -2,6 +2,9 @@
 
 FROM node:20-alpine AS builder
 
+# ng build consome bastante heap; evita OOM em Docker Desktop com memória limitada
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 WORKDIR /app
 
 COPY frontend/package.json frontend/package-lock.json ./

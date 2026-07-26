@@ -2,6 +2,9 @@
 
 FROM node:20-alpine AS builder
 
+# Nest build consome bastante heap; evita OOM em Docker Desktop com memória limitada
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./
