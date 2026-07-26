@@ -25,6 +25,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { SecretariatModule } from './modules/secretariat/secretariat.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
 import { SmallGroupsModule } from './modules/small-groups/small-groups.module';
+import { SocialProjectsModule } from './modules/social-projects/social-projects.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -63,6 +64,7 @@ import { UsersModule } from './modules/users/users.module';
     ConstructionsModule,
     ClassesModule,
     SmallGroupsModule,
+    SocialProjectsModule,
     SchedulesModule,
     CongregationsModule,
     FinanceModule,

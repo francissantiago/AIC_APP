@@ -1,0 +1,31 @@
+<section class="w-full">
+  <div class="mb-4">
+    <h1 class="text-xl font-semibold text-slate-900">{{ 'SOCIAL_PROJECTS.TITLE' | translate }}</h1>
+    <p class="text-sm text-slate-600">{{ 'SOCIAL_PROJECTS.DESCRIPTION' | translate }}</p>
+  </div>
+
+  <nav
+    class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-2"
+    [attr.aria-label]="'SOCIAL_PROJECTS.TABS' | translate"
+  >
+    <a
+      routerLink="/social-projects"
+      routerLinkActive="border-slate-600 text-slate-900"
+      [routerLinkActiveOptions]="{ exact: true }"
+      data-testid="social-projects-tab-projects"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'SOCIAL_PROJECTS.PROJECTS_TITLE' | translate }}
+    </a>
+    <a
+      routerLink="/social-projects/sessions"
+      routerLinkActive="border-slate-600 text-slate-900"
+      data-testid="social-projects-tab-sessions"
+      class="rounded-t-md border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+    >
+      {{ 'SOCIAL_PROJECTS.SESSIONS_TITLE' | translate }}
+    </a>
+  </nav>
+
+  <router-outlet />
+</section>

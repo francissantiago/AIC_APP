@@ -1,0 +1,242 @@
+<section class="w-full">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h2 class="text-lg font-semibold text-slate-900">
+        {{ 'SOCIAL_PROJECTS.LIST_TITLE' | translate }}
+      </h2>
+    </div>
+    @if (canWrite()) {
+      <button
+        type="button"
+        data-testid="social-project-create-btn"
+        class="inline-flex items-center rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600"
+        (click)="openCreate()"
+      >
+        {{ 'COMMON.CREATE' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-dialog
+    [(open)]="showForm"
+    [title]="
+      (editingId() ? 'SOCIAL_PROJECTS.EDIT_TITLE' : 'SOCIAL_PROJECTS.CREATE_TITLE') | translate
+    "
+    (closed)="closeForm()"
+  >
+    @if (showForm()) {
+      <app-social-project-form
+        [projectId]="editingId()"
+        (saved)="afterSave()"
+        (cancelled)="closeForm()"
+      />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="managingMembersId() !== null"
+    [title]="'SOCIAL_PROJECTS.MANAGE_MEMBERS' | translate"
+    (closed)="closeMembers()"
+  >
+    @if (managingMembersId(); as projectId) {
+      <app-social-project-members-panel [projectId]="projectId" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="managingSessionsId() !== null"
+    [title]="'SOCIAL_PROJECTS.MANAGE_SESSIONS' | translate"
+    (closed)="closeSessions()"
+  >
+    @if (managingSessionsId(); as projectId) {
+      <app-social-project-sessions-panel [projectId]="projectId" />
+    }
+  </app-dialog>
+
+  <app-dialog
+    [open]="pendingDeleteId() !== null"
+    [title]="'COMMON.CONFIRM_DELETE' | translate"
+    (closed)="cancelDelete()"
+  >
+    <p>{{ 'SOCIAL_PROJECTS.CONFIRM_DELETE' | translate }}</p>
+    <div class="mt-4 flex gap-2">
+      <button
+        type="button"
+        class="rounded-md bg-red-700 px-3 py-1.5 text-white hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="confirmDelete()"
+      >
+        {{ 'COMMON.YES' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+        [disabled]="deleting()"
+        (click)="cancelDelete()"
+      >
+        {{ 'COMMON.NO' | translate }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <form
+    [formGroup]="filterForm"
+    class="mb-4 grid gap-3 md:grid-cols-3"
+    [attr.aria-label]="'COMMON.FILTER' | translate"
+  >
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.SEARCH' | translate }}</span>
+      <input
+        type="search"
+        formControlName="q"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.FILTER_STATUS' | translate }}</span>
+      <select
+        formControlName="status"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.FILTER_CATEGORY' | translate }}</span>
+      <select
+        formControlName="category"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        <option value="">{{ 'COMMON.FILTER' | translate }}</option>
+        @for (category of categories; track category) {
+          <option [value]="category">{{ categoryLabelKey(category) | translate }}</option>
+        }
+      </select>
+    </label>
+  </form>
+
+  @if (feedback(); as messageKey) {
+    <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
+      {{ messageKey | translate }}
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="text-sm text-red-700" role="alert">{{ 'SOCIAL_PROJECTS.LOAD_ERROR' | translate }}</p>
+  } @else if (projects().length === 0) {
+    <p class="text-sm text-slate-600">{{ 'SOCIAL_PROJECTS.EMPTY' | translate }}</p>
+  } @else {
+    <div
+      class="overflow-x-auto rounded-md border border-slate-200"
+      data-testid="social-project-table"
+    >
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SOCIAL_PROJECTS.NAME' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SOCIAL_PROJECTS.CATEGORY' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SOCIAL_PROJECTS.STATUS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SOCIAL_PROJECTS.LEADER' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SOCIAL_PROJECTS.MEMBERS' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'SOCIAL_PROJECTS.BUDGET' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (project of projects(); track project.id) {
+            <tr
+              class="border-t border-slate-100"
+              [attr.data-testid]="'social-project-row-' + project.id"
+            >
+              <td class="px-3 py-2 text-slate-900">{{ project.name }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ categoryLabelKey(project.category) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">
+                {{ statusLabelKey(project.status) | translate }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ project.leaderFullName || '—' }}</td>
+              <td class="px-3 py-2 text-slate-700">
+                {{
+                  'SOCIAL_PROJECTS.MEMBERS_COUNT' | translate: { count: project.membersCount ?? 0 }
+                }}
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ budgetSummary(project) }}</td>
+              <td class="px-3 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openMembers(project.id)"
+                  >
+                    {{ 'SOCIAL_PROJECTS.MANAGE_MEMBERS' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    (click)="openSessions(project.id)"
+                  >
+                    {{ 'SOCIAL_PROJECTS.MANAGE_SESSIONS' | translate }}
+                  </button>
+                  @if (canWrite()) {
+                    <button
+                      type="button"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openEdit(project.id)"
+                    >
+                      {{ 'COMMON.EDIT' | translate }}
+                    </button>
+                    <button type="button" (click)="askDelete(project.id)">
+                      {{ 'COMMON.DELETE' | translate }}
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+      <p>{{ 'COMMON.PAGE' | translate }} {{ page() }} / {{ totalPages() }}</p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() <= 1"
+          (click)="previousPage()"
+        >
+          {{ 'COMMON.PREVIOUS' | translate }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+          [disabled]="page() >= totalPages()"
+          (click)="nextPage()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</section>

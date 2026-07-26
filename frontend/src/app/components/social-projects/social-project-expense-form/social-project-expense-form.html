@@ -1,0 +1,93 @@
+<section class="w-full" data-testid="social-project-expense-form">
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.AMOUNT' | translate }}</span>
+      <input
+        type="number"
+        formControlName="amount"
+        min="0.01"
+        step="0.01"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [attr.aria-invalid]="fieldInvalid('amount')"
+      />
+      @if (fieldInvalid('amount')) {
+        <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+      }
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.ENTRY_DATE' | translate }}</span>
+      <input
+        type="date"
+        formControlName="entryDate"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [attr.aria-invalid]="fieldInvalid('entryDate')"
+      />
+      @if (fieldInvalid('entryDate')) {
+        <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+      }
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.DESCRIPTION_FIELD' | translate }}</span>
+      <input
+        type="text"
+        formControlName="description"
+        maxlength="255"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [attr.aria-invalid]="fieldInvalid('description')"
+      />
+      @if (fieldInvalid('description')) {
+        <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+      }
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.PAYMENT_METHOD' | translate }}</span>
+      <select
+        formControlName="paymentMethod"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      >
+        @for (method of paymentMethods; track method) {
+          <option [value]="method">{{ paymentLabelKey(method) | translate }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.SESSION_NOTES' | translate }}</span>
+      <textarea
+        formControlName="notes"
+        rows="2"
+        maxlength="500"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      ></textarea>
+    </label>
+
+    <div class="mt-2 flex flex-wrap gap-3">
+      <button
+        type="submit"
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+        [disabled]="saving()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        (click)="cancelled.emit()"
+      >
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+    </div>
+  </form>
+</section>

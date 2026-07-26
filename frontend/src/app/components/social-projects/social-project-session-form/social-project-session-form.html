@@ -1,0 +1,86 @@
+<section class="w-full" data-testid="social-project-session-form">
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.SESSION_DATE' | translate }}</span>
+      <input
+        type="date"
+        formControlName="sessionDate"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [attr.aria-invalid]="fieldInvalid('sessionDate')"
+      />
+      @if (fieldInvalid('sessionDate')) {
+        <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+      }
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.SESSION_TITLE' | translate }}</span>
+      <input
+        type="text"
+        formControlName="title"
+        maxlength="120"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [attr.aria-invalid]="fieldInvalid('title')"
+      />
+      @if (fieldInvalid('title')) {
+        <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+      }
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.SESSION_THEME' | translate }}</span>
+      <input
+        type="text"
+        formControlName="theme"
+        maxlength="255"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700">
+      <span>{{ 'SOCIAL_PROJECTS.LOCATION' | translate }}</span>
+      <input
+        type="text"
+        formControlName="location"
+        maxlength="255"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+      <span>{{ 'SOCIAL_PROJECTS.SESSION_NOTES' | translate }}</span>
+      <textarea
+        formControlName="notes"
+        rows="3"
+        maxlength="500"
+        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      ></textarea>
+    </label>
+
+    <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
+      <button
+        type="submit"
+        class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+        [disabled]="saving()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        (click)="cancelled.emit()"
+      >
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+    </div>
+  </form>
+</section>

@@ -41,12 +41,11 @@ export const financePermissionGuard = createReadPermissionGuard('finance:read');
 export const secretariatPermissionGuard = createReadPermissionGuard('secretariat:read');
 export const assetsPermissionGuard = createReadPermissionGuard('assets:read');
 export const ministriesPermissionGuard = createReadPermissionGuard('ministries:read');
+export const socialProjectsPermissionGuard = createReadPermissionGuard('social-projects:read');
 export const missionsPermissionGuard = createReadPermissionGuard('missions:read');
 export const constructionsPermissionGuard = createReadPermissionGuard('constructions:read');
 export const classesPermissionGuard = createReadPermissionGuard('classes:read');
 export const smallGroupsPermissionGuard = createReadPermissionGuard('small-groups:read');
 export const schedulesPermissionGuard = createReadPermissionGuard('schedules:read');
 export const announcementsPermissionGuard = createReadPermissionGuard('announcements:read');
-export const membershipCardsPermissionGuard = createReadPermissionGuard(
-  'membership-cards:read',
-);
+export const membershipCardsPermissionGuard = createReadPermissionGuard('membership-cards:read');

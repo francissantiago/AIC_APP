@@ -129,8 +129,18 @@ export class NotificationsBell implements OnInit {
         return 'NOTIFICATIONS.TYPES.CONSTRUCTION_STATUS_CHANGE';
       case 'construction_budget_alert':
         return 'NOTIFICATIONS.TYPES.CONSTRUCTION_BUDGET_ALERT';
-      default:
-        return 'NOTIFICATIONS.TYPE_GENERIC';
+      case 'social_project_session_created':
+        return 'NOTIFICATIONS.TYPES.SOCIAL_PROJECT_SESSION_CREATED';
+      case 'social_project_status_change':
+        return 'NOTIFICATIONS.TYPES.SOCIAL_PROJECT_STATUS_CHANGE';
+      case 'social_project_budget_alert':
+        return 'NOTIFICATIONS.TYPES.SOCIAL_PROJECT_BUDGET_ALERT';
+      case 'social_project_participant_added':
+        return 'NOTIFICATIONS.TYPES.SOCIAL_PROJECT_PARTICIPANT_ADDED';
+      default: {
+        const _exhaustive: never = type;
+        return _exhaustive;
+      }
     }
   }
 
@@ -173,6 +183,12 @@ export class NotificationsBell implements OnInit {
       case 'construction_status_change':
       case 'construction_budget_alert':
         return '/constructions';
+      case 'social_project_session_created':
+        return '/social-projects/sessions';
+      case 'social_project_status_change':
+      case 'social_project_budget_alert':
+      case 'social_project_participant_added':
+        return '/social-projects';
       default:
         return null;
     }

@@ -21,7 +21,11 @@ export type NotificationWsType =
   | 'member_birthday'
   | 'construction_update'
   | 'construction_status_change'
-  | 'construction_budget_alert';
+  | 'construction_budget_alert'
+  | 'social_project_session_created'
+  | 'social_project_status_change'
+  | 'social_project_budget_alert'
+  | 'social_project_participant_added';
 
 export interface NotificationNewPayload {
   id: string;

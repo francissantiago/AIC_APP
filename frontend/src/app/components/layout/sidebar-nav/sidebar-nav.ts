@@ -25,6 +25,7 @@ export type SidebarNavItem = {
     | 'membership-cards'
     | 'families'
     | 'ministries'
+    | 'social-projects'
     | 'missions'
     | 'constructions'
     | 'congregation';
@@ -115,6 +116,12 @@ export class SidebarNav {
       labelKey: 'NAV.MINISTRIES',
       icon: 'ministries',
       permission: 'ministries:read',
+    },
+    {
+      route: '/social-projects',
+      labelKey: 'NAV.SOCIAL_PROJECTS',
+      icon: 'social-projects',
+      permission: 'social-projects:read',
     },
   ];
 

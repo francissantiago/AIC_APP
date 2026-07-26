@@ -1,0 +1,200 @@
+<section class="w-full" data-testid="social-project-form">
+  @if (feedbackKey(); as key) {
+    <p
+      class="mb-4 rounded-md px-3 py-2 text-sm"
+      [class.bg-emerald-50]="key === 'SOCIAL_PROJECTS.SAVE_SUCCESS'"
+      [class.text-emerald-900]="key === 'SOCIAL_PROJECTS.SAVE_SUCCESS'"
+      [class.bg-red-50]="key !== 'SOCIAL_PROJECTS.SAVE_SUCCESS'"
+      [class.text-red-800]="key !== 'SOCIAL_PROJECTS.SAVE_SUCCESS'"
+      role="alert"
+    >
+      {{ key | translate }}
+    </p>
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+      @if (supportHint(); as hint) {
+        <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
+      }
+    </p>
+  }
+
+  <nav
+    class="mb-4 flex flex-wrap gap-2 border-b border-slate-200 pb-2"
+    [attr.aria-label]="'SOCIAL_PROJECTS.TABS' | translate"
+  >
+    <button
+      type="button"
+      class="rounded-t-md border-b-2 px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      [class.border-slate-600]="activeTab() === 'details'"
+      [class.text-slate-900]="activeTab() === 'details'"
+      [class.border-transparent]="activeTab() !== 'details'"
+      [class.text-slate-600]="activeTab() !== 'details'"
+      (click)="setTab('details')"
+    >
+      {{ 'SOCIAL_PROJECTS.TAB_DETAILS' | translate }}
+    </button>
+    <button
+      type="button"
+      class="rounded-t-md border-b-2 px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50"
+      [class.border-slate-600]="activeTab() === 'expenses'"
+      [class.text-slate-900]="activeTab() === 'expenses'"
+      [class.border-transparent]="activeTab() !== 'expenses'"
+      [class.text-slate-600]="activeTab() !== 'expenses'"
+      [disabled]="!canAccessExpensesTab()"
+      (click)="setTab('expenses')"
+    >
+      {{ 'SOCIAL_PROJECTS.TAB_EXPENSES' | translate }}
+    </button>
+  </nav>
+
+  @if (activeTab() === 'details') {
+    @if (loading()) {
+      <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+    } @else if (loadError()) {
+      <p class="text-sm text-red-700" role="alert">
+        {{ 'SOCIAL_PROJECTS.LOAD_ERROR' | translate }}
+      </p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
+        <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+          <span>{{ 'SOCIAL_PROJECTS.NAME' | translate }}</span>
+          <input
+            type="text"
+            formControlName="name"
+            maxlength="120"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.aria-invalid]="fieldInvalid('name')"
+          />
+          @if (fieldInvalid('name')) {
+            <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
+          }
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+          <span>{{ 'SOCIAL_PROJECTS.DESCRIPTION_FIELD' | translate }}</span>
+          <textarea
+            formControlName="description"
+            rows="3"
+            maxlength="255"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          ></textarea>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SOCIAL_PROJECTS.CATEGORY' | translate }}</span>
+          <select
+            formControlName="category"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            @for (category of categories; track category) {
+              <option [value]="category">{{ categoryLabelKey(category) | translate }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SOCIAL_PROJECTS.STATUS' | translate }}</span>
+          <select
+            formControlName="status"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ statusLabelKey(status) | translate }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SOCIAL_PROJECTS.LEADER' | translate }}</span>
+          <select
+            formControlName="leaderMemberId"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            <option value="">{{ 'SOCIAL_PROJECTS.LEADER_PLACEHOLDER' | translate }}</option>
+            @for (member of leaderOptions(); track member.id) {
+              <option [value]="member.id">{{ member.fullName }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SOCIAL_PROJECTS.DAY_OF_WEEK' | translate }}</span>
+          <select
+            formControlName="dayOfWeek"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            @for (day of daysOfWeek; track day) {
+              <option [value]="day">{{ dayLabelKey(day) | translate }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SOCIAL_PROJECTS.START_TIME' | translate }}</span>
+          <input
+            type="time"
+            formControlName="startTime"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+          <span>{{ 'SOCIAL_PROJECTS.LOCATION' | translate }}</span>
+          <input
+            type="text"
+            formControlName="location"
+            maxlength="255"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'SOCIAL_PROJECTS.BUDGET' | translate }}</span>
+          <input
+            type="number"
+            formControlName="budgetAmount"
+            min="0"
+            step="0.01"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          />
+        </label>
+
+        @if (isEditMode() && spentAmount(); as spent) {
+          <div class="text-sm text-slate-700">
+            <p>{{ 'SOCIAL_PROJECTS.SPENT' | translate }}: {{ spent }}</p>
+            @if (budgetUsagePercent() != null) {
+              <p>
+                {{ 'SOCIAL_PROJECTS.BUDGET_USAGE' | translate: { percent: budgetUsagePercent() } }}
+              </p>
+              <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                <div class="h-full bg-slate-600" [style.width.%]="budgetUsagePercent() ?? 0"></div>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
+          <button
+            type="submit"
+            class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
+            [disabled]="saving()"
+          >
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            (click)="cancelled.emit()"
+          >
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </form>
+    }
+  } @else if (activeTab() === 'expenses' && resolvedProjectId(); as id) {
+    <app-social-project-expenses-list [projectId]="id" />
+  }
+</section>

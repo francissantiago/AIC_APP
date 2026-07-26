@@ -17,6 +17,7 @@ import {
   schedulesPermissionGuard,
   secretariatPermissionGuard,
   smallGroupsPermissionGuard,
+  socialProjectsPermissionGuard,
   usersPermissionGuard,
 } from '@guards/role-guard';
 
@@ -114,9 +115,9 @@ export const routes: Routes = [
         path: 'membership-cards',
         canActivate: [membershipCardsPermissionGuard],
         loadComponent: () =>
-          import(
-            '@components/membership-cards/membership-cards-page/membership-cards-page'
-          ).then((m) => m.MembershipCardsPage),
+          import('@components/membership-cards/membership-cards-page/membership-cards-page').then(
+            (m) => m.MembershipCardsPage,
+          ),
       },
       {
         path: 'families/birthdays',
@@ -150,6 +151,37 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'social-projects',
+        canActivate: [socialProjectsPermissionGuard],
+        loadComponent: () =>
+          import('@components/social-projects/social-projects-page/social-projects-page').then(
+            (m) => m.SocialProjectsPage,
+          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('@components/social-projects/social-projects-list/social-projects-list').then(
+                (m) => m.SocialProjectsList,
+              ),
+          },
+          {
+            path: 'sessions',
+            loadComponent: () =>
+              import('@components/social-projects/social-project-sessions-list/social-project-sessions-list').then(
+                (m) => m.SocialProjectSessionsList,
+              ),
+          },
+          {
+            path: 'sessions/:sessionId/attendance',
+            loadComponent: () =>
+              import('@components/social-projects/social-project-attendance/social-project-attendance').then(
+                (m) => m.SocialProjectAttendance,
+              ),
+          },
+        ],
+      },
+      {
         path: 'missions',
         canActivate: [missionsPermissionGuard],
         loadComponent: () =>
@@ -158,9 +190,9 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import(
-                '@components/missions/mission-assignments-list/mission-assignments-list'
-              ).then((m) => m.MissionAssignmentsList),
+              import('@components/missions/mission-assignments-list/mission-assignments-list').then(
+                (m) => m.MissionAssignmentsList,
+              ),
           },
           {
             path: 'fields',
@@ -182,16 +214,16 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import(
-                '@components/constructions/construction-projects-list/construction-projects-list'
-              ).then((m) => m.ConstructionProjectsList),
+              import('@components/constructions/construction-projects-list/construction-projects-list').then(
+                (m) => m.ConstructionProjectsList,
+              ),
           },
           {
             path: 'updates',
             loadComponent: () =>
-              import(
-                '@components/constructions/construction-updates-list/construction-updates-list'
-              ).then((m) => m.ConstructionUpdatesList),
+              import('@components/constructions/construction-updates-list/construction-updates-list').then(
+                (m) => m.ConstructionUpdatesList,
+              ),
           },
         ],
       },
