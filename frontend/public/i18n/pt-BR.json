@@ -1538,6 +1538,10 @@
       "CONGREGATION_MISMATCH": "Evento e ministério devem pertencer à mesma congregação.",
       "ASSIGNMENT_CONFLICT": "Já existe uma atribuição deste membro neste ministério para o evento.",
       "INVALID_PERIOD": "Período inválido: from deve ser ≤ to e o intervalo máximo é de 92 dias."
+    },
+    "SETUP": {
+      "ALREADY_COMPLETED": "A configuração inicial já foi concluída.",
+      "ADMIN_ROLE_MISSING": "A role ADMIN não foi encontrada. Execute novamente as migrations do banco."
     }
   },
   "SCHEDULES": {
@@ -1820,5 +1824,43 @@
     "SECRETARIAT_SCHEDULES": {
       "TITLE": "Escalas ministeriais"
     }
+  },
+  "SETUP": {
+    "TITLE": "Configuração inicial",
+    "DESCRIPTION": "Crie o administrador principal e informe os dados da congregação matriz. Este assistente é executado uma única vez.",
+    "STEP_ADMIN": "Administrador",
+    "STEP_CONGREGATION": "Congregação",
+    "STEP_CONFIRM": "Revisão",
+    "ADMIN_USERNAME": "Usuário",
+    "ADMIN_USERNAME_INVALID": "Use de 3 a 50 caracteres: letras, números, ponto, hífen ou underscore.",
+    "ADMIN_EMAIL": "E-mail",
+    "ADMIN_EMAIL_INVALID": "Informe um e-mail válido.",
+    "ADMIN_FULL_NAME": "Nome completo",
+    "ADMIN_FULL_NAME_REQUIRED": "O nome completo é obrigatório.",
+    "ADMIN_PASSWORD": "Senha",
+    "ADMIN_PASSWORD_HINT": "Use de 8 a 72 caracteres.",
+    "ADMIN_PASSWORD_CONFIRM": "Confirmar senha",
+    "CONGREGATION_NAME": "Nome da congregação",
+    "CONGREGATION_NAME_REQUIRED": "O nome da congregação é obrigatório.",
+    "CONGREGATION_TRADE_NAME": "Nome fantasia",
+    "CONGREGATION_DOCUMENT": "Documento",
+    "CONGREGATION_EMAIL": "E-mail",
+    "CONGREGATION_EMAIL_INVALID": "Informe um e-mail válido.",
+    "CONGREGATION_PHONE": "Telefone",
+    "CONGREGATION_ADDRESS": "Endereço",
+    "CONGREGATION_CITY": "Cidade",
+    "CONGREGATION_STATE": "Estado",
+    "CONGREGATION_ZIP": "CEP",
+    "CONGREGATION_FOUNDATION_DATE": "Data de fundação",
+    "CONGREGATION_WEBSITE": "Site",
+    "NEXT": "Continuar",
+    "BACK": "Voltar",
+    "SUBMIT": "Concluir configuração",
+    "LOADING": "Salvando...",
+    "SUCCESS": "Configuração concluída. Faça login com as credenciais que você acabou de criar.",
+    "ALREADY_CONFIGURED": "Esta instalação já está configurada",
+    "ERROR_ALREADY_DONE": "A configuração inicial já foi concluída. Faça login para continuar.",
+    "ERROR_GENERIC": "Não foi possível concluir a configuração. Tente novamente.",
+    "PASSWORD_MISMATCH": "As senhas não coincidem."
   }
 }

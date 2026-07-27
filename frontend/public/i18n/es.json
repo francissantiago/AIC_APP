@@ -1538,6 +1538,10 @@
       "CONGREGATION_MISMATCH": "El evento y el ministerio deben pertenecer a la misma congregación.",
       "ASSIGNMENT_CONFLICT": "Este miembro ya está asignado a este ministerio para el evento.",
       "INVALID_PERIOD": "Período inválido: from debe ser ≤ to y el intervalo máximo es de 92 días."
+    },
+    "SETUP": {
+      "ALREADY_COMPLETED": "La configuración inicial ya fue completada.",
+      "ADMIN_ROLE_MISSING": "No se encontró el rol ADMIN. Vuelva a ejecutar las migraciones de la base de datos."
     }
   },
   "SCHEDULES": {
@@ -1820,5 +1824,43 @@
     "SECRETARIAT_SCHEDULES": {
       "TITLE": "Escalas ministeriales"
     }
+  },
+  "SETUP": {
+    "TITLE": "Configuración inicial",
+    "DESCRIPTION": "Cree el administrador principal y complete los datos de la congregación matriz. Este asistente se ejecuta una sola vez.",
+    "STEP_ADMIN": "Administrador",
+    "STEP_CONGREGATION": "Congregación",
+    "STEP_CONFIRM": "Revisión",
+    "ADMIN_USERNAME": "Usuario",
+    "ADMIN_USERNAME_INVALID": "Use de 3 a 50 caracteres: letras, números, punto, guion o guion bajo.",
+    "ADMIN_EMAIL": "Correo electrónico",
+    "ADMIN_EMAIL_INVALID": "Introduzca un correo electrónico válido.",
+    "ADMIN_FULL_NAME": "Nombre completo",
+    "ADMIN_FULL_NAME_REQUIRED": "El nombre completo es obligatorio.",
+    "ADMIN_PASSWORD": "Contraseña",
+    "ADMIN_PASSWORD_HINT": "Use de 8 a 72 caracteres.",
+    "ADMIN_PASSWORD_CONFIRM": "Confirmar contraseña",
+    "CONGREGATION_NAME": "Nombre de la congregación",
+    "CONGREGATION_NAME_REQUIRED": "El nombre de la congregación es obligatorio.",
+    "CONGREGATION_TRADE_NAME": "Nombre comercial",
+    "CONGREGATION_DOCUMENT": "Documento",
+    "CONGREGATION_EMAIL": "Correo electrónico",
+    "CONGREGATION_EMAIL_INVALID": "Introduzca un correo electrónico válido.",
+    "CONGREGATION_PHONE": "Teléfono",
+    "CONGREGATION_ADDRESS": "Dirección",
+    "CONGREGATION_CITY": "Ciudad",
+    "CONGREGATION_STATE": "Estado",
+    "CONGREGATION_ZIP": "Código postal",
+    "CONGREGATION_FOUNDATION_DATE": "Fecha de fundación",
+    "CONGREGATION_WEBSITE": "Sitio web",
+    "NEXT": "Continuar",
+    "BACK": "Volver",
+    "SUBMIT": "Finalizar configuración",
+    "LOADING": "Guardando...",
+    "SUCCESS": "Configuración completada. Inicie sesión con las credenciales que acaba de crear.",
+    "ALREADY_CONFIGURED": "Esta instalación ya está configurada",
+    "ERROR_ALREADY_DONE": "La configuración inicial ya fue completada. Inicie sesión para continuar.",
+    "ERROR_GENERIC": "No se pudo completar la configuración. Inténtelo de nuevo.",
+    "PASSWORD_MISMATCH": "Las contraseñas no coinciden."
   }
 }

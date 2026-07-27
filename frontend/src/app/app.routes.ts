@@ -20,6 +20,8 @@ import {
   socialProjectsPermissionGuard,
   usersPermissionGuard,
 } from '@guards/role-guard';
+import { setupCompletedGuard } from '@guards/setup-completed-guard';
+import { setupRequiredGuard } from '@guards/setup-required-guard';
 
 export const routes: Routes = [
   {
@@ -45,8 +47,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'setup',
+    canActivate: [setupRequiredGuard],
+    loadComponent: () =>
+      import('@components/setup/initial-setup/initial-setup').then((m) => m.InitialSetup),
+  },
+  {
     path: 'login',
-    canActivate: [guestGuard],
+    canActivate: [guestGuard, setupCompletedGuard],
     loadComponent: () => import('@components/auth/login/login').then((m) => m.Login),
   },
   {

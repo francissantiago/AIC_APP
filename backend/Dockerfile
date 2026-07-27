@@ -17,7 +17,8 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY backend/dist ./dist
 COPY deploy/scripts/backend-entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh \
+RUN sed -i 's/\r$//' /entrypoint.sh \
+  && chmod +x /entrypoint.sh \
   && mkdir -p /app/uploads \
   && chown -R node:node /app
 

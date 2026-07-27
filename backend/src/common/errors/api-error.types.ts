@@ -26,6 +26,9 @@ export const ApiErrorCode = {
   SYS_BAD_REQUEST: 'SYS.BAD_REQUEST',
   SYS_NOT_FOUND: 'SYS.NOT_FOUND',
 
+  SETUP_ALREADY_COMPLETED: 'SETUP.ALREADY_COMPLETED',
+  SETUP_ADMIN_ROLE_MISSING: 'SETUP.ADMIN_ROLE_MISSING',
+
   AUTH_INVALID_CREDENTIALS: 'AUTH.INVALID_CREDENTIALS',
   AUTH_FORBIDDEN: 'AUTH.FORBIDDEN',
   AUTH_INVALID_CURRENT_PASSWORD: 'AUTH.INVALID_CURRENT_PASSWORD',
@@ -260,6 +263,10 @@ export const ApiErrorMessage = {
     'Dados inválidos. Verifique os campos destacados.',
   [ApiErrorCode.SYS_BAD_REQUEST]: 'Requisição inválida.',
   [ApiErrorCode.SYS_NOT_FOUND]: 'Recurso não encontrado.',
+  [ApiErrorCode.SETUP_ALREADY_COMPLETED]:
+    'A configuração inicial já foi concluída. Faça login para continuar.',
+  [ApiErrorCode.SETUP_ADMIN_ROLE_MISSING]:
+    'O papel ADMIN não existe. Execute as migrations do banco antes de configurar o sistema.',
   [ApiErrorCode.AUTH_INVALID_CREDENTIALS]: 'Credenciais inválidas',
   [ApiErrorCode.AUTH_FORBIDDEN]: 'Perfil sem permissão para esta operação',
   [ApiErrorCode.AUTH_INVALID_CURRENT_PASSWORD]: 'Senha atual inválida',

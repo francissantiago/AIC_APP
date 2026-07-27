@@ -1538,6 +1538,10 @@
       "CONGREGATION_MISMATCH": "Event and ministry must belong to the same congregation.",
       "ASSIGNMENT_CONFLICT": "This member is already assigned to this ministry for the event.",
       "INVALID_PERIOD": "Invalid period: from must be ≤ to and the maximum range is 92 days."
+    },
+    "SETUP": {
+      "ALREADY_COMPLETED": "The initial setup has already been completed.",
+      "ADMIN_ROLE_MISSING": "The ADMIN role was not found. Run the database migrations again."
     }
   },
   "SCHEDULES": {
@@ -1820,5 +1824,43 @@
     "SECRETARIAT_SCHEDULES": {
       "TITLE": "Ministry schedules"
     }
+  },
+  "SETUP": {
+    "TITLE": "Initial setup",
+    "DESCRIPTION": "Create the main administrator and fill in the headquarters congregation data. This wizard runs only once.",
+    "STEP_ADMIN": "Administrator",
+    "STEP_CONGREGATION": "Congregation",
+    "STEP_CONFIRM": "Review",
+    "ADMIN_USERNAME": "Username",
+    "ADMIN_USERNAME_INVALID": "Use 3 to 50 characters: letters, numbers, dot, hyphen or underscore.",
+    "ADMIN_EMAIL": "Email",
+    "ADMIN_EMAIL_INVALID": "Enter a valid email address.",
+    "ADMIN_FULL_NAME": "Full name",
+    "ADMIN_FULL_NAME_REQUIRED": "Full name is required.",
+    "ADMIN_PASSWORD": "Password",
+    "ADMIN_PASSWORD_HINT": "Use 8 to 72 characters.",
+    "ADMIN_PASSWORD_CONFIRM": "Confirm password",
+    "CONGREGATION_NAME": "Congregation name",
+    "CONGREGATION_NAME_REQUIRED": "Congregation name is required.",
+    "CONGREGATION_TRADE_NAME": "Trade name",
+    "CONGREGATION_DOCUMENT": "Document",
+    "CONGREGATION_EMAIL": "Email",
+    "CONGREGATION_EMAIL_INVALID": "Enter a valid email address.",
+    "CONGREGATION_PHONE": "Phone",
+    "CONGREGATION_ADDRESS": "Address",
+    "CONGREGATION_CITY": "City",
+    "CONGREGATION_STATE": "State",
+    "CONGREGATION_ZIP": "ZIP code",
+    "CONGREGATION_FOUNDATION_DATE": "Foundation date",
+    "CONGREGATION_WEBSITE": "Website",
+    "NEXT": "Continue",
+    "BACK": "Back",
+    "SUBMIT": "Finish setup",
+    "LOADING": "Saving...",
+    "SUCCESS": "Setup completed. Sign in with the credentials you just created.",
+    "ALREADY_CONFIGURED": "This installation is already configured",
+    "ERROR_ALREADY_DONE": "The initial setup has already been completed. Sign in to continue.",
+    "ERROR_GENERIC": "Could not complete the setup. Please try again.",
+    "PASSWORD_MISMATCH": "Passwords do not match."
   }
 }

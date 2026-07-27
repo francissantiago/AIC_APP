@@ -11,7 +11,8 @@ import { DataSource } from 'typeorm';
  */
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('dotenv').config();
+  const dotenv = require('dotenv') as { config: () => void };
+  dotenv.config();
 } catch {
   // Docker injeta DB_* via environment; dotenv é opcional
 }
@@ -25,12 +26,8 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER ?? 'root',
   password: process.env.DB_PASSWORD ?? '',
   database: process.env.DB_NAME ?? 'db_aic',
-  entities: useDist
-    ? ['dist/**/*.entity.js']
-    : ['src/**/entities/*.entity.ts'],
-  migrations: useDist
-    ? ['dist/migrations/*.js']
-    : ['src/migrations/*.ts'],
+  entities: useDist ? ['dist/**/*.entity.js'] : ['src/**/entities/*.entity.ts'],
+  migrations: useDist ? ['dist/migrations/*.js'] : ['src/migrations/*.ts'],
   synchronize: false,
   logging: false,
 });

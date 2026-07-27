@@ -17,10 +17,10 @@ export class BackfillMemberBirthdayCalendarEvents1786000000002 implements Migrat
       LIMIT 1
     `)) as Array<{ id: string }>;
 
+    // Banco zerado: roles/permissions existem, mas usuários ainda não.
+    // Sync em runtime (MemberBirthdayCalendarSyncService) cobre membros futuros.
     if (authors.length === 0) {
-      throw new Error(
-        'Backfill de eventos de aniversário abortado: nenhum usuário ativo com secretariat:write.',
-      );
+      return;
     }
 
     const authorUserId = authors[0].id;

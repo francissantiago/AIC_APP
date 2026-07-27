@@ -1,0 +1,453 @@
+<section class="flex min-h-screen bg-slate-100">
+  <div
+    class="hidden border-r border-slate-200 bg-slate-100 md:flex md:w-[42%] md:flex-col md:justify-between md:px-10 md:py-12"
+  >
+    <p class="text-2xl font-semibold tracking-tight text-slate-900">
+      {{ 'APP.NAME' | translate }}
+    </p>
+    <div>
+      <p class="text-lg font-medium text-slate-800">{{ 'SETUP.TITLE' | translate }}</p>
+      <p class="mt-2 max-w-sm text-sm leading-relaxed text-slate-600">
+        {{ 'SETUP.DESCRIPTION' | translate }}
+      </p>
+    </div>
+    <p class="text-xs text-slate-500">{{ 'APP.TITLE' | translate }}</p>
+  </div>
+
+  <div class="relative flex w-full flex-1 items-center justify-center bg-white px-4 py-10 md:px-10">
+    <div class="absolute right-4 top-4 flex items-center gap-2 md:right-6 md:top-6">
+      <app-language-switcher />
+    </div>
+
+    <div class="w-full max-w-xl">
+      <div class="mb-6">
+        <h1 class="text-xl font-semibold text-slate-900">{{ 'SETUP.TITLE' | translate }}</h1>
+        <p class="mt-1 text-sm text-slate-600">{{ 'SETUP.DESCRIPTION' | translate }}</p>
+      </div>
+
+      <ol class="mb-8 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        @for (item of steps; track item.id; let index = $index) {
+          <li
+            class="flex items-center gap-2"
+            [class.text-slate-900]="index <= stepIndex()"
+            [class.font-medium]="index === stepIndex()"
+            [class.text-slate-500]="index > stepIndex()"
+            [attr.aria-current]="item.id === step() ? 'step' : null"
+          >
+            <span
+              class="flex h-6 w-6 items-center justify-center rounded-full border text-xs"
+              [class.border-slate-900]="index <= stepIndex()"
+              [class.bg-slate-900]="index === stepIndex()"
+              [class.text-white]="index === stepIndex()"
+              [class.border-slate-300]="index > stepIndex()"
+            >
+              {{ index + 1 }}
+            </span>
+            {{ item.labelKey | translate }}
+          </li>
+        }
+      </ol>
+
+      @if (succeeded()) {
+        <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
+          {{ 'SETUP.SUCCESS' | translate }}
+        </p>
+      } @else {
+        <form
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          class="space-y-6"
+          novalidate
+          data-testid="setup-form"
+          [attr.aria-label]="'SETUP.TITLE' | translate"
+        >
+          @if (step() === 'admin') {
+            <fieldset class="space-y-4" formGroupName="admin">
+              <legend class="text-sm font-semibold text-slate-900">
+                {{ 'SETUP.STEP_ADMIN' | translate }}
+              </legend>
+
+              <div class="flex flex-col gap-1">
+                <label for="setup-admin-username" class="text-sm font-medium text-slate-700">
+                  {{ 'SETUP.ADMIN_USERNAME' | translate }}
+                </label>
+                <input
+                  id="setup-admin-username"
+                  data-testid="setup-admin-username"
+                  type="text"
+                  formControlName="username"
+                  autocomplete="username"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [attr.aria-invalid]="adminFieldInvalid('username')"
+                  [attr.aria-describedby]="
+                    adminFieldInvalid('username') ? 'setup-admin-username-error' : null
+                  "
+                />
+                @if (adminFieldInvalid('username')) {
+                  <p id="setup-admin-username-error" class="text-sm text-red-700" role="alert">
+                    {{ 'SETUP.ADMIN_USERNAME_INVALID' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="setup-admin-email" class="text-sm font-medium text-slate-700">
+                  {{ 'SETUP.ADMIN_EMAIL' | translate }}
+                </label>
+                <input
+                  id="setup-admin-email"
+                  data-testid="setup-admin-email"
+                  type="email"
+                  formControlName="email"
+                  autocomplete="email"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [attr.aria-invalid]="adminFieldInvalid('email')"
+                  [attr.aria-describedby]="
+                    adminFieldInvalid('email') ? 'setup-admin-email-error' : null
+                  "
+                />
+                @if (adminFieldInvalid('email')) {
+                  <p id="setup-admin-email-error" class="text-sm text-red-700" role="alert">
+                    {{ 'SETUP.ADMIN_EMAIL_INVALID' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="setup-admin-full-name" class="text-sm font-medium text-slate-700">
+                  {{ 'SETUP.ADMIN_FULL_NAME' | translate }}
+                </label>
+                <input
+                  id="setup-admin-full-name"
+                  data-testid="setup-admin-full-name"
+                  type="text"
+                  formControlName="fullName"
+                  autocomplete="name"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [attr.aria-invalid]="adminFieldInvalid('fullName')"
+                  [attr.aria-describedby]="
+                    adminFieldInvalid('fullName') ? 'setup-admin-full-name-error' : null
+                  "
+                />
+                @if (adminFieldInvalid('fullName')) {
+                  <p id="setup-admin-full-name-error" class="text-sm text-red-700" role="alert">
+                    {{ 'SETUP.ADMIN_FULL_NAME_REQUIRED' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="setup-admin-password" class="text-sm font-medium text-slate-700">
+                  {{ 'SETUP.ADMIN_PASSWORD' | translate }}
+                </label>
+                <input
+                  id="setup-admin-password"
+                  data-testid="setup-admin-password"
+                  type="password"
+                  formControlName="password"
+                  autocomplete="new-password"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [attr.aria-invalid]="adminFieldInvalid('password')"
+                  [attr.aria-describedby]="
+                    adminFieldInvalid('password')
+                      ? 'setup-admin-password-error'
+                      : 'setup-admin-password-hint'
+                  "
+                />
+                @if (adminFieldInvalid('password')) {
+                  <p id="setup-admin-password-error" class="text-sm text-red-700" role="alert">
+                    {{ 'SETUP.ADMIN_PASSWORD_HINT' | translate }}
+                  </p>
+                } @else {
+                  <p id="setup-admin-password-hint" class="text-xs text-slate-500">
+                    {{ 'SETUP.ADMIN_PASSWORD_HINT' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label
+                  for="setup-admin-password-confirm"
+                  class="text-sm font-medium text-slate-700"
+                >
+                  {{ 'SETUP.ADMIN_PASSWORD_CONFIRM' | translate }}
+                </label>
+                <input
+                  id="setup-admin-password-confirm"
+                  data-testid="setup-admin-password-confirm"
+                  type="password"
+                  formControlName="passwordConfirm"
+                  autocomplete="new-password"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [attr.aria-invalid]="adminFieldInvalid('passwordConfirm') || passwordMismatch()"
+                  [attr.aria-describedby]="passwordMismatch() ? 'setup-password-mismatch' : null"
+                />
+                @if (passwordMismatch()) {
+                  <p id="setup-password-mismatch" class="text-sm text-red-700" role="alert">
+                    {{ 'SETUP.PASSWORD_MISMATCH' | translate }}
+                  </p>
+                }
+              </div>
+            </fieldset>
+          }
+
+          @if (step() === 'congregation') {
+            <fieldset class="space-y-4" formGroupName="congregation">
+              <legend class="text-sm font-semibold text-slate-900">
+                {{ 'SETUP.STEP_CONGREGATION' | translate }}
+              </legend>
+
+              <div class="flex flex-col gap-1">
+                <label for="setup-congregation-name" class="text-sm font-medium text-slate-700">
+                  {{ 'SETUP.CONGREGATION_NAME' | translate }}
+                </label>
+                <input
+                  id="setup-congregation-name"
+                  data-testid="setup-congregation-name"
+                  type="text"
+                  formControlName="name"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  [attr.aria-invalid]="congregationFieldInvalid('name')"
+                  [attr.aria-describedby]="
+                    congregationFieldInvalid('name') ? 'setup-congregation-name-error' : null
+                  "
+                />
+                @if (congregationFieldInvalid('name')) {
+                  <p id="setup-congregation-name-error" class="text-sm text-red-700" role="alert">
+                    {{ 'SETUP.CONGREGATION_NAME_REQUIRED' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="flex flex-col gap-1">
+                  <label
+                    for="setup-congregation-trade-name"
+                    class="text-sm font-medium text-slate-700"
+                  >
+                    {{ 'SETUP.CONGREGATION_TRADE_NAME' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-trade-name"
+                    type="text"
+                    formControlName="tradeName"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label
+                    for="setup-congregation-document"
+                    class="text-sm font-medium text-slate-700"
+                  >
+                    {{ 'SETUP.CONGREGATION_DOCUMENT' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-document"
+                    type="text"
+                    formControlName="document"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label for="setup-congregation-email" class="text-sm font-medium text-slate-700">
+                    {{ 'SETUP.CONGREGATION_EMAIL' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-email"
+                    type="email"
+                    formControlName="email"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    [attr.aria-invalid]="congregationFieldInvalid('email')"
+                    [attr.aria-describedby]="
+                      congregationFieldInvalid('email') ? 'setup-congregation-email-error' : null
+                    "
+                  />
+                  @if (congregationFieldInvalid('email')) {
+                    <p
+                      id="setup-congregation-email-error"
+                      class="text-sm text-red-700"
+                      role="alert"
+                    >
+                      {{ 'SETUP.CONGREGATION_EMAIL_INVALID' | translate }}
+                    </p>
+                  }
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label for="setup-congregation-phone" class="text-sm font-medium text-slate-700">
+                    {{ 'SETUP.CONGREGATION_PHONE' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-phone"
+                    type="tel"
+                    formControlName="phone"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="setup-congregation-address" class="text-sm font-medium text-slate-700">
+                  {{ 'SETUP.CONGREGATION_ADDRESS' | translate }}
+                </label>
+                <input
+                  id="setup-congregation-address"
+                  type="text"
+                  formControlName="address"
+                  class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                />
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-3">
+                <div class="flex flex-col gap-1">
+                  <label for="setup-congregation-city" class="text-sm font-medium text-slate-700">
+                    {{ 'SETUP.CONGREGATION_CITY' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-city"
+                    type="text"
+                    formControlName="city"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label for="setup-congregation-state" class="text-sm font-medium text-slate-700">
+                    {{ 'SETUP.CONGREGATION_STATE' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-state"
+                    type="text"
+                    formControlName="state"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label for="setup-congregation-zip" class="text-sm font-medium text-slate-700">
+                    {{ 'SETUP.CONGREGATION_ZIP' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-zip"
+                    type="text"
+                    formControlName="zipCode"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="flex flex-col gap-1">
+                  <label
+                    for="setup-congregation-foundation-date"
+                    class="text-sm font-medium text-slate-700"
+                  >
+                    {{ 'SETUP.CONGREGATION_FOUNDATION_DATE' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-foundation-date"
+                    type="date"
+                    formControlName="foundationDate"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label
+                    for="setup-congregation-website"
+                    class="text-sm font-medium text-slate-700"
+                  >
+                    {{ 'SETUP.CONGREGATION_WEBSITE' | translate }}
+                  </label>
+                  <input
+                    id="setup-congregation-website"
+                    type="url"
+                    formControlName="website"
+                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  />
+                </div>
+              </div>
+            </fieldset>
+          }
+
+          @if (step() === 'confirm') {
+            <div class="space-y-4">
+              <h2 class="text-sm font-semibold text-slate-900">
+                {{ 'SETUP.STEP_CONFIRM' | translate }}
+              </h2>
+              <dl class="divide-y divide-slate-200 rounded-md border border-slate-200">
+                @for (row of summary(); track row.labelKey) {
+                  <div class="flex justify-between gap-4 px-3 py-2 text-sm">
+                    <dt class="text-slate-600">{{ row.labelKey | translate }}</dt>
+                    <dd class="text-right font-medium text-slate-900">{{ row.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </div>
+          }
+
+          @if (alreadyConfigured()) {
+            <div class="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900" role="alert">
+              <p class="font-medium">{{ 'SETUP.ALREADY_CONFIGURED' | translate }}</p>
+              <p class="mt-1">{{ 'SETUP.ERROR_ALREADY_DONE' | translate }}</p>
+              <a
+                routerLink="/login"
+                class="mt-2 inline-block underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
+                {{ 'LEGAL.NAV_LOGIN' | translate }}
+              </a>
+            </div>
+          } @else if (serviceError(); as message) {
+            <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+              {{ message }}
+            </p>
+          } @else if (submitFailed()) {
+            <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+              {{ 'SETUP.ERROR_GENERIC' | translate }}
+            </p>
+          }
+
+          <div class="flex flex-col gap-3 sm:flex-row-reverse">
+            @if (step() === 'confirm') {
+              <button
+                type="submit"
+                data-testid="setup-submit"
+                class="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                [disabled]="loading()"
+              >
+                @if (loading()) {
+                  {{ 'SETUP.LOADING' | translate }}
+                } @else {
+                  {{ 'SETUP.SUBMIT' | translate }}
+                }
+              </button>
+            } @else {
+              <button
+                type="button"
+                data-testid="setup-next"
+                class="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 sm:w-auto"
+                (click)="next()"
+              >
+                {{ 'SETUP.NEXT' | translate }}
+              </button>
+            }
+
+            @if (step() !== 'admin') {
+              <button
+                type="button"
+                data-testid="setup-back"
+                class="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 sm:w-auto"
+                [disabled]="loading()"
+                (click)="back()"
+              >
+                {{ 'SETUP.BACK' | translate }}
+              </button>
+            }
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</section>

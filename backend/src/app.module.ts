@@ -24,6 +24,7 @@ import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { SecretariatModule } from './modules/secretariat/secretariat.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
+import { SetupModule } from './modules/setup/setup.module';
 import { SmallGroupsModule } from './modules/small-groups/small-groups.module';
 import { SocialProjectsModule } from './modules/social-projects/social-projects.module';
 import { UsersModule } from './modules/users/users.module';
@@ -49,6 +50,7 @@ import { UsersModule } from './modules/users/users.module';
     HealthModule,
     TasksModule,
     EventsModule,
+    SetupModule,
     AuthModule,
     PermissionsModule,
     RolesModule,
