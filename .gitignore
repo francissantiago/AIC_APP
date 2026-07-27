@@ -6,8 +6,9 @@ Thumbs.db
 # Dependencies
 **/node_modules/
 
-# Env / secrets
-**/.env
+# Deploy local (secrets / config do admin)
+deploy/.env
+deploy/app-config.json
 **/.env.local
 **/.env.*.local
 !.env.example
@@ -44,3 +45,4 @@ mcp/dist/
 .cursor/commands/
 .cursor/skills/
 docs
+mcp/.env

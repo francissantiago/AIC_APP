@@ -51,7 +51,7 @@ Detalhes em [frontend/README.md](frontend/README.md).
 
 ## Instalação com Docker (produção)
 
-Para instalar ou atualizar a stack completa (MySQL + API + frontend) com um único comando:
+Instalação **rápida** via artefatos pré-compilados da GitHub Release (padrão — **sem Node no servidor**):
 
 ```bash
 git clone https://github.com/francissantiago/AIC_APP.git /opt/aic-app
@@ -60,7 +60,12 @@ chmod +x deploy/scripts/aic-app.sh
 ./deploy/scripts/aic-app.sh install
 ```
 
-Atualizar para a última versão do GitHub:
+Configure:
+
+- **Backend:** `deploy/.env` (DB, JWT, CORS, etc.)
+- **Frontend:** `deploy/app-config.json` (endpoints da API — editável sem rebuild)
+
+Atualizar para a última release:
 
 ```bash
 ./deploy/scripts/aic-app.sh update
@@ -73,7 +78,9 @@ No Windows (PowerShell 7+):
 .\deploy\scripts\aic-app.ps1 -Action Update
 ```
 
-Guia completo para administradores: [deploy/scripts/README.md](deploy/scripts/README.md).
+Publicar release (maintainers): `git tag v1.0.x && git push origin v1.0.x`
+
+Guia completo: [deploy/scripts/README.md](deploy/scripts/README.md).
 
 ### MCP (Cursor)
 

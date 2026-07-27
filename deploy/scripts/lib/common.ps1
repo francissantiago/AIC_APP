@@ -149,6 +149,129 @@ function Invoke-AicCompose {
     }
 }
 
+function Get-AicGitHubRepoSlug {
+    $url = if ($env:GIT_REPO_URL) { $env:GIT_REPO_URL } else { 'https://github.com/francissantiago/AIC_APP.git' }
+    $url = $url -replace '\.git$', ''
+    return ($url -replace '.*github.com/', '')
+}
+
+function Initialize-AicAppConfig {
+    param([Parameter(Mandatory)] [string] $InstallDir)
+
+    $configFile = Join-Path $InstallDir 'deploy/app-config.json'
+    $exampleFile = Join-Path $InstallDir 'deploy/app-config.example.json'
+
+    if (-not (Test-Path $configFile)) {
+        if (-not (Test-Path $exampleFile)) {
+            Stop-AicWithError "Arquivo de exemplo não encontrado: $exampleFile"
+        }
+        Copy-Item -Path $exampleFile -Destination $configFile
+        Write-AicInfo "Criado $configFile a partir do exemplo."
+    }
+}
+
+function Invoke-AicDownloadReleaseArtifacts {
+    param([Parameter(Mandatory)] [string] $InstallDir)
+
+    $slug = Get-AicGitHubRepoSlug
+    Write-AicInfo "Buscando GitHub Release latest em $slug ..."
+
+    try {
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$slug/releases/latest"
+    }
+    catch {
+        Write-AicWarn 'Não foi possível consultar releases do GitHub.'
+        return $false
+    }
+
+    $backendAsset = $release.assets | Where-Object { $_.name -like 'aic-backend-*.tar.gz' } | Select-Object -First 1
+    $frontendAsset = $release.assets | Where-Object { $_.name -like 'aic-frontend-*.tar.gz' } | Select-Object -First 1
+
+    if (-not $backendAsset -or -not $frontendAsset) {
+        Write-AicWarn 'Release latest não contém artefatos aic-backend / aic-frontend.'
+        return $false
+    }
+
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ("aic-release-" + [Guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+
+    try {
+        Write-AicInfo "Baixando backend: $($backendAsset.name)"
+        Invoke-WebRequest -Uri $backendAsset.browser_download_url -OutFile (Join-Path $tempDir 'backend.tar.gz')
+        Write-AicInfo "Baixando frontend: $($frontendAsset.name)"
+        Invoke-WebRequest -Uri $frontendAsset.browser_download_url -OutFile (Join-Path $tempDir 'frontend.tar.gz')
+
+        New-Item -ItemType Directory -Force -Path (Join-Path $InstallDir 'backend') | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $InstallDir 'frontend/dist/aic-app-frontend') | Out-Null
+
+        tar -xzf (Join-Path $tempDir 'backend.tar.gz') -C (Join-Path $InstallDir 'backend')
+        tar -xzf (Join-Path $tempDir 'frontend.tar.gz') -C (Join-Path $InstallDir 'frontend/dist/aic-app-frontend')
+
+        if (-not (Test-Path (Join-Path $InstallDir 'backend/dist/main.js'))) {
+            Write-AicWarn 'backend/dist/main.js ausente após extração da release.'
+            return $false
+        }
+        if (-not (Test-Path (Join-Path $InstallDir 'frontend/dist/aic-app-frontend/browser/index.html'))) {
+            Write-AicWarn 'frontend/dist/aic-app-frontend/browser/index.html ausente após extração da release.'
+            return $false
+        }
+
+        Write-AicOk 'Artefatos da release extraídos.'
+        return $true
+    }
+    finally {
+        Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-AicHostNode {
+    return [bool](Get-Command node -ErrorAction SilentlyContinue) -and [bool](Get-Command npm -ErrorAction SilentlyContinue)
+}
+
+function Invoke-AicHostAppBuild {
+    param([Parameter(Mandatory)] [string] $InstallDir)
+
+    $prevNodeOptions = $env:NODE_OPTIONS
+    $env:NODE_OPTIONS = '--max-old-space-size=4096'
+    try {
+        Write-AicInfo 'Compilando backend no host...'
+        Push-Location (Join-Path $InstallDir 'backend')
+        try {
+            & npm ci
+            if ($LASTEXITCODE -ne 0) { Stop-AicWithError 'npm ci falhou no backend.' }
+            & npm run build
+            if ($LASTEXITCODE -ne 0) { Stop-AicWithError 'npm run build falhou no backend.' }
+        }
+        finally {
+            Pop-Location
+        }
+
+        Write-AicInfo 'Compilando frontend no host...'
+        Push-Location (Join-Path $InstallDir 'frontend')
+        try {
+            & npm ci --ignore-scripts
+            if ($LASTEXITCODE -ne 0) { Stop-AicWithError 'npm ci falhou no frontend.' }
+            & npm run build
+            if ($LASTEXITCODE -ne 0) { Stop-AicWithError 'npm run build falhou no frontend.' }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+    finally {
+        if ($null -ne $prevNodeOptions) { $env:NODE_OPTIONS = $prevNodeOptions } else { Remove-Item Env:NODE_OPTIONS -ErrorAction SilentlyContinue }
+    }
+
+    if (-not (Test-Path (Join-Path $InstallDir 'backend/dist/main.js'))) {
+        Stop-AicWithError 'backend/dist/main.js não encontrado após o build no host.'
+    }
+    if (-not (Test-Path (Join-Path $InstallDir 'frontend/dist/aic-app-frontend/browser/index.html'))) {
+        Stop-AicWithError 'frontend/dist/aic-app-frontend/browser/index.html não encontrado após o build no host.'
+    }
+
+    Write-AicOk 'Compilação no host concluída.'
+}
+
 function Invoke-AicComposeBuildAndUp {
     param(
         [Parameter(Mandatory)]
@@ -156,7 +279,32 @@ function Invoke-AicComposeBuildAndUp {
         [switch] $Pull
     )
 
-    Write-AicInfo 'Build sequencial (mysql → backend → web) para reduzir uso de memória...'
+    Import-AicEnvFile -FilePath (Join-Path $InstallDir 'deploy/.env')
+    Initialize-AicAppConfig -InstallDir $InstallDir
+
+    $useRelease = if ($env:AIC_USE_RELEASE) { $env:AIC_USE_RELEASE } else { '1' }
+    $fromSource = if ($env:AIC_BUILD_FROM_SOURCE) { $env:AIC_BUILD_FROM_SOURCE } else { '0' }
+    if ($fromSource -eq '1') {
+        $useRelease = '0'
+    }
+
+    if ($useRelease -eq '1' -and (Invoke-AicDownloadReleaseArtifacts -InstallDir $InstallDir)) {
+        $env:AIC_BACKEND_DOCKERFILE = 'backend/Dockerfile'
+        $env:AIC_FRONTEND_DOCKERFILE = 'frontend/Dockerfile'
+    }
+    elseif (Test-AicHostNode) {
+        Write-AicInfo 'Node detectado no host — compilando fora do Docker (estável no Windows/Docker Desktop).'
+        Invoke-AicHostAppBuild -InstallDir $InstallDir
+        $env:AIC_BACKEND_DOCKERFILE = 'backend/Dockerfile'
+        $env:AIC_FRONTEND_DOCKERFILE = 'frontend/Dockerfile'
+    }
+    else {
+        Write-AicWarn 'Node não encontrado no host — compilação dentro do Docker (exige ~6 GB de RAM no Docker Desktop).'
+        $env:AIC_BACKEND_DOCKERFILE = 'backend/Dockerfile.full'
+        $env:AIC_FRONTEND_DOCKERFILE = 'frontend/Dockerfile.full'
+    }
+
+    Write-AicInfo 'Empacotando imagens Docker (mysql → backend → web)...'
     $envFile = Join-Path $InstallDir 'deploy/.env'
     & docker compose --project-directory $InstallDir --env-file $envFile pull mysql
     if ($LASTEXITCODE -ne 0) {

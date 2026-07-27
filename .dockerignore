@@ -1,14 +1,17 @@
 **/node_modules
 **/.git
 **/.angular
-**/dist
 **/coverage
 **/.env
 **/.env.local
 deploy/.env
 backend/uploads
-e2e/test-results
-e2e/playwright-report
+e2e/
+mcp/
+docs/
 *.log
 .DS_Store
 Thumbs.db
+
+# dist é enviado ao Docker apenas no modo packaging (build no host).
+# No modo full (Dockerfile.full), o nest/ng limpam e recompilam.

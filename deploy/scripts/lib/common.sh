@@ -112,6 +112,121 @@ aic_compose() {
     docker compose --project-directory "${install_dir}" --env-file "${install_dir}/deploy/.env" "$@"
 }
 
+aic_host_node_available() {
+  command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1
+}
+
+aic_github_repo_slug() {
+  local url="${GIT_REPO_URL:-https://github.com/francissantiago/AIC_APP.git}"
+  url="${url%.git}"
+  printf '%s' "${url##*github.com/}"
+}
+
+aic_ensure_app_config() {
+  local install_dir="$1"
+  local config_file="${install_dir}/deploy/app-config.json"
+  local example_file="${install_dir}/deploy/app-config.example.json"
+
+  if [[ ! -f "${config_file}" ]]; then
+    if [[ ! -f "${example_file}" ]]; then
+      aic_die "Arquivo de exemplo não encontrado: ${example_file}"
+    fi
+    cp "${example_file}" "${config_file}"
+    aic_info "Criado ${config_file} a partir do exemplo."
+  fi
+}
+
+aic_download_release_artifacts() {
+  local install_dir="$1"
+  aic_require_command curl
+  aic_require_command tar
+
+  local slug release_json backend_url frontend_url tmpdir
+  slug="$(aic_github_repo_slug)"
+  tmpdir="$(mktemp -d)"
+
+  aic_info "Buscando GitHub Release latest em ${slug}..."
+  if ! release_json="$(curl -fsSL "https://api.github.com/repos/${slug}/releases/latest")"; then
+    aic_warn "Não foi possível consultar releases do GitHub."
+    rm -rf "${tmpdir}"
+    return 1
+  fi
+
+  if command -v node >/dev/null 2>&1; then
+    backend_url="$(node -e "
+      const release = JSON.parse(process.argv[1]);
+      const asset = (release.assets || []).find((item) => item.name.startsWith('aic-backend-'));
+      if (!asset) process.exit(2);
+      process.stdout.write(asset.browser_download_url);
+    " "${release_json}" 2>/dev/null || true)"
+    frontend_url="$(node -e "
+      const release = JSON.parse(process.argv[1]);
+      const asset = (release.assets || []).find((item) => item.name.startsWith('aic-frontend-'));
+      if (!asset) process.exit(2);
+      process.stdout.write(asset.browser_download_url);
+    " "${release_json}" 2>/dev/null || true)"
+  else
+    backend_url="$(printf '%s' "${release_json}" | grep -o 'https://[^"]*aic-backend-[^"]*\.tar\.gz' | head -n1)"
+    frontend_url="$(printf '%s' "${release_json}" | grep -o 'https://[^"]*aic-frontend-[^"]*\.tar\.gz' | head -n1)"
+  fi
+
+  if [[ -z "${backend_url}" || -z "${frontend_url}" ]]; then
+    aic_warn "Release latest não contém artefatos aic-backend / aic-frontend."
+    rm -rf "${tmpdir}"
+    return 1
+  fi
+
+  aic_info "Baixando backend: $(basename "${backend_url}")"
+  curl -fsSL -o "${tmpdir}/backend.tar.gz" "${backend_url}"
+  aic_info "Baixando frontend: $(basename "${frontend_url}")"
+  curl -fsSL -o "${tmpdir}/frontend.tar.gz" "${frontend_url}"
+
+  mkdir -p "${install_dir}/backend" "${install_dir}/frontend/dist/aic-app-frontend"
+  tar -xzf "${tmpdir}/backend.tar.gz" -C "${install_dir}/backend"
+  tar -xzf "${tmpdir}/frontend.tar.gz" -C "${install_dir}/frontend/dist/aic-app-frontend"
+  rm -rf "${tmpdir}"
+
+  if [[ ! -f "${install_dir}/backend/dist/main.js" ]]; then
+    aic_warn "backend/dist/main.js ausente após extração da release."
+    return 1
+  fi
+  if [[ ! -f "${install_dir}/frontend/dist/aic-app-frontend/browser/index.html" ]]; then
+    aic_warn "frontend/dist/aic-app-frontend/browser/index.html ausente após extração da release."
+    return 1
+  fi
+
+  aic_ok "Artefatos da release extraídos."
+  return 0
+}
+
+aic_host_app_build() {
+  local install_dir="$1"
+  export NODE_OPTIONS="--max-old-space-size=4096"
+
+  aic_info "Compilando backend no host..."
+  (
+    cd "${install_dir}/backend"
+    npm ci
+    npm run build
+  )
+
+  aic_info "Compilando frontend no host..."
+  (
+    cd "${install_dir}/frontend"
+    npm ci --ignore-scripts
+    npm run build
+  )
+
+  if [[ ! -f "${install_dir}/backend/dist/main.js" ]]; then
+    aic_die "backend/dist/main.js não encontrado após o build no host."
+  fi
+  if [[ ! -f "${install_dir}/frontend/dist/aic-app-frontend/browser/index.html" ]]; then
+    aic_die "frontend/dist/aic-app-frontend/browser/index.html não encontrado após o build no host."
+  fi
+
+  aic_ok "Compilação no host concluída."
+}
+
 aic_compose_build_and_up() {
   local install_dir="$1"
   shift
@@ -121,7 +236,30 @@ aic_compose_build_and_up() {
     shift
   fi
 
-  aic_info "Build sequencial (mysql → backend → web) para reduzir uso de memória..."
+  aic_load_env "${install_dir}/deploy/.env"
+  aic_ensure_app_config "${install_dir}"
+
+  local use_release="${AIC_USE_RELEASE:-1}"
+  local from_source="${AIC_BUILD_FROM_SOURCE:-0}"
+  if [[ "${from_source}" == "1" ]]; then
+    use_release=0
+  fi
+
+  if [[ "${use_release}" == "1" ]] && aic_download_release_artifacts "${install_dir}"; then
+    export AIC_BACKEND_DOCKERFILE="backend/Dockerfile"
+    export AIC_FRONTEND_DOCKERFILE="frontend/Dockerfile"
+  elif aic_host_node_available; then
+    aic_info "Node detectado no host — compilando fora do Docker (estável no Windows/Docker Desktop)."
+    aic_host_app_build "${install_dir}"
+    export AIC_BACKEND_DOCKERFILE="backend/Dockerfile"
+    export AIC_FRONTEND_DOCKERFILE="frontend/Dockerfile"
+  else
+    aic_warn "Node não encontrado no host — compilação dentro do Docker (exige ~6 GB de RAM)."
+    export AIC_BACKEND_DOCKERFILE="backend/Dockerfile.full"
+    export AIC_FRONTEND_DOCKERFILE="frontend/Dockerfile.full"
+  fi
+
+  aic_info "Empacotando imagens Docker (mysql → backend → web)..."
   aic_compose "${install_dir}" pull mysql || true
   aic_compose "${install_dir}" build "${pull_flag[@]}" backend
   aic_compose "${install_dir}" build "${pull_flag[@]}" web
