@@ -12,6 +12,7 @@ Uso: aic-app.sh [comando]
 Comandos:
   install   Instala ou prepara a stack Docker
   update    Atualiza a partir do GitHub e reinicia containers
+  install-from-source  Instala compilando localmente (ignora GitHub Release)
   status    Exibe status dos containers, versão Git e health
   stop      Para os containers
   start     Inicia os containers
@@ -23,6 +24,7 @@ EOF
 run_action() {
   case "$1" in
     install) aic_action_install ;;
+    install-from-source) AIC_BUILD_FROM_SOURCE=1 aic_action_install ;;
     update) aic_action_update ;;
     status) aic_action_status ;;
     stop) aic_action_stop ;;

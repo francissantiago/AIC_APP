@@ -1,11 +1,16 @@
 #Requires -Version 7.0
 param(
     [ValidateSet('Install', 'Update', 'Status', 'Stop', 'Start', 'Logs', 'Menu')]
-    [string] $Action = 'Menu'
+    [string] $Action = 'Menu',
+    [switch] $FromSource
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+if ($FromSource) {
+    $env:AIC_BUILD_FROM_SOURCE = '1'
+}
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $LibPath = Join-Path $ScriptDir 'lib/common.ps1'

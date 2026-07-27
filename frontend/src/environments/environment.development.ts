@@ -1,4 +1,8 @@
 import { APP_VERSION, APP_BUILT_AT } from './version.generated';
+import { applyRuntimeConfig as applyPatch } from './runtime-config';
+import type { AppRuntimeConfigPatch } from './runtime-config';
+
+export type { AppRuntimeConfigPatch } from './runtime-config';
 
 export const environment = {
   production: false,
@@ -11,3 +15,7 @@ export const environment = {
   /** Intervalo de polling para nova versão (ms). 0 = desabilitado. */
   versionCheckIntervalMs: 10 * 60 * 1000,
 };
+
+export function applyRuntimeConfig(patch: AppRuntimeConfigPatch): void {
+  applyPatch(environment, patch);
+}

@@ -7,15 +7,17 @@ Guia para administradores instalarem e atualizarem a aplicação **AIC — Admin
 | Recurso | Recomendado |
 |---------|-------------|
 | CPU | 2 vCPU |
-| RAM | **6 GB** no Docker Desktop (mínimo 4 GB) |
+| RAM | 4 GB no Docker Desktop |
 | Disco | 10 GB livres |
 | Software | Docker 24+, Docker Compose v2, Git |
-| Tempo 1ª instalação | ~15–30 min (build sequencial backend → frontend) |
+| Tempo 1ª instalação | **~3–8 min** com GitHub Release (padrão); compilação local demora mais |
 
 - **Linux/macOS:** Bash 4+
 - **Windows:** PowerShell 7+ e [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-## Instalação rápida
+## Instalação rápida (GitHub Release — recomendado)
+
+Por padrão (`AIC_USE_RELEASE=1`), o script **baixa artefatos pré-compilados** da [GitHub Release](https://github.com/francissantiago/AIC_APP/releases/latest) e só empacota as imagens Docker. **Node.js no host não é necessário.**
 
 ### Linux / macOS
 
@@ -24,12 +26,6 @@ git clone https://github.com/francissantiago/AIC_APP.git /opt/aic-app
 cd /opt/aic-app
 chmod +x deploy/scripts/aic-app.sh
 ./deploy/scripts/aic-app.sh install
-```
-
-Ou use o menu interativo:
-
-```bash
-./deploy/scripts/aic-app.sh
 ```
 
 ### Windows (PowerShell)
@@ -43,19 +39,36 @@ cd C:\aic-app
 O script irá:
 
 1. Verificar Docker, Compose e Git.
-2. Criar `deploy/.env` a partir do exemplo (com segredos aleatórios).
-3. Perguntar porta HTTP e URL pública (CORS).
-4. Construir imagens e subir MySQL, backend e nginx.
+2. Criar `deploy/.env` e `deploy/app-config.json` a partir dos exemplos.
+3. Baixar `aic-backend-*.tar.gz` e `aic-frontend-*.tar.gz` da release latest.
+4. Empacotar imagens Docker e subir MySQL, backend e nginx.
 5. Executar migrations TypeORM automaticamente.
 
-Após a instalação, acesse:
+Após a instalação:
 
-- **App:** `http://<servidor>:<porta>` (padrão porta 80)
+- **App:** `http://<servidor>:<porta>`
 - **Swagger:** `http://<servidor>:<porta>/docs`
+
+## Releases (CI)
+
+Cada tag `v*` (ex.: `v1.0.2`) dispara o workflow `.github/workflows/release.yml`, que publica:
+
+| Asset | Conteúdo |
+|-------|----------|
+| `aic-backend-v1.0.2.tar.gz` | `dist/` + `package.json` |
+| `aic-frontend-v1.0.2.tar.gz` | SPA estática (`browser/`) |
+| `SHA256SUMS` | checksums |
+
+Para publicar uma versão:
+
+```bash
+git tag v1.0.2
+git push origin v1.0.2
+```
 
 ## Atualização
 
-Busca a versão mais recente no GitHub, rebuilda imagens, roda migrations e reinicia containers **preservando volumes** (banco e uploads).
+Busca a release latest, extrai artefatos, rebuilda imagens e reinicia containers **preservando volumes**.
 
 ```bash
 ./deploy/scripts/aic-app.sh update
@@ -65,13 +78,28 @@ Busca a versão mais recente no GitHub, rebuilda imagens, roda migrations e rein
 .\deploy\scripts\aic-app.ps1 -Action Update
 ```
 
-Se já estiver na última versão, o script informa e encerra sem alterações.
+## Compilar localmente (fallback)
+
+Se não houver release ou quiser build from source:
+
+```bash
+AIC_USE_RELEASE=0 ./deploy/scripts/aic-app.sh install
+# ou
+./deploy/scripts/aic-app.sh install-from-source
+```
+
+```powershell
+.\deploy\scripts\aic-app.ps1 -Action Install -FromSource
+```
+
+Ordem de fallback automático: **Release → Node no host → Docker full build**.
 
 ## Comandos disponíveis
 
 | Ação | Bash | PowerShell |
 |------|------|------------|
-| Instalar | `./deploy/scripts/aic-app.sh install` | `.\deploy\scripts\aic-app.ps1 -Action Install` |
+| Instalar (release) | `./deploy/scripts/aic-app.sh install` | `.\deploy\scripts\aic-app.ps1 -Action Install` |
+| Instalar (source) | `./deploy/scripts/aic-app.sh install-from-source` | `.\deploy\scripts\aic-app.ps1 -Action Install -FromSource` |
 | Atualizar | `./deploy/scripts/aic-app.sh update` | `.\deploy\scripts\aic-app.ps1 -Action Update` |
 | Status | `./deploy/scripts/aic-app.sh status` | `.\deploy\scripts\aic-app.ps1 -Action Status` |
 | Parar | `./deploy/scripts/aic-app.sh stop` | `.\deploy\scripts\aic-app.ps1 -Action Stop` |
@@ -90,9 +118,9 @@ Volumes persistentes:
 - `aic_mysql_data` — dados do banco
 - `aic_uploads` — arquivos enviados pela aplicação
 
-## Configuração (`deploy/.env`)
+## Configuração
 
-Principais variáveis (veja `deploy/.env.example`):
+### Backend — `deploy/.env`
 
 | Variável | Descrição |
 |----------|-----------|
@@ -101,9 +129,45 @@ Principais variáveis (veja `deploy/.env.example`):
 | `JWT_SECRET` | Segredo para tokens JWT |
 | `DB_*` | Credenciais MySQL |
 | `GOOGLE_*` | Integração Google Calendar (opcional) |
-| `GIT_REPO_URL` / `GIT_BRANCH` | Repositório e branch para updates |
+| `AIC_USE_RELEASE` | `1` = baixar release (padrão); `0` = compilar localmente |
 
-**Nunca** commite `deploy/.env` — ele contém segredos.
+**Nunca** commite `deploy/.env`.
+
+### Frontend — `deploy/app-config.json`
+
+Endpoints carregados em **runtime** (sem rebuild). Montado no container nginx:
+
+```json
+{
+  "apiUrl": "/api",
+  "wsUrl": "",
+  "versionCheckIntervalMs": 300000
+}
+```
+
+| Campo | Descrição |
+|-------|-----------|
+| `apiUrl` | Base da API (`/api` no Docker same-origin) |
+| `wsUrl` | Origem Socket.IO; `""` = same-origin |
+| `versionCheckIntervalMs` | Polling de nova versão; `0` = desabilitado |
+
+API em outro domínio:
+
+```json
+{
+  "apiUrl": "https://api.minhaigreja.org/api",
+  "wsUrl": "https://api.minhaigreja.org",
+  "versionCheckIntervalMs": 300000
+}
+```
+
+Após editar, reinicie só o container web:
+
+```bash
+docker compose --env-file deploy/.env restart web
+```
+
+**Nunca** commite `deploy/app-config.json` — use `deploy/app-config.example.json` como template.
 
 ## Backup do banco
 
@@ -112,19 +176,16 @@ docker compose --env-file deploy/.env exec mysql \
   mysqldump -u root -p"$DB_ROOT_PASSWORD" db_aic > backup-aic.sql
 ```
 
-Substitua `db_aic` se alterou `DB_NAME`.
-
 ## Solução de problemas
 
 | Sintoma | Ação |
 |---------|------|
-| Health check falha | `./deploy/scripts/aic-app.sh logs` e verifique migrations |
-| Porta 80 ocupada | Altere `APP_HTTP_PORT` em `deploy/.env` e reinicie |
-| Update com conflito Git | Resolva manualmente ou restaure backup; updates usam `--ff-only` |
-| Google OAuth | Configure `GOOGLE_*` e URIs no Google Cloud Console |
-| Build falha com `heap out of memory` ou `EOF` | Aumente a memória do Docker Desktop para **6 GB** (Settings → Resources). Reinicie o Docker Desktop e rode o install de novo — o script faz **build sequencial** (nunca Nest + Angular ao mesmo tempo) |
-| Build parece “travado” > 1 h | Quase sempre o Docker Desktop reiniciou por falta de memória. Pare o build (`Ctrl+C`), aumente a RAM e rode `Install` novamente |
+| Release não encontrada | Publique uma tag `v*` ou use `install-from-source` |
+| Health check falha | `./deploy/scripts/aic-app.sh logs` |
+| Porta ocupada | Altere `APP_HTTP_PORT` em `deploy/.env` |
+| Build local lento/travado | Use instalação via release (`AIC_USE_RELEASE=1`) |
+| CORS com API externa | Ajuste `CORS_ORIGIN` no `.env` e `apiUrl` no `app-config.json` |
 
 ## Primeiro acesso
 
-Após instalação limpa, use as credenciais definidas nas migrations/seeds do projeto ou crie o primeiro usuário conforme documentação interna da igreja. Consulte o administrador do sistema ou o time de desenvolvimento se não houver seed de admin automático.
+Após instalação limpa, use as credenciais definidas nas migrations/seeds do projeto ou crie o primeiro usuário conforme documentação interna da igreja.

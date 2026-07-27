@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Package release artifacts
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          tar -czf "aic-backend-v${VERSION}.tar.gz" -C backend dist package.json package-lock.json
+          tar -czf "aic-frontend-v${VERSION}.tar.gz" -C frontend/dist/aic-app-frontend browser
+          sha256sum aic-backend-v${VERSION}.tar.gz aic-frontend-v${VERSION}.tar.gz > SHA256SUMS
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            aic-backend-v${{ env.VERSION }}.tar.gz
+            aic-frontend-v${{ env.VERSION }}.tar.gz
+            SHA256SUMS

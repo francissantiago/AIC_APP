@@ -14,6 +14,7 @@ import localeEs from '@angular/common/locales/es';
 import localePt from '@angular/common/locales/pt';
 import { DEFAULT_APP_LANGUAGE } from '@enums/app-language';
 import { authInterceptor } from '@interceptors/auth-interceptor';
+import { AppConfigService } from '@services/app-config-service';
 import { AuthService } from '@services/auth-service';
 import { CongregationContextService } from '@services/congregation-context-service';
 import { I18nService } from '@services/i18n-service';
@@ -36,10 +37,12 @@ export const appConfig: ApplicationConfig = {
       lang: DEFAULT_APP_LANGUAGE,
     }),
     provideAppInitializer(async () => {
+      const appConfig = inject(AppConfigService);
       const i18n = inject(I18nService);
       const auth = inject(AuthService);
       const congregationContext = inject(CongregationContextService);
 
+      await appConfig.load();
       i18n.init();
       await auth.restoreSession();
       if (auth.isAuthenticated()) {

@@ -22,7 +22,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: ${AIC_BACKEND_DOCKERFILE:-backend/Dockerfile.full}
     container_name: aic-backend
     restart: unless-stopped
     depends_on:
@@ -60,7 +60,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
+      dockerfile: ${AIC_FRONTEND_DOCKERFILE:-frontend/Dockerfile.full}
     container_name: aic-web
     restart: unless-stopped
     depends_on:
@@ -68,6 +68,8 @@ services:
         condition: service_healthy
     ports:
       - '${APP_HTTP_PORT:-80}:80'
+    volumes:
+      - ./deploy/app-config.json:/usr/share/nginx/html/assets/app-config.json:ro
     networks:
       - aic-network
     healthcheck:
