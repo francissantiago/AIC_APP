@@ -1,12 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class HealthResponseDto {
   @ApiProperty({ example: 'ok' })
   status!: string;
 
-  @ApiProperty({ example: '2026-07-26T18:00:00.000Z' })
-  timestamp!: string;
+  @ApiPropertyOptional({
+    example: '2026-07-26T18:00:00.000Z',
+    description: 'Omitido em produção (AIC-SEC-022)',
+  })
+  timestamp?: string;
 
-  @ApiProperty({ example: '1.0.1', description: 'Versão da API em execução' })
-  version!: string;
+  @ApiPropertyOptional({
+    example: '1.0.1',
+    description: 'Versão da API — omitida em produção (AIC-SEC-022)',
+  })
+  version?: string;
 }

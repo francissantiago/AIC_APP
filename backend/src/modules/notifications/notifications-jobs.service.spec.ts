@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CongregationsService } from '../congregations/congregations.service';
+import { Congregation } from '../congregations/entities/congregation.entity';
 import { AnnouncementsService } from '../announcements/announcements.service';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
@@ -46,6 +47,9 @@ describe('NotificationsJobsService', () => {
   };
   const congregationsService = {
     getOrCreateBase: jest.fn(),
+  };
+  const congregationsRepository = {
+    find: jest.fn(),
   };
   const upsertDailyBirthdayBoard = jest.fn<
     Promise<'created' | 'updated' | 'unchanged'>,
@@ -157,6 +161,7 @@ describe('NotificationsJobsService', () => {
     congregationsService.getOrCreateBase.mockResolvedValue({
       id: congregationId,
     });
+    congregationsRepository.find.mockResolvedValue([{ id: congregationId }]);
     createIfAbsent.mockResolvedValue({ id: 'created' });
     upsertDailyBirthdayBoard.mockResolvedValue('created');
 
@@ -178,6 +183,10 @@ describe('NotificationsJobsService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: usersRepository,
+        },
+        {
+          provide: getRepositoryToken(Congregation),
+          useValue: congregationsRepository,
         },
         { provide: NotificationsService, useValue: notificationsService },
         { provide: AnnouncementsService, useValue: announcementsService },
@@ -394,7 +403,8 @@ describe('NotificationsJobsService', () => {
     it('deve consultar secretariat:read e members:read', async () => {
       const qb = mockMemberManagementQb([secretariatUserId]);
 
-      const result = await service.resolveMemberManagementUserIds();
+      const result =
+        await service.resolveMemberManagementUserIds(congregationId);
 
       expect(result).toEqual([secretariatUserId]);
       expect(qb.andWhere).toHaveBeenCalledWith('p.code IN (:...codes)', {

@@ -14,7 +14,7 @@ export class HealthController {
   @ApiOperation({
     summary: 'Health check da API',
     description:
-      'Retorna status operacional, timestamp e versão da API em execução.',
+      'Retorna status operacional. Em não-produção inclui timestamp e versão; em produção apenas `{ status: "ok" }` (AIC-SEC-022).',
   })
   @ApiOkResponse({ type: HealthResponseDto, description: 'API operacional' })
   getHealth(): HealthResponseDto {

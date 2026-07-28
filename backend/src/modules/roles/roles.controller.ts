@@ -39,6 +39,7 @@ import { RolesService } from './roles.service';
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermission('roles:read')
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}

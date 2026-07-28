@@ -27,6 +27,7 @@ describe('GoogleCalendarOAuthService state', () => {
   const service = new GoogleCalendarOAuthService(
     configService,
     {} as never,
+    { isMember: jest.fn().mockResolvedValue(true) } as never,
     {} as never,
     {} as never,
   );
@@ -62,6 +63,13 @@ describe('GoogleCalendarOAuthService state', () => {
     const [body] = state.split('.');
     expect(() => service.verifyState(`${body}.invalid`)).toThrow();
   });
+
+  it('rejects replayed nonce (AIC-SEC-018)', () => {
+    const nonce = 'once-only-nonce';
+    const exp = Date.now() + 60_000;
+    service.consumeNonce(nonce, exp);
+    expect(() => service.consumeNonce(nonce, exp)).toThrow('state_replay');
+  });
 });
 
 describe('GoogleCalendarOAuthService configuration', () => {
@@ -82,6 +90,7 @@ describe('GoogleCalendarOAuthService configuration', () => {
     return new GoogleCalendarOAuthService(
       configService,
       {} as never,
+      { isMember: jest.fn().mockResolvedValue(true) } as never,
       {} as never,
       {} as never,
     );

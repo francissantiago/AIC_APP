@@ -109,4 +109,21 @@ describe('authInterceptor', () => {
     expect(clearSession).toHaveBeenCalledTimes(1);
     expect(navigateByUrl).toHaveBeenCalledWith('/login');
   });
+
+  it('does not attach Bearer to absolute URLs that only include /api/ (AIC-SEC-016)', () => {
+    const req = new HttpRequest('GET', 'https://evil.example/api/x');
+    let captured!: HttpRequest<unknown>;
+    let sawNext = false;
+
+    TestBed.runInInjectionContext(() => {
+      authInterceptor(req, (nextReq) => {
+        sawNext = true;
+        captured = nextReq;
+        return of(new HttpResponse({ status: 200, body: [] }));
+      }).subscribe();
+    });
+
+    expect(sawNext).toBe(true);
+    expect(captured.headers.has('Authorization')).toBe(false);
+  });
 });

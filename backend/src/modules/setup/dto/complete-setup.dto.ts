@@ -12,6 +12,10 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import {
+  PASSWORD_COMPLEXITY_MESSAGE,
+  PASSWORD_COMPLEXITY_REGEX,
+} from '../../../common/validation/password.constants';
 
 export class SetupAdminDto {
   @ApiProperty({ example: 'admin', minLength: 3, maxLength: 50 })
@@ -39,11 +43,15 @@ export class SetupAdminDto {
     example: 'S3nh@Forte!',
     minLength: 8,
     maxLength: 72,
-    description: 'Senha em claro; armazenada apenas como hash bcrypt (cost 12)',
+    description:
+      'Senha em claro; armazenada apenas como hash bcrypt (cost 12). AIC-SEC-014.',
   })
   @IsString()
   @MinLength(8)
   @MaxLength(72)
+  @Matches(PASSWORD_COMPLEXITY_REGEX, {
+    message: PASSWORD_COMPLEXITY_MESSAGE,
+  })
   password!: string;
 }
 

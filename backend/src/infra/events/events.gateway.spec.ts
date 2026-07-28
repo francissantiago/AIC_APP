@@ -90,23 +90,16 @@ describe('EventsGateway', () => {
       expect(disconnect).not.toHaveBeenCalled();
     });
 
-    it('deve aceitar token via query.token quando auth.token ausente', async () => {
-      const { client, join } = createClient({ queryToken: 'query-jwt' });
-      jwtService.verifyAsync.mockResolvedValue({
-        sub: userId,
-        email: 'a@b.com',
-        username: 'user',
-        roles: [],
-      });
-      usersService.findOne.mockResolvedValue({
-        id: userId,
-        status: UserStatus.ACTIVE,
+    it('deve rejeitar token via query.token (AIC-SEC-019)', async () => {
+      const { client, join, disconnect } = createClient({
+        queryToken: 'query-jwt',
       });
 
       await gateway.handleConnection(client);
 
-      expect(jwtService.verifyAsync).toHaveBeenCalledWith('query-jwt');
-      expect(join).toHaveBeenCalledWith(`user:${userId}`);
+      expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+      expect(join).not.toHaveBeenCalled();
+      expect(disconnect).toHaveBeenCalledWith(true);
     });
 
     it('deve disconnect quando token ausente', async () => {

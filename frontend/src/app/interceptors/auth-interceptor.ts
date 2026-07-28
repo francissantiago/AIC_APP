@@ -8,7 +8,7 @@ import { environment } from 'environments/environment';
 import { catchError, throwError } from 'rxjs';
 
 function isApiRequest(url: string): boolean {
-  return url.startsWith(environment.apiUrl) || url.includes('/api/');
+  return url.startsWith(environment.apiUrl);
 }
 
 function isLoginRequest(url: string): boolean {

@@ -114,15 +114,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (typeof authToken === 'string' && authToken.length > 0) {
       return authToken;
     }
-
-    const queryToken = client.handshake.query?.token;
-    if (typeof queryToken === 'string' && queryToken.length > 0) {
-      return queryToken;
-    }
-    if (Array.isArray(queryToken) && typeof queryToken[0] === 'string') {
-      return queryToken[0];
-    }
-
+    // AIC-SEC-019: não aceitar JWT em query string (logs/Referer).
     return null;
   }
 }

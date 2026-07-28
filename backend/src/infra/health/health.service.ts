@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { HealthResponseDto } from './dto/health-response.dto';
 
 @Injectable()
 export class HealthService {
-  getStatus() {
+  getStatus(): HealthResponseDto {
+    // AIC-SEC-022: em produção não expor versão/timestamp.
+    if (process.env.NODE_ENV === 'production') {
+      return { status: 'ok' };
+    }
+
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),

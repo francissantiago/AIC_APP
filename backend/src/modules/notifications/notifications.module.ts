@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from '../../infra/events/events.module';
 import { AnnouncementsModule } from '../announcements/announcements.module';
 import { CongregationsModule } from '../congregations/congregations.module';
+import { Congregation } from '../congregations/entities/congregation.entity';
 import { Member } from '../members/entities/member.entity';
 import { ScheduleAssignment } from '../schedules/entities/schedule-assignment.entity';
 import { Visitor } from '../secretariat/visitors/entities/visitor.entity';
@@ -20,6 +21,7 @@ import { NotificationsService } from './notifications.service';
       ScheduleAssignment,
       User,
       Member,
+      Congregation,
     ]),
     EventsModule,
     CongregationsModule,

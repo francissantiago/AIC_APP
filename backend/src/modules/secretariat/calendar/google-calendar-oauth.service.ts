@@ -10,6 +10,7 @@ import {
 } from '../../../common/errors/api-error.types';
 import { ApiException } from '../../../common/errors/api.exception';
 import { CongregationsService } from '../../congregations/congregations.service';
+import { UserCongregationsService } from '../../congregations/user-congregations.service';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import {
   GoogleCalendarConnectionStatusDto,
@@ -41,9 +42,16 @@ interface OAuthStatePayload {
 export class GoogleCalendarOAuthService {
   private readonly logger = new Logger(GoogleCalendarOAuthService.name);
 
+  /**
+   * AIC-SEC-018: nonces one-time em memória com TTL.
+   * Limitação multi-instance: cada processo tem seu próprio Map (sem Redis).
+   */
+  private readonly consumedNonces = new Map<string, number>();
+
   constructor(
     private readonly configService: ConfigService,
     private readonly congregationsService: CongregationsService,
+    private readonly userCongregationsService: UserCongregationsService,
     @InjectRepository(GoogleCalendarConnection)
     private readonly connectionsRepository: Repository<GoogleCalendarConnection>,
     @InjectRepository(GoogleCalendarEventLink)
@@ -114,6 +122,16 @@ export class GoogleCalendarOAuthService {
       }
 
       const payload = this.verifyState(state);
+      this.consumeNonce(payload.nonce, payload.exp);
+
+      const stillMember = await this.userCongregationsService.isMember(
+        payload.userId,
+        payload.congregationId,
+      );
+      if (!stillMember) {
+        throw new Error('congregation_access_revoked');
+      }
+
       const client = this.createOAuthClient();
       const { tokens } = await client.getToken(code);
       if (!tokens.access_token || !tokens.refresh_token) {
@@ -362,6 +380,24 @@ export class GoogleCalendarOAuthService {
       throw new Error('invalid_state_payload');
     }
     return payload;
+  }
+
+  /** Consome nonce; replay dentro do TTL → state_replay. */
+  consumeNonce(nonce: string, exp: number): void {
+    this.pruneExpiredNonces();
+    if (this.consumedNonces.has(nonce)) {
+      throw new Error('state_replay');
+    }
+    this.consumedNonces.set(nonce, exp);
+  }
+
+  private pruneExpiredNonces(): void {
+    const now = Date.now();
+    for (const [nonce, expiresAt] of this.consumedNonces) {
+      if (expiresAt < now) {
+        this.consumedNonces.delete(nonce);
+      }
+    }
   }
 
   async findActiveConnection(

@@ -111,4 +111,32 @@ describe('FileStorageService', () => {
     await service.deleteIfExists(saved.relativePath);
     await expect(fs.access(absolute)).rejects.toBeDefined();
   });
+
+  it('rejeita spoofing de MIME (payload não bate com Content-Type) — AIC-SEC-020', async () => {
+    await expect(
+      service.saveSecretariatDocument('doc-1', {
+        buffer: Buffer.from('MZ fake executable'),
+        originalname: 'foto.png',
+        mimetype: 'image/png',
+        size: 18,
+      }),
+    ).rejects.toMatchObject({
+      response: { code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID },
+    });
+  });
+
+  it('aceita PNG com magic bytes válidos', async () => {
+    const pngBuffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    const saved = await service.saveImageAsset('members', 'mem-1', {
+      buffer: pngBuffer,
+      originalname: 'foto.png',
+      mimetype: 'image/png',
+      size: pngBuffer.length,
+    });
+    expect(saved.mimeType).toBe('image/png');
+    expect(saved.relativePath).toMatch(/^members\/mem-1-[0-9a-f-]+\.png$/);
+  });
 });

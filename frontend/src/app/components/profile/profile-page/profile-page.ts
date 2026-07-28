@@ -88,7 +88,12 @@ export class ProfilePage implements OnInit {
       }),
       newPassword: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(8), Validators.maxLength(72)],
+        validators: [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(72),
+          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,72}$/),
+        ],
       }),
       confirmPassword: new FormControl('', {
         nonNullable: true,

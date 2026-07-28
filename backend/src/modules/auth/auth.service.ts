@@ -5,6 +5,10 @@ import * as bcrypt from 'bcrypt';
 import { generateSecret, generateURI, verify } from 'otplib';
 import * as QRCode from 'qrcode';
 import {
+  decryptSecret,
+  encryptSecret,
+} from '../../common/crypto/secret-crypto.util';
+import {
   ApiErrorCode,
   ApiErrorMessage,
 } from '../../common/errors/api-error.types';
@@ -29,6 +33,9 @@ import { UpdateMeDto } from './dto/update-me.dto';
 const BCRYPT_COST = 12;
 const PREAUTH_EXPIRES_IN = '5m' as const;
 const TOTP_ISSUER = 'AIC';
+/** Hash bcrypt válido fixo (cost 12) — AIC-SEC-012 timing equalization. */
+const DUMMY_PASSWORD_HASH =
+  '$2b$12$wGVPzWgzP58ExWJcDQPSZuf4IcGMUHHR5hwNiHjV3D54Gz/ocJjjC';
 
 @Injectable()
 export class AuthService {
@@ -45,18 +52,12 @@ export class AuthService {
     dto: LoginDto,
   ): Promise<AuthResponseDto | LoginTwoFactorChallengeDto> {
     const user = await this.usersService.findByEmailForAuth(dto.email);
+    const hash = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
+    const passwordOk = await bcrypt.compare(dto.password, hash);
 
-    if (!user?.passwordHash) {
+    if (!user?.passwordHash || !passwordOk) {
       this.logger.warn(
-        `Login falhou: email não encontrado (${this.maskEmail(dto.email)})`,
-      );
-      throw this.invalidCredentials();
-    }
-
-    const passwordOk = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!passwordOk) {
-      this.logger.warn(
-        `Login falhou: senha inválida (${this.maskEmail(dto.email)})`,
+        `Login falhou: credenciais inválidas (${this.maskEmail(dto.email)})`,
       );
       throw this.invalidCredentials();
     }
@@ -186,7 +187,10 @@ export class AuthService {
       this.configService.get<string>('APP_NAME') ??
       TOTP_ISSUER;
     const secret = generateSecret();
-    await this.usersService.setTwoFactorSecret(userId, secret);
+    await this.usersService.setTwoFactorSecret(
+      userId,
+      this.encryptTotpSecret(secret),
+    );
 
     const otpauthUrl = generateURI({
       issuer,
@@ -285,15 +289,52 @@ export class AuthService {
   }
 
   private async assertValidTotp(
-    secret: string | null | undefined,
+    storedSecret: string | null | undefined,
     code: string,
   ): Promise<void> {
-    if (!secret) {
+    if (!storedSecret) {
       throw this.invalidTotp();
     }
+    const secret = this.decryptTotpSecret(storedSecret);
     const result = await verify({ secret, token: code });
     if (!result.valid) {
       throw this.invalidTotp();
+    }
+  }
+
+  /** Preferência: TOTP_ENCRYPTION_KEY → GOOGLE_TOKEN_ENCRYPTION_KEY → JWT_SECRET. */
+  private getTotpEncryptionKey(): string {
+    const dedicated = this.configService
+      .get<string>('TOTP_ENCRYPTION_KEY')
+      ?.trim();
+    if (dedicated) {
+      return dedicated;
+    }
+    const google = this.configService
+      .get<string>('GOOGLE_TOKEN_ENCRYPTION_KEY')
+      ?.trim();
+    if (google) {
+      return google;
+    }
+    const jwt = this.configService.get<string>('JWT_SECRET')?.trim();
+    if (jwt) {
+      return jwt;
+    }
+    throw new Error(
+      'TOTP_ENCRYPTION_KEY (ou GOOGLE_TOKEN_ENCRYPTION_KEY / JWT_SECRET) é obrigatória',
+    );
+  }
+
+  private encryptTotpSecret(plain: string): string {
+    return encryptSecret(plain, this.getTotpEncryptionKey());
+  }
+
+  /** Aceita ciphertext AES-GCM ou secret plaintext legado (pré AIC-SEC-013). */
+  private decryptTotpSecret(stored: string): string {
+    try {
+      return decryptSecret(stored, this.getTotpEncryptionKey());
+    } catch {
+      return stored;
     }
   }
 

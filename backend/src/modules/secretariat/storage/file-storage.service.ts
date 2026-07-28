@@ -1,9 +1,10 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
+import { fromBuffer } from 'file-type';
 import { createReadStream, promises as fs } from 'fs';
-import * as path from 'path';
 import { ReadStream } from 'fs';
+import * as path from 'path';
 import {
   ApiErrorCode,
   ApiErrorMessage,
@@ -15,11 +16,12 @@ const SECRETARIAT_SUBDIR = 'secretariat';
 const DEFAULT_UPLOAD_DIR = 'uploads';
 const DEFAULT_MAX_BYTES = 10_485_760;
 
+const DOCX_MIME =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
 const ALLOWED_MIME_TO_EXT: Readonly<Record<string, readonly string[]>> = {
   'application/pdf': ['.pdf'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
-    '.docx',
-  ],
+  [DOCX_MIME]: ['.docx'],
   'image/png': ['.png'],
   'image/jpeg': ['.jpg', '.jpeg'],
 };
@@ -27,6 +29,15 @@ const ALLOWED_MIME_TO_EXT: Readonly<Record<string, readonly string[]>> = {
 const IMAGE_MIME_TO_EXT: Readonly<Record<string, readonly string[]>> = {
   'image/png': ['.png'],
   'image/jpeg': ['.jpg', '.jpeg'],
+};
+
+/** MIME detectados por magic bytes aceitos para cada MIME declarado. */
+const CLAIMED_TO_MAGIC_MIMES: Readonly<Record<string, readonly string[]>> = {
+  'application/pdf': ['application/pdf'],
+  // OOXML/DOCX é um ZIP; file-type costuma reportar application/zip
+  [DOCX_MIME]: ['application/zip', DOCX_MIME],
+  'image/png': ['image/png'],
+  'image/jpeg': ['image/jpeg'],
 };
 
 export type SavedSecretariatFile = {
@@ -135,6 +146,14 @@ export class FileStorageService {
       file.originalname,
       mimeMap,
     );
+    if (!mimeType) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID],
+      });
+    }
+    await this.assertMagicMatches(file.buffer, mimeType);
     const originalFilename = this.sanitizeOriginalFilename(
       file.originalname,
       extension,
@@ -148,9 +167,33 @@ export class FileStorageService {
     return {
       relativePath,
       originalFilename,
-      mimeType: mimeType,
+      mimeType,
       sizeBytes: file.size,
     };
+  }
+
+  /**
+   * AIC-SEC-020: valida assinatura real do arquivo (magic bytes),
+   * não apenas Content-Type / extensão declarados pelo cliente.
+   */
+  private async assertMagicMatches(
+    buffer: Buffer,
+    claimedMime: string,
+  ): Promise<void> {
+    let detected: { ext: string; mime: string } | undefined;
+    try {
+      detected = await fromBuffer(buffer);
+    } catch {
+      detected = undefined;
+    }
+    const allowed = CLAIMED_TO_MAGIC_MIMES[claimedMime] ?? [];
+    if (!detected || !allowed.includes(detected.mime)) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, {
+        code: ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID,
+        message:
+          ApiErrorMessage[ApiErrorCode.SECRETARIAT_DOCUMENT_FILE_TYPE_INVALID],
+      });
+    }
   }
 
   async deleteIfExists(relativePath: string | null | undefined): Promise<void> {

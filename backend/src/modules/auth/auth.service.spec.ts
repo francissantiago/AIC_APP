@@ -89,6 +89,12 @@ describe('AuthService', () => {
       if (key === 'JWT_EXPIRES_IN') {
         return '8h';
       }
+      if (key === 'JWT_SECRET') {
+        return 'test-jwt-secret-for-totp-encryption';
+      }
+      if (key === 'TOTP_ENCRYPTION_KEY') {
+        return 'a'.repeat(64);
+      }
       return fallback;
     });
     jwtService.signAsync.mockResolvedValue('jwt-token-fake');
@@ -175,10 +181,15 @@ describe('AuthService', () => {
 
     it('deve retornar 401 genérico quando email não existe', async () => {
       usersService.findByEmailForAuth.mockResolvedValue(null);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
         service.login({ email: 'nao@existe.com', password: 'x' }),
       ).rejects.toThrow(ApiException);
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'x',
+        expect.stringMatching(/^\$2[aby]\$\d{2}\$/),
+      );
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
 
@@ -207,10 +218,12 @@ describe('AuthService', () => {
 
     it('deve retornar 401 genérico para usuário soft-deleted (findByEmail retorna null)', async () => {
       usersService.findByEmailForAuth.mockResolvedValue(null);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
         service.login({ email: 'admin@admin.com', password: 'S3nh@Forte!' }),
       ).rejects.toThrow(ApiException);
+      expect(bcrypt.compare).toHaveBeenCalled();
     });
   });
 
@@ -373,10 +386,12 @@ describe('AuthService', () => {
         'S3nh@Forte!',
         user.passwordHash,
       );
-      expect(usersService.setTwoFactorSecret).toHaveBeenCalledWith(
-        user.id,
-        'NEWSECRET',
-      );
+      expect(usersService.setTwoFactorSecret).toHaveBeenCalled();
+      const setSecretCall = usersService.setTwoFactorSecret.mock.calls[0] as
+        [string, string] | undefined;
+      expect(setSecretCall?.[0]).toBe(user.id);
+      expect(setSecretCall?.[1]).toMatch(/^[A-Za-z0-9+/=]+$/);
+      expect(setSecretCall?.[1]).not.toBe('NEWSECRET');
       expect(result).toEqual({
         otpauthUrl: 'otpauth://totp/AIC:admin',
         qrCodeDataUrl: 'data:image/png;base64,abc',
