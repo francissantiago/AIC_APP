@@ -103,9 +103,12 @@ export class MembersController {
   @ApiOkResponse({ type: PaginatedMembersResponseDto })
   findAll(
     @Query() query: QueryMembersDto,
-    @ActiveCongregation() activeCongregationId?: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+    @CurrentUser() user: UserResponseDto,
   ): Promise<PaginatedMembersResponseDto> {
-    return this.membersService.findAll(query, activeCongregationId);
+    return this.membersService.findAll(query, activeCongregationId, {
+      includePii: user.permissions.includes('members:write'),
+    });
   }
 
   @Get('options')
@@ -221,9 +224,12 @@ export class MembersController {
   @ApiNotFoundResponse({ description: 'Membro não encontrado' })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
-    @ActiveCongregation() activeCongregationId?: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+    @CurrentUser() user: UserResponseDto,
   ): Promise<MemberResponseDto> {
-    return this.membersService.findOne(id, activeCongregationId);
+    return this.membersService.findOne(id, activeCongregationId, {
+      includePii: user.permissions.includes('members:write'),
+    });
   }
 
   @Patch(':id')

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CongregationsModule } from '../congregations/congregations.module';
 import { Member } from '../members/entities/member.entity';
 import { MinistryMember } from '../ministries/entities/ministry-member.entity';
 import { Ministry } from '../ministries/entities/ministry.entity';
@@ -17,6 +18,7 @@ import { SchedulesService } from './schedules.service';
       MinistryMember,
       Member,
     ]),
+    CongregationsModule,
   ],
   controllers: [SchedulesController],
   providers: [SchedulesService],

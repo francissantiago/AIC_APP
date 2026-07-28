@@ -66,6 +66,7 @@ export class ProfilePage implements OnInit {
   readonly passwordSubmitted = signal(false);
   readonly verifySubmitted = signal(false);
   readonly disableSubmitted = signal(false);
+  readonly setupSubmitted = signal(false);
 
   readonly profileForm = new FormGroup({
     username: new FormControl({ value: '', disabled: true }, { nonNullable: true }),
@@ -96,6 +97,13 @@ export class ProfilePage implements OnInit {
     },
     { validators: passwordsMatchValidator },
   );
+
+  readonly setupForm = new FormGroup({
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+  });
 
   readonly verifyForm = new FormGroup({
     code: new FormControl('', {
@@ -215,17 +223,27 @@ export class ProfilePage implements OnInit {
   }
 
   startTwoFactorSetup(): void {
+    this.setupSubmitted.set(true);
     this.twoFaFeedbackKey.set(null);
     this.errorMessage.set(null);
+
+    if (this.setupForm.invalid) {
+      this.setupForm.markAllAsTouched();
+      return;
+    }
+
+    const { password } = this.setupForm.getRawValue();
     this.twoFaLoading.set(true);
 
     this.#authService
-      .setupTwoFactor()
+      .setupTwoFactor({ password })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (data) => {
           this.twoFaLoading.set(false);
           this.setupData.set(data);
+          this.setupForm.reset();
+          this.setupSubmitted.set(false);
           this.verifyForm.reset();
         },
         error: (error: HttpErrorResponse) => {

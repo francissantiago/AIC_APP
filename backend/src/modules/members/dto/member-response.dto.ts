@@ -130,31 +130,32 @@ export class MemberResponseDto {
 
   static fromEntity(
     member: Member,
-    options?: { familyLink?: FamilyLinkResultDto },
+    options?: { familyLink?: FamilyLinkResultDto; includePii?: boolean },
   ): MemberResponseDto {
+    const includePii = options?.includePii ?? true;
     const dto = new MemberResponseDto();
     dto.id = member.id;
     dto.fullName = member.fullName;
-    dto.email = member.email;
-    dto.phone = member.phone;
-    dto.document = member.document;
-    dto.birthDate = member.birthDate;
+    dto.email = includePii ? member.email : null;
+    dto.phone = includePii ? member.phone : null;
+    dto.document = includePii ? member.document : null;
+    dto.birthDate = includePii ? member.birthDate : null;
     dto.gender = member.gender;
     dto.maritalStatus = member.maritalStatus;
     dto.status = member.status;
     dto.baptismDate = member.baptismDate;
     dto.membershipDate = member.membershipDate;
-    dto.address = member.address;
-    dto.city = member.city;
-    dto.state = member.state;
-    dto.zipCode = member.zipCode;
-    dto.notes = member.notes;
-    dto.rg = member.rg;
+    dto.address = includePii ? member.address : null;
+    dto.city = includePii ? member.city : null;
+    dto.state = includePii ? member.state : null;
+    dto.zipCode = includePii ? member.zipCode : null;
+    dto.notes = includePii ? member.notes : null;
+    dto.rg = includePii ? member.rg : null;
     dto.registrationNumber = member.registrationNumber;
-    dto.placeOfBirth = member.placeOfBirth;
-    dto.bloodType = member.bloodType;
-    dto.fatherName = member.fatherName;
-    dto.motherName = member.motherName;
+    dto.placeOfBirth = includePii ? member.placeOfBirth : null;
+    dto.bloodType = includePii ? member.bloodType : null;
+    dto.fatherName = includePii ? member.fatherName : null;
+    dto.motherName = includePii ? member.motherName : null;
     dto.fatherMemberId = member.fatherMemberId ?? null;
     dto.motherMemberId = member.motherMemberId ?? null;
     dto.positionTitle = member.positionTitle;

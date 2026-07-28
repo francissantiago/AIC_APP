@@ -232,6 +232,31 @@ export class UsersService {
     this.logger.log(`Senha atualizada (self-service): ${userId}`);
   }
 
+  async incrementTokenVersion(userId: string): Promise<void> {
+    await this.usersRepository.increment({ id: userId }, 'tokenVersion', 1);
+    this.logger.log(`tokenVersion incrementado: ${userId}`);
+  }
+
+  /**
+   * Valida JWT: carrega usuário + roles e compara tokenVersion do payload.
+   * Payload antigo sem `tv` é tratado como 0.
+   */
+  async findOneForJwtValidation(
+    userId: string,
+    tokenVersionFromPayload?: number,
+  ): Promise<UserResponseDto> {
+    const user = await this.getUserOrFail(userId);
+    const expected = user.tokenVersion ?? 0;
+    const actual = tokenVersionFromPayload ?? 0;
+    if (actual !== expected) {
+      throw new ApiException(HttpStatus.UNAUTHORIZED, {
+        code: ApiErrorCode.AUTH_INVALID_CREDENTIALS,
+        message: ApiErrorMessage[ApiErrorCode.AUTH_INVALID_CREDENTIALS],
+      });
+    }
+    return UserResponseDto.fromEntity(user);
+  }
+
   async setTwoFactorSecret(
     userId: string,
     secret: string | null,

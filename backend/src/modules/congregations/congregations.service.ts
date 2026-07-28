@@ -78,8 +78,13 @@ export class CongregationsService {
 
   async findAll(
     query: QueryCongregationsDto,
+    allowedIds?: string[],
   ): Promise<PaginatedCongregationsResponseDto> {
     const { page, limit, type, status, q } = query;
+
+    if (allowedIds !== undefined && allowedIds.length === 0) {
+      return { data: [], total: 0, page, limit };
+    }
 
     const qb = this.congregationsRepository
       .createQueryBuilder('congregation')
@@ -97,6 +102,9 @@ export class CongregationsService {
       .skip((page - 1) * limit)
       .take(limit);
 
+    if (allowedIds !== undefined) {
+      qb.andWhere('congregation.id IN (:...ids)', { ids: allowedIds });
+    }
     if (type) {
       qb.andWhere('congregation.type = :type', { type });
     }

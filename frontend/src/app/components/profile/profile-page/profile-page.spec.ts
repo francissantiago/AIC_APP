@@ -70,6 +70,7 @@ describe('ProfilePage', () => {
   it('should expose profile, password and 2FA forms (three sections)', () => {
     expect(component.profileForm).toBeTruthy();
     expect(component.passwordForm).toBeTruthy();
+    expect(component.setupForm).toBeTruthy();
     expect(component.verifyForm).toBeTruthy();
     expect(component.disableForm).toBeTruthy();
     expect(component.profileForm.getRawValue().username).toBe('admin');

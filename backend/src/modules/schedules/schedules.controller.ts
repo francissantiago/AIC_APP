@@ -30,6 +30,8 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { BulkUpsertAssignmentsDto } from './dto/bulk-upsert-assignments.dto';
 import { CreateScheduleAssignmentDto } from './dto/create-schedule-assignment.dto';
 import { QueryScheduleMemberOptionsDto } from './dto/query-member-options.dto';
@@ -49,7 +51,7 @@ import { SchedulesService } from './schedules.service';
 @ApiErrorResponses()
 @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
 @ApiForbiddenResponse({ description: 'Perfil sem permissão' })
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, CongregationContextGuard)
 @RequirePermission('schedules:read')
 @Controller('schedules')
 export class SchedulesController {
@@ -63,8 +65,9 @@ export class SchedulesController {
   @ApiUnprocessableEntityResponse({ description: 'Período inválido' })
   findAll(
     @Query() query: QueryScheduleAssignmentsDto,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<PaginatedScheduleAssignmentsResponseDto> {
-    return this.schedulesService.findAll(query);
+    return this.schedulesService.findAll(query, activeCongregationId);
   }
 
   @Get('assignments/:id')
@@ -73,8 +76,9 @@ export class SchedulesController {
   @ApiNotFoundResponse({ description: 'Atribuição não encontrada' })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<ScheduleAssignmentResponseDto> {
-    return this.schedulesService.findOne(id);
+    return this.schedulesService.findOne(id, activeCongregationId);
   }
 
   @Post('assignments')
@@ -88,8 +92,9 @@ export class SchedulesController {
   })
   create(
     @Body() dto: CreateScheduleAssignmentDto,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<ScheduleAssignmentResponseDto> {
-    return this.schedulesService.create(dto);
+    return this.schedulesService.create(dto, activeCongregationId);
   }
 
   @Patch('assignments/:id')
@@ -104,8 +109,9 @@ export class SchedulesController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateScheduleAssignmentDto,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<ScheduleAssignmentResponseDto> {
-    return this.schedulesService.update(id, dto);
+    return this.schedulesService.update(id, dto, activeCongregationId);
   }
 
   @Delete('assignments/:id')
@@ -114,8 +120,11 @@ export class SchedulesController {
   @ApiOperation({ summary: 'Remover atribuição de escala (hard delete)' })
   @ApiNoContentResponse({ description: 'Atribuição removida' })
   @ApiNotFoundResponse({ description: 'Atribuição não encontrada' })
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.schedulesService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+  ): Promise<void> {
+    return this.schedulesService.remove(id, activeCongregationId);
   }
 
   @Get('week')
@@ -124,8 +133,11 @@ export class SchedulesController {
   })
   @ApiOkResponse({ type: WeekViewResponseDto })
   @ApiUnprocessableEntityResponse({ description: 'Período inválido' })
-  weekView(@Query() query: QueryWeekViewDto): Promise<WeekViewResponseDto> {
-    return this.schedulesService.getWeekView(query);
+  weekView(
+    @Query() query: QueryWeekViewDto,
+    @ActiveCongregation() activeCongregationId: string | undefined,
+  ): Promise<WeekViewResponseDto> {
+    return this.schedulesService.getWeekView(query, activeCongregationId);
   }
 
   @Get('events/:calendarEventId/assignments')
@@ -134,8 +146,12 @@ export class SchedulesController {
   @ApiNotFoundResponse({ description: 'Evento não encontrado' })
   findByEvent(
     @Param('calendarEventId', ParseUUIDPipe) calendarEventId: string,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<ScheduleAssignmentResponseDto[]> {
-    return this.schedulesService.findByEvent(calendarEventId);
+    return this.schedulesService.findByEvent(
+      calendarEventId,
+      activeCongregationId,
+    );
   }
 
   @Put('events/:calendarEventId/ministries/:ministryId/assignments')
@@ -153,8 +169,14 @@ export class SchedulesController {
     @Param('calendarEventId', ParseUUIDPipe) calendarEventId: string,
     @Param('ministryId', ParseUUIDPipe) ministryId: string,
     @Body() dto: BulkUpsertAssignmentsDto,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<ScheduleAssignmentResponseDto[]> {
-    return this.schedulesService.bulkUpsert(calendarEventId, ministryId, dto);
+    return this.schedulesService.bulkUpsert(
+      calendarEventId,
+      ministryId,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Get('member-options')
@@ -165,7 +187,8 @@ export class SchedulesController {
   @ApiNotFoundResponse({ description: 'Ministério não encontrado' })
   memberOptions(
     @Query() query: QueryScheduleMemberOptionsDto,
+    @ActiveCongregation() activeCongregationId: string | undefined,
   ): Promise<ScheduleMemberOptionDto[]> {
-    return this.schedulesService.listMemberOptions(query);
+    return this.schedulesService.listMemberOptions(query, activeCongregationId);
   }
 }

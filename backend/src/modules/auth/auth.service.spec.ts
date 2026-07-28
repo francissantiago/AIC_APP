@@ -38,6 +38,7 @@ describe('AuthService', () => {
     findOne: jest.fn(),
     updateProfile: jest.fn(),
     updatePasswordHash: jest.fn(),
+    incrementTokenVersion: jest.fn(),
     setTwoFactorSecret: jest.fn(),
     setTwoFactorEnabled: jest.fn(),
   };
@@ -74,6 +75,7 @@ describe('AuthService', () => {
     user.twoFactorEnabled = false;
     user.twoFactorSecret = null;
     user.lastLoginAt = null;
+    user.tokenVersion = 0;
     user.createdAt = new Date('2026-07-17T00:00:00Z');
     user.updatedAt = new Date('2026-07-17T00:00:00Z');
     user.deletedAt = null;
@@ -133,6 +135,7 @@ describe('AuthService', () => {
         username: user.username,
         roles: ['ADMIN'],
         defaultCongregationId,
+        tv: 0,
       });
       expect(result).toMatchObject({
         accessToken: 'jwt-token-fake',
@@ -237,6 +240,7 @@ describe('AuthService', () => {
         username: user.username,
         roles: ['ADMIN'],
         defaultCongregationId,
+        tv: 0,
       });
     });
 
@@ -345,6 +349,7 @@ describe('AuthService', () => {
         'uid',
         '$2b$12$novo-hash',
       );
+      expect(usersService.incrementTokenVersion).toHaveBeenCalledWith('uid');
     });
   });
 
@@ -352,6 +357,7 @@ describe('AuthService', () => {
     it('setupTwoFactor deve persistir secret e retornar QR', async () => {
       const user = baseUser();
       usersService.findOneForAuthSecrets.mockResolvedValue(user);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (generateSecret as jest.Mock).mockReturnValue('NEWSECRET');
       (generateURI as jest.Mock).mockReturnValue('otpauth://totp/AIC:admin');
       (QRCode.toDataURL as jest.Mock).mockResolvedValue(
@@ -359,8 +365,14 @@ describe('AuthService', () => {
       );
       usersService.setTwoFactorSecret.mockResolvedValue(undefined);
 
-      const result = await service.setupTwoFactor(user.id);
+      const result = await service.setupTwoFactor(user.id, {
+        password: 'S3nh@Forte!',
+      });
 
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'S3nh@Forte!',
+        user.passwordHash,
+      );
       expect(usersService.setTwoFactorSecret).toHaveBeenCalledWith(
         user.id,
         'NEWSECRET',
@@ -370,6 +382,19 @@ describe('AuthService', () => {
         qrCodeDataUrl: 'data:image/png;base64,abc',
         secret: 'NEWSECRET',
       });
+    });
+
+    it('setupTwoFactor deve rejeitar senha inválida', async () => {
+      const user = baseUser();
+      usersService.findOneForAuthSecrets.mockResolvedValue(user);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.setupTwoFactor(user.id, { password: 'errada' }),
+      ).rejects.toMatchObject({
+        response: { code: ApiErrorCode.AUTH_INVALID_CURRENT_PASSWORD },
+      });
+      expect(usersService.setTwoFactorSecret).not.toHaveBeenCalled();
     });
 
     it('verifyTwoFactor deve ativar 2FA com código válido', async () => {
@@ -420,6 +445,14 @@ describe('AuthService', () => {
         false,
       );
       expect(result.twoFactorEnabled).toBe(false);
+    });
+  });
+
+  describe('logout', () => {
+    it('deve incrementar tokenVersion', async () => {
+      usersService.incrementTokenVersion.mockResolvedValue(undefined);
+      await service.logout('uid');
+      expect(usersService.incrementTokenVersion).toHaveBeenCalledWith('uid');
     });
   });
 });

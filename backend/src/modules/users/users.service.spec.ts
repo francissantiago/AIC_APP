@@ -25,6 +25,7 @@ describe('UsersService', () => {
     softRemove: jest.fn(),
     createQueryBuilder: jest.fn(),
     update: jest.fn(),
+    increment: jest.fn(),
   };
   const rolesRepository = {
     find: jest.fn(),
@@ -68,6 +69,7 @@ describe('UsersService', () => {
     user.twoFactorEnabled = false;
     user.twoFactorSecret = null;
     user.lastLoginAt = null;
+    user.tokenVersion = 0;
     user.createdAt = new Date('2026-07-17T00:00:00Z');
     user.updatedAt = new Date('2026-07-17T00:00:00Z');
     user.deletedAt = null;
@@ -423,6 +425,40 @@ describe('UsersService', () => {
       expect(result.page).toBe(2);
       expect(result.limit).toBe(10);
       expect(result.data[0]).not.toHaveProperty('passwordHash');
+    });
+  });
+
+  describe('tokenVersion (AIC-SEC-009)', () => {
+    it('incrementTokenVersion deve chamar repository.increment', async () => {
+      usersRepository.increment.mockResolvedValue({ affected: 1 });
+      await service.incrementTokenVersion('uid');
+      expect(usersRepository.increment).toHaveBeenCalledWith(
+        { id: 'uid' },
+        'tokenVersion',
+        1,
+      );
+    });
+
+    it('findOneForJwtValidation deve rejeitar tv divergente', async () => {
+      const user = baseUser();
+      user.tokenVersion = 2;
+      usersRepository.findOne.mockResolvedValue(user);
+
+      await expect(
+        service.findOneForJwtValidation(user.id, 0),
+      ).rejects.toMatchObject({
+        status: HttpStatus.UNAUTHORIZED,
+        response: { code: ApiErrorCode.AUTH_INVALID_CREDENTIALS },
+      });
+    });
+
+    it('findOneForJwtValidation deve aceitar tv alinhado (payload antigo = 0)', async () => {
+      const user = baseUser();
+      user.tokenVersion = 0;
+      usersRepository.findOne.mockResolvedValue(user);
+
+      const result = await service.findOneForJwtValidation(user.id, undefined);
+      expect(result.id).toBe(user.id);
     });
   });
 });

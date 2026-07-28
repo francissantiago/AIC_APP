@@ -171,9 +171,11 @@ export class MembersService {
   async findAll(
     query: QueryMembersDto,
     activeCongregationId?: string,
+    opts?: { includePii?: boolean },
   ): Promise<PaginatedMembersResponseDto> {
     const congregationId = await this.getCongregationId(activeCongregationId);
     const { page, limit, status, gender, q } = query;
+    const includePii = opts?.includePii ?? true;
 
     const qb = this.membersRepository
       .createQueryBuilder('member')
@@ -199,7 +201,9 @@ export class MembersService {
 
     const [members, total] = await qb.getManyAndCount();
     return {
-      data: members.map((member) => MemberResponseDto.fromEntity(member)),
+      data: members.map((member) =>
+        MemberResponseDto.fromEntity(member, { includePii }),
+      ),
       total,
       page,
       limit,
@@ -244,9 +248,12 @@ export class MembersService {
   async findOne(
     id: string,
     activeCongregationId?: string,
+    opts?: { includePii?: boolean },
   ): Promise<MemberResponseDto> {
     const member = await this.getMemberOrFail(id, activeCongregationId);
-    return MemberResponseDto.fromEntity(member);
+    return MemberResponseDto.fromEntity(member, {
+      includePii: opts?.includePii ?? true,
+    });
   }
 
   async update(

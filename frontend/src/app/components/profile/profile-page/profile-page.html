@@ -194,18 +194,38 @@
 
     @if (!twoFactorEnabled()) {
       @if (!setupData()) {
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
-          [disabled]="twoFaLoading()"
-          (click)="startTwoFactorSetup()"
+        <form
+          [formGroup]="setupForm"
+          (ngSubmit)="startTwoFactorSetup()"
+          class="grid max-w-xl gap-4"
+          novalidate
         >
-          @if (twoFaLoading()) {
-            {{ 'COMMON.LOADING' | translate }}
-          } @else {
-            {{ 'PROFILE.TWO_FA_SETUP' | translate }}
-          }
-        </button>
+          <div class="flex flex-col gap-1">
+            <label for="profile-2fa-setup-password" class="text-sm font-medium text-slate-700">
+              {{ 'PROFILE.CURRENT_PASSWORD' | translate }}
+            </label>
+            <input
+              id="profile-2fa-setup-password"
+              type="password"
+              formControlName="password"
+              autocomplete="current-password"
+              class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+          </div>
+          <div>
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+              [disabled]="twoFaLoading()"
+            >
+              @if (twoFaLoading()) {
+                {{ 'COMMON.LOADING' | translate }}
+              } @else {
+                {{ 'PROFILE.TWO_FA_SETUP' | translate }}
+              }
+            </button>
+          </div>
+        </form>
       } @else {
         <div class="space-y-4 max-w-xl">
           <p class="text-sm text-slate-700">{{ 'PROFILE.TWO_FA_SCAN_QR' | translate }}</p>

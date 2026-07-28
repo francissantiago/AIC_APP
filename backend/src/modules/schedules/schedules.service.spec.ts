@@ -172,12 +172,15 @@ describe('SchedulesService', () => {
       assignmentsRepository.save.mockResolvedValue(saved);
       mockAssignmentQb([saved]);
 
-      const result = await service.create({
-        calendarEventId: eventId,
-        ministryId,
-        memberId,
-        roleLabel: 'Vocal',
-      });
+      const result = await service.create(
+        {
+          calendarEventId: eventId,
+          ministryId,
+          memberId,
+          roleLabel: 'Vocal',
+        },
+        congregationId,
+      );
 
       expect(result.id).toBe(assignmentId);
       expect(result.roleLabel).toBe('Vocal');
@@ -191,12 +194,15 @@ describe('SchedulesService', () => {
       ministryMembersRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.create({
-          calendarEventId: eventId,
-          ministryId,
-          memberId,
-          roleLabel: 'Vocal',
-        }),
+        service.create(
+          {
+            calendarEventId: eventId,
+            ministryId,
+            memberId,
+            roleLabel: 'Vocal',
+          },
+          congregationId,
+        ),
       ).rejects.toMatchObject({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         response: { code: ApiErrorCode.SCHEDULES_MEMBER_NOT_IN_MINISTRY },
@@ -210,12 +216,15 @@ describe('SchedulesService', () => {
       );
 
       await expect(
-        service.create({
-          calendarEventId: eventId,
-          ministryId,
-          memberId,
-          roleLabel: 'Vocal',
-        }),
+        service.create(
+          {
+            calendarEventId: eventId,
+            ministryId,
+            memberId,
+            roleLabel: 'Vocal',
+          },
+          congregationId,
+        ),
       ).rejects.toMatchObject({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         response: { code: ApiErrorCode.SCHEDULES_MINISTRY_INACTIVE },
@@ -238,12 +247,15 @@ describe('SchedulesService', () => {
       );
 
       await expect(
-        service.create({
-          calendarEventId: eventId,
-          ministryId,
-          memberId,
-          roleLabel: 'Vocal',
-        }),
+        service.create(
+          {
+            calendarEventId: eventId,
+            ministryId,
+            memberId,
+            roleLabel: 'Vocal',
+          },
+          congregationId,
+        ),
       ).rejects.toMatchObject({
         status: HttpStatus.CONFLICT,
         response: { code: ApiErrorCode.SCHEDULES_ASSIGNMENT_CONFLICT },
@@ -262,12 +274,19 @@ describe('SchedulesService', () => {
       eventsRepository.createQueryBuilder.mockReturnValue(eventsQb);
       mockAssignmentQb([baseAssignment()]);
 
-      const result = await service.getWeekView({
-        from: '2026-07-13',
-        to: '2026-07-19',
-      });
+      const result = await service.getWeekView(
+        {
+          from: '2026-07-13',
+          to: '2026-07-19',
+        },
+        congregationId,
+      );
 
       expect(eventsQb.where).toHaveBeenCalledWith('event.deletedAt IS NULL');
+      expect(eventsQb.andWhere).toHaveBeenCalledWith(
+        'event.congregationId = :congregationId',
+        { congregationId },
+      );
       expect(result.events).toHaveLength(1);
       expect(result.events[0].ministries[0].assignments).toHaveLength(1);
     });
@@ -306,9 +325,14 @@ describe('SchedulesService', () => {
       const finalAssignment = baseAssignment();
       mockAssignmentQb([finalAssignment]);
 
-      const result = await service.bulkUpsert(eventId, ministryId, {
-        items: [{ memberId, roleLabel: 'Vocal', confirmed: true }],
-      });
+      const result = await service.bulkUpsert(
+        eventId,
+        ministryId,
+        {
+          items: [{ memberId, roleLabel: 'Vocal', confirmed: true }],
+        },
+        congregationId,
+      );
 
       expect(txRepo.remove).toHaveBeenCalledWith([existingOther]);
       expect(txRepo.save).toHaveBeenCalled();
@@ -323,7 +347,11 @@ describe('SchedulesService', () => {
       mockAssignmentQb([assignment]);
       assignmentsRepository.save.mockResolvedValue(assignment);
 
-      const result = await service.update(assignmentId, { confirmed: true });
+      const result = await service.update(
+        assignmentId,
+        { confirmed: true },
+        congregationId,
+      );
 
       expect(assignmentsRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({ confirmed: true }),
@@ -336,7 +364,7 @@ describe('SchedulesService', () => {
       mockAssignmentQb([assignment]);
       assignmentsRepository.remove.mockResolvedValue(assignment);
 
-      await service.remove(assignmentId);
+      await service.remove(assignmentId, congregationId);
 
       expect(assignmentsRepository.remove).toHaveBeenCalledWith(assignment);
     });
@@ -344,11 +372,20 @@ describe('SchedulesService', () => {
     it('deve lançar NOT_FOUND quando atribuição inexistente', async () => {
       mockAssignmentQb([]);
 
-      await expect(service.findOne(assignmentId)).rejects.toBeInstanceOf(
-        ApiException,
-      );
-      await expect(service.findOne(assignmentId)).rejects.toMatchObject({
+      await expect(
+        service.findOne(assignmentId, congregationId),
+      ).rejects.toBeInstanceOf(ApiException);
+      await expect(
+        service.findOne(assignmentId, congregationId),
+      ).rejects.toMatchObject({
         response: { code: ApiErrorCode.SCHEDULES_NOT_FOUND },
+      });
+    });
+
+    it('deve negar contexto sem congregação ativa', async () => {
+      await expect(service.findOne(assignmentId)).rejects.toMatchObject({
+        status: HttpStatus.FORBIDDEN,
+        response: { code: ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED },
       });
     });
   });

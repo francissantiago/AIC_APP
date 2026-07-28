@@ -23,6 +23,7 @@ import { LoginTwoFactorDto } from './dto/login-two-factor.dto';
 import { LoginDto } from './dto/login.dto';
 import { TwoFactorCodeDto } from './dto/two-factor-code.dto';
 import { TwoFactorSetupResponseDto } from './dto/two-factor-setup-response.dto';
+import { SetupTwoFactorDto } from './dto/setup-two-factor.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 
 const BCRYPT_COST = 12;
@@ -150,9 +151,18 @@ export class AuthService {
 
     const hash = await bcrypt.hash(dto.newPassword, BCRYPT_COST);
     await this.usersService.updatePasswordHash(userId, hash);
+    await this.usersService.incrementTokenVersion(userId);
   }
 
-  async setupTwoFactor(userId: string): Promise<TwoFactorSetupResponseDto> {
+  async logout(userId: string): Promise<void> {
+    await this.usersService.incrementTokenVersion(userId);
+    this.logger.log(`Logout (tokenVersion++): ${userId}`);
+  }
+
+  async setupTwoFactor(
+    userId: string,
+    dto: SetupTwoFactorDto,
+  ): Promise<TwoFactorSetupResponseDto> {
     const user = await this.usersService.findOneForAuthSecrets(userId);
 
     if (user.twoFactorEnabled) {
@@ -160,6 +170,15 @@ export class AuthService {
         code: ApiErrorCode.AUTH_2FA_ALREADY_ENABLED,
         message: ApiErrorMessage[ApiErrorCode.AUTH_2FA_ALREADY_ENABLED],
       });
+    }
+
+    if (!user.passwordHash) {
+      throw this.invalidCurrentPassword();
+    }
+
+    const passwordOk = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!passwordOk) {
+      throw this.invalidCurrentPassword();
     }
 
     const issuer =
@@ -249,6 +268,7 @@ export class AuthService {
       username: user.username,
       roles,
       defaultCongregationId: defaultCongregation.id,
+      tv: user.tokenVersion ?? 0,
     };
 
     const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN', '8h');

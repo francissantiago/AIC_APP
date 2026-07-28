@@ -300,17 +300,16 @@ export class MembershipCardsService {
 
   /**
    * Validação pública da carteirinha (QR Code) — sem autenticação.
-   * Expõe apenas dados necessários para conferência visual.
+   * Expõe apenas dados mínimos necessários para conferência visual (AIC-SEC-006).
    */
   async verifyPublic(
     memberId: string,
   ): Promise<MembershipCardVerifyResponseDto> {
     const member = await this.membersRepository.findOne({
       where: { id: memberId },
-      relations: ['congregation'],
     });
 
-    if (!member) {
+    if (!member || member.status !== MemberStatus.ACTIVE) {
       return {
         valid: false,
         memberId: null,
@@ -319,22 +318,19 @@ export class MembershipCardsService {
         status: null,
         congregationName: null,
         birthDate: null,
-        message: 'Membro não encontrado',
+        message: 'Carteirinha inválida',
       };
     }
 
-    const isActive = member.status === MemberStatus.ACTIVE;
     return {
-      valid: isActive,
+      valid: true,
       memberId: member.id,
       registrationNumber: member.registrationNumber,
       fullName: member.fullName,
       status: member.status,
-      congregationName: member.congregation?.name ?? null,
-      birthDate: member.birthDate,
-      message: isActive
-        ? 'Carteirinha válida'
-        : 'Membro encontrado, porém não está ativo',
+      congregationName: null,
+      birthDate: null,
+      message: 'Carteirinha válida',
     };
   }
 

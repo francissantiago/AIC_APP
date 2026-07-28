@@ -7,6 +7,7 @@ import { IDisableTwoFactorRequest } from '@interfaces/IDisableTwoFactorRequest';
 import { ILoginRequest } from '@interfaces/ILoginRequest';
 import { ILoginResult, isTwoFactorChallenge } from '@interfaces/ILoginResult';
 import { ILoginTwoFactorRequest } from '@interfaces/ILoginTwoFactorRequest';
+import { ISetupTwoFactorRequest } from '@interfaces/ISetupTwoFactorRequest';
 import { ITwoFactorCodeRequest } from '@interfaces/ITwoFactorCodeRequest';
 import { ITwoFactorSetupResponse } from '@interfaces/ITwoFactorSetupResponse';
 import { IUpdateMeRequest } from '@interfaces/IUpdateMeRequest';
@@ -119,9 +120,11 @@ export class AuthService {
       .pipe(this.#withRetry());
   }
 
-  setupTwoFactor(): Observable<ITwoFactorSetupResponse> {
+  setupTwoFactor(body: ISetupTwoFactorRequest): Observable<ITwoFactorSetupResponse> {
     return this.#http
-      .post<ITwoFactorSetupResponse>(`${this.#apiUrl}/me/2fa/setup`, {}, { headers: this.#headers })
+      .post<ITwoFactorSetupResponse>(`${this.#apiUrl}/me/2fa/setup`, body, {
+        headers: this.#headers,
+      })
       .pipe(this.#withRetry());
   }
 

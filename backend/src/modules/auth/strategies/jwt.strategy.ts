@@ -31,7 +31,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     try {
-      const user = await this.usersService.findOne(payload.sub);
+      const user = await this.usersService.findOneForJwtValidation(
+        payload.sub,
+        payload.tv,
+      );
       if (user.status !== UserStatus.ACTIVE) {
         throw this.invalidCredentials();
       }

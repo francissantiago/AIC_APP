@@ -48,8 +48,13 @@ export class SchedulesService {
 
   async create(
     dto: CreateScheduleAssignmentDto,
+    activeCongregationId?: string,
   ): Promise<ScheduleAssignmentResponseDto> {
-    const event = await this.getActiveEventOrFail(dto.calendarEventId);
+    const congregationId = this.requireCongregationId(activeCongregationId);
+    const event = await this.getActiveEventOrFail(
+      dto.calendarEventId,
+      congregationId,
+    );
     const ministry = await this.getMinistryForWriteOrFail(dto.ministryId);
     this.assertSameCongregation(event, ministry);
     await this.assertMemberEligible(
@@ -70,7 +75,9 @@ export class SchedulesService {
     try {
       const saved = await this.assignmentsRepository.save(assignment);
       this.logger.log(`Atribuição de escala criada: ${saved.id}`);
-      return this.toResponse(await this.getAssignmentOrFail(saved.id));
+      return this.toResponse(
+        await this.getAssignmentOrFail(saved.id, congregationId),
+      );
     } catch (error) {
       this.rethrowAssignmentConflict(error);
     }
@@ -78,7 +85,9 @@ export class SchedulesService {
 
   async findAll(
     query: QueryScheduleAssignmentsDto,
+    activeCongregationId?: string,
   ): Promise<PaginatedScheduleAssignmentsResponseDto> {
+    const congregationId = this.requireCongregationId(activeCongregationId);
     if (query.from && query.to) {
       this.validatePeriod(query.from, query.to);
     }
@@ -89,6 +98,7 @@ export class SchedulesService {
       .innerJoinAndSelect('assignment.ministry', 'ministry')
       .innerJoinAndSelect('assignment.member', 'member')
       .where('event.deletedAt IS NULL')
+      .andWhere('event.congregationId = :congregationId', { congregationId })
       .orderBy('event.startsAt', 'ASC')
       .addOrderBy('ministry.name', 'ASC')
       .addOrderBy('member.fullName', 'ASC')
@@ -135,15 +145,21 @@ export class SchedulesService {
     };
   }
 
-  async findOne(id: string): Promise<ScheduleAssignmentResponseDto> {
-    return this.toResponse(await this.getAssignmentOrFail(id));
+  async findOne(
+    id: string,
+    activeCongregationId?: string,
+  ): Promise<ScheduleAssignmentResponseDto> {
+    const congregationId = this.requireCongregationId(activeCongregationId);
+    return this.toResponse(await this.getAssignmentOrFail(id, congregationId));
   }
 
   async update(
     id: string,
     dto: UpdateScheduleAssignmentDto,
+    activeCongregationId?: string,
   ): Promise<ScheduleAssignmentResponseDto> {
-    const assignment = await this.getAssignmentOrFail(id);
+    const congregationId = this.requireCongregationId(activeCongregationId);
+    const assignment = await this.getAssignmentOrFail(id, congregationId);
     const event = assignment.calendarEvent;
 
     let ministryId = assignment.ministryId;
@@ -181,19 +197,26 @@ export class SchedulesService {
 
     try {
       await this.assignmentsRepository.save(assignment);
-      return this.toResponse(await this.getAssignmentOrFail(id));
+      return this.toResponse(
+        await this.getAssignmentOrFail(id, congregationId),
+      );
     } catch (error) {
       this.rethrowAssignmentConflict(error);
     }
   }
 
-  async remove(id: string): Promise<void> {
-    const assignment = await this.getAssignmentOrFail(id);
+  async remove(id: string, activeCongregationId?: string): Promise<void> {
+    const congregationId = this.requireCongregationId(activeCongregationId);
+    const assignment = await this.getAssignmentOrFail(id, congregationId);
     await this.assignmentsRepository.remove(assignment);
     this.logger.log(`Atribuição de escala removida: ${id}`);
   }
 
-  async getWeekView(query: QueryWeekViewDto): Promise<WeekViewResponseDto> {
+  async getWeekView(
+    query: QueryWeekViewDto,
+    activeCongregationId?: string,
+  ): Promise<WeekViewResponseDto> {
+    const congregationId = this.requireCongregationId(activeCongregationId);
     this.validatePeriod(query.from, query.to);
     const from = this.parsePeriodBound(query.from, 'start');
     const to = this.parsePeriodBound(query.to, 'end');
@@ -201,6 +224,7 @@ export class SchedulesService {
     const events = await this.eventsRepository
       .createQueryBuilder('event')
       .where('event.deletedAt IS NULL')
+      .andWhere('event.congregationId = :congregationId', { congregationId })
       .andWhere('event.startsAt >= :from', { from })
       .andWhere('event.startsAt <= :to', { to })
       .orderBy('event.startsAt', 'ASC')
@@ -218,6 +242,7 @@ export class SchedulesService {
       .innerJoinAndSelect('assignment.member', 'member')
       .where('assignment.calendarEventId IN (:...eventIds)', { eventIds })
       .andWhere('event.deletedAt IS NULL')
+      .andWhere('event.congregationId = :congregationId', { congregationId })
       .orderBy('ministry.name', 'ASC')
       .addOrderBy('member.fullName', 'ASC');
 
@@ -281,8 +306,10 @@ export class SchedulesService {
 
   async findByEvent(
     calendarEventId: string,
+    activeCongregationId?: string,
   ): Promise<ScheduleAssignmentResponseDto[]> {
-    await this.getActiveEventOrFail(calendarEventId);
+    const congregationId = this.requireCongregationId(activeCongregationId);
+    await this.getActiveEventOrFail(calendarEventId, congregationId);
     const rows = await this.assignmentsRepository
       .createQueryBuilder('assignment')
       .innerJoinAndSelect('assignment.calendarEvent', 'event')
@@ -292,6 +319,7 @@ export class SchedulesService {
         calendarEventId,
       })
       .andWhere('event.deletedAt IS NULL')
+      .andWhere('event.congregationId = :congregationId', { congregationId })
       .orderBy('ministry.name', 'ASC')
       .addOrderBy('member.fullName', 'ASC')
       .getMany();
@@ -303,8 +331,13 @@ export class SchedulesService {
     calendarEventId: string,
     ministryId: string,
     dto: BulkUpsertAssignmentsDto,
+    activeCongregationId?: string,
   ): Promise<ScheduleAssignmentResponseDto[]> {
-    const event = await this.getActiveEventOrFail(calendarEventId);
+    const congregationId = this.requireCongregationId(activeCongregationId);
+    const event = await this.getActiveEventOrFail(
+      calendarEventId,
+      congregationId,
+    );
     const ministry = await this.getMinistryForWriteOrFail(ministryId);
     this.assertSameCongregation(event, ministry);
 
@@ -360,13 +393,25 @@ export class SchedulesService {
       }
     });
 
-    return this.findByEventAndMinistry(calendarEventId, ministryId);
+    return this.findByEventAndMinistry(
+      calendarEventId,
+      ministryId,
+      congregationId,
+    );
   }
 
   async listMemberOptions(
     query: QueryScheduleMemberOptionsDto,
+    activeCongregationId?: string,
   ): Promise<ScheduleMemberOptionDto[]> {
+    const congregationId = this.requireCongregationId(activeCongregationId);
     const ministry = await this.getMinistryOrFail(query.ministryId);
+    if (ministry.congregationId !== congregationId) {
+      throw new ApiException(HttpStatus.NOT_FOUND, {
+        code: ApiErrorCode.SCHEDULES_MINISTRY_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.SCHEDULES_MINISTRY_NOT_FOUND],
+      });
+    }
 
     const qb = this.ministryMembersRepository
       .createQueryBuilder('link')
@@ -375,7 +420,7 @@ export class SchedulesService {
       .andWhere('member.deletedAt IS NULL')
       .andWhere('member.status = :status', { status: MemberStatus.ACTIVE })
       .andWhere('member.congregationId = :congregationId', {
-        congregationId: ministry.congregationId,
+        congregationId,
       })
       .orderBy('member.fullName', 'ASC')
       .take(query.limit);
@@ -392,9 +437,20 @@ export class SchedulesService {
     }));
   }
 
+  private requireCongregationId(id?: string): string {
+    if (!id) {
+      throw new ApiException(HttpStatus.FORBIDDEN, {
+        code: ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED,
+        message: ApiErrorMessage[ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED],
+      });
+    }
+    return id;
+  }
+
   private async findByEventAndMinistry(
     calendarEventId: string,
     ministryId: string,
+    congregationId: string,
   ): Promise<ScheduleAssignmentResponseDto[]> {
     const rows = await this.assignmentsRepository
       .createQueryBuilder('assignment')
@@ -406,13 +462,17 @@ export class SchedulesService {
       })
       .andWhere('assignment.ministryId = :ministryId', { ministryId })
       .andWhere('event.deletedAt IS NULL')
+      .andWhere('event.congregationId = :congregationId', { congregationId })
       .orderBy('member.fullName', 'ASC')
       .getMany();
 
     return rows.map((row) => ScheduleAssignmentResponseDto.fromEntity(row));
   }
 
-  private async getAssignmentOrFail(id: string): Promise<ScheduleAssignment> {
+  private async getAssignmentOrFail(
+    id: string,
+    congregationId: string,
+  ): Promise<ScheduleAssignment> {
     const assignment = await this.assignmentsRepository
       .createQueryBuilder('assignment')
       .innerJoinAndSelect('assignment.calendarEvent', 'event')
@@ -420,6 +480,7 @@ export class SchedulesService {
       .innerJoinAndSelect('assignment.member', 'member')
       .where('assignment.id = :id', { id })
       .andWhere('event.deletedAt IS NULL')
+      .andWhere('event.congregationId = :congregationId', { congregationId })
       .getOne();
 
     if (!assignment) {
@@ -431,9 +492,12 @@ export class SchedulesService {
     return assignment;
   }
 
-  private async getActiveEventOrFail(id: string): Promise<CalendarEvent> {
+  private async getActiveEventOrFail(
+    id: string,
+    congregationId: string,
+  ): Promise<CalendarEvent> {
     const event = await this.eventsRepository.findOne({
-      where: { id, deletedAt: IsNull() },
+      where: { id, deletedAt: IsNull(), congregationId },
     });
     if (!event) {
       throw new ApiException(HttpStatus.NOT_FOUND, {

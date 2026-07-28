@@ -15,8 +15,10 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle, seconds } from '@nestjs/throttler';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { AuthService } from './auth.service';
@@ -27,6 +29,7 @@ import { DisableTwoFactorDto } from './dto/disable-two-factor.dto';
 import { LoginTwoFactorChallengeDto } from './dto/login-two-factor-challenge.dto';
 import { LoginTwoFactorDto } from './dto/login-two-factor.dto';
 import { LoginDto } from './dto/login.dto';
+import { SetupTwoFactorDto } from './dto/setup-two-factor.dto';
 import { TwoFactorCodeDto } from './dto/two-factor-code.dto';
 import { TwoFactorSetupResponseDto } from './dto/two-factor-setup-response.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
@@ -40,6 +43,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: seconds(60) } })
   @ApiOperation({
     summary: 'Autenticar com email e senha',
     description:
@@ -57,6 +61,7 @@ export class AuthController {
   @ApiOkResponse({ type: AuthResponseDto })
   @ApiOkResponse({ type: LoginTwoFactorChallengeDto })
   @ApiUnauthorizedResponse({ description: 'Credenciais inválidas' })
+  @ApiTooManyRequestsResponse({ description: 'Limite de tentativas excedido' })
   login(
     @Body() dto: LoginDto,
   ): Promise<AuthResponseDto | LoginTwoFactorChallengeDto> {
@@ -65,11 +70,13 @@ export class AuthController {
 
   @Post('login/2fa')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: seconds(60) } })
   @ApiOperation({ summary: 'Concluir login com código TOTP (desafio 2FA)' })
   @ApiOkResponse({ type: AuthResponseDto })
   @ApiUnauthorizedResponse({
     description: 'preAuthToken ou código TOTP inválidos',
   })
+  @ApiTooManyRequestsResponse({ description: 'Limite de tentativas excedido' })
   loginTwoFactor(@Body() dto: LoginTwoFactorDto): Promise<AuthResponseDto> {
     return this.authService.loginWithTwoFactor(dto);
   }
@@ -118,14 +125,20 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Iniciar enroll de 2FA TOTP (QR + secret)' })
+  @ApiOperation({
+    summary: 'Iniciar enroll de 2FA TOTP (QR + secret)',
+    description: 'Exige a senha atual do usuário (AIC-SEC-008).',
+  })
   @ApiOkResponse({ type: TwoFactorSetupResponseDto })
   @ApiConflictResponse({ description: '2FA já está ativo' })
-  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
+  @ApiUnauthorizedResponse({
+    description: 'Token ausente/inválido ou senha incorreta',
+  })
   setupTwoFactor(
     @CurrentUser() user: UserResponseDto,
+    @Body() dto: SetupTwoFactorDto,
   ): Promise<TwoFactorSetupResponseDto> {
-    return this.authService.setupTwoFactor(user.id);
+    return this.authService.setupTwoFactor(user.id, dto);
   }
 
   @Post('me/2fa/verify')
@@ -166,11 +179,11 @@ export class AuthController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Encerrar sessão no cliente (no-op server-side na v1)',
+    summary: 'Encerrar sessão (incrementa tokenVersion e invalida JWTs)',
   })
-  @ApiNoContentResponse({ description: 'Sessão encerrada no cliente' })
+  @ApiNoContentResponse({ description: 'Sessão encerrada' })
   @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
-  logout(): void {
-    // JWT stateless: invalidação é responsabilidade do cliente.
+  async logout(@CurrentUser() user: UserResponseDto): Promise<void> {
+    await this.authService.logout(user.id);
   }
 }

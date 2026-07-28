@@ -55,6 +55,10 @@ export class User {
   @Column({ name: 'last_login_at', type: 'datetime', nullable: true })
   lastLoginAt!: Date | null;
 
+  /** Incrementado em logout / changePassword para invalidar JWTs anteriores. */
+  @Column({ name: 'token_version', type: 'int', default: 0 })
+  tokenVersion!: number;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;
 
