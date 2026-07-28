@@ -48,6 +48,7 @@ describe('SetupService', () => {
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
   const dataSource = {
     manager: { count: jest.fn() },
@@ -138,6 +139,11 @@ describe('SetupService', () => {
     usersRepository.count.mockResolvedValue(0);
     dataSource.manager.count.mockResolvedValue(0);
     manager.count.mockResolvedValue(0);
+    manager.createQueryBuilder.mockReturnValue({
+      setLock: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      getOne: jest.fn().mockResolvedValue(baseHeadquarters()),
+    });
     congregationsService.getOrCreateBase.mockResolvedValue(baseHeadquarters());
     stubFindOne({});
     manager.create.mockImplementation(
@@ -165,13 +171,21 @@ describe('SetupService', () => {
   });
 
   describe('getStatus', () => {
-    it('deve retornar needsSetup=true quando não há usuários', async () => {
+    it('deve retornar needsSetup=true quando não há usuários (incluindo soft-deleted)', async () => {
       usersRepository.count.mockResolvedValue(0);
 
       await expect(service.getStatus()).resolves.toEqual({ needsSetup: true });
+      expect(usersRepository.count).toHaveBeenCalledWith({ withDeleted: true });
     });
 
     it('deve retornar needsSetup=false quando já existe usuário', async () => {
+      usersRepository.count.mockResolvedValue(1);
+
+      await expect(service.getStatus()).resolves.toEqual({ needsSetup: false });
+      expect(usersRepository.count).toHaveBeenCalledWith({ withDeleted: true });
+    });
+
+    it('deve considerar setup completo mesmo se o único usuário estiver soft-deleted (AIC-SEC-002)', async () => {
       usersRepository.count.mockResolvedValue(1);
 
       await expect(service.getStatus()).resolves.toEqual({ needsSetup: false });

@@ -1,9 +1,12 @@
+import { HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { ApiErrorCode } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { Role } from '../roles/entities/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 import { User } from './entities/user.entity';
 import { UserStatus } from './enums/user-status.enum';
 import { UsersService } from './users.service';
@@ -24,7 +27,7 @@ describe('UsersService', () => {
     update: jest.fn(),
   };
   const rolesRepository = {
-    findBy: jest.fn(),
+    find: jest.fn(),
   };
 
   const membersReadPermission = {
@@ -80,6 +83,53 @@ describe('UsersService', () => {
     roleIds: [6],
   });
 
+  const actorSecretary = (): UserResponseDto => ({
+    id: 'actor-1111-2222-3333-444444444444',
+    username: 'secretario',
+    email: 'secretario@igreja.org',
+    fullName: 'Secretário',
+    status: UserStatus.ACTIVE,
+    twoFactorEnabled: false,
+    lastLoginAt: null,
+    createdAt: new Date('2026-07-17T00:00:00Z'),
+    updatedAt: new Date('2026-07-17T00:00:00Z'),
+    roles: [
+      {
+        id: 4,
+        code: 'SECRETARY',
+        name: 'Secretário',
+        description: null,
+        isSystem: true,
+        permissions: [],
+      },
+    ],
+    permissions: ['users:write', 'members:read', 'members:write'],
+  });
+
+  const actorAdmin = (): UserResponseDto => ({
+    ...actorSecretary(),
+    id: 'admin-1111-2222-3333-444444444444',
+    username: 'admin',
+    email: 'admin@igreja.org',
+    fullName: 'Admin',
+    roles: [
+      {
+        id: 1,
+        code: 'ADMIN',
+        name: 'Administrador',
+        description: null,
+        isSystem: true,
+        permissions: [],
+      },
+    ],
+    permissions: [
+      'users:write',
+      'roles:write',
+      'members:read',
+      'members:write',
+    ],
+  });
+
   beforeEach(async () => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
@@ -99,13 +149,13 @@ describe('UsersService', () => {
       const hashMock = bcrypt.hash as jest.Mock;
       hashMock.mockResolvedValue('$2b$12$hash-gerado');
       usersRepository.findOne.mockResolvedValue(null);
-      rolesRepository.findBy.mockResolvedValue([memberRole]);
+      rolesRepository.find.mockResolvedValue([memberRole]);
       const saved = baseUser();
       saved.passwordHash = '$2b$12$hash-gerado';
       usersRepository.create.mockReturnValue(saved);
       usersRepository.save.mockResolvedValue(saved);
 
-      const result = await service.create(createDto());
+      const result = await service.create(createDto(), actorAdmin());
 
       expect(hashMock).toHaveBeenCalledWith('S3nh@Forte!', 12);
       expect(usersRepository.create).toHaveBeenCalledWith(
@@ -126,7 +176,9 @@ describe('UsersService', () => {
     it('deve lançar 409 quando username já existe (incluindo soft-deleted)', async () => {
       usersRepository.findOne.mockResolvedValue(baseUser());
 
-      await expect(service.create(createDto())).rejects.toThrow(ApiException);
+      await expect(service.create(createDto(), actorAdmin())).rejects.toThrow(
+        ApiException,
+      );
       expect(usersRepository.findOne).toHaveBeenCalledWith(
         expect.objectContaining({ withDeleted: true }),
       );
@@ -135,9 +187,37 @@ describe('UsersService', () => {
 
     it('deve lançar 422 quando alguma role não existe', async () => {
       usersRepository.findOne.mockResolvedValue(null);
-      rolesRepository.findBy.mockResolvedValue([]);
+      rolesRepository.find.mockResolvedValue([]);
 
-      await expect(service.create(createDto())).rejects.toThrow(ApiException);
+      await expect(service.create(createDto(), actorAdmin())).rejects.toThrow(
+        ApiException,
+      );
+      expect(usersRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('deve negar SECRETARY atribuindo papel ADMIN na criação (AIC-SEC-003)', async () => {
+      const adminRole: Role = {
+        ...memberRole,
+        id: 1,
+        code: 'ADMIN',
+        permissions: [],
+      };
+      usersRepository.findOne.mockResolvedValue(null);
+      rolesRepository.find.mockResolvedValue([adminRole]);
+
+      try {
+        await service.create(
+          { ...createDto(), roleIds: [1] },
+          actorSecretary(),
+        );
+        fail('esperava ApiException');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiException);
+        expect((error as ApiException).getStatus()).toBe(HttpStatus.FORBIDDEN);
+        expect((error as ApiException).getResponse()).toMatchObject({
+          code: ApiErrorCode.AUTH_FORBIDDEN,
+        });
+      }
       expect(usersRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -174,28 +254,88 @@ describe('UsersService', () => {
   });
 
   describe('setRoles', () => {
-    it('deve substituir o conjunto de roles do usuário', async () => {
+    it('deve permitir ADMIN substituir roles incluindo ADMIN', async () => {
       const user = baseUser();
-      const adminRole: Role = { ...memberRole, id: 1, code: 'ADMIN' };
+      const adminRole: Role = {
+        ...memberRole,
+        id: 1,
+        code: 'ADMIN',
+        permissions: [],
+      };
       usersRepository.findOne.mockResolvedValue(user);
-      rolesRepository.findBy.mockResolvedValue([adminRole]);
+      rolesRepository.find.mockResolvedValue([adminRole]);
       usersRepository.save.mockImplementation((entity: User) =>
         Promise.resolve(entity),
       );
 
-      const result = await service.setRoles(user.id, { roleIds: [1] });
+      const result = await service.setRoles(
+        user.id,
+        { roleIds: [1] },
+        actorAdmin(),
+      );
 
       expect(result.roles).toEqual([
         expect.objectContaining({ code: 'ADMIN' }),
       ]);
     });
 
-    it('deve lançar 422 quando roleIds contém role inexistente', async () => {
-      usersRepository.findOne.mockResolvedValue(baseUser());
-      rolesRepository.findBy.mockResolvedValue([memberRole]);
+    it('deve negar SECRETARY atribuindo papel ADMIN (AIC-SEC-003)', async () => {
+      const user = baseUser();
+      const adminRole: Role = {
+        ...memberRole,
+        id: 1,
+        code: 'ADMIN',
+        permissions: [],
+      };
+      usersRepository.findOne.mockResolvedValue(user);
+      rolesRepository.find.mockResolvedValue([adminRole]);
+
+      try {
+        await service.setRoles(user.id, { roleIds: [1] }, actorSecretary());
+        fail('esperava ApiException');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiException);
+        expect((error as ApiException).getStatus()).toBe(HttpStatus.FORBIDDEN);
+        expect((error as ApiException).getResponse()).toMatchObject({
+          code: ApiErrorCode.AUTH_FORBIDDEN,
+        });
+      }
+      expect(usersRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('deve negar SECRETARY atribuindo role com permissão fora do seu conjunto', async () => {
+      const user = baseUser();
+      const treasurerRole: Role = {
+        ...memberRole,
+        id: 3,
+        code: 'TREASURER',
+        permissions: [
+          {
+            id: 10,
+            code: 'finance:write',
+            resource: 'finance',
+            action: 'write',
+            description: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      };
+      usersRepository.findOne.mockResolvedValue(user);
+      rolesRepository.find.mockResolvedValue([treasurerRole]);
 
       await expect(
-        service.setRoles(baseUser().id, { roleIds: [6, 999] }),
+        service.setRoles(user.id, { roleIds: [3] }, actorSecretary()),
+      ).rejects.toThrow(ApiException);
+      expect(usersRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('deve lançar 422 quando roleIds contém role inexistente', async () => {
+      usersRepository.findOne.mockResolvedValue(baseUser());
+      rolesRepository.find.mockResolvedValue([memberRole]);
+
+      await expect(
+        service.setRoles(baseUser().id, { roleIds: [6, 999] }, actorAdmin()),
       ).rejects.toThrow(ApiException);
     });
   });

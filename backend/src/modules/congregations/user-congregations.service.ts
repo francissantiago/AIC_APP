@@ -7,7 +7,6 @@ import {
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { UsersService } from '../users/users.service';
-import { CongregationsService } from './congregations.service';
 import { SetUserCongregationsDto } from './dto/set-user-congregations.dto';
 import { UserCongregationResponseDto } from './dto/user-congregation-response.dto';
 import { Congregation } from './entities/congregation.entity';
@@ -23,7 +22,6 @@ export class UserCongregationsService {
     private readonly userCongregationsRepository: Repository<UserCongregation>,
     @InjectRepository(Congregation)
     private readonly congregationsRepository: Repository<Congregation>,
-    private readonly congregationsService: CongregationsService,
     private readonly usersService: UsersService,
     private readonly dataSource: DataSource,
   ) {}
@@ -111,26 +109,46 @@ export class UserCongregationsService {
     );
   }
 
+  /**
+   * Resolve a congregação ativa padrão do usuário.
+   * Nunca auto-vincula à HQ — ausência de membership válida = 403 (AIC-SEC-001).
+   */
   async resolveDefaultForUser(userId: string): Promise<Congregation> {
     const membership = await this.userCongregationsRepository.findOne({
       where: { userId, isDefault: true },
       relations: { congregation: true },
     });
-    if (
-      membership?.congregation &&
-      membership.congregation.deletedAt === null
-    ) {
-      return membership.congregation;
+    const defaultCongregation = membership?.congregation;
+    if (this.isUsableCongregation(defaultCongregation)) {
+      return defaultCongregation;
     }
 
-    const hq = await this.congregationsService.getOrCreateBase();
-    await this.userCongregationsRepository.upsert(
-      { userId, congregationId: hq.id, isDefault: true },
-      ['userId', 'congregationId'],
-    );
+    const anyMembership = await this.userCongregationsRepository.findOne({
+      where: { userId },
+      relations: { congregation: true },
+      order: { assignedAt: 'ASC' },
+    });
+    const fallbackCongregation = anyMembership?.congregation;
+    if (this.isUsableCongregation(fallbackCongregation)) {
+      return fallbackCongregation;
+    }
+
     this.logger.warn(
-      `Membership padrão ausente para usuário ${userId}; auto-criada para a HQ (${hq.id}).`,
+      `Membership ausente para usuário ${userId}; contexto de congregação negado.`,
     );
-    return hq;
+    throw new ApiException(HttpStatus.FORBIDDEN, {
+      code: ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED,
+      message: ApiErrorMessage[ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED],
+    });
+  }
+
+  private isUsableCongregation(
+    congregation: Congregation | null | undefined,
+  ): congregation is Congregation {
+    return (
+      congregation != null &&
+      congregation.deletedAt === null &&
+      congregation.status === CongregationStatus.ACTIVE
+    );
   }
 }

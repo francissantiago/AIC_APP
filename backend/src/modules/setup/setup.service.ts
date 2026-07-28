@@ -35,9 +35,12 @@ export class SetupService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /** Critério canônico de "já configurado": existe pelo menos um usuário não removido. */
+  /**
+   * Critério canônico de "já configurado": existe pelo menos um usuário,
+   * incluindo soft-deleted (AIC-SEC-002 — setup irrevogável).
+   */
   async getStatus(): Promise<SetupStatusResponseDto> {
-    const users = await this.usersRepository.count();
+    const users = await this.usersRepository.count({ withDeleted: true });
     return { needsSetup: users === 0 };
   }
 
@@ -48,6 +51,12 @@ export class SetupService {
 
     const { user, congregation } = await this.dataSource.transaction(
       async (manager) => {
+        // Serializa setups concorrentes (AIC-SEC-011) via lock pessimista na HQ.
+        await manager
+          .createQueryBuilder(Congregation, 'c')
+          .setLock('pessimistic_write')
+          .where('c.id = :id', { id: headquarters.id })
+          .getOne();
         await this.assertSetupPending(manager);
         const adminRole = await this.resolveAdminRole(manager);
         await this.assertAdminUniqueness(
@@ -92,7 +101,7 @@ export class SetupService {
   }
 
   private async assertSetupPending(manager: EntityManager): Promise<void> {
-    const users = await manager.count(User);
+    const users = await manager.count(User, { withDeleted: true });
     if (users > 0) {
       throw new ApiException(HttpStatus.CONFLICT, {
         code: ApiErrorCode.SETUP_ALREADY_COMPLETED,

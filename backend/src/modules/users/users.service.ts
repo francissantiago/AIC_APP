@@ -32,9 +32,13 @@ export class UsersService {
     private readonly rolesRepository: Repository<Role>,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<UserResponseDto> {
+  async create(
+    dto: CreateUserDto,
+    actor: UserResponseDto,
+  ): Promise<UserResponseDto> {
     await this.assertUniqueness(dto.username, dto.email);
     const roles = await this.resolveRoles(dto.roleIds);
+    this.assertCanAssignRoles(actor, roles);
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_COST);
 
     const user = this.usersRepository.create({
@@ -130,9 +134,15 @@ export class UsersService {
     return UserResponseDto.fromEntity(saved);
   }
 
-  async setRoles(id: string, dto: AssignRolesDto): Promise<UserResponseDto> {
+  async setRoles(
+    id: string,
+    dto: AssignRolesDto,
+    actor: UserResponseDto,
+  ): Promise<UserResponseDto> {
     const user = await this.getUserOrFail(id);
-    user.roles = await this.resolveRoles(dto.roleIds);
+    const roles = await this.resolveRoles(dto.roleIds);
+    this.assertCanAssignRoles(actor, roles);
+    user.roles = roles;
     const saved = await this.usersRepository.save(user);
     this.logger.log(
       `Roles do usuário ${saved.id} substituídas: [${dto.roleIds.join(', ')}]`,
@@ -284,7 +294,10 @@ export class UsersService {
 
   private async resolveRoles(roleIds: number[]): Promise<Role[]> {
     const uniqueIds = [...new Set(roleIds)];
-    const roles = await this.rolesRepository.findBy({ id: In(uniqueIds) });
+    const roles = await this.rolesRepository.find({
+      where: { id: In(uniqueIds) },
+      relations: { permissions: true },
+    });
     if (roles.length !== uniqueIds.length) {
       const foundIds = new Set(roles.map((role) => role.id));
       const missing = uniqueIds.filter((roleId) => !foundIds.has(roleId));
@@ -301,5 +314,35 @@ export class UsersService {
       });
     }
     return roles;
+  }
+
+  /**
+   * Impede escalação via users:write (AIC-SEC-003):
+   * - só ADMIN atribui o papel ADMIN;
+   * - não-ADMIN só atribui roles cujas permissões ⊆ das do ator.
+   */
+  private assertCanAssignRoles(actor: UserResponseDto, roles: Role[]): void {
+    const actorIsAdmin = actor.roles.some((role) => role.code === 'ADMIN');
+    const actorPerms = new Set(actor.permissions);
+
+    for (const role of roles) {
+      if (role.code === 'ADMIN' && !actorIsAdmin) {
+        throw new ApiException(HttpStatus.FORBIDDEN, {
+          code: ApiErrorCode.AUTH_FORBIDDEN,
+          message: ApiErrorMessage[ApiErrorCode.AUTH_FORBIDDEN],
+        });
+      }
+      if (actorIsAdmin) {
+        continue;
+      }
+      for (const permission of role.permissions ?? []) {
+        if (!actorPerms.has(permission.code)) {
+          throw new ApiException(HttpStatus.FORBIDDEN, {
+            code: ApiErrorCode.AUTH_FORBIDDEN,
+            message: ApiErrorMessage[ApiErrorCode.AUTH_FORBIDDEN],
+          });
+        }
+      }
+    }
   }
 }

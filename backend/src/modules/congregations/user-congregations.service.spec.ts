@@ -5,7 +5,6 @@ import { DataSource } from 'typeorm';
 import { ApiErrorCode } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { UsersService } from '../users/users.service';
-import { CongregationsService } from './congregations.service';
 import { Congregation } from './entities/congregation.entity';
 import { UserCongregation } from './entities/user-congregation.entity';
 import { CongregationStatus } from './enums/congregation-status.enum';
@@ -26,9 +25,6 @@ describe('UserCongregationsService', () => {
   };
   const congregationsRepository = {
     find: jest.fn(),
-  };
-  const congregationsService = {
-    getOrCreateBase: jest.fn(),
   };
   const usersService = {
     findOne: jest.fn(),
@@ -89,7 +85,6 @@ describe('UserCongregationsService', () => {
           provide: getRepositoryToken(Congregation),
           useValue: congregationsRepository,
         },
-        { provide: CongregationsService, useValue: congregationsService },
         { provide: UsersService, useValue: usersService },
         { provide: DataSource, useValue: dataSource },
       ],
@@ -213,22 +208,61 @@ describe('UserCongregationsService', () => {
       const result = await service.resolveDefaultForUser(userId);
 
       expect(result).toBe(hq);
-      expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(userCongregationsRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    it('auto-cura criando membership na HQ quando ausente', async () => {
-      const hq = baseCongregation();
-      userCongregationsRepository.findOne.mockResolvedValue(null);
-      congregationsService.getOrCreateBase.mockResolvedValue(hq);
+    it('usa fallback de membership não-default quando padrão está ausente', async () => {
+      const branch = baseCongregation({
+        id: branchId,
+        type: CongregationType.BRANCH,
+      });
+      userCongregationsRepository.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(
+          baseMembership({
+            congregationId: branchId,
+            isDefault: false,
+            congregation: branch,
+          }),
+        );
 
       const result = await service.resolveDefaultForUser(userId);
 
-      expect(congregationsService.getOrCreateBase).toHaveBeenCalled();
-      expect(userCongregationsRepository.upsert).toHaveBeenCalledWith(
-        { userId, congregationId: hq.id, isDefault: true },
-        ['userId', 'congregationId'],
+      expect(result).toBe(branch);
+      expect(userCongregationsRepository.upsert).not.toHaveBeenCalled();
+    });
+
+    it('nega com 403 quando não há membership válida (sem auto-vínculo à HQ)', async () => {
+      userCongregationsRepository.findOne.mockResolvedValue(null);
+
+      try {
+        await service.resolveDefaultForUser(userId);
+        fail('esperava ApiException');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiException);
+        expect((error as ApiException).getStatus()).toBe(HttpStatus.FORBIDDEN);
+        expect((error as ApiException).getResponse()).toMatchObject({
+          code: ApiErrorCode.CONGREGATIONS_CONTEXT_DENIED,
+        });
+      }
+      expect(userCongregationsRepository.upsert).not.toHaveBeenCalled();
+    });
+
+    it('nega com 403 quando a membership padrão aponta para congregação inativa', async () => {
+      userCongregationsRepository.findOne
+        .mockResolvedValueOnce(
+          baseMembership({
+            congregation: baseCongregation({
+              status: CongregationStatus.INACTIVE,
+            }),
+          }),
+        )
+        .mockResolvedValueOnce(null);
+
+      await expect(service.resolveDefaultForUser(userId)).rejects.toThrow(
+        ApiException,
       );
-      expect(result).toBe(hq);
+      expect(userCongregationsRepository.upsert).not.toHaveBeenCalled();
     });
   });
 });

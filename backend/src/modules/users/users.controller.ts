@@ -27,6 +27,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
@@ -61,8 +62,11 @@ export class UsersController {
   @ApiUnprocessableEntityResponse({
     description: 'roleIds contém role inexistente',
   })
-  create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
-    return this.usersService.create(dto);
+  create(
+    @CurrentUser() actor: UserResponseDto,
+    @Body() dto: CreateUserDto,
+  ): Promise<UserResponseDto> {
+    return this.usersService.create(dto, actor);
   }
 
   @Get()
@@ -102,10 +106,11 @@ export class UsersController {
     description: 'roleIds contém role inexistente',
   })
   setRoles(
+    @CurrentUser() actor: UserResponseDto,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AssignRolesDto,
   ): Promise<UserResponseDto> {
-    return this.usersService.setRoles(id, dto);
+    return this.usersService.setRoles(id, dto, actor);
   }
 
   @Delete(':id')
