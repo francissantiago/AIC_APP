@@ -4,7 +4,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { ApiErrorCode } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
-import { MembersService } from '../members/members.service';
+import { CongregationsService } from '../congregations/congregations.service';
+import { MemberUserLinkService } from '../member-user-link/member-user-link.service';
 import { Role } from '../roles/entities/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -31,11 +32,14 @@ describe('UsersService', () => {
   const rolesRepository = {
     find: jest.fn(),
   };
-  const membersService = {
+  const memberUserLinkService = {
     findMemberLinkByUserId: jest.fn(),
     findMemberLinksByUserIds: jest.fn(),
     linkUserToMember: jest.fn(),
     unlinkUserFromMember: jest.fn(),
+  };
+  const congregationsService = {
+    getOrCreateBase: jest.fn(),
   };
   const transactionManager = {
     create: jest.fn(),
@@ -152,14 +156,18 @@ describe('UsersService', () => {
           cb(transactionManager),
       ),
     };
-    membersService.findMemberLinkByUserId.mockResolvedValue(null);
-    membersService.findMemberLinksByUserIds.mockResolvedValue(new Map());
+    memberUserLinkService.findMemberLinkByUserId.mockResolvedValue(null);
+    memberUserLinkService.findMemberLinksByUserIds.mockResolvedValue(new Map());
+    congregationsService.getOrCreateBase.mockResolvedValue({
+      id: 'cong-base-id',
+    });
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: getRepositoryToken(User), useValue: usersRepository },
         { provide: getRepositoryToken(Role), useValue: rolesRepository },
-        { provide: MembersService, useValue: membersService },
+        { provide: MemberUserLinkService, useValue: memberUserLinkService },
+        { provide: CongregationsService, useValue: congregationsService },
       ],
     }).compile();
 
@@ -188,7 +196,7 @@ describe('UsersService', () => {
           roles: [memberRole],
         }),
       );
-      expect(membersService.linkUserToMember).not.toHaveBeenCalled();
+      expect(memberUserLinkService.linkUserToMember).not.toHaveBeenCalled();
       expect(result).not.toHaveProperty('passwordHash');
       expect(result).not.toHaveProperty('twoFactorSecret');
       expect(result.username).toBe('joao.silva');
@@ -217,7 +225,7 @@ describe('UsersService', () => {
       const saved = baseUser();
       transactionManager.create.mockReturnValue(saved);
       transactionManager.save.mockResolvedValue(saved);
-      membersService.findMemberLinkByUserId.mockResolvedValue({
+      memberUserLinkService.findMemberLinkByUserId.mockResolvedValue({
         memberId: 'member-1111-2222-3333-444444444444',
         memberFullName: 'João da Silva',
       });
@@ -229,7 +237,7 @@ describe('UsersService', () => {
         'cong-123',
       );
 
-      expect(membersService.linkUserToMember).toHaveBeenCalledWith(
+      expect(memberUserLinkService.linkUserToMember).toHaveBeenCalledWith(
         saved.id,
         memberId,
         'cong-123',
@@ -315,7 +323,7 @@ describe('UsersService', () => {
 
       await service.update(user.id, { memberId: null });
 
-      expect(membersService.unlinkUserFromMember).toHaveBeenCalledWith(
+      expect(memberUserLinkService.unlinkUserFromMember).toHaveBeenCalledWith(
         user.id,
         transactionManager,
       );

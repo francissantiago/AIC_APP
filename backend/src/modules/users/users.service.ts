@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { In, EntityManager, Repository } from 'typeorm';
@@ -7,7 +7,8 @@ import {
   ApiErrorMessage,
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
-import { MembersService } from '../members/members.service';
+import { CongregationsService } from '../congregations/congregations.service';
+import { MemberUserLinkService } from '../member-user-link/member-user-link.service';
 import { Role } from '../roles/entities/role.entity';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -31,7 +32,9 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly rolesRepository: Repository<Role>,
-    private readonly membersService: MembersService,
+    private readonly memberUserLinkService: MemberUserLinkService,
+    @Inject(forwardRef(() => CongregationsService))
+    private readonly congregationsService: CongregationsService,
   ) {}
 
   async create(
@@ -56,10 +59,13 @@ export class UsersService {
         });
         const persisted = await manager.save(user);
         if (dto.memberId) {
-          await this.membersService.linkUserToMember(
+          const congregationId = await this.resolveCongregationId(
+            activeCongregationId,
+          );
+          await this.memberUserLinkService.linkUserToMember(
             persisted.id,
             dto.memberId,
-            activeCongregationId,
+            congregationId,
             manager,
           );
         }
@@ -103,7 +109,7 @@ export class UsersService {
     }
 
     const [users, total] = await qb.getManyAndCount();
-    const links = await this.membersService.findMemberLinksByUserIds(
+    const links = await this.memberUserLinkService.findMemberLinksByUserIds(
       users.map((user) => user.id),
     );
     return {
@@ -315,10 +321,19 @@ export class UsersService {
   }
 
   private async toUserResponse(user: User): Promise<UserResponseDto> {
-    const memberLink = await this.membersService.findMemberLinkByUserId(
+    const memberLink = await this.memberUserLinkService.findMemberLinkByUserId(
       user.id,
     );
     return UserResponseDto.fromEntity(user, memberLink);
+  }
+
+  private async resolveCongregationId(
+    activeCongregationId?: string,
+  ): Promise<string> {
+    if (activeCongregationId) {
+      return activeCongregationId;
+    }
+    return (await this.congregationsService.getOrCreateBase()).id;
   }
 
   private async applyMemberLinkChange(
@@ -328,21 +343,24 @@ export class UsersService {
     manager: EntityManager,
   ): Promise<void> {
     const currentLink =
-      await this.membersService.findMemberLinkByUserId(userId);
+      await this.memberUserLinkService.findMemberLinkByUserId(userId);
     if (memberId === null) {
-      await this.membersService.unlinkUserFromMember(userId, manager);
+      await this.memberUserLinkService.unlinkUserFromMember(userId, manager);
       return;
     }
     if (currentLink?.memberId === memberId) {
       return;
     }
     if (currentLink) {
-      await this.membersService.unlinkUserFromMember(userId, manager);
+      await this.memberUserLinkService.unlinkUserFromMember(userId, manager);
     }
-    await this.membersService.linkUserToMember(
+    const congregationId = await this.resolveCongregationId(
+      activeCongregationId,
+    );
+    await this.memberUserLinkService.linkUserToMember(
       userId,
       memberId,
-      activeCongregationId,
+      congregationId,
       manager,
     );
   }
