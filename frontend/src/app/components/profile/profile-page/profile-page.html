@@ -173,6 +173,66 @@
     </form>
   </section>
 
+  <section
+    class="space-y-4 border-t border-slate-200 pt-6"
+    aria-labelledby="notification-preferences-title"
+    data-testid="notification-preferences-section"
+  >
+    <h3 id="notification-preferences-title" class="text-base font-semibold text-slate-900">
+      {{ 'PROFILE.NOTIFICATION_PREFERENCES_SECTION' | translate }}
+    </h3>
+    <p class="text-sm text-slate-600">
+      {{ 'PROFILE.NOTIFICATION_PREFERENCES_DESCRIPTION' | translate }}
+    </p>
+
+    @if (preferencesFeedbackKey(); as key) {
+      <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+        {{ key | translate }}
+      </p>
+    }
+
+    @if (preferencesLoading()) {
+      <p class="text-sm text-slate-600">{{ 'COMMON.LOADING' | translate }}</p>
+    } @else {
+      <ul class="grid max-w-xl gap-3" role="list">
+        @for (pref of notificationPreferences(); track pref.type) {
+          <li class="flex items-start justify-between gap-4 rounded-md border border-slate-200 px-3 py-2">
+            <label
+              class="flex-1 text-sm font-medium text-slate-800"
+              [attr.for]="'pref-' + pref.type"
+            >
+              {{ preferenceTypeLabelKey(pref.type) | translate }}
+            </label>
+            <input
+              type="checkbox"
+              class="mt-1 size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+              [id]="'pref-' + pref.type"
+              [attr.data-testid]="'pref-toggle-' + pref.type"
+              [checked]="pref.enabled"
+              (change)="togglePreference(pref.type, $any($event.target).checked)"
+            />
+          </li>
+        }
+      </ul>
+
+      <div>
+        <button
+          type="button"
+          data-testid="notification-preferences-save"
+          class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="preferencesSaving() || notificationPreferences().length === 0"
+          (click)="saveNotificationPreferences()"
+        >
+          @if (preferencesSaving()) {
+            {{ 'COMMON.LOADING' | translate }}
+          } @else {
+            {{ 'PROFILE.NOTIFICATION_PREFERENCES_SAVE' | translate }}
+          }
+        </button>
+      </div>
+    }
+  </section>
+
   <section class="space-y-4 border-t border-slate-200 pt-6" aria-labelledby="twofa-section-title">
     <h3 id="twofa-section-title" class="text-base font-semibold text-slate-900">
       {{ 'PROFILE.TWO_FA_SECTION' | translate }}

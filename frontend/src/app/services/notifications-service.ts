@@ -3,6 +3,10 @@ import { inject, Injectable, signal } from '@angular/core';
 import { IMarkAllRead } from '@interfaces/IMarkAllRead';
 import { INotification } from '@interfaces/INotification';
 import { INotificationNewEvent } from '@interfaces/INotificationNewEvent';
+import {
+  INotificationPreferencesResponse,
+  IUpdateNotificationPreferences,
+} from '@interfaces/INotificationPreference';
 import { INotificationsPage } from '@interfaces/INotificationsPage';
 import { IUnreadCount } from '@interfaces/IUnreadCount';
 import { environment } from 'environments/environment';
@@ -76,6 +80,24 @@ export class NotificationsService {
           next: (response) => this.unreadCount.set(response.count),
         }),
       );
+  }
+
+  getPreferences(): Observable<INotificationPreferencesResponse> {
+    return this.#http
+      .get<INotificationPreferencesResponse>(`${this.#apiUrl}/preferences`, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  updatePreferences(
+    payload: IUpdateNotificationPreferences,
+  ): Observable<INotificationPreferencesResponse> {
+    return this.#http
+      .put<INotificationPreferencesResponse>(`${this.#apiUrl}/preferences`, payload, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
   }
 
   markAsRead(id: string): Observable<INotification> {

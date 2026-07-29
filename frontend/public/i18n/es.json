@@ -155,7 +155,21 @@
     "SUCCESS_PASSWORD": "Contraseña actualizada",
     "SUCCESS_2FA_ENABLED": "Autenticación en dos pasos activada",
     "SUCCESS_2FA_DISABLED": "Autenticación en dos pasos desactivada",
-    "ERROR_GENERIC": "No se pudo completar la solicitud"
+    "ERROR_GENERIC": "No se pudo completar la solicitud",
+    "NOTIFICATION_PREFERENCES_SECTION": "Preferencias de notificación",
+    "NOTIFICATION_PREFERENCES_DESCRIPTION": "Elija qué recordatorios in-app desea recibir. Los tipos desactivados no generan nuevas notificaciones.",
+    "NOTIFICATION_PREFERENCES_SAVE": "Guardar preferencias",
+    "SUCCESS_NOTIFICATION_PREFERENCES": "Preferencias de notificación actualizadas",
+    "NOTIFICATION_TYPE_visitor_follow_up": "Seguimiento de visitantes",
+    "NOTIFICATION_TYPE_schedule_reminder": "Recordatorio de escala",
+    "NOTIFICATION_TYPE_member_birthday": "Cumpleaños de miembros",
+    "NOTIFICATION_TYPE_construction_update": "Actualizaciones de obras",
+    "NOTIFICATION_TYPE_construction_status_change": "Cambio de estado de obras",
+    "NOTIFICATION_TYPE_construction_budget_alert": "Alerta de presupuesto de obras",
+    "NOTIFICATION_TYPE_social_project_session_created": "Nueva sesión de proyecto social",
+    "NOTIFICATION_TYPE_social_project_status_change": "Cambio de estado de proyecto social",
+    "NOTIFICATION_TYPE_social_project_budget_alert": "Alerta de presupuesto de proyecto social",
+    "NOTIFICATION_TYPE_social_project_participant_added": "Participante añadido a proyecto social"
   },
   "NAV": {
     "MAIN_NAV": "Navegación principal",

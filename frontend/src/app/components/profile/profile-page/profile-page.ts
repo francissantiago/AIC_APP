@@ -19,10 +19,13 @@ import {
 } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { format } from 'date-fns';
+import { NotificationType } from '@interfaces/INotification';
+import { INotificationPreference } from '@interfaces/INotificationPreference';
 import { ITwoFactorSetupResponse } from '@interfaces/ITwoFactorSetupResponse';
 import { ApiErrorService } from '@services/api-error.service';
 import { AppVersionService } from '@services/app-version-service';
 import { AuthService } from '@services/auth-service';
+import { NotificationsService } from '@services/notifications-service';
 
 function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
   const newPassword = group.get('newPassword')?.value;
@@ -45,6 +48,7 @@ export class ProfilePage implements OnInit {
   readonly #apiError = inject(ApiErrorService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #appVersionService = inject(AppVersionService);
+  readonly #notificationsService = inject(NotificationsService);
 
   readonly currentUser = this.#authService.currentUser;
   readonly appVersion = this.#appVersionService.currentVersion;
@@ -55,11 +59,15 @@ export class ProfilePage implements OnInit {
   readonly profileSaving = signal(false);
   readonly passwordSaving = signal(false);
   readonly twoFaLoading = signal(false);
+  readonly preferencesSaving = signal(false);
+  readonly preferencesLoading = signal(false);
   readonly setupData = signal<ITwoFactorSetupResponse | null>(null);
+  readonly notificationPreferences = signal<INotificationPreference[]>([]);
 
   readonly profileFeedbackKey = signal<string | null>(null);
   readonly passwordFeedbackKey = signal<string | null>(null);
   readonly twoFaFeedbackKey = signal<string | null>(null);
+  readonly preferencesFeedbackKey = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
 
   readonly profileSubmitted = signal(false);
@@ -130,6 +138,7 @@ export class ProfilePage implements OnInit {
 
   ngOnInit(): void {
     this.#appVersionService.fetchBackendVersion();
+    this.#loadNotificationPreferences();
 
     const user = this.currentUser();
     if (user) {
@@ -145,6 +154,37 @@ export class ProfilePage implements OnInit {
           if (loaded) {
             this.#patchProfileForm(loaded.username, loaded.fullName, loaded.email);
           }
+        },
+      });
+  }
+
+  preferenceTypeLabelKey(type: NotificationType): string {
+    return `PROFILE.NOTIFICATION_TYPE_${type}`;
+  }
+
+  togglePreference(type: NotificationType, enabled: boolean): void {
+    this.notificationPreferences.update((items) =>
+      items.map((item) => (item.type === type ? { ...item, enabled } : item)),
+    );
+  }
+
+  saveNotificationPreferences(): void {
+    this.preferencesFeedbackKey.set(null);
+    this.errorMessage.set(null);
+    this.preferencesSaving.set(true);
+
+    this.#notificationsService
+      .updatePreferences({ items: this.notificationPreferences() })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.preferencesSaving.set(false);
+          this.notificationPreferences.set(response.items);
+          this.preferencesFeedbackKey.set('PROFILE.SUCCESS_NOTIFICATION_PREFERENCES');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.preferencesSaving.set(false);
+          this.errorMessage.set(this.#apiError.resolve(error).displayMessage);
         },
       });
   }
@@ -330,5 +370,22 @@ export class ProfilePage implements OnInit {
 
   #patchProfileForm(username: string, fullName: string, email: string): void {
     this.profileForm.patchValue({ username, fullName, email });
+  }
+
+  #loadNotificationPreferences(): void {
+    this.preferencesLoading.set(true);
+    this.#notificationsService
+      .getPreferences()
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.preferencesLoading.set(false);
+          this.notificationPreferences.set(response.items);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.preferencesLoading.set(false);
+          this.errorMessage.set(this.#apiError.resolve(error).displayMessage);
+        },
+      });
   }
 }

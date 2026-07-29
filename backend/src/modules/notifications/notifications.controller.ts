@@ -1,9 +1,11 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
   Patch,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -20,6 +22,7 @@ import { ApiErrorResponses } from '../../common/decorators/api-error-responses.d
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
+import { NotificationPreferencesResponseDto } from './dto/notification-preferences-response.dto';
 import { NotificationResponseDto } from './dto/notification-response.dto';
 import { PaginatedNotificationsResponseDto } from './dto/paginated-notifications-response.dto';
 import { QueryNotificationsDto } from './dto/query-notifications.dto';
@@ -27,6 +30,7 @@ import {
   MarkAllReadResponseDto,
   UnreadCountResponseDto,
 } from './dto/unread-count-response.dto';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 import { NotificationsService } from './notifications.service';
 
 @ApiTags('notifications')
@@ -56,6 +60,29 @@ export class NotificationsController {
     @CurrentUser() user: UserResponseDto,
   ): Promise<UnreadCountResponseDto> {
     return this.notificationsService.getUnreadCount(user.id);
+  }
+
+  @Get('preferences')
+  @ApiOperation({
+    summary: 'Listar preferências de notificação do usuário autenticado',
+  })
+  @ApiOkResponse({ type: NotificationPreferencesResponseDto })
+  getPreferences(
+    @CurrentUser() user: UserResponseDto,
+  ): Promise<NotificationPreferencesResponseDto> {
+    return this.notificationsService.getPreferences(user.id);
+  }
+
+  @Put('preferences')
+  @ApiOperation({
+    summary: 'Atualizar preferências de notificação do usuário autenticado',
+  })
+  @ApiOkResponse({ type: NotificationPreferencesResponseDto })
+  updatePreferences(
+    @Body() dto: UpdateNotificationPreferencesDto,
+    @CurrentUser() user: UserResponseDto,
+  ): Promise<NotificationPreferencesResponseDto> {
+    return this.notificationsService.updatePreferences(user.id, dto);
   }
 
   @Patch('read-all')

@@ -9,6 +9,7 @@ import { ScheduleAssignment } from '../schedules/entities/schedule-assignment.en
 import { Visitor } from '../secretariat/visitors/entities/visitor.entity';
 import { User } from '../users/entities/user.entity';
 import { Notification } from './entities/notification.entity';
+import { NotificationPreference } from './entities/notification-preference.entity';
 import { NotificationsJobsService } from './notifications-jobs.service';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
@@ -17,6 +18,7 @@ import { NotificationsService } from './notifications.service';
   imports: [
     TypeOrmModule.forFeature([
       Notification,
+      NotificationPreference,
       Visitor,
       ScheduleAssignment,
       User,

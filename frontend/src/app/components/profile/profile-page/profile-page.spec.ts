@@ -4,7 +4,9 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { UserStatus } from '@enums/user-status';
 import { IUser } from '@interfaces/IUser';
 import { ApiErrorService } from '@services/api-error.service';
+import { AppVersionService } from '@services/app-version-service';
 import { AuthService } from '@services/auth-service';
+import { NotificationsService } from '@services/notifications-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { of } from 'rxjs';
 import { ProfilePage } from './profile-page';
@@ -49,6 +51,30 @@ describe('ProfilePage', () => {
           provide: ApiErrorService,
           useValue: { resolve: () => ({ displayMessage: 'error' }) },
         },
+        {
+          provide: AppVersionService,
+          useValue: {
+            currentVersion: signal('1.0.0'),
+            currentBuiltAt: signal('2026-07-29T00:00:00.000Z'),
+            backendVersion: signal('1.0.0'),
+            fetchBackendVersion: vi.fn(),
+          },
+        },
+        {
+          provide: NotificationsService,
+          useValue: {
+            getPreferences: vi.fn().mockReturnValue(
+              of({
+                items: [{ type: 'visitor_follow_up', enabled: true }],
+              }),
+            ),
+            updatePreferences: vi.fn().mockReturnValue(
+              of({
+                items: [{ type: 'visitor_follow_up', enabled: false }],
+              }),
+            ),
+          },
+        },
         { provide: TranslateService, useValue: translateServiceStub() },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
       ],
@@ -74,5 +100,24 @@ describe('ProfilePage', () => {
     expect(component.verifyForm).toBeTruthy();
     expect(component.disableForm).toBeTruthy();
     expect(component.profileForm.getRawValue().username).toBe('admin');
+  });
+
+  it('should load notification preferences on init', () => {
+    expect(component.notificationPreferences()).toEqual([
+      { type: 'visitor_follow_up', enabled: true },
+    ]);
+  });
+
+  it('should toggle and save notification preferences', () => {
+    const notifications = TestBed.inject(NotificationsService);
+    component.togglePreference('visitor_follow_up', false);
+    component.saveNotificationPreferences();
+
+    expect(notifications.updatePreferences).toHaveBeenCalledWith({
+      items: [{ type: 'visitor_follow_up', enabled: false }],
+    });
+    expect(component.preferencesFeedbackKey()).toBe(
+      'PROFILE.SUCCESS_NOTIFICATION_PREFERENCES',
+    );
   });
 });

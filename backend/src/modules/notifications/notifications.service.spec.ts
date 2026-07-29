@@ -5,6 +5,7 @@ import { QueryFailedError } from 'typeorm';
 import { ApiErrorCode } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { EventsGateway } from '../../infra/events/events.gateway';
+import { NotificationPreference } from './entities/notification-preference.entity';
 import { Notification } from './entities/notification.entity';
 import { NotificationReferenceType } from './enums/notification-reference-type.enum';
 import { NotificationType } from './enums/notification-type.enum';
@@ -25,6 +26,13 @@ describe('NotificationsService', () => {
     count: jest.fn(),
     update: jest.fn(),
     createQueryBuilder: jest.fn(),
+  };
+
+  const preferencesRepository = {
+    findOne: jest.fn(),
+    find: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
   };
 
   const eventsGateway = {
@@ -67,6 +75,8 @@ describe('NotificationsService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    preferencesRepository.findOne.mockResolvedValue(null);
+    preferencesRepository.find.mockResolvedValue([]);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -74,6 +84,10 @@ describe('NotificationsService', () => {
         {
           provide: getRepositoryToken(Notification),
           useValue: notificationsRepository,
+        },
+        {
+          provide: getRepositoryToken(NotificationPreference),
+          useValue: preferencesRepository,
         },
         { provide: EventsGateway, useValue: eventsGateway },
       ],
@@ -108,6 +122,28 @@ describe('NotificationsService', () => {
       });
     });
 
+    it('deve retornar null e não emitir quando tipo desabilitado', async () => {
+      preferencesRepository.findOne.mockResolvedValue({
+        userId,
+        type: NotificationType.VISITOR_FOLLOW_UP,
+        enabled: false,
+      });
+
+      const result = await service.createIfAbsent({
+        userId,
+        type: NotificationType.VISITOR_FOLLOW_UP,
+        title: 't',
+        body: 'b',
+        payload: null,
+        referenceType: NotificationReferenceType.VISITOR,
+        referenceId,
+      });
+
+      expect(result).toBeNull();
+      expect(notificationsRepository.create).not.toHaveBeenCalled();
+      expect(eventsGateway.emitNotificationNew).not.toHaveBeenCalled();
+    });
+
     it('deve retornar null e não emitir em duplicate key', async () => {
       const entity = baseNotification();
       notificationsRepository.create.mockReturnValue(entity);
@@ -129,6 +165,56 @@ describe('NotificationsService', () => {
 
       expect(result).toBeNull();
       expect(eventsGateway.emitNotificationNew).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getPreferences', () => {
+    it('deve retornar todos os tipos com default enabled=true', async () => {
+      preferencesRepository.find.mockResolvedValue([
+        {
+          type: NotificationType.MEMBER_BIRTHDAY,
+          enabled: false,
+        },
+      ]);
+
+      const result = await service.getPreferences(userId);
+
+      expect(result.items).toHaveLength(Object.values(NotificationType).length);
+      expect(
+        result.items.find((i) => i.type === NotificationType.MEMBER_BIRTHDAY)
+          ?.enabled,
+      ).toBe(false);
+      expect(
+        result.items.find((i) => i.type === NotificationType.VISITOR_FOLLOW_UP)
+          ?.enabled,
+      ).toBe(true);
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it('deve upsert e retornar lista completa', async () => {
+      preferencesRepository.find
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          {
+            type: NotificationType.SCHEDULE_REMINDER,
+            enabled: false,
+          },
+        ]);
+      preferencesRepository.create.mockImplementation(
+        (data: Partial<NotificationPreference>) => data,
+      );
+      preferencesRepository.save.mockResolvedValue([]);
+
+      const result = await service.updatePreferences(userId, {
+        items: [{ type: NotificationType.SCHEDULE_REMINDER, enabled: false }],
+      });
+
+      expect(preferencesRepository.save).toHaveBeenCalled();
+      expect(
+        result.items.find((i) => i.type === NotificationType.SCHEDULE_REMINDER)
+          ?.enabled,
+      ).toBe(false);
     });
   });
 

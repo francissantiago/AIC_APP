@@ -1,12 +1,14 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, QueryFailedError, Repository } from 'typeorm';
+import { In, IsNull, QueryFailedError, Repository } from 'typeorm';
 import {
   ApiErrorCode,
   ApiErrorMessage,
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { EventsGateway } from '../../infra/events/events.gateway';
+import { NotificationPreferenceItemDto } from './dto/notification-preference-item.dto';
+import { NotificationPreferencesResponseDto } from './dto/notification-preferences-response.dto';
 import { NotificationResponseDto } from './dto/notification-response.dto';
 import { PaginatedNotificationsResponseDto } from './dto/paginated-notifications-response.dto';
 import { QueryNotificationsDto } from './dto/query-notifications.dto';
@@ -14,6 +16,8 @@ import {
   MarkAllReadResponseDto,
   UnreadCountResponseDto,
 } from './dto/unread-count-response.dto';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
+import { NotificationPreference } from './entities/notification-preference.entity';
 import { Notification } from './entities/notification.entity';
 import { NotificationReferenceType } from './enums/notification-reference-type.enum';
 import { NotificationType } from './enums/notification-type.enum';
@@ -28,6 +32,8 @@ export interface CreateNotificationInput {
   referenceId: string;
 }
 
+const ALL_NOTIFICATION_TYPES = Object.values(NotificationType);
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
@@ -35,12 +41,18 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private readonly notificationsRepository: Repository<Notification>,
+    @InjectRepository(NotificationPreference)
+    private readonly preferencesRepository: Repository<NotificationPreference>,
     private readonly eventsGateway: EventsGateway,
   ) {}
 
   async createIfAbsent(
     input: CreateNotificationInput,
   ): Promise<Notification | null> {
+    if (!(await this.isTypeEnabled(input.userId, input.type))) {
+      return null;
+    }
+
     const entity = this.notificationsRepository.create({
       userId: input.userId,
       type: input.type,
@@ -67,6 +79,66 @@ export class NotificationsService {
       }
       throw error;
     }
+  }
+
+  async isTypeEnabled(
+    userId: string,
+    type: NotificationType,
+  ): Promise<boolean> {
+    const preference = await this.preferencesRepository.findOne({
+      where: { userId, type },
+    });
+    if (!preference) {
+      return true;
+    }
+    return preference.enabled;
+  }
+
+  async getPreferences(
+    userId: string,
+  ): Promise<NotificationPreferencesResponseDto> {
+    const rows = await this.preferencesRepository.find({ where: { userId } });
+    const byType = new Map(rows.map((row) => [row.type, row.enabled]));
+
+    const items: NotificationPreferenceItemDto[] = ALL_NOTIFICATION_TYPES.map(
+      (type) => ({
+        type,
+        enabled: byType.get(type) ?? true,
+      }),
+    );
+
+    return { items };
+  }
+
+  async updatePreferences(
+    userId: string,
+    dto: UpdateNotificationPreferencesDto,
+  ): Promise<NotificationPreferencesResponseDto> {
+    const types = dto.items.map((item) => item.type);
+    const existing = await this.preferencesRepository.find({
+      where: { userId, type: In(types) },
+    });
+    const existingByType = new Map(existing.map((row) => [row.type, row]));
+
+    const toSave: NotificationPreference[] = dto.items.map((item) => {
+      const current = existingByType.get(item.type);
+      if (current) {
+        current.enabled = item.enabled;
+        return current;
+      }
+      return this.preferencesRepository.create({
+        userId,
+        type: item.type,
+        enabled: item.enabled,
+      });
+    });
+
+    await this.preferencesRepository.save(toSave);
+    this.logger.log(
+      `Preferências de notificação atualizadas (user=${userId}): ${types.join(', ')}`,
+    );
+
+    return this.getPreferences(userId);
   }
 
   async findAllForUser(

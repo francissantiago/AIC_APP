@@ -155,7 +155,21 @@
     "SUCCESS_PASSWORD": "Password updated",
     "SUCCESS_2FA_ENABLED": "Two-factor authentication enabled",
     "SUCCESS_2FA_DISABLED": "Two-factor authentication disabled",
-    "ERROR_GENERIC": "Could not complete the request"
+    "ERROR_GENERIC": "Could not complete the request",
+    "NOTIFICATION_PREFERENCES_SECTION": "Notification preferences",
+    "NOTIFICATION_PREFERENCES_DESCRIPTION": "Choose which in-app reminders you want to receive. Disabled types will not create new notifications.",
+    "NOTIFICATION_PREFERENCES_SAVE": "Save preferences",
+    "SUCCESS_NOTIFICATION_PREFERENCES": "Notification preferences updated",
+    "NOTIFICATION_TYPE_visitor_follow_up": "Visitor follow-up",
+    "NOTIFICATION_TYPE_schedule_reminder": "Schedule reminder",
+    "NOTIFICATION_TYPE_member_birthday": "Member birthdays",
+    "NOTIFICATION_TYPE_construction_update": "Construction updates",
+    "NOTIFICATION_TYPE_construction_status_change": "Construction status change",
+    "NOTIFICATION_TYPE_construction_budget_alert": "Construction budget alert",
+    "NOTIFICATION_TYPE_social_project_session_created": "New social project session",
+    "NOTIFICATION_TYPE_social_project_status_change": "Social project status change",
+    "NOTIFICATION_TYPE_social_project_budget_alert": "Social project budget alert",
+    "NOTIFICATION_TYPE_social_project_participant_added": "Participant added to social project"
   },
   "NAV": {
     "MAIN_NAV": "Main navigation",
