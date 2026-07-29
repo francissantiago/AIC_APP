@@ -398,7 +398,13 @@
     "CONGREGATIONS_SAVE": "Salvar congregações",
     "CONGREGATIONS_SUCCESS": "Congregações atualizadas com sucesso",
     "CONGREGATIONS_ERROR_MIN_ONE": "Selecione pelo menos uma congregação.",
-    "CONGREGATIONS_ERROR_DEFAULT": "Escolha uma congregação padrão entre as selecionadas."
+    "CONGREGATIONS_ERROR_DEFAULT": "Escolha uma congregação padrão entre as selecionadas.",
+    "LINK_MEMBER": "Vincular a membro",
+    "LINK_MEMBER_HINT": "Opcional. Selecione um membro para preencher nome e e-mail automaticamente.",
+    "LINK_MEMBER_SEARCH": "Buscar membro por nome",
+    "LINK_MEMBER_CLEAR": "Remover vínculo",
+    "LINKED_MEMBER": "Membro vinculado",
+    "NO_LINKED_MEMBER": "Nenhum membro vinculado"
   },
   "ROLES": {
     "TITLE": "Papéis",
@@ -1411,7 +1417,9 @@
       "NOT_FOUND": "Usuário não encontrado.",
       "EMAIL_IN_USE": "Este e-mail já está cadastrado.",
       "USERNAME_IN_USE": "Este nome de usuário já está em uso.",
-      "ROLES_NOT_FOUND": "Uma ou mais roles informadas não existem."
+      "ROLES_NOT_FOUND": "Uma ou mais roles informadas não existem.",
+      "MEMBER_NOT_FOUND": "Membro não encontrado nesta congregação.",
+      "MEMBER_ALREADY_LINKED": "Este membro já possui usuário vinculado."
     },
     "ROLES": {
       "NOT_FOUND": "Papel não encontrado.",

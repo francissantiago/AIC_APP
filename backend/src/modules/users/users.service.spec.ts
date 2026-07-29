@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { ApiErrorCode } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
+import { MembersService } from '../members/members.service';
 import { Role } from '../roles/entities/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -29,6 +30,16 @@ describe('UsersService', () => {
   };
   const rolesRepository = {
     find: jest.fn(),
+  };
+  const membersService = {
+    findMemberLinkByUserId: jest.fn(),
+    findMemberLinksByUserIds: jest.fn(),
+    linkUserToMember: jest.fn(),
+    unlinkUserFromMember: jest.fn(),
+  };
+  const transactionManager = {
+    create: jest.fn(),
+    save: jest.fn(),
   };
 
   const membersReadPermission = {
@@ -135,11 +146,20 @@ describe('UsersService', () => {
   beforeEach(async () => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
+    usersRepository.manager = {
+      transaction: jest.fn(
+        (cb: (m: typeof transactionManager) => Promise<unknown>) =>
+          cb(transactionManager),
+      ),
+    };
+    membersService.findMemberLinkByUserId.mockResolvedValue(null);
+    membersService.findMemberLinksByUserIds.mockResolvedValue(new Map());
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: getRepositoryToken(User), useValue: usersRepository },
         { provide: getRepositoryToken(Role), useValue: rolesRepository },
+        { provide: MembersService, useValue: membersService },
       ],
     }).compile();
 
@@ -154,19 +174,21 @@ describe('UsersService', () => {
       rolesRepository.find.mockResolvedValue([memberRole]);
       const saved = baseUser();
       saved.passwordHash = '$2b$12$hash-gerado';
-      usersRepository.create.mockReturnValue(saved);
-      usersRepository.save.mockResolvedValue(saved);
+      transactionManager.create.mockReturnValue(saved);
+      transactionManager.save.mockResolvedValue(saved);
 
       const result = await service.create(createDto(), actorAdmin());
 
       expect(hashMock).toHaveBeenCalledWith('S3nh@Forte!', 12);
-      expect(usersRepository.create).toHaveBeenCalledWith(
+      expect(transactionManager.create).toHaveBeenCalledWith(
+        User,
         expect.objectContaining({
           passwordHash: '$2b$12$hash-gerado',
           status: UserStatus.PENDING,
           roles: [memberRole],
         }),
       );
+      expect(membersService.linkUserToMember).not.toHaveBeenCalled();
       expect(result).not.toHaveProperty('passwordHash');
       expect(result).not.toHaveProperty('twoFactorSecret');
       expect(result.username).toBe('joao.silva');
@@ -187,6 +209,36 @@ describe('UsersService', () => {
       expect(usersRepository.save).not.toHaveBeenCalled();
     });
 
+    it('deve vincular membro quando memberId é informado na criação', async () => {
+      const hashMock = bcrypt.hash as jest.Mock;
+      hashMock.mockResolvedValue('$2b$12$hash-gerado');
+      usersRepository.findOne.mockResolvedValue(null);
+      rolesRepository.find.mockResolvedValue([memberRole]);
+      const saved = baseUser();
+      transactionManager.create.mockReturnValue(saved);
+      transactionManager.save.mockResolvedValue(saved);
+      membersService.findMemberLinkByUserId.mockResolvedValue({
+        memberId: 'member-1111-2222-3333-444444444444',
+        memberFullName: 'João da Silva',
+      });
+
+      const memberId = 'member-1111-2222-3333-444444444444';
+      const result = await service.create(
+        { ...createDto(), memberId },
+        actorAdmin(),
+        'cong-123',
+      );
+
+      expect(membersService.linkUserToMember).toHaveBeenCalledWith(
+        saved.id,
+        memberId,
+        'cong-123',
+        transactionManager,
+      );
+      expect(result.memberId).toBe(memberId);
+      expect(result.memberFullName).toBe('João da Silva');
+    });
+
     it('deve lançar 422 quando alguma role não existe', async () => {
       usersRepository.findOne.mockResolvedValue(null);
       rolesRepository.find.mockResolvedValue([]);
@@ -194,7 +246,7 @@ describe('UsersService', () => {
       await expect(service.create(createDto(), actorAdmin())).rejects.toThrow(
         ApiException,
       );
-      expect(usersRepository.save).not.toHaveBeenCalled();
+      expect(transactionManager.save).not.toHaveBeenCalled();
     });
 
     it('deve negar SECRETARY atribuindo papel ADMIN na criação (AIC-SEC-003)', async () => {
@@ -220,7 +272,7 @@ describe('UsersService', () => {
           code: ApiErrorCode.AUTH_FORBIDDEN,
         });
       }
-      expect(usersRepository.save).not.toHaveBeenCalled();
+      expect(transactionManager.save).not.toHaveBeenCalled();
     });
   });
 
@@ -241,7 +293,7 @@ describe('UsersService', () => {
     it('deve atualizar fullName e status', async () => {
       const user = baseUser();
       usersRepository.findOne.mockResolvedValue(user);
-      usersRepository.save.mockImplementation((entity: User) =>
+      transactionManager.save.mockImplementation((entity: User) =>
         Promise.resolve(entity),
       );
 
@@ -252,6 +304,21 @@ describe('UsersService', () => {
 
       expect(result.fullName).toBe('João Batista da Silva');
       expect(result.status).toBe(UserStatus.ACTIVE);
+    });
+
+    it('deve desvincular membro quando memberId é null', async () => {
+      const user = baseUser();
+      usersRepository.findOne.mockResolvedValue(user);
+      transactionManager.save.mockImplementation((entity: User) =>
+        Promise.resolve(entity),
+      );
+
+      await service.update(user.id, { memberId: null });
+
+      expect(membersService.unlinkUserFromMember).toHaveBeenCalledWith(
+        user.id,
+        transactionManager,
+      );
     });
   });
 

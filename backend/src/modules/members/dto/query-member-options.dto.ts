@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -41,4 +42,22 @@ export class QueryMemberOptionsDto {
   @IsOptional()
   @IsUUID()
   excludeMemberId?: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Incluir membro já vinculado a este usuário na busca (modo edição)',
+  })
+  @IsOptional()
+  @IsUUID()
+  linkedToUserId?: string;
+
+  @ApiPropertyOptional({
+    default: true,
+    description: 'Somente membros sem user_id (padrão true)',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  unlinkedOnly?: boolean;
 }

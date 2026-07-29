@@ -5,4 +5,5 @@ export interface IUpdateUser {
   email?: string;
   fullName?: string;
   status?: UserStatus;
+  memberId?: string | null;
 }

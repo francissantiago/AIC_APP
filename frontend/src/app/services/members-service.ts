@@ -61,6 +61,12 @@ export class MembersService {
     if (query.excludeMemberId) {
       params = params.set('excludeMemberId', query.excludeMemberId);
     }
+    if (query.linkedToUserId) {
+      params = params.set('linkedToUserId', query.linkedToUserId);
+    }
+    if (query.unlinkedOnly != null) {
+      params = params.set('unlinkedOnly', String(query.unlinkedOnly));
+    }
     return this.#http
       .get<IMemberOption[]>(`${this.#apiUrl}/options`, {
         headers: this.#headers,

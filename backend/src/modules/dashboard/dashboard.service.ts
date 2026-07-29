@@ -231,8 +231,7 @@ export class DashboardService {
     congregationIds: string[],
     now: Date,
   ): Promise<number> {
-    return (await this.collectUpcomingOccurrences(congregationIds, now))
-      .length;
+    return (await this.collectUpcomingOccurrences(congregationIds, now)).length;
   }
 
   private async getLastAttendance(
@@ -410,10 +409,7 @@ export class DashboardService {
     }));
   }
 
-  private async findRecentAnnouncements(
-    congregationIds: string[],
-    now: Date,
-  ) {
+  private async findRecentAnnouncements(congregationIds: string[], now: Date) {
     const cutoff = new Date(
       now.getTime() - RECENT_ANNOUNCEMENTS_HOURS * 3600000,
     );

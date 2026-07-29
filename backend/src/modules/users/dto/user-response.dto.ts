@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RoleResponseDto } from '../../roles/dto/role-response.dto';
 import { User } from '../entities/user.entity';
 import { UserStatus } from '../enums/user-status.enum';
@@ -46,7 +46,16 @@ export class UserResponseDto {
   })
   permissions!: string[];
 
-  static fromEntity(user: User): UserResponseDto {
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  memberId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, example: 'João da Silva' })
+  memberFullName?: string | null;
+
+  static fromEntity(
+    user: User,
+    memberLink?: { memberId: string; memberFullName: string } | null,
+  ): UserResponseDto {
     const dto = new UserResponseDto();
     dto.id = user.id;
     dto.username = user.username;
@@ -67,6 +76,8 @@ export class UserResponseDto {
       }
     }
     dto.permissions = Array.from(permissionCodes);
+    dto.memberId = memberLink?.memberId ?? null;
+    dto.memberFullName = memberLink?.memberFullName ?? null;
     return dto;
   }
 }

@@ -8,4 +8,5 @@ export interface ICreateUser {
   password: string;
   status?: UserStatus;
   roleIds: number[];
+  memberId?: string;
 }

@@ -236,9 +236,7 @@ describe('NotificationsJobsService', () => {
           select: jest.fn().mockReturnThis(),
           where: jest.fn().mockReturnThis(),
           andWhere: jest.fn().mockReturnThis(),
-          getRawMany: jest
-            .fn()
-            .mockResolvedValue([{ id: secretariatUserId }]),
+          getRawMany: jest.fn().mockResolvedValue([{ id: secretariatUserId }]),
         };
       });
 

@@ -27,6 +27,17 @@
     <p class="text-sm text-red-700" role="alert">{{ 'USERS.LOAD_ERROR' | translate }}</p>
   } @else {
     <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate data-testid="user-form">
+      @if (canLinkMember()) {
+        <app-user-member-link
+          [linkedMemberId]="linkedMemberId()"
+          (linkedMemberIdChange)="linkedMemberId.set($event)"
+          [linkedToUserId]="userId()"
+          [initialMemberFullName]="linkedMemberFullName()"
+          (memberSelected)="onMemberSelected($event)"
+          (linkCleared)="onMemberLinkCleared()"
+        />
+      }
+
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'USERS.USERNAME' | translate }}</span>
         <input

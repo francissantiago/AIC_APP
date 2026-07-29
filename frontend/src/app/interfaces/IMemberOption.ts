@@ -13,4 +13,6 @@ export interface IQueryMemberOptions {
   q: string;
   limit?: number;
   excludeMemberId?: string;
+  linkedToUserId?: string;
+  unlinkedOnly?: boolean;
 }

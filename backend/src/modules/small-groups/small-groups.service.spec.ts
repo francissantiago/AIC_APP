@@ -751,10 +751,9 @@ describe('SmallGroupsService', () => {
       await service.findAll({ page: 1, limit: 20 }, explicitId);
 
       expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
-      expect(congregationsService.resolveScopeCongregationIds).toHaveBeenCalledWith(
-        explicitId,
-        ReportScope.LOCAL,
-      );
+      expect(
+        congregationsService.resolveScopeCongregationIds,
+      ).toHaveBeenCalledWith(explicitId, ReportScope.LOCAL);
       expect(qb.where).toHaveBeenCalledWith(
         'sg.congregationId IN (:...congregationIds)',
         {

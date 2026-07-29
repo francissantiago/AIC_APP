@@ -18,4 +18,6 @@ export interface IUser {
   roles: IRole[];
   /** Códigos de permissão deduplicados de todos os papéis do usuário. */
   permissions: string[];
+  memberId?: string | null;
+  memberFullName?: string | null;
 }

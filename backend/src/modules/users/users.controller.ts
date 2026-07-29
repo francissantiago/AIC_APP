@@ -31,6 +31,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
@@ -60,13 +61,14 @@ export class UsersController {
   @ApiCreatedResponse({ type: UserResponseDto })
   @ApiConflictResponse({ description: 'username ou email já em uso' })
   @ApiUnprocessableEntityResponse({
-    description: 'roleIds contém role inexistente',
+    description: 'roleIds contém role inexistente ou memberId inválido',
   })
   create(
     @CurrentUser() actor: UserResponseDto,
     @Body() dto: CreateUserDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<UserResponseDto> {
-    return this.usersService.create(dto, actor);
+    return this.usersService.create(dto, actor, activeCongregationId);
   }
 
   @Get()
@@ -86,15 +88,20 @@ export class UsersController {
 
   @Patch(':id')
   @RequirePermission('users:write')
-  @ApiOperation({ summary: 'Atualizar email, nome completo e/ou status' })
+  @ApiOperation({
+    summary: 'Atualizar email, nome completo, status e/ou vínculo com membro',
+  })
   @ApiOkResponse({ type: UserResponseDto })
   @ApiNotFoundResponse({ description: 'Usuário não encontrado' })
-  @ApiConflictResponse({ description: 'email já em uso' })
+  @ApiConflictResponse({
+    description: 'email já em uso ou membro já vinculado a outro usuário',
+  })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDto,
+    @ActiveCongregation() activeCongregationId?: string,
   ): Promise<UserResponseDto> {
-    return this.usersService.update(id, dto);
+    return this.usersService.update(id, dto, activeCongregationId);
   }
 
   @Put(':id/roles')

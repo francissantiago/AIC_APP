@@ -1,12 +1,13 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { In, Repository } from 'typeorm';
+import { In, EntityManager, Repository } from 'typeorm';
 import {
   ApiErrorCode,
   ApiErrorMessage,
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
+import { MembersService } from '../members/members.service';
 import { Role } from '../roles/entities/role.entity';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -30,28 +31,44 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly rolesRepository: Repository<Role>,
+    private readonly membersService: MembersService,
   ) {}
 
   async create(
     dto: CreateUserDto,
     actor: UserResponseDto,
+    activeCongregationId?: string,
   ): Promise<UserResponseDto> {
     await this.assertUniqueness(dto.username, dto.email);
     const roles = await this.resolveRoles(dto.roleIds);
     this.assertCanAssignRoles(actor, roles);
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_COST);
 
-    const user = this.usersRepository.create({
-      username: dto.username,
-      email: dto.email,
-      fullName: dto.fullName,
-      status: dto.status ?? UserStatus.PENDING,
-      passwordHash,
-      roles,
-    });
-    const saved = await this.usersRepository.save(user);
+    const saved = await this.usersRepository.manager.transaction(
+      async (manager) => {
+        const user = manager.create(User, {
+          username: dto.username,
+          email: dto.email,
+          fullName: dto.fullName,
+          status: dto.status ?? UserStatus.PENDING,
+          passwordHash,
+          roles,
+        });
+        const persisted = await manager.save(user);
+        if (dto.memberId) {
+          await this.membersService.linkUserToMember(
+            persisted.id,
+            dto.memberId,
+            activeCongregationId,
+            manager,
+          );
+        }
+        return persisted;
+      },
+    );
+
     this.logger.log(`Usuário criado: ${saved.id} (${saved.username})`);
-    return UserResponseDto.fromEntity(saved);
+    return this.toUserResponse(saved);
   }
 
   async findAll(query: QueryUsersDto): Promise<PaginatedUsersResponseDto> {
@@ -86,8 +103,13 @@ export class UsersService {
     }
 
     const [users, total] = await qb.getManyAndCount();
+    const links = await this.membersService.findMemberLinksByUserIds(
+      users.map((user) => user.id),
+    );
     return {
-      data: users.map((user) => UserResponseDto.fromEntity(user)),
+      data: users.map((user) =>
+        UserResponseDto.fromEntity(user, links.get(user.id) ?? null),
+      ),
       total,
       page,
       limit,
@@ -96,10 +118,14 @@ export class UsersService {
 
   async findOne(id: string): Promise<UserResponseDto> {
     const user = await this.getUserOrFail(id);
-    return UserResponseDto.fromEntity(user);
+    return this.toUserResponse(user);
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(
+    id: string,
+    dto: UpdateUserDto,
+    activeCongregationId?: string,
+  ): Promise<UserResponseDto> {
     const user = await this.getUserOrFail(id);
 
     if (dto.email && dto.email !== user.email) {
@@ -129,9 +155,23 @@ export class UsersService {
       user.status = dto.status;
     }
 
-    const saved = await this.usersRepository.save(user);
+    const saved = await this.usersRepository.manager.transaction(
+      async (manager) => {
+        const persisted = await manager.save(user);
+        if (dto.memberId !== undefined) {
+          await this.applyMemberLinkChange(
+            persisted.id,
+            dto.memberId,
+            activeCongregationId,
+            manager,
+          );
+        }
+        return persisted;
+      },
+    );
+
     this.logger.log(`Usuário atualizado: ${saved.id}`);
-    return UserResponseDto.fromEntity(saved);
+    return this.toUserResponse(saved);
   }
 
   async setRoles(
@@ -147,7 +187,7 @@ export class UsersService {
     this.logger.log(
       `Roles do usuário ${saved.id} substituídas: [${dto.roleIds.join(', ')}]`,
     );
-    return UserResponseDto.fromEntity(saved);
+    return this.toUserResponse(saved);
   }
 
   async remove(id: string): Promise<void> {
@@ -272,6 +312,39 @@ export class UsersService {
     await this.usersRepository.update(userId, {
       lastLoginAt: new Date(),
     });
+  }
+
+  private async toUserResponse(user: User): Promise<UserResponseDto> {
+    const memberLink = await this.membersService.findMemberLinkByUserId(
+      user.id,
+    );
+    return UserResponseDto.fromEntity(user, memberLink);
+  }
+
+  private async applyMemberLinkChange(
+    userId: string,
+    memberId: string | null,
+    activeCongregationId: string | undefined,
+    manager: EntityManager,
+  ): Promise<void> {
+    const currentLink =
+      await this.membersService.findMemberLinkByUserId(userId);
+    if (memberId === null) {
+      await this.membersService.unlinkUserFromMember(userId, manager);
+      return;
+    }
+    if (currentLink?.memberId === memberId) {
+      return;
+    }
+    if (currentLink) {
+      await this.membersService.unlinkUserFromMember(userId, manager);
+    }
+    await this.membersService.linkUserToMember(
+      userId,
+      memberId,
+      activeCongregationId,
+      manager,
+    );
   }
 
   private async getUserOrFail(id: string): Promise<User> {

@@ -398,7 +398,13 @@
     "CONGREGATIONS_SAVE": "Guardar congregaciones",
     "CONGREGATIONS_SUCCESS": "Congregaciones actualizadas correctamente",
     "CONGREGATIONS_ERROR_MIN_ONE": "Seleccione al menos una congregación.",
-    "CONGREGATIONS_ERROR_DEFAULT": "Elija una congregación predeterminada entre las seleccionadas."
+    "CONGREGATIONS_ERROR_DEFAULT": "Elija una congregación predeterminada entre las seleccionadas.",
+    "LINK_MEMBER": "Vincular a miembro",
+    "LINK_MEMBER_HINT": "Opcional. Seleccione un miembro para completar nombre y correo automáticamente.",
+    "LINK_MEMBER_SEARCH": "Buscar miembro por nombre",
+    "LINK_MEMBER_CLEAR": "Quitar vínculo",
+    "LINKED_MEMBER": "Miembro vinculado",
+    "NO_LINKED_MEMBER": "Ningún miembro vinculado"
   },
   "ROLES": {
     "TITLE": "Roles",
@@ -1411,7 +1417,9 @@
       "NOT_FOUND": "Usuario no encontrado.",
       "EMAIL_IN_USE": "Este correo ya está registrado.",
       "USERNAME_IN_USE": "Este nombre de usuario ya está en uso.",
-      "ROLES_NOT_FOUND": "Una o más roles informadas no existen."
+      "ROLES_NOT_FOUND": "Una o más roles informadas no existen.",
+      "MEMBER_NOT_FOUND": "Miembro no encontrado en esta congregación.",
+      "MEMBER_ALREADY_LINKED": "Este miembro ya tiene un usuario vinculado."
     },
     "ROLES": {
       "NOT_FOUND": "Rol no encontrado.",

@@ -237,6 +237,15 @@ export class MembersService {
       });
     }
 
+    if (query.linkedToUserId) {
+      qb.andWhere(
+        '(member.user_id IS NULL OR member.user_id = :linkedToUserId)',
+        { linkedToUserId: query.linkedToUserId },
+      );
+    } else if (query.unlinkedOnly !== false) {
+      qb.andWhere('member.user_id IS NULL');
+    }
+
     return (await qb.getMany()).map((member) => ({
       id: member.id,
       fullName: member.fullName,
@@ -453,6 +462,109 @@ export class MembersService {
     activeCongregationId?: string,
   ): Promise<Member> {
     return this.getMemberOrFail(id, activeCongregationId);
+  }
+
+  async findMemberLinkByUserId(
+    userId: string,
+  ): Promise<{ memberId: string; memberFullName: string } | null> {
+    const member = await this.membersRepository.findOne({
+      where: { userId },
+      select: { id: true, fullName: true },
+    });
+    if (!member) {
+      return null;
+    }
+    return { memberId: member.id, memberFullName: member.fullName };
+  }
+
+  async findMemberLinksByUserIds(
+    userIds: string[],
+  ): Promise<Map<string, { memberId: string; memberFullName: string }>> {
+    const result = new Map<
+      string,
+      { memberId: string; memberFullName: string }
+    >();
+    if (userIds.length === 0) {
+      return result;
+    }
+    const members = await this.membersRepository.find({
+      where: { userId: In(userIds) },
+      select: { id: true, fullName: true, userId: true },
+    });
+    for (const member of members) {
+      if (member.userId) {
+        result.set(member.userId, {
+          memberId: member.id,
+          memberFullName: member.fullName,
+        });
+      }
+    }
+    return result;
+  }
+
+  async linkUserToMember(
+    userId: string,
+    memberId: string,
+    activeCongregationId?: string,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    const repo = manager
+      ? manager.getRepository(Member)
+      : this.membersRepository;
+
+    const member = await repo.findOne({
+      where: { id: memberId, congregationId },
+    });
+    if (!member) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.USERS_MEMBER_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.USERS_MEMBER_NOT_FOUND],
+        details: [
+          {
+            field: 'memberId',
+            code: ApiErrorCode.USERS_MEMBER_NOT_FOUND,
+            message: ApiErrorMessage[ApiErrorCode.USERS_MEMBER_NOT_FOUND],
+          },
+        ],
+      });
+    }
+
+    if (member.userId && member.userId !== userId) {
+      throw new ApiException(HttpStatus.CONFLICT, {
+        code: ApiErrorCode.USERS_MEMBER_ALREADY_LINKED,
+        message: ApiErrorMessage[ApiErrorCode.USERS_MEMBER_ALREADY_LINKED],
+        details: [
+          {
+            field: 'memberId',
+            code: ApiErrorCode.USERS_MEMBER_ALREADY_LINKED,
+            message: ApiErrorMessage[ApiErrorCode.USERS_MEMBER_ALREADY_LINKED],
+          },
+        ],
+      });
+    }
+
+    await this.assertUserIdUniqueness(userId, memberId);
+
+    member.userId = userId;
+    await repo.save(member);
+    this.logger.log(`Usuário ${userId} vinculado ao membro ${memberId}`);
+  }
+
+  async unlinkUserFromMember(
+    userId: string,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const repo = manager
+      ? manager.getRepository(Member)
+      : this.membersRepository;
+    const member = await repo.findOne({ where: { userId } });
+    if (!member) {
+      return;
+    }
+    member.userId = null;
+    await repo.save(member);
+    this.logger.log(`Usuário ${userId} desvinculado do membro ${member.id}`);
   }
 
   private async maybeLinkFamily(

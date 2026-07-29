@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   MinLength,
@@ -71,4 +72,12 @@ export class CreateUserDto {
   @IsInt({ each: true })
   @IsPositive({ each: true })
   roleIds!: number[];
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Membro a vincular (opcional)',
+  })
+  @IsOptional()
+  @IsUUID()
+  memberId?: string;
 }

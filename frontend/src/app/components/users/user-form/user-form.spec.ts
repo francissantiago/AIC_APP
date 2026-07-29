@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import { AuthService } from '@services/auth-service';
 import { RolesService } from '@services/roles-service';
 import { UsersService } from '@services/users-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
@@ -28,6 +29,10 @@ describe('UserForm', () => {
         {
           provide: RolesService,
           useValue: { list: () => of([]) },
+        },
+        {
+          provide: AuthService,
+          useValue: { hasPermission: () => true },
         },
       ],
     })

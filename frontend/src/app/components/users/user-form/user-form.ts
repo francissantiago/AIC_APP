@@ -25,9 +25,14 @@ import { IRole } from '@interfaces/IRole';
 import { IUpdateUser } from '@interfaces/IUpdateUser';
 import { IUser } from '@interfaces/IUser';
 import { ApiErrorService } from '@services/api-error.service';
+import { AuthService } from '@services/auth-service';
 import { RolesService } from '@services/roles-service';
 import { UsersService } from '@services/users-service';
 import { switchMap } from 'rxjs';
+import {
+  UserMemberLink,
+  UserMemberPrefill,
+} from '../user-member-link/user-member-link';
 
 function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
@@ -45,7 +50,7 @@ function minRolesValidator(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-user-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe, UserMemberLink],
   templateUrl: './user-form.html',
   styleUrl: './user-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +58,7 @@ function minRolesValidator(control: AbstractControl): ValidationErrors | null {
 export class UserForm implements OnInit {
   readonly #usersService = inject(UsersService);
   readonly #rolesService = inject(RolesService);
+  readonly #authService = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
@@ -72,6 +78,11 @@ export class UserForm implements OnInit {
   readonly supportHint = signal<string | null>(null);
   readonly currentUser = signal<IUser | null>(null);
   readonly initialRoleIds = signal<number[]>([]);
+  readonly linkedMemberId = signal<string | null>(null);
+  readonly linkedMemberFullName = signal<string | null>(null);
+  readonly canLinkMember = signal(false);
+  readonly #fullNameTouchedByUser = signal(false);
+  readonly #emailTouchedByUser = signal(false);
 
   readonly form = new FormGroup(
     {
@@ -118,7 +129,23 @@ export class UserForm implements OnInit {
   );
 
   ngOnInit(): void {
+    this.canLinkMember.set(this.#authService.hasPermission('members:read'));
     this.#loadRoles();
+
+    this.form.controls.fullName.valueChanges
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe(() => {
+        if (this.form.controls.fullName.dirty) {
+          this.#fullNameTouchedByUser.set(true);
+        }
+      });
+    this.form.controls.email.valueChanges
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe(() => {
+        if (this.form.controls.email.dirty) {
+          this.#emailTouchedByUser.set(true);
+        }
+      });
 
     const id = this.userId();
     if (id) {
@@ -140,6 +167,20 @@ export class UserForm implements OnInit {
 
   isRoleSelected(roleId: number): boolean {
     return this.form.controls.roleIds.value.includes(roleId);
+  }
+
+  onMemberSelected(prefill: UserMemberPrefill): void {
+    if (!this.#fullNameTouchedByUser()) {
+      this.form.controls.fullName.setValue(prefill.fullName);
+    }
+    if (prefill.email && !this.#emailTouchedByUser()) {
+      this.form.controls.email.setValue(prefill.email);
+    }
+  }
+
+  onMemberLinkCleared(): void {
+    this.linkedMemberId.set(null);
+    this.linkedMemberFullName.set(null);
   }
 
   toggleRole(roleId: number): void {
@@ -222,6 +263,8 @@ export class UserForm implements OnInit {
             status: user.status,
             roleIds,
           });
+          this.linkedMemberId.set(user.memberId ?? null);
+          this.linkedMemberFullName.set(user.memberFullName ?? null);
           this.loading.set(false);
         },
         error: () => {
@@ -234,6 +277,7 @@ export class UserForm implements OnInit {
 
   #submitCreate(): void {
     const raw = this.form.getRawValue();
+    const memberId = this.linkedMemberId();
     const body: ICreateUser = {
       username: raw.username.trim(),
       email: raw.email.trim(),
@@ -241,6 +285,7 @@ export class UserForm implements OnInit {
       password: raw.password,
       status: raw.status,
       roleIds: raw.roleIds,
+      ...(memberId ? { memberId } : {}),
     };
 
     this.saving.set(true);
@@ -272,6 +317,9 @@ export class UserForm implements OnInit {
       fullName: raw.fullName.trim(),
       status: raw.status,
     };
+    if (this.canLinkMember()) {
+      body.memberId = this.linkedMemberId();
+    }
 
     const nextRoleIds = [...raw.roleIds].sort((a, b) => a - b);
     const previousRoleIds = [...this.initialRoleIds()].sort((a, b) => a - b);
