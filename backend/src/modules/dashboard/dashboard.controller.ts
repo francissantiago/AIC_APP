@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -11,6 +11,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
+import { ReportScopeQueryDto } from '../congregations/dto/report-scope-query.dto';
 import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { DashboardService } from './dashboard.service';
 import { DashboardOverviewResponseDto } from './dto/dashboard.dto';
@@ -34,11 +35,13 @@ export class DashboardController {
   async getOverview(
     @CurrentUser() user: UserResponseDto,
     @ActiveCongregation() activeCongregationId: string,
+    @Query() query: ReportScopeQueryDto,
   ): Promise<DashboardOverviewResponseDto> {
     return this.dashboardService.getOverview(
       user.id,
       activeCongregationId,
       user.permissions,
+      query.scope,
     );
   }
 }

@@ -46,6 +46,9 @@ describe('FinanceService', () => {
 
   const congregationsService = {
     getOrCreateBase: getOrCreateBaseMock,
+    resolveScopeCongregationIds: jest.fn(
+      async (activeCongregationId: string) => [activeCongregationId],
+    ),
   } as unknown as CongregationsService;
 
   const assetsService = {

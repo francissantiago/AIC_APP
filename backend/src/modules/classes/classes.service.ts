@@ -7,6 +7,7 @@ import {
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
+import { ReportScope } from '../congregations/enums/report-scope.enum';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
 import { AddClassEnrollmentDto } from './dto/add-class-enrollment.dto';
@@ -103,7 +104,10 @@ export class ClassesService {
     query: QueryClassesDto,
     activeCongregationId?: string,
   ): Promise<PaginatedClassesResponseDto> {
-    const congregationId = await this.getCongregationId(activeCongregationId);
+    const congregationIds = await this.resolveScopeCongregationIds(
+      activeCongregationId,
+      query.scope,
+    );
     const { page, limit, q, status, ageGroup, dayOfWeek, teacherMemberId } =
       query;
 
@@ -119,7 +123,9 @@ export class ClassesService {
             activeStatus: ClassEnrollmentStatus.ACTIVE,
           }),
       )
-      .where('ebdClass.congregationId = :congregationId', { congregationId })
+      .where('ebdClass.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .orderBy('ebdClass.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -518,7 +524,11 @@ export class ClassesService {
     activeCongregationId?: string,
   ): Promise<ClassFrequencyReportDto> {
     this.validateAttendancePeriod(query.from, query.to);
-    const ebdClass = await this.getClassOrFail(classId, activeCongregationId);
+    const ebdClass = await this.getClassOrFail(
+      classId,
+      activeCongregationId,
+      query.scope,
+    );
 
     const attendanceRows = await this.attendanceRepository
       .createQueryBuilder('attendance')
@@ -696,13 +706,28 @@ export class ClassesService {
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
+  private async resolveScopeCongregationIds(
+    activeCongregationId?: string,
+    scope?: ReportScope,
+  ): Promise<string[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    return this.congregationsService.resolveScopeCongregationIds(
+      congregationId,
+      scope ?? ReportScope.LOCAL,
+    );
+  }
+
   private async getClassOrFail(
     id: string,
     activeCongregationId?: string,
+    scope?: ReportScope,
   ): Promise<EbdClass> {
-    const congregationId = await this.getCongregationId(activeCongregationId);
+    const congregationIds = await this.resolveScopeCongregationIds(
+      activeCongregationId,
+      scope,
+    );
     const ebdClass = await this.classesRepository.findOne({
-      where: { id, congregationId },
+      where: { id, congregationId: In(congregationIds) },
       relations: { teacherMember: true },
     });
     if (!ebdClass) {

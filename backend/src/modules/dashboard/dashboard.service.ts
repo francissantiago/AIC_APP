@@ -21,6 +21,8 @@ import {
   DashboardKpisDto,
   DashboardChartsDto,
 } from './dto/dashboard.dto';
+import { CongregationsService } from '../congregations/congregations.service';
+import { ReportScope } from '../congregations/enums/report-scope.enum';
 
 const UPCOMING_EVENTS_LIMIT = 5;
 const UPCOMING_WINDOW_DAYS = 60;
@@ -54,13 +56,20 @@ export class DashboardService {
     private readonly notificationsRepository: Repository<Notification>,
     @InjectRepository(Announcement)
     private readonly announcementsRepository: Repository<Announcement>,
+    private readonly congregationsService: CongregationsService,
   ) {}
 
   async getOverview(
     userId: string,
     activeCongregationId: string,
     permissions: string[],
+    scope?: ReportScope,
   ): Promise<DashboardOverviewResponseDto> {
+    const congregationIds =
+      await this.congregationsService.resolveScopeCongregationIds(
+        activeCongregationId,
+        scope ?? ReportScope.LOCAL,
+      );
     const now = new Date();
     const hasMembers = permissions.includes('members:read');
     const hasSecretariat = permissions.includes('secretariat:read');
@@ -84,44 +93,44 @@ export class DashboardService {
       recentAnnouncements,
     ] = await Promise.all([
       hasMembers
-        ? this.countActiveMembers(activeCongregationId)
+        ? this.countActiveMembers(congregationIds)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.countVisitorsThisMonth(activeCongregationId, now)
+        ? this.countVisitorsThisMonth(congregationIds, now)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.countPendingFollowUps(activeCongregationId)
+        ? this.countPendingFollowUps(congregationIds)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.countUpcomingEvents(activeCongregationId, now)
+        ? this.countUpcomingEvents(congregationIds, now)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.getLastAttendance(activeCongregationId)
+        ? this.getLastAttendance(congregationIds)
         : Promise.resolve(null),
       hasFinance
-        ? this.getMonthIncome(activeCongregationId, now)
+        ? this.getMonthIncome(congregationIds, now)
         : Promise.resolve(null),
       hasFinance
-        ? this.getMonthExpense(activeCongregationId, now)
+        ? this.getMonthExpense(congregationIds, now)
         : Promise.resolve(null),
       this.countUnreadNotifications(userId),
       hasMembers
-        ? this.getMembersByStatus(activeCongregationId)
+        ? this.getMembersByStatus(congregationIds)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.getAttendanceByMonth(activeCongregationId, now)
+        ? this.getAttendanceByMonth(congregationIds, now)
         : Promise.resolve(null),
       hasFinance
-        ? this.getFinanceByMonth(activeCongregationId, now)
+        ? this.getFinanceByMonth(congregationIds, now)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.findUpcomingEvents(activeCongregationId, now)
+        ? this.findUpcomingEvents(congregationIds, now)
         : Promise.resolve(null),
       hasSecretariat
-        ? this.findBirthdaysThisWeek(activeCongregationId, now)
+        ? this.findBirthdaysThisWeek(congregationIds, now)
         : Promise.resolve(null),
       hasAnnouncements
-        ? this.findRecentAnnouncements(activeCongregationId, now)
+        ? this.findRecentAnnouncements(congregationIds, now)
         : Promise.resolve(null),
     ]);
 
@@ -148,7 +157,7 @@ export class DashboardService {
     };
 
     const alerts = await this.computeAlerts(
-      activeCongregationId,
+      congregationIds,
       userId,
       now,
       permissions,
@@ -175,16 +184,18 @@ export class DashboardService {
     };
   }
 
-  private async countActiveMembers(congregationId: string): Promise<number> {
+  private async countActiveMembers(congregationIds: string[]): Promise<number> {
     return this.membersRepository
       .createQueryBuilder('member')
-      .where('member.congregationId = :congregationId', { congregationId })
+      .where('member.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('member.status = :status', { status: MemberStatus.ACTIVE })
       .getCount();
   }
 
   private async countVisitorsThisMonth(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<number> {
     const from = this.toIsoDate(
@@ -195,15 +206,21 @@ export class DashboardService {
     );
     return this.visitorsRepository
       .createQueryBuilder('visitor')
-      .where('visitor.congregationId = :congregationId', { congregationId })
+      .where('visitor.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('visitor.visitDate BETWEEN :from AND :to', { from, to })
       .getCount();
   }
 
-  private async countPendingFollowUps(congregationId: string): Promise<number> {
+  private async countPendingFollowUps(
+    congregationIds: string[],
+  ): Promise<number> {
     return this.visitorsRepository
       .createQueryBuilder('visitor')
-      .where('visitor.congregationId = :congregationId', { congregationId })
+      .where('visitor.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('visitor.followUpDone = :followUpDone', {
         followUpDone: false,
       })
@@ -211,18 +228,21 @@ export class DashboardService {
   }
 
   private async countUpcomingEvents(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<number> {
-    return (await this.collectUpcomingOccurrences(congregationId, now)).length;
+    return (await this.collectUpcomingOccurrences(congregationIds, now))
+      .length;
   }
 
   private async getLastAttendance(
-    congregationId: string,
+    congregationIds: string[],
   ): Promise<{ totalPresent: number; eventDate: string } | null> {
     const record = await this.attendanceRepository
       .createQueryBuilder('record')
-      .where('record.congregationId = :congregationId', { congregationId })
+      .where('record.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .orderBy('record.eventDate', 'DESC')
       .addOrderBy('record.createdAt', 'DESC')
       .take(1)
@@ -233,7 +253,7 @@ export class DashboardService {
   }
 
   private async getMonthIncome(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<bigint> {
     const from = this.toIsoDate(
@@ -245,7 +265,9 @@ export class DashboardService {
     const result = await this.financialEntriesRepository
       .createQueryBuilder('entry')
       .select('SUM(entry.amount)', 'total')
-      .where('entry.congregationId = :congregationId', { congregationId })
+      .where('entry.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('entry.type = :type', { type: FinancialType.INCOME })
       .andWhere('entry.entryDate BETWEEN :from AND :to', { from, to })
       .getRawOne<{ total: string | null }>();
@@ -253,7 +275,7 @@ export class DashboardService {
   }
 
   private async getMonthExpense(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<bigint> {
     const from = this.toIsoDate(
@@ -265,7 +287,9 @@ export class DashboardService {
     const result = await this.financialEntriesRepository
       .createQueryBuilder('entry')
       .select('SUM(entry.amount)', 'total')
-      .where('entry.congregationId = :congregationId', { congregationId })
+      .where('entry.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('entry.type = :type', { type: FinancialType.EXPENSE })
       .andWhere('entry.entryDate BETWEEN :from AND :to', { from, to })
       .getRawOne<{ total: string | null }>();
@@ -281,13 +305,15 @@ export class DashboardService {
   }
 
   private async getMembersByStatus(
-    congregationId: string,
+    congregationIds: string[],
   ): Promise<{ label: string; value: number }[]> {
     const rows = await this.membersRepository
       .createQueryBuilder('member')
       .select('member.status', 'status')
       .addSelect('COUNT(member.id)', 'count')
-      .where('member.congregationId = :congregationId', { congregationId })
+      .where('member.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .groupBy('member.status')
       .getRawMany<MemberStatusRow>();
     return rows.map((row) => ({
@@ -297,7 +323,7 @@ export class DashboardService {
   }
 
   private async getAttendanceByMonth(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<{ month: string; total: number }[]> {
     const from = this.monthsAgo(now, MONTHLY_SERIES_MONTHS - 1);
@@ -305,7 +331,9 @@ export class DashboardService {
       .createQueryBuilder('record')
       .select("DATE_FORMAT(record.eventDate, '%Y-%m')", 'month')
       .addSelect('SUM(record.totalPresent)', 'total')
-      .where('record.congregationId = :congregationId', { congregationId })
+      .where('record.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('record.eventDate >= :from', { from })
       .groupBy("DATE_FORMAT(record.eventDate, '%Y-%m')")
       .orderBy('month', 'ASC')
@@ -314,7 +342,7 @@ export class DashboardService {
   }
 
   private async getFinanceByMonth(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<{ month: string; income: string; expense: string }[]> {
     const from = this.monthsAgo(now, MONTHLY_SERIES_MONTHS - 1);
@@ -329,7 +357,9 @@ export class DashboardService {
         "SUM(CASE WHEN entry.type = 'expense' THEN entry.amount ELSE 0 END)",
         'expense',
       )
-      .where('entry.congregationId = :congregationId', { congregationId })
+      .where('entry.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('entry.entryDate >= :from', { from })
       .groupBy("DATE_FORMAT(entry.entryDate, '%Y-%m')")
       .orderBy('month', 'ASC')
@@ -337,8 +367,8 @@ export class DashboardService {
     return this.fillFinanceMonthlySeries(rows, now);
   }
 
-  private async findUpcomingEvents(congregationId: string, now: Date) {
-    return (await this.collectUpcomingOccurrences(congregationId, now))
+  private async findUpcomingEvents(congregationIds: string[], now: Date) {
+    return (await this.collectUpcomingOccurrences(congregationIds, now))
       .slice(0, UPCOMING_EVENTS_LIMIT)
       .map((item) => ({
         id: item.occurrenceId,
@@ -349,7 +379,7 @@ export class DashboardService {
       }));
   }
 
-  private async findBirthdaysThisWeek(congregationId: string, now: Date) {
+  private async findBirthdaysThisWeek(congregationIds: string[], now: Date) {
     const monthDays: string[] = [];
     for (let offset = 0; offset < BIRTHDAY_WINDOW_DAYS; offset += 1) {
       const day = new Date(
@@ -363,7 +393,9 @@ export class DashboardService {
     }
     const members = await this.membersRepository
       .createQueryBuilder('member')
-      .where('member.congregationId = :congregationId', { congregationId })
+      .where('member.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('member.birthDate IS NOT NULL')
       .andWhere("DATE_FORMAT(member.birthDate, '%m-%d') IN (:...monthDays)", {
         monthDays,
@@ -378,14 +410,17 @@ export class DashboardService {
     }));
   }
 
-  private async findRecentAnnouncements(congregationId: string, now: Date) {
+  private async findRecentAnnouncements(
+    congregationIds: string[],
+    now: Date,
+  ) {
     const cutoff = new Date(
       now.getTime() - RECENT_ANNOUNCEMENTS_HOURS * 3600000,
     );
     const announcements = await this.announcementsRepository
       .createQueryBuilder('announcement')
-      .where('announcement.congregationId = :congregationId', {
-        congregationId,
+      .where('announcement.congregationId IN (:...congregationIds)', {
+        congregationIds,
       })
       .andWhere('announcement.publishedAt >= :cutoff', { cutoff })
       .andWhere(
@@ -406,7 +441,7 @@ export class DashboardService {
   }
 
   private async collectUpcomingOccurrences(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<ExpandedCalendarOccurrence[]> {
     const rangeTo = new Date(now.getTime());
@@ -414,7 +449,9 @@ export class DashboardService {
 
     const masters = await this.calendarEventsRepository
       .createQueryBuilder('event')
-      .where('event.congregationId = :congregationId', { congregationId })
+      .where('event.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere(
         new Brackets((nested) => {
           nested
@@ -449,7 +486,7 @@ export class DashboardService {
   }
 
   private async computeAlerts(
-    congregationId: string,
+    congregationIds: string[],
     userId: string,
     now: Date,
     permissions: string[],
@@ -461,7 +498,7 @@ export class DashboardService {
 
     if (hasSecretariat) {
       const overdueFollowUps = await this.countOverdueFollowUps(
-        congregationId,
+        congregationIds,
         now,
       );
       if (overdueFollowUps > 0) {
@@ -477,7 +514,7 @@ export class DashboardService {
         });
       }
 
-      const eventsToday = await this.countEventsToday(congregationId, now);
+      const eventsToday = await this.countEventsToday(congregationIds, now);
       if (eventsToday > 0) {
         alerts.push({
           id: 'alert-events-today',
@@ -506,7 +543,7 @@ export class DashboardService {
       }
 
       const upcomingBirthdays = await this.countUpcomingBirthdays(
-        congregationId,
+        congregationIds,
         now,
       );
       if (upcomingBirthdays > 0) {
@@ -525,7 +562,7 @@ export class DashboardService {
 
     if (hasAnnouncements) {
       const newAnnouncements = await this.countRecentAnnouncements(
-        congregationId,
+        congregationIds,
         now,
       );
       if (newAnnouncements > 0) {
@@ -564,7 +601,7 @@ export class DashboardService {
   }
 
   private async countOverdueFollowUps(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<number> {
     const cutoffDate = new Date(now.getTime());
@@ -572,7 +609,9 @@ export class DashboardService {
     const cutoff = this.toIsoDate(cutoffDate);
     return this.visitorsRepository
       .createQueryBuilder('visitor')
-      .where('visitor.congregationId = :congregationId', { congregationId })
+      .where('visitor.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('visitor.followUpDone = :followUpDone', {
         followUpDone: false,
       })
@@ -581,7 +620,7 @@ export class DashboardService {
   }
 
   private async countEventsToday(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<number> {
     const todayStart = new Date(
@@ -590,7 +629,7 @@ export class DashboardService {
     const todayEnd = new Date(todayStart.getTime());
     todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
     const occurrences = await this.collectUpcomingOccurrences(
-      congregationId,
+      congregationIds,
       todayStart,
     );
     return occurrences.filter(
@@ -601,7 +640,7 @@ export class DashboardService {
   }
 
   private async countUpcomingBirthdays(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<number> {
     const monthDays: string[] = [];
@@ -617,7 +656,9 @@ export class DashboardService {
     }
     return this.membersRepository
       .createQueryBuilder('member')
-      .where('member.congregationId = :congregationId', { congregationId })
+      .where('member.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .andWhere('member.birthDate IS NOT NULL')
       .andWhere("DATE_FORMAT(member.birthDate, '%m-%d') IN (:...monthDays)", {
         monthDays,
@@ -626,7 +667,7 @@ export class DashboardService {
   }
 
   private async countRecentAnnouncements(
-    congregationId: string,
+    congregationIds: string[],
     now: Date,
   ): Promise<number> {
     const cutoff = new Date(
@@ -634,8 +675,8 @@ export class DashboardService {
     );
     return this.announcementsRepository
       .createQueryBuilder('announcement')
-      .where('announcement.congregationId = :congregationId', {
-        congregationId,
+      .where('announcement.congregationId IN (:...congregationIds)', {
+        congregationIds,
       })
       .andWhere('announcement.publishedAt >= :cutoff', { cutoff })
       .andWhere(

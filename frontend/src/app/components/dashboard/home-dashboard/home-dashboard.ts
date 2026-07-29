@@ -6,6 +6,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -13,8 +14,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ChartCanvas } from '@components/finance/chart-canvas/chart-canvas';
+import { CongregationType } from '@enums/congregation-type';
+import { reportScopeParam } from '@enums/report-scope';
 import { IDashboardOverview } from '@interfaces/IDashboard';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { CongregationContextService } from '@services/congregation-context-service';
 import { DashboardService } from '@services/dashboard-service';
 import { DateDisplayService } from '@services/date-display-service';
 import { I18nService } from '@services/i18n-service';
@@ -29,6 +33,7 @@ import { ChartData } from 'chart.js';
 })
 export class HomeDashboard implements OnInit {
   readonly #dashboard = inject(DashboardService);
+  readonly #context = inject(CongregationContextService);
   readonly #dates = inject(DateDisplayService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
@@ -37,6 +42,21 @@ export class HomeDashboard implements OnInit {
   readonly loading = signal(false);
   readonly error = signal(false);
   readonly overview = signal<IDashboardOverview | null>(null);
+  readonly consolidatedScope = signal(false);
+  readonly canShowConsolidatedToggle = computed(
+    () => this.#context.activeMembership()?.congregationType === CongregationType.HEADQUARTERS,
+  );
+
+  constructor() {
+    effect(() => {
+      const version = this.#context.contextVersion();
+      if (version === 0) {
+        return;
+      }
+      this.consolidatedScope.set(false);
+      this.load();
+    });
+  }
 
   readonly criticalAlerts = computed(() =>
     (this.overview()?.alerts ?? []).filter((a) => a.severity === 'critical'),
@@ -123,11 +143,16 @@ export class HomeDashboard implements OnInit {
     this.load();
   }
 
+  toggleConsolidated(checked: boolean): void {
+    this.consolidatedScope.set(checked);
+    this.load();
+  }
+
   load(): void {
     this.loading.set(true);
     this.error.set(false);
     this.#dashboard
-      .overview()
+      .overview(reportScopeParam(this.consolidatedScope()))
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (value) => {

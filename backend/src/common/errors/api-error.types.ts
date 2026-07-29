@@ -73,6 +73,8 @@ export const ApiErrorCode = {
   CONGREGATIONS_CONTEXT_DENIED: 'CONGREGATIONS.CONTEXT_DENIED',
   CONGREGATIONS_MEMBERSHIP_DEFAULT_REQUIRED:
     'CONGREGATIONS.MEMBERSHIP_DEFAULT_REQUIRED',
+  CONGREGATIONS_CONSOLIDATED_HQ_ONLY:
+    'CONGREGATIONS.CONSOLIDATED_HQ_ONLY',
 
   FINANCE_CATEGORY_NOT_FOUND: 'FINANCE.CATEGORY_NOT_FOUND',
   FINANCE_ENTRY_NOT_FOUND: 'FINANCE.ENTRY_NOT_FOUND',
@@ -323,6 +325,8 @@ export const ApiErrorMessage = {
     'Você não tem acesso a esta congregação. Verifique o cabeçalho X-Congregation-Id.',
   [ApiErrorCode.CONGREGATIONS_MEMBERSHIP_DEFAULT_REQUIRED]:
     'defaultCongregationId deve estar presente em congregationIds.',
+  [ApiErrorCode.CONGREGATIONS_CONSOLIDATED_HQ_ONLY]:
+    'Visão consolidada disponível apenas na sede (headquarters).',
   [ApiErrorCode.FINANCE_CATEGORY_NOT_FOUND]: 'Categoria não encontrada.',
   [ApiErrorCode.FINANCE_ENTRY_NOT_FOUND]: 'Lançamento não encontrado.',
   [ApiErrorCode.FINANCE_CATEGORY_TYPE_LOCKED]:

@@ -3,7 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -12,10 +14,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CongregationType } from '@enums/congregation-type';
+import { CongregationStatus } from '@enums/congregation-status';
+import { reportScopeParam } from '@enums/report-scope';
 import { IClassFrequencyReport } from '@interfaces/IClassFrequencyReport';
 import { IEbdClass } from '@interfaces/IEbdClass';
 import { ApiErrorService } from '@services/api-error.service';
 import { ClassesService } from '@services/classes-service';
+import { CongregationContextService } from '@services/congregation-context-service';
+import { CongregationsService } from '@services/congregations-service';
 
 function todayIsoDate(): string {
   const now = new Date();
@@ -41,17 +48,36 @@ function monthStartIsoDate(): string {
 })
 export class ClassFrequencyReport implements OnInit {
   readonly #classesService = inject(ClassesService);
+  readonly #congregationsService = inject(CongregationsService);
+  readonly #context = inject(CongregationContextService);
   readonly #apiError = inject(ApiErrorService);
   readonly #route = inject(ActivatedRoute);
   readonly #document = inject(DOCUMENT);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly classes = signal<IEbdClass[]>([]);
+  readonly congregationNames = signal<Record<string, string>>({});
   readonly report = signal<IClassFrequencyReport | null>(null);
   readonly loading = signal(false);
   readonly exporting = signal(false);
   readonly error = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly consolidatedScope = signal(false);
+  readonly canShowConsolidatedToggle = computed(
+    () => this.#context.activeMembership()?.congregationType === CongregationType.HEADQUARTERS,
+  );
+
+  constructor() {
+    effect(() => {
+      const version = this.#context.contextVersion();
+      if (version === 0) {
+        return;
+      }
+      this.consolidatedScope.set(false);
+      this.report.set(null);
+      this.#loadClasses();
+    });
+  }
 
   readonly filterForm = new FormGroup({
     classId: new FormControl('', {
@@ -77,6 +103,20 @@ export class ClassFrequencyReport implements OnInit {
     this.#loadClasses();
   }
 
+  toggleConsolidated(checked: boolean): void {
+    this.consolidatedScope.set(checked);
+    this.report.set(null);
+    this.#loadClasses();
+  }
+
+  classOptionLabel(ebdClass: IEbdClass): string {
+    if (!this.consolidatedScope()) {
+      return ebdClass.name;
+    }
+    const congregationName = this.congregationNames()[ebdClass.congregationId];
+    return congregationName ? `${ebdClass.name} (${congregationName})` : ebdClass.name;
+  }
+
   loadReport(): void {
     if (this.filterForm.invalid) {
       this.filterForm.markAllAsTouched();
@@ -89,7 +129,11 @@ export class ClassFrequencyReport implements OnInit {
     this.errorMessage.set(null);
 
     this.#classesService
-      .frequencyReport(classId, { from, to })
+      .frequencyReport(classId, {
+        from,
+        to,
+        scope: reportScopeParam(this.consolidatedScope()),
+      })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (result) => {
@@ -118,7 +162,11 @@ export class ClassFrequencyReport implements OnInit {
     this.errorMessage.set(null);
 
     this.#classesService
-      .frequencyCsv(classId, { from, to })
+      .frequencyCsv(classId, {
+        from,
+        to,
+        scope: reportScopeParam(this.consolidatedScope()),
+      })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (blob) => {
@@ -135,17 +183,42 @@ export class ClassFrequencyReport implements OnInit {
   }
 
   #loadClasses(): void {
+    const scope = reportScopeParam(this.consolidatedScope());
+
     this.#classesService
-      .list({ page: 1, limit: 100 })
+      .list({ page: 1, limit: 100, scope })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (response) => {
           this.classes.set(response.data);
-          if (!this.filterForm.controls.classId.value && response.data[0]) {
-            this.filterForm.controls.classId.setValue(response.data[0].id);
+          const currentClassId = this.filterForm.controls.classId.value;
+          const stillValid = response.data.some((item) => item.id === currentClassId);
+          if (!stillValid) {
+            this.filterForm.controls.classId.setValue(response.data[0]?.id ?? '');
+          }
+          if (this.consolidatedScope()) {
+            this.#loadCongregationNames();
+          } else {
+            this.congregationNames.set({});
           }
         },
-        error: () => this.classes.set([]),
+        error: () => {
+          this.classes.set([]);
+          this.congregationNames.set({});
+        },
+      });
+  }
+
+  #loadCongregationNames(): void {
+    this.#congregationsService
+      .findAll({ limit: 100, status: CongregationStatus.ACTIVE })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (response) => {
+          const names = Object.fromEntries(response.data.map((item) => [item.id, item.name]));
+          this.congregationNames.set(names);
+        },
+        error: () => this.congregationNames.set({}),
       });
   }
 

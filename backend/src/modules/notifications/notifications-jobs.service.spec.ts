@@ -214,6 +214,73 @@ describe('NotificationsJobsService', () => {
       );
     });
 
+    it('deve processar visitantes de todas as congregações ativas', async () => {
+      const congregationId2 = 'dddddddd-eeee-ffff-0000-111111111111';
+      const visitorCong1 = baseVisitor();
+      const visitorCong2 = baseVisitor({
+        id: '99999999-8888-7777-6666-555555555555',
+        congregationId: congregationId2,
+        fullName: 'Visitante Filial',
+      });
+
+      congregationsRepository.find.mockResolvedValue([
+        { id: congregationId },
+        { id: congregationId2 },
+      ]);
+
+      let secretariatCalls = 0;
+      usersRepository.createQueryBuilder.mockImplementation(() => {
+        secretariatCalls += 1;
+        return {
+          innerJoin: jest.fn().mockReturnThis(),
+          select: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          getRawMany: jest
+            .fn()
+            .mockResolvedValue([{ id: secretariatUserId }]),
+        };
+      });
+
+      visitorsRepository.createQueryBuilder.mockImplementation(() => {
+        const qb = {
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockImplementation(function (
+            this: typeof qb,
+            _clause: string,
+            params?: { congregationId?: string },
+          ) {
+            if (params?.congregationId === congregationId) {
+              qb.getMany.mockResolvedValue([visitorCong1]);
+            } else if (params?.congregationId === congregationId2) {
+              qb.getMany.mockResolvedValue([visitorCong2]);
+            }
+            return qb;
+          }),
+          getMany: jest.fn().mockResolvedValue([]),
+        };
+        return qb;
+      });
+
+      await service.handleVisitorFollowUp();
+
+      expect(congregationsRepository.find).toHaveBeenCalled();
+      expect(secretariatCalls).toBe(2);
+      expect(createIfAbsent).toHaveBeenCalledTimes(2);
+      expect(createIfAbsent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: NotificationType.VISITOR_FOLLOW_UP,
+          referenceId: visitorCong1.id,
+        }),
+      );
+      expect(createIfAbsent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: NotificationType.VISITOR_FOLLOW_UP,
+          referenceId: visitorCong2.id,
+        }),
+      );
+    });
+
     it('deve ignorar quando não há elegíveis', async () => {
       mockSecretariatQb([secretariatUserId]);
       mockVisitorsQb([]);

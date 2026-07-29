@@ -7,6 +7,7 @@ import { CongregationsService } from '../congregations/congregations.service';
 import { Congregation } from '../congregations/entities/congregation.entity';
 import { CongregationStatus } from '../congregations/enums/congregation-status.enum';
 import { CongregationType } from '../congregations/enums/congregation-type.enum';
+import { ReportScope } from '../congregations/enums/report-scope.enum';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
 import { SmallGroupAttendance } from './entities/small-group-attendance.entity';
@@ -66,6 +67,9 @@ describe('SmallGroupsService', () => {
   };
   const congregationsService = {
     getOrCreateBase: jest.fn(),
+    resolveScopeCongregationIds: jest.fn(
+      async (activeCongregationId: string) => [activeCongregationId],
+    ),
   };
 
   const baseCongregation = (): Congregation => {
@@ -747,10 +751,14 @@ describe('SmallGroupsService', () => {
       await service.findAll({ page: 1, limit: 20 }, explicitId);
 
       expect(congregationsService.getOrCreateBase).not.toHaveBeenCalled();
+      expect(congregationsService.resolveScopeCongregationIds).toHaveBeenCalledWith(
+        explicitId,
+        ReportScope.LOCAL,
+      );
       expect(qb.where).toHaveBeenCalledWith(
-        'sg.congregationId = :congregationId',
+        'sg.congregationId IN (:...congregationIds)',
         {
-          congregationId: explicitId,
+          congregationIds: [explicitId],
         },
       );
     });

@@ -4,7 +4,9 @@ import { provideRouter } from '@angular/router';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { AppLanguage } from '@enums/app-language';
 import { CalendarEventType } from '@enums/secretariat';
+import { CongregationType } from '@enums/congregation-type';
 import { IDashboardOverview } from '@interfaces/IDashboard';
+import { CongregationContextService } from '@services/congregation-context-service';
 import { DashboardService } from '@services/dashboard-service';
 import { I18nService } from '@services/i18n-service';
 import { of, throwError } from 'rxjs';
@@ -112,6 +114,19 @@ describe('HomeDashboard', () => {
       providers: [
         provideRouter([]),
         { provide: DashboardService, useValue: dashboardService },
+        {
+          provide: CongregationContextService,
+          useValue: {
+            activeMembership: signal({
+              congregationId: 'hq-1',
+              congregationName: 'HQ',
+              congregationType: CongregationType.HEADQUARTERS,
+              isDefault: true,
+              assignedAt: '2026-01-01T00:00:00Z',
+            }),
+            contextVersion: signal(0),
+          },
+        },
         { provide: TranslateService, useValue: translateStub },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
         {

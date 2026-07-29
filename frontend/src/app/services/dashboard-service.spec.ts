@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { ReportScope } from '@enums/report-scope';
 import { IDashboardOverview } from '@interfaces/IDashboard';
 import { environment } from 'environments/environment';
 import { of, throwError } from 'rxjs';
@@ -58,8 +59,17 @@ describe('DashboardService', () => {
       result = value;
     });
 
-    expect(http.get).toHaveBeenCalledWith(`${baseUrl}/overview`);
+    expect(http.get).toHaveBeenCalledWith(`${baseUrl}/overview`, expect.any(Object));
     expect(result).toEqual(mockOverview);
+  });
+
+  it('overview passes consolidated scope when requested', () => {
+    http.get.mockReturnValue(of(mockOverview));
+
+    service.overview(ReportScope.CONSOLIDATED).subscribe();
+
+    const [, options] = http.get.mock.calls[0] as [string, { params: { get: (key: string) => string | null } }];
+    expect(options.params.get('scope')).toBe(ReportScope.CONSOLIDATED);
   });
 
   it('does not retry client errors', () => {

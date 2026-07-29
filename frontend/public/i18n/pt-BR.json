@@ -319,7 +319,10 @@
     "DIALOG": {
       "CLOSE": "Fechar",
       "CLOSE_ARIA": "Fechar diálogo"
-    }
+    },
+    "CONSOLIDATED_TOGGLE": "Visão consolidada",
+    "CONSOLIDATED_HINT": "Inclui matriz e filiais ativas no relatório.",
+    "CONSOLIDATED_BADGE": "Consolidado"
   },
   "EXAMPLE": {
     "TITLE": "Exemplo",
@@ -387,7 +390,15 @@
     "VALIDATION_REQUIRED": "Campo obrigatório",
     "VALIDATION_EMAIL": "E-mail inválido",
     "VALIDATION_PASSWORD_MATCH": "As senhas não coincidem",
-    "CONFLICT_ERROR": "Nome de usuário ou e-mail já em uso"
+    "CONFLICT_ERROR": "Nome de usuário ou e-mail já em uso",
+    "CONGREGATIONS_ACTION": "Congregações",
+    "CONGREGATIONS_DIALOG_TITLE": "Gerenciar congregações de {{name}}",
+    "CONGREGATIONS_DIALOG_DESCRIPTION": "Selecione as congregações que este usuário pode acessar e escolha a congregação padrão.",
+    "CONGREGATIONS_DEFAULT_LABEL": "Padrão",
+    "CONGREGATIONS_SAVE": "Salvar congregações",
+    "CONGREGATIONS_SUCCESS": "Congregações atualizadas com sucesso",
+    "CONGREGATIONS_ERROR_MIN_ONE": "Selecione pelo menos uma congregação.",
+    "CONGREGATIONS_ERROR_DEFAULT": "Escolha uma congregação padrão entre as selecionadas."
   },
   "ROLES": {
     "TITLE": "Papéis",
@@ -1490,7 +1501,8 @@
       "CONTEXT_DENIED": "Você não tem acesso à congregação selecionada.",
       "PARENT_NOT_FOUND": "Congregação matriz não encontrada.",
       "PARENT_MUST_BE_HEADQUARTERS": "A congregação matriz deve ser sede.",
-      "MEMBERSHIP_DEFAULT_REQUIRED": "Uma congregação padrão é obrigatória."
+      "MEMBERSHIP_DEFAULT_REQUIRED": "Uma congregação padrão é obrigatória.",
+      "CONSOLIDATED_HQ_ONLY": "Relatórios consolidados estão disponíveis apenas na congregação matriz."
     },
     "FINANCE": {
       "CATEGORY_NOT_FOUND": "Categoria não encontrada.",

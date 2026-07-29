@@ -13,6 +13,7 @@ import {
 import { ApiException } from '../../common/errors/api.exception';
 import { AssetsService } from '../assets/assets.service';
 import { CongregationsService } from '../congregations/congregations.service';
+import { ReportScope } from '../congregations/enums/report-scope.enum';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
@@ -382,11 +383,14 @@ export class FinanceService {
     activeCongregationId?: string,
   ): Promise<CashFlowReportResponseDto> {
     this.validateOptionalPeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId(activeCongregationId);
+    const congregationIds = await this.resolveReportCongregationIds(
+      activeCongregationId,
+      query.scope,
+    );
     const [entries, summary] = await Promise.all([
-      this.findEntries(query, activeCongregationId),
-      this.getEntryTotals(
-        congregationId,
+      this.findEntriesForCongregations(query, congregationIds),
+      this.getEntryTotalsForCongregations(
+        congregationIds,
         query.from,
         query.to,
         query.type,
@@ -414,12 +418,17 @@ export class FinanceService {
       });
     }
     this.validatePeriod(query.from, query.to);
-    const congregationId = await this.getCongregationId(activeCongregationId);
+    const congregationIds = await this.resolveReportCongregationIds(
+      activeCongregationId,
+      query.scope,
+    );
     const qb = this.entriesRepository
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.category', 'category')
       .leftJoinAndSelect('entry.member', 'member')
-      .where('entry.congregationId = :congregationId', { congregationId });
+      .where('entry.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      });
     this.applyEntryFilters(qb, query);
     const entries = await qb
       .orderBy('entry.entryDate', 'ASC')
@@ -825,6 +834,68 @@ export class FinanceService {
         }),
       );
     }
+  }
+
+  private async resolveReportCongregationIds(
+    activeCongregationId?: string,
+    scope?: ReportScope,
+  ): Promise<string[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    return this.congregationsService.resolveScopeCongregationIds(
+      congregationId,
+      scope ?? ReportScope.LOCAL,
+    );
+  }
+
+  private async findEntriesForCongregations(
+    query: QueryFinancialEntriesDto,
+    congregationIds: string[],
+  ): Promise<PaginatedFinancialEntriesResponseDto> {
+    const qb = this.entriesRepository
+      .createQueryBuilder('entry')
+      .leftJoinAndSelect('entry.category', 'category')
+      .leftJoinAndSelect('entry.member', 'member')
+      .where('entry.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      });
+    this.applyEntryFilters(qb, query);
+    qb.orderBy('entry.entryDate', 'DESC')
+      .addOrderBy('entry.createdAt', 'DESC')
+      .skip((query.page - 1) * query.limit)
+      .take(query.limit);
+    const [entries, total] = await qb.getManyAndCount();
+    return {
+      data: entries.map(this.toEntryDto),
+      total,
+      page: query.page,
+      limit: query.limit,
+    };
+  }
+
+  private async getEntryTotalsForCongregations(
+    congregationIds: string[],
+    from?: string,
+    to?: string,
+    type?: FinancialType,
+    categoryId?: string,
+  ): Promise<TotalRow> {
+    const qb = this.entriesRepository
+      .createQueryBuilder('entry')
+      .select(
+        "SUM(CASE WHEN entry.type = 'income' THEN entry.amount ELSE 0 END)",
+        'income',
+      )
+      .addSelect(
+        "SUM(CASE WHEN entry.type = 'expense' THEN entry.amount ELSE 0 END)",
+        'expense',
+      )
+      .where('entry.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      });
+    this.applyEntryFilters(qb, { from, to, type, categoryId });
+    return qb
+      .getRawOne<TotalRow>()
+      .then((row) => row ?? { income: '0', expense: '0' });
   }
 
   private async getEntryTotals(

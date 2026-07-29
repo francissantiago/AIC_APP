@@ -57,6 +57,9 @@ describe('ClassesService', () => {
   };
   const congregationsService = {
     getOrCreateBase: jest.fn(),
+    resolveScopeCongregationIds: jest.fn(
+      async (activeCongregationId: string) => [activeCongregationId],
+    ),
   };
 
   const baseCongregation = (): Congregation => {

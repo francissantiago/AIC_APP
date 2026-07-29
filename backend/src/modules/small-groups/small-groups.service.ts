@@ -7,6 +7,7 @@ import {
 } from '../../common/errors/api-error.types';
 import { ApiException } from '../../common/errors/api.exception';
 import { CongregationsService } from '../congregations/congregations.service';
+import { ReportScope } from '../congregations/enums/report-scope.enum';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
 import { AddSmallGroupMemberDto } from './dto/add-small-group-member.dto';
@@ -107,14 +108,19 @@ export class SmallGroupsService {
     query: QuerySmallGroupsDto,
     activeCongregationId?: string,
   ): Promise<PaginatedSmallGroupsResponseDto> {
-    const congregationId = await this.getCongregationId(activeCongregationId);
+    const congregationIds = await this.resolveScopeCongregationIds(
+      activeCongregationId,
+      query.scope,
+    );
     const { page, limit, q, status } = query;
 
     const qb = this.groupsRepository
       .createQueryBuilder('sg')
       .leftJoinAndSelect('sg.leaderMember', 'leaderMember')
       .loadRelationCountAndMap('sg.membersCount', 'sg.members')
-      .where('sg.congregationId = :congregationId', { congregationId })
+      .where('sg.congregationId IN (:...congregationIds)', {
+        congregationIds,
+      })
       .orderBy('sg.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -608,6 +614,7 @@ export class SmallGroupsService {
       groupId,
       true,
       activeCongregationId,
+      query.scope,
     );
 
     const meetings = await this.meetingsRepository
@@ -747,14 +754,29 @@ export class SmallGroupsService {
     return (await this.congregationsService.getOrCreateBase()).id;
   }
 
+  private async resolveScopeCongregationIds(
+    activeCongregationId?: string,
+    scope?: ReportScope,
+  ): Promise<string[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    return this.congregationsService.resolveScopeCongregationIds(
+      congregationId,
+      scope ?? ReportScope.LOCAL,
+    );
+  }
+
   private async getGroupOrFail(
     id: string,
     withLeader = true,
     activeCongregationId?: string,
+    scope?: ReportScope,
   ): Promise<SmallGroup> {
-    const congregationId = await this.getCongregationId(activeCongregationId);
+    const congregationIds = await this.resolveScopeCongregationIds(
+      activeCongregationId,
+      scope,
+    );
     const group = await this.groupsRepository.findOne({
-      where: { id, congregationId },
+      where: { id, congregationId: In(congregationIds) },
       relations: withLeader ? { leaderMember: true } : undefined,
     });
     if (!group) {

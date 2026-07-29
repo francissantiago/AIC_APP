@@ -7,6 +7,7 @@ import { CongregationsService } from './congregations.service';
 import { Congregation } from './entities/congregation.entity';
 import { CongregationStatus } from './enums/congregation-status.enum';
 import { CongregationType } from './enums/congregation-type.enum';
+import { ReportScope } from './enums/report-scope.enum';
 
 describe('CongregationsService', () => {
   let service: CongregationsService;
@@ -456,6 +457,57 @@ describe('CongregationsService', () => {
         }),
         HttpStatus.CONFLICT,
         ApiErrorCode.CONGREGATIONS_DOCUMENT_IN_USE,
+      );
+    });
+  });
+
+  describe('resolveScopeCongregationIds', () => {
+    it('local retorna apenas a congregação ativa após validar existência', async () => {
+      const hq = baseCongregation();
+      congregationsRepository.findOne.mockResolvedValue(hq);
+
+      const result = await service.resolveScopeCongregationIds(
+        hq.id,
+        ReportScope.LOCAL,
+      );
+
+      expect(result).toEqual([hq.id]);
+      expect(congregationsRepository.find).not.toHaveBeenCalled();
+    });
+
+    it('consolidated na HQ retorna HQ + filiais ACTIVE', async () => {
+      const hq = baseCongregation();
+      const branch = baseBranch();
+      congregationsRepository.findOne.mockResolvedValue(hq);
+      congregationsRepository.find.mockResolvedValue([branch]);
+
+      const result = await service.resolveScopeCongregationIds(
+        hq.id,
+        ReportScope.CONSOLIDATED,
+      );
+
+      expect(result).toEqual([hq.id, branch.id]);
+      expect(congregationsRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            parentId: hq.id,
+            status: CongregationStatus.ACTIVE,
+          }),
+        }),
+      );
+    });
+
+    it('consolidated em filial lança 422 CONGREGATIONS_CONSOLIDATED_HQ_ONLY', async () => {
+      const branch = baseBranch();
+      congregationsRepository.findOne.mockResolvedValue(branch);
+
+      await expectApiError(
+        service.resolveScopeCongregationIds(
+          branch.id,
+          ReportScope.CONSOLIDATED,
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        ApiErrorCode.CONGREGATIONS_CONSOLIDATED_HQ_ONLY,
       );
     });
   });

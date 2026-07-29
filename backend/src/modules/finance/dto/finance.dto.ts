@@ -17,6 +17,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { FinancialType, PaymentMethod } from '../enums/finance.enums';
+import { ReportScope } from '../../congregations/enums/report-scope.enum';
 
 const trim = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string' ? value.trim() : value;
@@ -203,9 +204,28 @@ export class QueryFinancialEntriesDto extends PaginationDto {
   memberId?: string;
 }
 
-export class CashFlowQueryDto extends QueryFinancialEntriesDto {}
+export class CashFlowQueryDto extends QueryFinancialEntriesDto {
+  @ApiPropertyOptional({
+    enum: ReportScope,
+    default: ReportScope.LOCAL,
+    description:
+      'Escopo do relatório: local ou consolidated (sede + filiais; apenas na HQ)',
+  })
+  @IsOptional()
+  @IsEnum(ReportScope)
+  scope?: ReportScope;
+}
 
 export class CashFlowCsvQueryDto extends PeriodQueryDto {
+  @ApiPropertyOptional({
+    enum: ReportScope,
+    default: ReportScope.LOCAL,
+    description:
+      'Escopo do relatório: local ou consolidated (sede + filiais; apenas na HQ)',
+  })
+  @IsOptional()
+  @IsEnum(ReportScope)
+  scope?: ReportScope;
   @ApiPropertyOptional({ enum: FinancialType })
   @IsOptional()
   @IsEnum(FinancialType)

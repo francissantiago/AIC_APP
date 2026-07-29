@@ -1,3 +1,4 @@
+import { ReportScope } from '@enums/report-scope';
 import { AssetStatus, AssetType, FinancialType, PaymentMethod } from '@enums/finance';
 
 export interface IPaginationQuery {
@@ -152,10 +153,13 @@ export interface IFinancialDashboard {
   }>;
 }
 
-export interface ICashFlowQuery extends IFinancialEntriesQuery {}
+export interface ICashFlowQuery extends IFinancialEntriesQuery {
+  scope?: ReportScope;
+}
 export interface ICashFlowCsvQuery extends IPeriodQuery {
   type?: FinancialType;
   categoryId?: string;
+  scope?: ReportScope;
 }
 
 export interface ICashFlowReport extends IPaginatedFinancialEntries {

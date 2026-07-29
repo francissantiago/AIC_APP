@@ -10,10 +10,11 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { ReportScopeQueryDto } from '../../congregations/dto/report-scope-query.dto';
 import { ClassAgeGroup } from '../enums/class-age-group.enum';
 import { ClassStatus } from '../enums/class-status.enum';
 
-export class QueryClassesDto {
+export class QueryClassesDto extends ReportScopeQueryDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
   @IsOptional()
   @Type(() => Number)

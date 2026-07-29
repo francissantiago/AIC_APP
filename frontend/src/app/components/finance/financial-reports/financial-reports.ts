@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -18,6 +19,8 @@ import {
   FINANCIAL_TYPES,
   FinancialType,
 } from '@enums/finance';
+import { CongregationType } from '@enums/congregation-type';
+import { reportScopeParam } from '@enums/report-scope';
 import {
   IAssetReport,
   ICashFlowReport,
@@ -26,6 +29,7 @@ import {
   IMemberContributionsReport,
 } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { CongregationContextService } from '@services/congregation-context-service';
 import { FinanceService } from '@services/finance-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { AppDatePipe } from '@pipes/app-date-pipe';
@@ -90,6 +94,28 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
         </button>
       </div>
       @if (tab() === 'cash') {
+        @if (canShowConsolidatedToggle()) {
+          <div class="no-print mb-4 flex flex-wrap items-center justify-between gap-3">
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                data-testid="finance-reports-consolidated-toggle"
+                [checked]="consolidatedScope()"
+                (change)="toggleConsolidated($any($event.target).checked)"
+              />
+              <span>{{ 'COMMON.CONSOLIDATED_TOGGLE' | translate }}</span>
+            </label>
+            @if (consolidatedScope()) {
+              <span
+                class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+                data-testid="finance-reports-consolidated-badge"
+              >
+                {{ 'COMMON.CONSOLIDATED_BADGE' | translate }}
+              </span>
+            }
+          </div>
+          <p class="no-print mb-4 text-xs text-slate-500">{{ 'COMMON.CONSOLIDATED_HINT' | translate }}</p>
+        }
         <form
           [formGroup]="cashForm"
           (ngSubmit)="applyCashFilters()"
@@ -567,10 +593,15 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
 })
 export class FinancialReports implements OnInit {
   readonly #finance = inject(FinanceService);
+  readonly #context = inject(CongregationContextService);
   readonly #destroyRef = inject(DestroyRef);
   readonly #translate = inject(TranslateService);
   readonly #document = inject(DOCUMENT);
   readonly tab = signal<ReportTab>('cash');
+  readonly consolidatedScope = signal(false);
+  readonly canShowConsolidatedToggle = computed(
+    () => this.#context.activeMembership()?.congregationType === CongregationType.HEADQUARTERS,
+  );
   readonly categories = signal<IFinancialCategory[]>([]);
   readonly memberOptions = signal<IFinanceMemberOption[]>([]);
   readonly cash = signal<ICashFlowReport | null>(null);
@@ -616,6 +647,20 @@ export class FinancialReports implements OnInit {
     to: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
+  constructor() {
+    effect(() => {
+      const version = this.#context.contextVersion();
+      if (version === 0) {
+        return;
+      }
+      this.consolidatedScope.set(false);
+      if (this.tab() === 'cash') {
+        this.cashPage.set(1);
+        this.loadCash();
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.#finance
       .categories()
@@ -632,6 +677,12 @@ export class FinancialReports implements OnInit {
       });
     this.loadCash();
     this.loadAssets();
+  }
+
+  toggleConsolidated(checked: boolean): void {
+    this.consolidatedScope.set(checked);
+    this.cashPage.set(1);
+    this.loadCash();
   }
 
   selectTab(tab: ReportTab): void {
@@ -722,6 +773,7 @@ export class FinancialReports implements OnInit {
         to: v.to || undefined,
         type: v.type || undefined,
         categoryId: v.categoryId || undefined,
+        scope: reportScopeParam(this.consolidatedScope()),
       })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
@@ -805,6 +857,7 @@ export class FinancialReports implements OnInit {
         to: v.to || undefined,
         type: v.type || undefined,
         categoryId: v.categoryId || undefined,
+        scope: reportScopeParam(this.consolidatedScope()),
       })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({

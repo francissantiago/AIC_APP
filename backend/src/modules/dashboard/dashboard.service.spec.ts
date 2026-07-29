@@ -9,6 +9,7 @@ import { CalendarEvent } from '../secretariat/calendar/entities/calendar-event.e
 import { FinancialEntry } from '../finance/entities/financial-entry.entity';
 import { Notification } from '../notifications/entities/notification.entity';
 import { Announcement } from '../announcements/entities/announcement.entity';
+import { CongregationsService } from '../congregations/congregations.service';
 import { MemberStatus } from '../members/enums/member-status.enum';
 
 describe('DashboardService', () => {
@@ -20,6 +21,12 @@ describe('DashboardService', () => {
   let financialEntriesRepository: jest.Mocked<Repository<FinancialEntry>>;
   let notificationsRepository: jest.Mocked<Repository<Notification>>;
   let announcementsRepository: jest.Mocked<Repository<Announcement>>;
+
+  const congregationsService = {
+    resolveScopeCongregationIds: jest.fn(
+      async (activeCongregationId: string) => [activeCongregationId],
+    ),
+  };
 
   const mockQueryBuilder = () => ({
     select: jest.fn().mockReturnThis(),
@@ -87,6 +94,10 @@ describe('DashboardService', () => {
           useValue: {
             createQueryBuilder: jest.fn(() => mockQueryBuilder()),
           },
+        },
+        {
+          provide: CongregationsService,
+          useValue: congregationsService,
         },
       ],
     }).compile();

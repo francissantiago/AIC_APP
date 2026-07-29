@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { UserCongregationsDialog } from '@components/users/user-congregations-dialog/user-congregations-dialog';
 import { UserForm } from '@components/users/user-form/user-form';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { USER_STATUSES, UserStatus } from '@enums/user-status';
@@ -22,7 +23,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-users-list',
-  imports: [AppDialog, UserForm, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDialog, UserCongregationsDialog, UserForm, ReactiveFormsModule, TranslatePipe],
   templateUrl: './users-list.html',
   styleUrl: './users-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +49,9 @@ export class UsersList implements OnInit {
   readonly feedback = signal<string | null>(null);
   readonly showForm = signal(false);
   readonly editingId = signal<string | null>(null);
+  readonly showCongregations = signal(false);
+  readonly congregationsUserId = signal<string | null>(null);
+  readonly congregationsUserName = signal<string | null>(null);
 
   readonly totalPages = computed(() => {
     const pages = Math.ceil(this.total() / this.limit());
@@ -55,6 +59,9 @@ export class UsersList implements OnInit {
   });
 
   readonly canWrite = computed(() => this.#auth.hasPermission('users:write'));
+  readonly canManageMemberships = computed(() =>
+    this.#auth.hasPermission('congregations:manage_members'),
+  );
 
   readonly filterForm = new FormGroup({
     q: new FormControl('', { nonNullable: true }),
@@ -110,6 +117,18 @@ export class UsersList implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.editingId.set(null);
+  }
+
+  openCongregations(user: IUser): void {
+    this.congregationsUserId.set(user.id);
+    this.congregationsUserName.set(user.fullName);
+    this.showCongregations.set(true);
+  }
+
+  closeCongregations(): void {
+    this.showCongregations.set(false);
+    this.congregationsUserId.set(null);
+    this.congregationsUserName.set(null);
   }
 
   afterSave(): void {

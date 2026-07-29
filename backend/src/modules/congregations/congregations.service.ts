@@ -16,6 +16,7 @@ import { UpdateCongregationDto } from './dto/update-congregation.dto';
 import { Congregation } from './entities/congregation.entity';
 import { CongregationStatus } from './enums/congregation-status.enum';
 import { CongregationType } from './enums/congregation-type.enum';
+import { ReportScope } from './enums/report-scope.enum';
 
 @Injectable()
 export class CongregationsService {
@@ -186,6 +187,41 @@ export class CongregationsService {
     const saved = await this.congregationsRepository.save(branch);
     this.logger.log(`Filial criada: ${saved.id} (parent=${parent.id})`);
     return CongregationResponseDto.fromEntity(saved);
+  }
+
+  async resolveScopeCongregationIds(
+    activeCongregationId: string,
+    scope: ReportScope = ReportScope.LOCAL,
+  ): Promise<string[]> {
+    switch (scope) {
+      case ReportScope.LOCAL: {
+        await this.getNodeOrFail(activeCongregationId);
+        return [activeCongregationId];
+      }
+      case ReportScope.CONSOLIDATED: {
+        const active = await this.getNodeOrFail(activeCongregationId);
+        if (active.type !== CongregationType.HEADQUARTERS) {
+          throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+            code: ApiErrorCode.CONGREGATIONS_CONSOLIDATED_HQ_ONLY,
+            message:
+              ApiErrorMessage[ApiErrorCode.CONGREGATIONS_CONSOLIDATED_HQ_ONLY],
+          });
+        }
+        const branches = await this.congregationsRepository.find({
+          where: {
+            parentId: active.id,
+            status: CongregationStatus.ACTIVE,
+            deletedAt: IsNull(),
+          },
+          select: ['id'],
+        });
+        return [active.id, ...branches.map((branch) => branch.id)];
+      }
+      default: {
+        const exhaustive: never = scope;
+        return exhaustive;
+      }
+    }
   }
 
   async removeNode(id: string): Promise<void> {

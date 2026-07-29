@@ -1,6 +1,9 @@
 import { DOCUMENT } from '@angular/common';
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
+import { CongregationType } from '@enums/congregation-type';
+import { CongregationContextService } from '@services/congregation-context-service';
 import { FinanceService } from '@services/finance-service';
 import { of } from 'rxjs';
 import { translateServiceStub } from '../../../testing/translate-testing';
@@ -36,6 +39,19 @@ describe('FinancialReports', () => {
       imports: [FinancialReports],
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
+        {
+          provide: CongregationContextService,
+          useValue: {
+            activeMembership: signal({
+              congregationId: 'hq-1',
+              congregationName: 'HQ',
+              congregationType: CongregationType.HEADQUARTERS,
+              isDefault: true,
+              assignedAt: '2026-01-01T00:00:00Z',
+            }),
+            contextVersion: signal(0),
+          },
+        },
         {
           provide: FinanceService,
           useValue: {

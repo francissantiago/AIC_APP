@@ -1,8 +1,13 @@
 import { DOCUMENT } from '@angular/common';
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { CongregationType } from '@enums/congregation-type';
+import { ApiErrorService } from '@services/api-error.service';
 import { ClassesService } from '@services/classes-service';
+import { CongregationContextService } from '@services/congregation-context-service';
+import { CongregationsService } from '@services/congregations-service';
 import { of } from 'rxjs';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { ClassFrequencyReport } from './class-frequency-report';
@@ -79,6 +84,21 @@ describe('ClassFrequencyReport', () => {
             frequencyReport,
             frequencyCsv,
           },
+        },
+        {
+          provide: CongregationContextService,
+          useValue: {
+            activeMembership: signal(null),
+            contextVersion: signal(0),
+          },
+        },
+        {
+          provide: CongregationsService,
+          useValue: { findAll: () => of({ data: [], total: 0, page: 1, limit: 100 }) },
+        },
+        {
+          provide: ApiErrorService,
+          useValue: { resolve: () => ({ displayMessage: 'error' }) },
         },
       ],
     })

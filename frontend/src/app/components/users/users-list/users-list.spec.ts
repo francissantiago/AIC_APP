@@ -50,4 +50,8 @@ describe('UsersList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('exposes canManageMemberships when permission is granted', () => {
+    expect(component.canManageMemberships()).toBe(false);
+  });
 });

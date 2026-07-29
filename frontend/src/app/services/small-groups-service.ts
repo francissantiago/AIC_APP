@@ -67,6 +67,9 @@ export class SmallGroupsService {
     if (query.q) {
       params = params.set('q', query.q);
     }
+    if (query.scope) {
+      params = params.set('scope', query.scope);
+    }
 
     this.loading.set(true);
     this.error.set(false);
@@ -289,7 +292,10 @@ export class SmallGroupsService {
     groupId: string,
     query: IQuerySmallGroupFrequency,
   ): Observable<ISmallGroupFrequencyReport> {
-    const params = new HttpParams().set('from', query.from).set('to', query.to);
+    let params = new HttpParams().set('from', query.from).set('to', query.to);
+    if (query.scope) {
+      params = params.set('scope', query.scope);
+    }
 
     return this.#http
       .get<ISmallGroupFrequencyReport>(`${this.#apiUrl}/${groupId}/reports/frequency`, {
@@ -300,7 +306,10 @@ export class SmallGroupsService {
   }
 
   frequencyCsv(groupId: string, query: IQuerySmallGroupFrequency): Observable<Blob> {
-    const params = new HttpParams().set('from', query.from).set('to', query.to);
+    let params = new HttpParams().set('from', query.from).set('to', query.to);
+    if (query.scope) {
+      params = params.set('scope', query.scope);
+    }
 
     return this.#http
       .get(`${this.#apiUrl}/${groupId}/reports/frequency.csv`, {

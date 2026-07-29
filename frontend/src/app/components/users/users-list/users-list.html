@@ -26,6 +26,16 @@
     }
   </app-dialog>
 
+  @if (congregationsUserId(); as userId) {
+    <app-user-congregations-dialog
+      [(open)]="showCongregations"
+      [userId]="userId"
+      [userDisplayName]="congregationsUserName()"
+      (closed)="closeCongregations()"
+      (saved)="closeCongregations()"
+    />
+  }
+
   <app-dialog
     [open]="pendingDeleteId() !== null"
     [title]="'COMMON.CONFIRM_DELETE' | translate"
@@ -133,8 +143,8 @@
               </td>
               <td class="px-3 py-2 text-slate-700">{{ rolesSummary(user) }}</td>
               <td class="px-3 py-2">
-                @if (canWrite()) {
-                  <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-2">
+                  @if (canWrite()) {
                     <button
                       type="button"
                       [attr.data-testid]="'user-edit-' + user.username"
@@ -151,8 +161,18 @@
                     >
                       {{ 'COMMON.DELETE' | translate }}
                     </button>
-                  </div>
-                }
+                  }
+                  @if (canManageMemberships()) {
+                    <button
+                      type="button"
+                      [attr.data-testid]="'user-congregations-' + user.username"
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      (click)="openCongregations(user)"
+                    >
+                      {{ 'USERS.CONGREGATIONS_ACTION' | translate }}
+                    </button>
+                  }
+                </div>
               </td>
             </tr>
           }

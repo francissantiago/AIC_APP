@@ -319,7 +319,10 @@
     "DIALOG": {
       "CLOSE": "Close",
       "CLOSE_ARIA": "Close dialog"
-    }
+    },
+    "CONSOLIDATED_TOGGLE": "Consolidated view",
+    "CONSOLIDATED_HINT": "Includes headquarters and active branches in the report.",
+    "CONSOLIDATED_BADGE": "Consolidated"
   },
   "EXAMPLE": {
     "TITLE": "Example",
@@ -387,7 +390,15 @@
     "VALIDATION_REQUIRED": "Required field",
     "VALIDATION_EMAIL": "Invalid email",
     "VALIDATION_PASSWORD_MATCH": "Passwords do not match",
-    "CONFLICT_ERROR": "Username or email already in use"
+    "CONFLICT_ERROR": "Username or email already in use",
+    "CONGREGATIONS_ACTION": "Congregations",
+    "CONGREGATIONS_DIALOG_TITLE": "Manage congregations for {{name}}",
+    "CONGREGATIONS_DIALOG_DESCRIPTION": "Select the congregations this user can access and choose the default congregation.",
+    "CONGREGATIONS_DEFAULT_LABEL": "Default",
+    "CONGREGATIONS_SAVE": "Save congregations",
+    "CONGREGATIONS_SUCCESS": "Congregations updated successfully",
+    "CONGREGATIONS_ERROR_MIN_ONE": "Select at least one congregation.",
+    "CONGREGATIONS_ERROR_DEFAULT": "Choose a default congregation among the selected ones."
   },
   "ROLES": {
     "TITLE": "Roles",
@@ -1490,7 +1501,8 @@
       "CONTEXT_DENIED": "You do not have access to the selected congregation.",
       "PARENT_NOT_FOUND": "Parent congregation not found.",
       "PARENT_MUST_BE_HEADQUARTERS": "Parent congregation must be headquarters.",
-      "MEMBERSHIP_DEFAULT_REQUIRED": "A default congregation is required."
+      "MEMBERSHIP_DEFAULT_REQUIRED": "A default congregation is required.",
+      "CONSOLIDATED_HQ_ONLY": "Consolidated reports are only available from the headquarters congregation."
     },
     "FINANCE": {
       "CATEGORY_NOT_FOUND": "Category not found.",

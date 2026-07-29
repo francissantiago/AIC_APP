@@ -1,3 +1,5 @@
+import { ReportScope } from '@enums/report-scope';
+
 export interface ISmallGroupFrequencyMember {
   memberId: string;
   memberFullName: string;
@@ -19,4 +21,5 @@ export interface ISmallGroupFrequencyReport {
 export interface IQuerySmallGroupFrequency {
   from: string;
   to: string;
+  scope?: ReportScope;
 }

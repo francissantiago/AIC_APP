@@ -65,6 +65,9 @@ export class ClassesService {
     if (query.q) {
       params = params.set('q', query.q);
     }
+    if (query.scope) {
+      params = params.set('scope', query.scope);
+    }
 
     this.loading.set(true);
     this.error.set(false);
@@ -236,7 +239,10 @@ export class ClassesService {
   }
 
   frequencyReport(classId: string, query: IQueryClassFrequency): Observable<IClassFrequencyReport> {
-    const params = new HttpParams().set('from', query.from).set('to', query.to);
+    let params = new HttpParams().set('from', query.from).set('to', query.to);
+    if (query.scope) {
+      params = params.set('scope', query.scope);
+    }
 
     return this.#http
       .get<IClassFrequencyReport>(`${this.#apiUrl}/${classId}/reports/frequency`, {
@@ -247,7 +253,10 @@ export class ClassesService {
   }
 
   frequencyCsv(classId: string, query: IQueryClassFrequency): Observable<Blob> {
-    const params = new HttpParams().set('from', query.from).set('to', query.to);
+    let params = new HttpParams().set('from', query.from).set('to', query.to);
+    if (query.scope) {
+      params = params.set('scope', query.scope);
+    }
 
     return this.#http
       .get(`${this.#apiUrl}/${classId}/reports/frequency.csv`, {

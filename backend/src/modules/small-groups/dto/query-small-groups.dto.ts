@@ -9,9 +9,10 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { ReportScopeQueryDto } from '../../congregations/dto/report-scope-query.dto';
 import { SmallGroupStatus } from '../enums/small-group-status.enum';
 
-export class QuerySmallGroupsDto {
+export class QuerySmallGroupsDto extends ReportScopeQueryDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
   @IsOptional()
   @Type(() => Number)

@@ -3,7 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -12,9 +14,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CongregationType } from '@enums/congregation-type';
+import { CongregationStatus } from '@enums/congregation-status';
+import { reportScopeParam } from '@enums/report-scope';
 import { ISmallGroup } from '@interfaces/ISmallGroup';
 import { ISmallGroupFrequencyReport } from '@interfaces/ISmallGroupFrequencyReport';
 import { ApiErrorService } from '@services/api-error.service';
+import { CongregationContextService } from '@services/congregation-context-service';
+import { CongregationsService } from '@services/congregations-service';
 import { SmallGroupsService } from '@services/small-groups-service';
 
 function todayIsoDate(): string {
@@ -41,17 +48,36 @@ function monthStartIsoDate(): string {
 })
 export class SmallGroupFrequencyReport implements OnInit {
   readonly #smallGroupsService = inject(SmallGroupsService);
+  readonly #congregationsService = inject(CongregationsService);
+  readonly #context = inject(CongregationContextService);
   readonly #apiError = inject(ApiErrorService);
   readonly #route = inject(ActivatedRoute);
   readonly #document = inject(DOCUMENT);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly groups = signal<ISmallGroup[]>([]);
+  readonly congregationNames = signal<Record<string, string>>({});
   readonly report = signal<ISmallGroupFrequencyReport | null>(null);
   readonly loading = signal(false);
   readonly exporting = signal(false);
   readonly error = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly consolidatedScope = signal(false);
+  readonly canShowConsolidatedToggle = computed(
+    () => this.#context.activeMembership()?.congregationType === CongregationType.HEADQUARTERS,
+  );
+
+  constructor() {
+    effect(() => {
+      const version = this.#context.contextVersion();
+      if (version === 0) {
+        return;
+      }
+      this.consolidatedScope.set(false);
+      this.report.set(null);
+      this.#loadGroups();
+    });
+  }
 
   readonly filterForm = new FormGroup({
     groupId: new FormControl('', {
@@ -77,6 +103,20 @@ export class SmallGroupFrequencyReport implements OnInit {
     this.#loadGroups();
   }
 
+  toggleConsolidated(checked: boolean): void {
+    this.consolidatedScope.set(checked);
+    this.report.set(null);
+    this.#loadGroups();
+  }
+
+  groupOptionLabel(group: ISmallGroup): string {
+    if (!this.consolidatedScope()) {
+      return group.name;
+    }
+    const congregationName = this.congregationNames()[group.congregationId];
+    return congregationName ? `${group.name} (${congregationName})` : group.name;
+  }
+
   loadReport(): void {
     if (this.filterForm.invalid) {
       this.filterForm.markAllAsTouched();
@@ -89,7 +129,11 @@ export class SmallGroupFrequencyReport implements OnInit {
     this.errorMessage.set(null);
 
     this.#smallGroupsService
-      .frequencyReport(groupId, { from, to })
+      .frequencyReport(groupId, {
+        from,
+        to,
+        scope: reportScopeParam(this.consolidatedScope()),
+      })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (result) => {
@@ -118,7 +162,11 @@ export class SmallGroupFrequencyReport implements OnInit {
     this.errorMessage.set(null);
 
     this.#smallGroupsService
-      .frequencyCsv(groupId, { from, to })
+      .frequencyCsv(groupId, {
+        from,
+        to,
+        scope: reportScopeParam(this.consolidatedScope()),
+      })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (blob) => {
@@ -135,17 +183,42 @@ export class SmallGroupFrequencyReport implements OnInit {
   }
 
   #loadGroups(): void {
+    const scope = reportScopeParam(this.consolidatedScope());
+
     this.#smallGroupsService
-      .list({ page: 1, limit: 100 })
+      .list({ page: 1, limit: 100, scope })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (response) => {
           this.groups.set(response.data);
-          if (!this.filterForm.controls.groupId.value && response.data[0]) {
-            this.filterForm.controls.groupId.setValue(response.data[0].id);
+          const currentGroupId = this.filterForm.controls.groupId.value;
+          const stillValid = response.data.some((item) => item.id === currentGroupId);
+          if (!stillValid) {
+            this.filterForm.controls.groupId.setValue(response.data[0]?.id ?? '');
+          }
+          if (this.consolidatedScope()) {
+            this.#loadCongregationNames();
+          } else {
+            this.congregationNames.set({});
           }
         },
-        error: () => this.groups.set([]),
+        error: () => {
+          this.groups.set([]);
+          this.congregationNames.set({});
+        },
+      });
+  }
+
+  #loadCongregationNames(): void {
+    this.#congregationsService
+      .findAll({ limit: 100, status: CongregationStatus.ACTIVE })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (response) => {
+          const names = Object.fromEntries(response.data.map((item) => [item.id, item.name]));
+          this.congregationNames.set(names);
+        },
+        error: () => this.congregationNames.set({}),
       });
   }
 
