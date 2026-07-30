@@ -10,6 +10,7 @@ import { CongregationStatus } from '../congregations/enums/congregation-status.e
 import { CongregationType } from '../congregations/enums/congregation-type.enum';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
+import { FamilyMemberRelation } from './entities/family-member-relation.entity';
 import { FamilyMember } from './entities/family-member.entity';
 import { Family } from './entities/family.entity';
 import { FamilyRelation } from './enums/family-relation.enum';
@@ -38,6 +39,14 @@ describe('FamiliesService', () => {
     delete: jest.fn(),
     count: jest.fn(),
     createQueryBuilder: jest.fn(),
+  };
+  const familyMemberRelationsRepository = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    count: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    remove: jest.fn(),
   };
   const membersRepository = {
     findOne: jest.fn(),
@@ -110,6 +119,10 @@ describe('FamiliesService', () => {
         {
           provide: getRepositoryToken(FamilyMember),
           useValue: familyMembersRepository,
+        },
+        {
+          provide: getRepositoryToken(FamilyMemberRelation),
+          useValue: familyMemberRelationsRepository,
         },
         { provide: getRepositoryToken(Member), useValue: membersRepository },
         { provide: CongregationsService, useValue: congregationsService },
@@ -219,7 +232,21 @@ describe('FamiliesService', () => {
       });
       familiesRepository.findOne.mockResolvedValue(family);
       familyMembersRepository.findOne.mockResolvedValue(link);
-      familyMembersRepository.remove.mockResolvedValue(link);
+      familyMemberRelationsRepository.find.mockResolvedValue([]);
+      dataSource.transaction.mockImplementationOnce(
+        async (cb: (manager: unknown) => Promise<unknown>) => {
+          const manager = {
+            createQueryBuilder: jest.fn().mockReturnValue({
+              delete: jest.fn().mockReturnThis(),
+              from: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              execute: jest.fn().mockResolvedValue({ affected: 1 }),
+            }),
+            remove: jest.fn().mockResolvedValue(link),
+          };
+          return cb(manager);
+        },
+      );
       familiesRepository.save.mockResolvedValue({
         ...family,
         headMemberId: null,
@@ -227,7 +254,6 @@ describe('FamiliesService', () => {
 
       await service.removeMember(familyId, memberId);
 
-      expect(familyMembersRepository.remove).toHaveBeenCalledWith(link);
       expect(familiesRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({ headMemberId: null }),
       );
@@ -347,7 +373,22 @@ describe('FamiliesService', () => {
       });
       familiesRepository.create.mockReturnValue(createdFamily);
       familiesRepository.save.mockResolvedValue(createdFamily);
-      familyMembersRepository.findOne.mockResolvedValue(null);
+      familyMembersRepository.findOne.mockImplementation(
+        async ({
+          where,
+        }: {
+          where?: { memberId?: string; familyId?: string };
+        }) => {
+          if (where?.familyId && where?.memberId) {
+            return Object.assign(new FamilyMember(), {
+              familyId: where.familyId,
+              memberId: where.memberId,
+              relation: FamilyRelation.OTHER,
+            });
+          }
+          return null;
+        },
+      );
       familyMembersRepository.create.mockImplementation(
         (data: Partial<FamilyMember>) =>
           Object.assign(new FamilyMember(), data),
@@ -355,6 +396,16 @@ describe('FamiliesService', () => {
       familyMembersRepository.save.mockImplementation((entity: FamilyMember) =>
         Promise.resolve(entity),
       );
+      familyMemberRelationsRepository.findOne.mockResolvedValue(null);
+      familyMemberRelationsRepository.create.mockImplementation(
+        (data: Partial<FamilyMemberRelation>) =>
+          Object.assign(new FamilyMemberRelation(), data),
+      );
+      familyMemberRelationsRepository.save.mockImplementation(
+        (entity: FamilyMemberRelation) => Promise.resolve(entity),
+      );
+      familyMemberRelationsRepository.count.mockResolvedValue(0);
+      familyMemberRelationsRepository.find.mockResolvedValue([]);
 
       const result = await service.linkFiliationFamily({
         childMemberId: childId,

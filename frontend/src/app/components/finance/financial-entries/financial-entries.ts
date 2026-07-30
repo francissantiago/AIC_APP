@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { FinancialCategoryManager } from '@components/finance/financial-category-manager/financial-category-manager';
 import { FinancialEntryForm } from '@components/finance/financial-entry-form/financial-entry-form';
@@ -22,8 +23,9 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-financial-entries',
-  imports: [AppDatePipe, 
+  imports: [AppDatePipe,
     AppDialog,
+    DateInput,
     FinancialCategoryManager,
     FinancialEntryForm,
     ReactiveFormsModule,
@@ -85,17 +87,15 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
       >
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.FROM' | translate }}</span
-          ><input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="from"
+          ><app-date-input
+            [control]="filterForm.controls.from"
+            inputId="finance-entries-from"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.TO' | translate }}</span
-          ><input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="to"
+          ><app-date-input
+            [control]="filterForm.controls.to"
+            inputId="finance-entries-to"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.TYPE' | translate }}</span

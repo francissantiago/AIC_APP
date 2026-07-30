@@ -20,6 +20,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class AppDialog {
   readonly open = model(false);
   readonly title = input('');
+  /** `wide` aumenta a largura máxima para formulários/tabelas densas. */
+  readonly size = input<'default' | 'wide'>('default');
   readonly closed = output<void>();
 
   readonly dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogEl');

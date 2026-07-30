@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IVisitor } from '@interfaces/ISecretariat';
@@ -23,7 +24,7 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-visitors-list',
-  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, TranslatePipe, RouterLink],
+  imports: [AppDatePipe, AppDialog, DateInput, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="w-full" data-testid="visitors-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -84,15 +85,14 @@ const PAGE_SIZE = 20;
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.VISIT_DATE' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="visitDate"
-              data-testid="visitor-form-visit-date"
-              [attr.aria-invalid]="
+            <app-date-input
+              [control]="form.controls.visitDate"
+              inputId="visitor-form-visit-date"
+              testId="visitor-form-visit-date"
+              [ariaInvalid]="
                 form.controls.visitDate.touched && form.controls.visitDate.invalid
               "
-              [attr.aria-describedby]="
+              [ariaDescribedBy]="
                 form.controls.visitDate.touched && form.controls.visitDate.invalid
                   ? 'visitor-date-error'
                   : null
@@ -207,18 +207,16 @@ const PAGE_SIZE = 20;
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.VISITORS.MEMBERSHIP_DATE' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="membershipDate"
+            <app-date-input
+              [control]="convertForm.controls.membershipDate"
+              inputId="visitor-convert-membership-date"
             />
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.VISITORS.BAPTISM_DATE' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="baptismDate"
+            <app-date-input
+              [control]="convertForm.controls.baptismDate"
+              inputId="visitor-convert-baptism-date"
             />
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
@@ -273,18 +271,16 @@ const PAGE_SIZE = 20;
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.FROM' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="from"
+          <app-date-input
+            [control]="filterForm.controls.from"
+            inputId="visitors-filter-from"
           />
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.TO' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="to"
+          <app-date-input
+            [control]="filterForm.controls.to"
+            inputId="visitors-filter-to"
           />
         </label>
         <button

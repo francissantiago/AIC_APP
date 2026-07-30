@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import {
   SECRETARIAT_DOCUMENT_STATUSES,
@@ -40,7 +41,7 @@ const ALLOWED_MIME_TYPES = new Set([
 
 @Component({
   selector: 'app-documents-list',
-  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, DateInput, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full" data-testid="documents-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -104,15 +105,14 @@ const ALLOWED_MIME_TYPES = new Set([
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.DOCUMENT_DATE' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="documentDate"
-              data-testid="document-form-date"
-              [attr.aria-invalid]="
+            <app-date-input
+              [control]="form.controls.documentDate"
+              inputId="document-form-date"
+              testId="document-form-date"
+              [ariaInvalid]="
                 form.controls.documentDate.touched && form.controls.documentDate.invalid
               "
-              [attr.aria-describedby]="
+              [ariaDescribedBy]="
                 form.controls.documentDate.touched && form.controls.documentDate.invalid
                   ? 'document-date-error'
                   : null
@@ -300,19 +300,17 @@ const ALLOWED_MIME_TYPES = new Set([
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.FROM' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="from"
+          <app-date-input
+            [control]="filterForm.controls.from"
+            inputId="documents-filter-from"
           />
         </label>
         <div class="flex items-end gap-2">
           <label class="flex min-w-0 flex-1 flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.TO' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="to"
+            <app-date-input
+              [control]="filterForm.controls.to"
+              inputId="documents-filter-to"
             />
           </label>
           <button

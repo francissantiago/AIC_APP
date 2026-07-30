@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TimeInput } from '@components/time-input/time-input';
 import { SocialProjectExpensesList } from '@components/social-projects/social-project-expenses-list/social-project-expenses-list';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SOCIAL_PROJECT_CATEGORIES, SocialProjectCategory } from '@enums/social-project-category';
@@ -39,7 +40,7 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 
 @Component({
   selector: 'app-social-project-form',
-  imports: [ReactiveFormsModule, TranslatePipe, SocialProjectExpensesList],
+  imports: [ReactiveFormsModule, SocialProjectExpensesList, TimeInput, TranslatePipe],
   templateUrl: './social-project-form.html',
   styleUrl: './social-project-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

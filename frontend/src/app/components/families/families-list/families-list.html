@@ -40,10 +40,14 @@
   <app-dialog
     [open]="managingMembersId() !== null"
     [title]="'FAMILIES.MEMBERS' | translate"
+    size="wide"
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as familyId) {
-      <app-family-members-panel [familyId]="familyId" />
+      <app-family-members-panel
+        [familyId]="familyId"
+        (changed)="onMembersPanelChanged()"
+      />
     }
   </app-dialog>
 

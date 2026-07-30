@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   MISSION_ASSIGNMENT_ROLES,
@@ -33,7 +34,7 @@ import { MissionFieldsService } from '@services/mission-fields-service';
 
 @Component({
   selector: 'app-mission-assignment-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './mission-assignment-form.html',
   styleUrl: './mission-assignment-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

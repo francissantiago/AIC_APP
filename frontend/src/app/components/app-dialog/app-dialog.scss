@@ -1,3 +1,11 @@
 :host {
   display: contents;
 }
+
+.app-dialog {
+  max-width: 42rem; /* max-w-2xl */
+}
+
+.app-dialog.app-dialog--wide {
+  max-width: min(56rem, calc(100vw - 2rem));
+}

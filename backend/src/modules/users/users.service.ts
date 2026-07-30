@@ -1,4 +1,10 @@
-import { HttpStatus, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { In, EntityManager, Repository } from 'typeorm';
@@ -59,9 +65,8 @@ export class UsersService {
         });
         const persisted = await manager.save(user);
         if (dto.memberId) {
-          const congregationId = await this.resolveCongregationId(
-            activeCongregationId,
-          );
+          const congregationId =
+            await this.resolveCongregationId(activeCongregationId);
           await this.memberUserLinkService.linkUserToMember(
             persisted.id,
             dto.memberId,
@@ -354,9 +359,8 @@ export class UsersService {
     if (currentLink) {
       await this.memberUserLinkService.unlinkUserFromMember(userId, manager);
     }
-    const congregationId = await this.resolveCongregationId(
-      activeCongregationId,
-    );
+    const congregationId =
+      await this.resolveCongregationId(activeCongregationId);
     await this.memberUserLinkService.linkUserToMember(
       userId,
       memberId,

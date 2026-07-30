@@ -561,11 +561,10 @@
 
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'MEMBERS.BIRTH_DATE' | translate }}</span>
-          <input
-            type="date"
-            data-testid="member-form-birth-date"
-            formControlName="birthDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-date-input
+            [control]="form.controls.birthDate"
+            inputId="member-form-birth-date"
+            testId="member-form-birth-date"
           />
         </label>
 
@@ -611,19 +610,17 @@
         <div class="grid gap-4 md:grid-cols-2">
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'MEMBERS.BAPTISM_DATE' | translate }}</span>
-            <input
-              type="date"
-              formControlName="baptismDate"
-              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            <app-date-input
+              [control]="form.controls.baptismDate"
+              inputId="member-form-baptism-date"
             />
           </label>
 
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'MEMBERS.MEMBERSHIP_DATE' | translate }}</span>
-            <input
-              type="date"
-              formControlName="membershipDate"
-              class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            <app-date-input
+              [control]="form.controls.membershipDate"
+              inputId="member-form-membership-date"
             />
           </label>
         </div>

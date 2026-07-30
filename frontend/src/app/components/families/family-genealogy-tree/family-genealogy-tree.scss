@@ -1,0 +1,107 @@
+:host {
+  display: block;
+}
+
+.genealogy-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.genealogy-node__generation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.genealogy-node__person {
+  min-width: 8.5rem;
+  max-width: 12rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.625rem 0.75rem;
+  text-align: center;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.genealogy-node__person--spouse {
+  background: rgb(248 250 252);
+}
+
+.genealogy-node__person--sibling {
+  background: rgb(241 245 249);
+  border-style: dashed;
+}
+
+.genealogy-node__badge {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgb(100 116 139);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.genealogy-node__name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  line-height: 1.25rem;
+}
+
+.genealogy-node__meta {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.genealogy-node__link {
+  align-self: center;
+  color: rgb(148 163 184);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.genealogy-node__link--sibling {
+  color: rgb(148 163 184);
+  font-weight: 600;
+}
+
+.genealogy-node__stem {
+  width: 2px;
+  height: 1rem;
+  background: rgb(203 213 225);
+}
+
+.genealogy-node__children {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem 1.5rem;
+  margin: 0;
+  padding: 1rem 0 0;
+  list-style: none;
+  border-top: 2px solid rgb(203 213 225);
+  position: relative;
+}
+
+.genealogy-node__child {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.genealogy-node__child::before {
+  content: '';
+  width: 2px;
+  height: 0.75rem;
+  margin-bottom: 0.25rem;
+  background: rgb(203 213 225);
+}

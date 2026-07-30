@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TimeInput } from '@components/time-input/time-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CLASS_AGE_GROUPS, ClassAgeGroup } from '@enums/class-age-group';
 import { CLASS_STATUSES, ClassStatus } from '@enums/class-status';
@@ -34,7 +35,7 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 
 @Component({
   selector: 'app-class-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TimeInput, TranslatePipe],
   templateUrl: './class-form.html',
   styleUrl: './class-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

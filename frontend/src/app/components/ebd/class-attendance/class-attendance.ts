@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IClassAttendanceEntry } from '@interfaces/IClassAttendanceEntry';
 import { ApiErrorService } from '@services/api-error.service';
@@ -34,7 +35,7 @@ function todayIsoDate(): string {
 
 @Component({
   selector: 'app-class-attendance',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './class-attendance.html',
   styleUrl: './class-attendance.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

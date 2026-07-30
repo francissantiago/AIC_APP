@@ -57,6 +57,13 @@ describe('FamilyMembersPanel', () => {
                     relation: FamilyRelation.CHILD,
                     joinedAt: '2026-01-01T00:00:00.000Z',
                     birthDate: null,
+                    relationSummarySegments: [
+                      {
+                        key: 'FAMILIES.SUMMARY_CHILD_OF_ONE',
+                        params: { parent: 'João Silva' },
+                      },
+                    ],
+                    relations: [],
                   },
                 ],
                 total: 1,

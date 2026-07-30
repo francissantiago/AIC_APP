@@ -13,13 +13,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ASSET_STATUSES, ASSET_TYPES, AssetStatus, AssetType } from '@enums/finance';
 import { IAsset } from '@interfaces/IFinance';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiErrorService } from '@services/api-error.service';
 import { FinanceService } from '@services/finance-service';
 
 @Component({
   selector: 'app-asset-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   template: `
     <section
       class="w-full"
@@ -76,10 +77,9 @@ import { FinanceService } from '@services/finance-service';
         >
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.ACQUISITION_DATE' | translate }}</span
-          ><input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="acquisitionDate"
+          ><app-date-input
+            [control]="form.controls.acquisitionDate"
+            inputId="asset-acquisition-date"
         /></label>
         <label class="flex flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'ASSETS.LOCATION' | translate }}</span

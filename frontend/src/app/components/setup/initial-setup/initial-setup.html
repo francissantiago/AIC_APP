@@ -346,11 +346,9 @@
                   >
                     {{ 'SETUP.CONGREGATION_FOUNDATION_DATE' | translate }}
                   </label>
-                  <input
-                    id="setup-congregation-foundation-date"
-                    type="date"
-                    formControlName="foundationDate"
-                    class="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  <app-date-input
+                    [control]="form.controls.congregation.controls.foundationDate"
+                    inputId="setup-congregation-foundation-date"
                   />
                 </div>
 

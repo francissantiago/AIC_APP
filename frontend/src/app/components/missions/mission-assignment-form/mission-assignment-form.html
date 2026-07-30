@@ -80,11 +80,10 @@
 
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'MISSIONS.START_DATE' | translate }}</span>
-        <input
-          type="date"
-          formControlName="startDate"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [attr.aria-invalid]="fieldInvalid('startDate')"
+        <app-date-input
+          [control]="form.controls.startDate"
+          inputId="mission-assignment-start-date"
+          [ariaInvalid]="fieldInvalid('startDate')"
         />
         @if (fieldInvalid('startDate')) {
           <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
@@ -93,20 +92,18 @@
 
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'MISSIONS.EXPECTED_END_DATE' | translate }}</span>
-        <input
-          type="date"
-          formControlName="expectedEndDate"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        <app-date-input
+          [control]="form.controls.expectedEndDate"
+          inputId="mission-assignment-expected-end-date"
         />
       </label>
 
       @if (isEditMode()) {
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'MISSIONS.ACTUAL_END_DATE' | translate }}</span>
-          <input
-            type="date"
-            formControlName="actualEndDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-date-input
+            [control]="form.controls.actualEndDate"
+            inputId="mission-assignment-actual-end-date"
           />
         </label>
       }

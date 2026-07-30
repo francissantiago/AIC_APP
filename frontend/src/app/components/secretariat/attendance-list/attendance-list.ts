@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { ATTENDANCE_EVENT_TYPES, AttendanceEventType } from '@enums/secretariat';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -23,7 +24,7 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-attendance-list',
-  imports: [AppDatePipe, AppDialog, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, DateInput, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full" data-testid="attendance-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -56,15 +57,14 @@ const PAGE_SIZE = 20;
         >
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.EVENT_DATE' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="eventDate"
-              data-testid="attendance-form-date"
-              [attr.aria-invalid]="
+            <app-date-input
+              [control]="form.controls.eventDate"
+              inputId="attendance-form-date"
+              testId="attendance-form-date"
+              [ariaInvalid]="
                 form.controls.eventDate.touched && form.controls.eventDate.invalid
               "
-              [attr.aria-describedby]="
+              [ariaDescribedBy]="
                 form.controls.eventDate.touched && form.controls.eventDate.invalid
                   ? 'attendance-date-error'
                   : null
@@ -178,18 +178,16 @@ const PAGE_SIZE = 20;
       >
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.FROM' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="from"
+          <app-date-input
+            [control]="filterForm.controls.from"
+            inputId="attendance-filter-from"
           />
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.TO' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="to"
+          <app-date-input
+            [control]="filterForm.controls.to"
+            inputId="attendance-filter-to"
           />
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">

@@ -21,6 +21,7 @@ import { ClassAgeGroup } from '@enums/class-age-group';
 import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { ClassStatus } from '@enums/class-status';
 import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IFamily } from '@interfaces/IFamily';
@@ -45,6 +46,7 @@ type MemberFormTab = 'details' | 'ministries' | 'ebd' | 'family' | 'transfers';
 @Component({
   selector: 'app-member-form',
   imports: [
+    DateInput,
     ReactiveFormsModule,
     RouterLink,
     TranslatePipe,

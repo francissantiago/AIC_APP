@@ -34,16 +34,22 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
 import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { AddFamilyMemberDto } from './dto/add-family-member.dto';
+import { CreateFamilyMemberRelationDto } from './dto/create-family-member-relation.dto';
 import { BirthdayReportResponseDto } from './dto/birthday-report-item.dto';
 import { CreateFamilyDto } from './dto/create-family.dto';
+import { FamilyGenealogyResponseDto } from './dto/family-genealogy-response.dto';
 import {
-  FamilyMemberResponseDto,
-  PaginatedFamilyMembersResponseDto,
-} from './dto/family-member-response.dto';
+  FamilyMemberRelationListResponseDto,
+  FamilyMemberRelationResponseDto,
+} from './dto/family-member-relation-response.dto';
 import {
   FamilyResponseDto,
   PaginatedFamiliesResponseDto,
 } from './dto/family-response.dto';
+import {
+  FamilyMemberResponseDto,
+  PaginatedFamilyMembersResponseDto,
+} from './dto/family-member-response.dto';
 import { QueryFamiliesDto } from './dto/query-families.dto';
 import { QueryFamilyBirthdaysDto } from './dto/query-family-birthdays.dto';
 import { QueryFamilyMembersDto } from './dto/query-family-members.dto';
@@ -233,6 +239,71 @@ export class FamiliesController {
     return this.familiesService.removeMember(
       id,
       memberId,
+      activeCongregationId,
+    );
+  }
+
+  @Get(':id/genealogy')
+  @ApiOperation({
+    summary: 'Árvore genealógica da família a partir dos vínculos explícitos',
+  })
+  @ApiOkResponse({ type: FamilyGenealogyResponseDto })
+  @ApiNotFoundResponse({ description: 'Família não encontrada' })
+  getGenealogy(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<FamilyGenealogyResponseDto> {
+    return this.familiesService.getGenealogy(id, activeCongregationId);
+  }
+
+  @Get(':id/member-relations')
+  @ApiOperation({
+    summary: 'Listar vínculos explícitos entre membros da família',
+  })
+  @ApiOkResponse({ type: FamilyMemberRelationListResponseDto })
+  @ApiNotFoundResponse({ description: 'Família não encontrada' })
+  findMemberRelations(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<FamilyMemberRelationListResponseDto> {
+    return this.familiesService.findMemberRelations(id, activeCongregationId);
+  }
+
+  @Post(':id/member-relations')
+  @RequirePermission('members:write')
+  @ApiOperation({ summary: 'Criar vínculo explícito entre membros da família' })
+  @ApiCreatedResponse({ type: FamilyMemberRelationResponseDto })
+  @ApiNotFoundResponse({ description: 'Família ou membro não encontrado' })
+  @ApiConflictResponse({ description: 'Vínculo duplicado' })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validação de vínculo (ciclo, self, fora da família)',
+  })
+  createMemberRelation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateFamilyMemberRelationDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<FamilyMemberRelationResponseDto> {
+    return this.familiesService.createMemberRelation(
+      id,
+      dto,
+      activeCongregationId,
+    );
+  }
+
+  @Delete(':id/member-relations/:relationId')
+  @RequirePermission('members:write')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remover vínculo explícito entre membros' })
+  @ApiNoContentResponse({ description: 'Vínculo removido' })
+  @ApiNotFoundResponse({ description: 'Vínculo não encontrado' })
+  removeMemberRelation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('relationId', ParseUUIDPipe) relationId: string,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<void> {
+    return this.familiesService.removeMemberRelation(
+      id,
+      relationId,
       activeCongregationId,
     );
   }

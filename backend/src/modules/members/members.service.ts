@@ -102,6 +102,11 @@ export class MembersService {
       filiation,
       dto.linkFamily,
     );
+    await this.familiesService.syncFiliationRelationsForMember(
+      saved.id,
+      filiation.fatherMemberId,
+      filiation.motherMemberId,
+    );
     return MemberResponseDto.fromEntity(saved, { familyLink });
   }
 
@@ -379,6 +384,13 @@ export class MembersService {
     const familyLink = filiationTouched
       ? await this.maybeLinkFamily(saved, filiation, dto.linkFamily)
       : undefined;
+    if (filiationTouched) {
+      await this.familiesService.syncFiliationRelationsForMember(
+        saved.id,
+        filiation.fatherMemberId,
+        filiation.motherMemberId,
+      );
+    }
     return MemberResponseDto.fromEntity(saved, { familyLink });
   }
 

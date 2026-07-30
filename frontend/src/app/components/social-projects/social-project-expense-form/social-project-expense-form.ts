@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { PAYMENT_METHODS, PaymentMethod } from '@enums/finance';
 import { ICreateSocialProjectExpense } from '@interfaces/ISocialProjectExpenseQuery';
@@ -18,7 +19,7 @@ import { SocialProjectExpensesService } from '@services/social-project-expenses-
 
 @Component({
   selector: 'app-social-project-expense-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './social-project-expense-form.html',
   styleUrl: './social-project-expense-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -52,11 +52,10 @@
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'CONSTRUCTIONS.RECORDED_AT' | translate }}</span>
-      <input
-        type="date"
-        formControlName="recordedAt"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        [class.border-red-500]="fieldInvalid('recordedAt')"
+      <app-date-input
+        [control]="form.controls.recordedAt"
+        inputId="construction-update-recorded-at"
+        [ariaInvalid]="fieldInvalid('recordedAt')"
       />
     </label>
 

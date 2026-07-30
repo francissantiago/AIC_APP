@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-status';
 import { ICreateBranch } from '@interfaces/ICreateBranch';
@@ -20,7 +21,7 @@ import { CongregationsService } from '@services/congregations-service';
 
 @Component({
   selector: 'app-congregation-branch-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './congregation-branch-form.html',
   styleUrl: './congregation-branch-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

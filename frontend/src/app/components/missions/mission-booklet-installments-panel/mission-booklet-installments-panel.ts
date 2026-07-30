@@ -22,11 +22,12 @@ import { IMissionBookletInstallment } from '@interfaces/IMissionBooklet';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { MissionBookletsService } from '@services/mission-booklets-service';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-mission-booklet-installments-panel',
-  imports: [AppDatePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './mission-booklet-installments-panel.html',
   styleUrl: './mission-booklet-installments-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

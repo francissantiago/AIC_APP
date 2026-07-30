@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DatetimeInput } from '@components/datetime-input/datetime-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AnnouncementAudience } from '@enums/announcement-audience';
 import { ICreateAnnouncement } from '@interfaces/ICreateAnnouncement';
@@ -20,7 +21,7 @@ import { ApiErrorService } from '@services/api-error.service';
 
 @Component({
   selector: 'app-announcement-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DatetimeInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './announcement-form.html',
   styleUrl: './announcement-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

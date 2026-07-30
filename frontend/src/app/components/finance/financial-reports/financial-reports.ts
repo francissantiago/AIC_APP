@@ -32,13 +32,14 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CongregationContextService } from '@services/congregation-context-service';
 import { FinanceService } from '@services/finance-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDatePipe } from '@pipes/app-date-pipe';
 
 type ReportTab = 'cash' | 'assets' | 'contributions';
 
 @Component({
   selector: 'app-financial-reports',
-  imports: [AppDatePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [AppDatePipe, DateInput, ReactiveFormsModule, TranslatePipe],
   styles: `
     @media print {
       .no-print {
@@ -124,17 +125,15 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
         >
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
             ><span>{{ 'FINANCE.FROM' | translate }}</span
-            ><input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="from"
+            ><app-date-input
+              [control]="cashForm.controls.from"
+              inputId="finance-reports-cash-from"
           /></label>
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
             ><span>{{ 'FINANCE.TO' | translate }}</span
-            ><input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="to"
+            ><app-date-input
+              [control]="cashForm.controls.to"
+              inputId="finance-reports-cash-to"
           /></label>
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
             ><span>{{ 'FINANCE.TYPE' | translate }}</span
@@ -435,17 +434,15 @@ type ReportTab = 'cash' | 'assets' | 'contributions';
           >
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
             ><span>{{ 'FINANCE.FROM' | translate }}</span
-            ><input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="from"
+            ><app-date-input
+              [control]="contributionsForm.controls.from"
+              inputId="finance-reports-contributions-from"
           /></label>
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
             ><span>{{ 'FINANCE.TO' | translate }}</span
-            ><input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="to"
+            ><app-date-input
+              [control]="contributionsForm.controls.to"
+              inputId="finance-reports-contributions-to"
           /></label>
           <div class="flex flex-wrap gap-3 md:col-span-4">
             <button

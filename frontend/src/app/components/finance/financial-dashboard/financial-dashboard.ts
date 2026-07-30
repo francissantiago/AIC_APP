@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { ChartCanvas } from '@components/finance/chart-canvas/chart-canvas';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { IFinancialDashboard } from '@interfaces/IFinance';
@@ -18,7 +19,7 @@ import { ChartData } from 'chart.js';
 
 @Component({
   selector: 'app-financial-dashboard',
-  imports: [ChartCanvas, ReactiveFormsModule, TranslatePipe],
+  imports: [ChartCanvas, DateInput, ReactiveFormsModule, TranslatePipe],
   template: `
     <section class="w-full" data-testid="finance-dashboard">
       <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
@@ -34,24 +35,22 @@ import { ChartData } from 'chart.js';
         >
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'FINANCE.FROM' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="from"
-              data-testid="finance-dashboard-from"
-              [attr.aria-invalid]="periodInvalid()"
-              [attr.aria-describedby]="periodInvalid() ? 'dashboard-period-error' : null"
+            <app-date-input
+              [control]="filterForm.controls.from"
+              inputId="finance-dashboard-from"
+              testId="finance-dashboard-from"
+              [ariaInvalid]="periodInvalid()"
+              [ariaDescribedBy]="periodInvalid() ? 'dashboard-period-error' : null"
             />
           </label>
           <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'FINANCE.TO' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="date"
-              formControlName="to"
-              data-testid="finance-dashboard-to"
-              [attr.aria-invalid]="periodInvalid()"
-              [attr.aria-describedby]="periodInvalid() ? 'dashboard-period-error' : null"
+            <app-date-input
+              [control]="filterForm.controls.to"
+              inputId="finance-dashboard-to"
+              testId="finance-dashboard-to"
+              [ariaInvalid]="periodInvalid()"
+              [ariaDescribedBy]="periodInvalid() ? 'dashboard-period-error' : null"
             />
           </label>
           <button

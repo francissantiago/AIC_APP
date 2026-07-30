@@ -3,6 +3,28 @@
   data-testid="family-members-panel"
   [attr.aria-label]="'FAMILIES.MEMBERS' | translate"
 >
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    @if (showGenealogy()) {
+      <button
+        type="button"
+        data-testid="family-genealogy-back-btn"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        (click)="closeGenealogy()"
+      >
+        {{ 'FAMILIES.GENEALOGY_BACK' | translate }}
+      </button>
+    } @else {
+      <button
+        type="button"
+        data-testid="family-open-genealogy-btn"
+        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        (click)="openGenealogy()"
+      >
+        {{ 'FAMILIES.OPEN_GENEALOGY' | translate }}
+      </button>
+    }
+  </div>
+
   @if (feedback(); as messageKey) {
     <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
       {{ messageKey | translate }}
@@ -15,41 +37,126 @@
     </p>
   }
 
+  @if (showGenealogy()) {
+    <section
+      class="rounded-md border border-slate-200 bg-slate-50 p-4"
+      data-testid="family-genealogy-view"
+      [attr.aria-label]="'FAMILIES.GENEALOGY' | translate"
+    >
+      <h3 class="mb-1 text-base font-semibold text-slate-900">
+        {{ 'FAMILIES.GENEALOGY' | translate }}
+      </h3>
+      @if (genealogy(); as tree) {
+        <p class="mb-4 text-sm text-slate-600">{{ tree.familyName }}</p>
+      }
+
+      @if (genealogyLoading()) {
+        <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
+      } @else if (genealogyError()) {
+        <p class="text-sm text-red-700" role="alert">{{ 'ERRORS.LOAD_FAILED' | translate }}</p>
+      } @else if (!hasGenealogyTree()) {
+        <p class="text-sm text-slate-600">{{ 'FAMILIES.GENEALOGY_EMPTY' | translate }}</p>
+      } @else {
+        <div class="overflow-x-auto pb-2">
+          <div class="flex min-w-min flex-wrap justify-center gap-8 px-2 py-4">
+            @for (root of genealogy()!.roots; track root.memberId) {
+              <app-family-genealogy-tree [node]="root" />
+            }
+          </div>
+        </div>
+
+        @if (genealogy()!.unlinkedMembers.length > 0) {
+          <div class="mt-4 border-t border-slate-200 pt-3">
+            <p class="mb-2 text-sm font-medium text-slate-700">
+              {{ 'FAMILIES.GENEALOGY_UNLINKED' | translate }}
+            </p>
+            <ul class="flex flex-wrap gap-2">
+              @for (member of genealogy()!.unlinkedMembers; track member.memberId) {
+                <li
+                  class="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-800"
+                  [title]="member.fullName"
+                >
+                  {{ shortName(member.fullName) }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      }
+    </section>
+  } @else {
   @if (canWrite() && canReadMembers()) {
     <form
       [formGroup]="linkForm"
       (ngSubmit)="linkMember()"
-      class="mb-4 grid gap-3 md:grid-cols-3"
+      class="mb-5 space-y-4"
       novalidate
     >
-      <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-1">
-        <span>{{ 'FAMILIES.ADD_MEMBER' | translate }}</span>
-        <select
-          formControlName="memberId"
-          data-testid="family-add-member-select"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        >
-          <option value="">{{ 'COMMON.FILTER' | translate }}</option>
-          @for (member of availableMembers(); track member.id) {
-            <option [value]="member.id">{{ member.fullName }}</option>
-          }
-        </select>
-      </label>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'FAMILIES.ADD_MEMBER' | translate }}</span>
+          <select
+            formControlName="memberId"
+            data-testid="family-add-member-select"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            <option value="">{{ 'FAMILIES.SELECT_MEMBER' | translate }}</option>
+            @for (member of availableMembers(); track member.id) {
+              <option [value]="member.id">{{ member.fullName }}</option>
+            }
+          </select>
+        </label>
 
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'FAMILIES.RELATION' | translate }}</span>
-        <select
-          formControlName="relation"
-          data-testid="family-add-relation-select"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        >
-          @for (relation of relations; track relation) {
-            <option [value]="relation">{{ relationLabelKey(relation) | translate }}</option>
-          }
-        </select>
-      </label>
+        <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'FAMILIES.RELATION' | translate }}</span>
+          <select
+            formControlName="relation"
+            data-testid="family-add-relation-select"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            @for (relation of relations; track relation) {
+              <option [value]="relation">{{ relationLabelKey(relation) | translate }}</option>
+            }
+          </select>
+        </label>
+      </div>
 
-      <div class="flex items-end">
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="mb-3 text-sm font-medium text-slate-700">
+          {{ 'FAMILIES.INITIAL_RELATION' | translate }}
+        </p>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'FAMILIES.RELATION_KIND' | translate }}</span>
+            <select
+              formControlName="initialLinkRelation"
+              data-testid="family-initial-link-relation-select"
+              class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              <option value="">{{ 'FAMILIES.NO_INITIAL_RELATION' | translate }}</option>
+              @for (relation of linkRelations; track relation) {
+                <option [value]="relation">{{ linkRelationLabelKey(relation) | translate }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+            <span>{{ 'FAMILIES.RELATED_TO' | translate }}</span>
+            <select
+              formControlName="initialRelatedMemberId"
+              data-testid="family-initial-related-member-select"
+              class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
+              <option value="">{{ 'FAMILIES.SELECT_MEMBER' | translate }}</option>
+              @for (member of members(); track member.memberId) {
+                <option [value]="member.memberId">{{ member.memberFullName }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div>
         <button
           type="submit"
           data-testid="family-add-member-btn"
@@ -96,29 +203,40 @@
     <p class="text-sm text-slate-600">{{ 'FAMILIES.EMPTY' | translate }}</p>
   } @else {
     <div class="overflow-x-auto rounded-md border border-slate-200">
-      <table class="min-w-full text-left text-sm">
+      <table class="w-full text-left text-sm">
         <thead class="bg-slate-50 text-slate-700">
           <tr>
-            <th scope="col" class="px-3 py-2 font-medium">
-              {{ 'FAMILIES.MEMBERS' | translate }}
+            <th scope="col" class="whitespace-nowrap px-3 py-2 font-medium">
+              {{ 'FAMILIES.MEMBER_NAME' | translate }}
             </th>
-            <th scope="col" class="px-3 py-2 font-medium">{{ 'FAMILIES.RELATION' | translate }}</th>
+            <th scope="col" class="whitespace-nowrap px-3 py-2 font-medium">
+              {{ 'FAMILIES.RELATION' | translate }}
+            </th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'FAMILIES.RELATIONS' | translate }}
+            </th>
             @if (canWrite()) {
-              <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
+              <th scope="col" class="whitespace-nowrap px-3 py-2 font-medium">
+                {{ 'COMMON.ACTIONS' | translate }}
+              </th>
             }
           </tr>
         </thead>
         <tbody>
           @for (member of members(); track member.memberId) {
             <tr
-              class="border-t border-slate-100"
+              class="border-t border-slate-100 align-middle"
               [attr.data-testid]="'family-member-row-' + member.memberId"
             >
-              <td class="px-3 py-2 text-slate-900">{{ member.memberFullName }}</td>
+              <td class="whitespace-nowrap px-3 py-2 font-medium text-slate-900">
+                <span [title]="member.memberFullName">
+                  {{ shortName(member.memberFullName) }}
+                </span>
+              </td>
               <td class="px-3 py-2 text-slate-700">
                 @if (canWrite()) {
                   <select
-                    class="rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    class="min-w-[7.5rem] rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                     data-testid="family-member-relation-select"
                     (change)="onRelationSelect(member.memberId, $event)"
                     [attr.aria-label]="'FAMILIES.RELATION' | translate"
@@ -133,22 +251,164 @@
                   {{ relationLabelKey(member.relation) | translate }}
                 }
               </td>
+              <td class="max-w-[16rem] px-3 py-2 text-slate-700">
+                @if (member.relationSummarySegments?.length) {
+                  <ul class="space-y-0.5">
+                    @for (
+                      segment of member.relationSummarySegments;
+                      track segment.key + $index
+                    ) {
+                      <li
+                        class="truncate text-sm"
+                        [title]="segment.key | translate: segment.params"
+                      >
+                        {{ segment.key | translate: segmentDisplayParams(segment) }}
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <span class="text-slate-500">{{ 'FAMILIES.NO_RELATIONS' | translate }}</span>
+                }
+              </td>
               @if (canWrite()) {
                 <td class="px-3 py-2">
-                  <button
-                    type="button"
-                    [attr.data-testid]="'family-member-remove-' + member.memberId"
-                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    (click)="askUnlink(member.memberId)"
-                  >
-                    {{ 'FAMILIES.REMOVE_MEMBER' | translate }}
-                  </button>
+                  <div class="flex flex-col gap-1 whitespace-nowrap">
+                    <button
+                      type="button"
+                      [attr.data-testid]="'family-member-manage-relations-' + member.memberId"
+                      class="text-left text-sm text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      [attr.aria-expanded]="managingRelationsForMemberId() === member.memberId"
+                      (click)="toggleManageRelations(member.memberId)"
+                    >
+                      {{ 'FAMILIES.MANAGE_RELATIONS' | translate }}
+                    </button>
+                    <button
+                      type="button"
+                      [attr.data-testid]="'family-member-remove-' + member.memberId"
+                      class="text-left text-sm text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      (click)="askUnlink(member.memberId)"
+                    >
+                      {{ 'FAMILIES.REMOVE_MEMBER' | translate }}
+                    </button>
+                  </div>
                 </td>
               }
             </tr>
+            @if (canWrite() && managingRelationsForMemberId() === member.memberId) {
+              <tr class="border-t border-slate-100 bg-slate-50">
+                <td [attr.colspan]="canWrite() ? 4 : 3" class="px-3 py-3">
+                  <div
+                    class="rounded-md border border-slate-200 bg-white p-4"
+                    role="region"
+                    [attr.aria-label]="'FAMILIES.MANAGE_RELATIONS' | translate"
+                    [attr.data-testid]="'family-member-relations-editor-' + member.memberId"
+                  >
+                    <p class="mb-3 text-sm font-medium text-slate-800">
+                      {{ member.memberFullName }}
+                    </p>
+
+                    @if (member.relations?.length) {
+                      <ul class="mb-4 space-y-2">
+                        @for (relation of member.relations; track relation.id) {
+                          <li
+                            class="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-sm"
+                          >
+                            <span [title]="relation.relatedMemberFullName">
+                              {{ linkRelationLabelKey(relation.relation) | translate }}
+                              {{ shortName(relation.relatedMemberFullName) }}
+                            </span>
+                            @if (pendingRelationRemoveId() === relation.id) {
+                              <div class="flex gap-2">
+                                <button
+                                  type="button"
+                                  class="rounded-md bg-red-700 px-2 py-1 text-xs text-white"
+                                  [disabled]="savingRelation()"
+                                  (click)="confirmRemoveRelation()"
+                                >
+                                  {{ 'COMMON.YES' | translate }}
+                                </button>
+                                <button
+                                  type="button"
+                                  class="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                                  [disabled]="savingRelation()"
+                                  (click)="cancelRemoveRelation()"
+                                >
+                                  {{ 'COMMON.NO' | translate }}
+                                </button>
+                              </div>
+                            } @else {
+                              <button
+                                type="button"
+                                class="text-xs text-red-700 underline"
+                                (click)="askRemoveRelation(relation.id)"
+                              >
+                                {{ 'FAMILIES.REMOVE_RELATION' | translate }}
+                              </button>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    } @else {
+                      <p class="mb-4 text-sm text-slate-600">
+                        {{ 'FAMILIES.NO_RELATIONS' | translate }}
+                      </p>
+                    }
+
+                    <form
+                      [formGroup]="relationForm"
+                      class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
+                      (ngSubmit)="addRelationForMember(member.memberId)"
+                    >
+                      <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+                        <span>{{ 'FAMILIES.RELATION_KIND' | translate }}</span>
+                        <select
+                          formControlName="relation"
+                          class="w-full rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                        >
+                          @for (relation of linkRelations; track relation) {
+                            <option [value]="relation">
+                              {{ linkRelationLabelKey(relation) | translate }}
+                            </option>
+                          }
+                        </select>
+                      </label>
+
+                      <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+                        <span>{{ 'FAMILIES.RELATED_TO' | translate }}</span>
+                        <select
+                          formControlName="relatedMemberId"
+                          class="w-full rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                        >
+                          <option value="">{{ 'FAMILIES.SELECT_MEMBER' | translate }}</option>
+                          @for (
+                            related of relatedMembersFor(member.memberId);
+                            track related.memberId
+                          ) {
+                            <option [value]="related.memberId">
+                              {{ related.memberFullName }}
+                            </option>
+                          }
+                        </select>
+                      </label>
+
+                      <div class="flex items-end">
+                        <button
+                          type="submit"
+                          class="rounded-md bg-slate-500 px-4 py-2 text-sm text-white disabled:opacity-50"
+                          [disabled]="savingRelation()"
+                        >
+                          {{ 'FAMILIES.ADD_RELATION' | translate }}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
     </div>
+  }
   }
 </section>

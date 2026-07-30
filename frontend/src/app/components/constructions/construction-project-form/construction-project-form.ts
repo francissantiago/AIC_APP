@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DateInput } from '@components/date-input/date-input';
 import { ConstructionExpensesList } from '@components/constructions/construction-expenses-list/construction-expenses-list';
 import { ConstructionPhotosGallery } from '@components/constructions/construction-photos-gallery/construction-photos-gallery';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -36,6 +37,7 @@ type ProjectFormTab = 'details' | 'expenses' | 'photos';
 @Component({
   selector: 'app-construction-project-form',
   imports: [
+    DateInput,
     ReactiveFormsModule,
     TranslatePipe,
     ConstructionExpensesList,

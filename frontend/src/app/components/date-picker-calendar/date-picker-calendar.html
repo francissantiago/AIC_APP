@@ -1,0 +1,76 @@
+<div class="date-picker-calendar w-72" role="dialog" aria-modal="true">
+  <div class="mb-3 flex items-center justify-between gap-2">
+    <button
+      type="button"
+      class="rounded-md border border-slate-200 p-1.5 text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      (click)="previousMonth()"
+      [attr.aria-label]="'DATE_INPUT.PREV_MONTH' | translate"
+    >
+      ‹
+    </button>
+    <span class="text-sm font-medium capitalize text-slate-900">{{ monthLabel() }}</span>
+    <button
+      type="button"
+      class="rounded-md border border-slate-200 p-1.5 text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      (click)="nextMonth()"
+      [attr.aria-label]="'DATE_INPUT.NEXT_MONTH' | translate"
+    >
+      ›
+    </button>
+  </div>
+
+  <div class="mb-1 grid grid-cols-7 gap-1" role="row">
+    @for (weekdayKey of weekdayKeys(); track weekdayKey) {
+      <div class="text-center text-xs font-medium uppercase text-slate-500" role="columnheader">
+        {{ weekdayKey | translate }}
+      </div>
+    }
+  </div>
+
+  <div class="grid grid-cols-7 gap-1" role="grid">
+    @for (week of weeks(); track $index) {
+      @for (day of week; track dayIso(day)) {
+        <button
+          type="button"
+          role="gridcell"
+          class="flex h-8 w-8 items-center justify-center rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [class.text-slate-300]="!isCurrentMonth(day) || isDayDisabled(dayIso(day))"
+          [class.cursor-not-allowed]="isDayDisabled(dayIso(day))"
+          [class.text-slate-800]="isCurrentMonth(day) && !isDayDisabled(dayIso(day))"
+          [class.hover:bg-slate-100]="
+            isCurrentMonth(day) && !isDayDisabled(dayIso(day)) && !isSelectedDay(day)
+          "
+          [class.bg-slate-900]="isSelectedDay(day)"
+          [class.text-white]="isSelectedDay(day)"
+          [class.ring-1]="isToday(day) && !isSelectedDay(day)"
+          [class.ring-slate-400]="isToday(day) && !isSelectedDay(day)"
+          [disabled]="isDayDisabled(dayIso(day))"
+          [attr.aria-selected]="isSelectedDay(day)"
+          [attr.aria-label]="dayIso(day)"
+          (click)="selectDay(day)"
+          (keydown)="onDayKeydown($event, day)"
+        >
+          {{ day.getDate() }}
+        </button>
+      }
+    }
+  </div>
+
+  <div class="mt-3 flex justify-between gap-2 border-t border-slate-100 pt-3">
+    <button
+      type="button"
+      class="rounded-md px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      (click)="selectToday()"
+      [disabled]="isDayDisabled(todayIso)"
+    >
+      {{ 'DATE_INPUT.TODAY' | translate }}
+    </button>
+    <button
+      type="button"
+      class="rounded-md px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      (click)="daySelected.emit('')"
+    >
+      {{ 'DATE_INPUT.CLEAR' | translate }}
+    </button>
+  </div>
+</div>

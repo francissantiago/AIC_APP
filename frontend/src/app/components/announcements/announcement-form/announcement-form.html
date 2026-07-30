@@ -51,19 +51,19 @@
 
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'ANNOUNCEMENTS.FIELD_PUBLISHED_AT' | translate }}</span>
-        <input
-          type="datetime-local"
-          formControlName="publishedAt"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        <app-datetime-input
+          [control]="form.controls.publishedAt"
+          inputId="announcement-published-at"
+          testId="announcement-form-published-at"
         />
       </label>
 
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'ANNOUNCEMENTS.FIELD_EXPIRES_AT' | translate }}</span>
-        <input
-          type="datetime-local"
-          formControlName="expiresAt"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        <app-datetime-input
+          [control]="form.controls.expiresAt"
+          inputId="announcement-expires-at"
+          testId="announcement-form-expires-at"
         />
       </label>
 

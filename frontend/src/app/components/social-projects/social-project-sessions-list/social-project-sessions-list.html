@@ -57,19 +57,17 @@
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'SOCIAL_PROJECTS.DATE_FROM' | translate }}</span>
-      <input
-        type="date"
-        formControlName="dateFrom"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      <app-date-input
+        [control]="filterForm.controls.dateFrom"
+        inputId="social-project-sessions-date-from"
       />
     </label>
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'SOCIAL_PROJECTS.DATE_TO' | translate }}</span>
-      <input
-        type="date"
-        formControlName="dateTo"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      <app-date-input
+        [control]="filterForm.controls.dateTo"
+        inputId="social-project-sessions-date-to"
       />
     </label>
   </form>

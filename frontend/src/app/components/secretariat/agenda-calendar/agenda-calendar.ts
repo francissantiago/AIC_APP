@@ -27,6 +27,8 @@ import {
   DateAdapter,
   provideCalendar,
 } from 'angular-calendar';
+import { DateInput } from '@components/date-input/date-input';
+import { DatetimeInput } from '@components/datetime-input/datetime-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { GoogleCalendarPanel } from '@components/secretariat/google-calendar-panel/google-calendar-panel';
 import {
@@ -108,6 +110,8 @@ const EVENT_COLORS: Record<
     CalendarPreviousViewDirective,
     CalendarTodayDirective,
     CalendarWeekViewComponent,
+    DateInput,
+    DatetimeInput,
     GoogleCalendarPanel,
     ReactiveFormsModule,
     RouterLink,
@@ -561,13 +565,12 @@ const EVENT_COLORS: Record<
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.STARTS_AT' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="datetime-local"
-              formControlName="startsAt"
-              data-testid="agenda-form-starts"
-              [attr.aria-invalid]="form.controls.startsAt.touched && form.controls.startsAt.invalid"
-              [attr.aria-describedby]="
+            <app-datetime-input
+              [control]="form.controls.startsAt"
+              inputId="agenda-form-starts"
+              testId="agenda-form-starts"
+              [ariaInvalid]="form.controls.startsAt.touched && form.controls.startsAt.invalid"
+              [ariaDescribedBy]="
                 form.controls.startsAt.touched && form.controls.startsAt.invalid
                   ? 'event-starts-error'
                   : null
@@ -581,13 +584,12 @@ const EVENT_COLORS: Record<
           </label>
           <label class="flex flex-col gap-1 text-sm text-slate-700">
             <span>{{ 'SECRETARIAT.ENDS_AT' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="datetime-local"
-              formControlName="endsAt"
-              data-testid="agenda-form-ends"
-              [attr.aria-invalid]="form.controls.endsAt.touched && form.controls.endsAt.invalid"
-              [attr.aria-describedby]="
+            <app-datetime-input
+              [control]="form.controls.endsAt"
+              inputId="agenda-form-ends"
+              testId="agenda-form-ends"
+              [ariaInvalid]="form.controls.endsAt.touched && form.controls.endsAt.invalid"
+              [ariaDescribedBy]="
                 form.controls.endsAt.touched && form.controls.endsAt.invalid
                   ? 'event-ends-error'
                   : null
@@ -664,10 +666,9 @@ const EVENT_COLORS: Record<
             </label>
             <label class="flex flex-col gap-1 text-sm text-slate-700">
               <span>{{ 'SECRETARIAT.RECURRENCE_UNTIL' | translate }}</span>
-              <input
-                class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                type="date"
-                formControlName="recurrenceUntil"
+              <app-date-input
+                [control]="form.controls.recurrenceUntil"
+                inputId="agenda-form-recurrence-until"
               />
             </label>
           }

@@ -18,6 +18,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { DateInput } from '@components/date-input/date-input';
 import { LanguageSwitcher } from '@components/layout/language-switcher/language-switcher';
 import {
   ICompleteSetupRequest,
@@ -56,7 +57,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-initial-setup',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, LanguageSwitcher],
+  imports: [DateInput, ReactiveFormsModule, RouterLink, TranslatePipe, LanguageSwitcher],
   templateUrl: './initial-setup.html',
   styleUrl: './initial-setup.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

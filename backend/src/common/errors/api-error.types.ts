@@ -184,6 +184,12 @@ export const ApiErrorCode = {
   FAMILIES_HEAD_WRONG_CONGREGATION: 'FAMILIES.HEAD_WRONG_CONGREGATION',
   FAMILIES_MEMBER_FAMILY_NOT_FOUND: 'FAMILIES.MEMBER_FAMILY_NOT_FOUND',
   FAMILIES_BIRTHDAY_MONTH_INVALID: 'FAMILIES.BIRTHDAY_MONTH_INVALID',
+  FAMILIES_RELATION_NOT_FOUND: 'FAMILIES.RELATION_NOT_FOUND',
+  FAMILIES_RELATION_DUPLICATE: 'FAMILIES.RELATION_DUPLICATE',
+  FAMILIES_RELATION_SELF: 'FAMILIES.RELATION_SELF',
+  FAMILIES_RELATION_NOT_IN_FAMILY: 'FAMILIES.RELATION_NOT_IN_FAMILY',
+  FAMILIES_RELATION_CYCLE: 'FAMILIES.RELATION_CYCLE',
+  FAMILIES_RELATION_MAX_PARENTS: 'FAMILIES.RELATION_MAX_PARENTS',
 
   CLASSES_NOT_FOUND: 'CLASSES.NOT_FOUND',
   CLASSES_NAME_IN_USE: 'CLASSES.NAME_IN_USE',
@@ -477,6 +483,15 @@ export const ApiErrorMessage = {
     'Membro não possui família cadastrada.',
   [ApiErrorCode.FAMILIES_BIRTHDAY_MONTH_INVALID]:
     'Mês de aniversário inválido.',
+  [ApiErrorCode.FAMILIES_RELATION_NOT_FOUND]: 'Vínculo não encontrado.',
+  [ApiErrorCode.FAMILIES_RELATION_DUPLICATE]: 'Vínculo já existe.',
+  [ApiErrorCode.FAMILIES_RELATION_SELF]:
+    'Não é possível vincular o membro a si mesmo.',
+  [ApiErrorCode.FAMILIES_RELATION_NOT_IN_FAMILY]:
+    'O membro relacionado deve pertencer a esta família.',
+  [ApiErrorCode.FAMILIES_RELATION_CYCLE]: 'Vínculo inválido (ciclo).',
+  [ApiErrorCode.FAMILIES_RELATION_MAX_PARENTS]:
+    'Um membro não pode ter mais de dois pais/mães.',
   [ApiErrorCode.CLASSES_NOT_FOUND]: 'Turma não encontrada.',
   [ApiErrorCode.CLASSES_NAME_IN_USE]: 'Já existe uma turma com este nome.',
   [ApiErrorCode.CLASSES_TEACHER_NOT_FOUND]:

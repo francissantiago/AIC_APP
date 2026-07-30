@@ -73,8 +73,10 @@ describe('MembersService', () => {
     openReadStream: jest.fn(),
   };
   const linkFiliationFamily = jest.fn();
+  const syncFiliationRelationsForMember = jest.fn();
   const familiesService = {
     linkFiliationFamily,
+    syncFiliationRelationsForMember,
   };
 
   const baseCongregation = (): Congregation => {

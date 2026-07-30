@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { PAYMENT_METHODS, PaymentMethod } from '@enums/finance';
 import { ICreateConstructionExpense } from '@interfaces/IConstructionExpenseQuery';
@@ -18,7 +19,7 @@ import { ConstructionExpensesService } from '@services/construction-expenses-ser
 
 @Component({
   selector: 'app-construction-expense-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './construction-expense-form.html',
   styleUrl: './construction-expense-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

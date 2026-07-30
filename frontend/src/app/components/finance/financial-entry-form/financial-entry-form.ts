@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FINANCIAL_TYPES, FinancialType, PAYMENT_METHODS, PaymentMethod } from '@enums/finance';
 import { IFinanceMemberOption, IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiErrorService } from '@services/api-error.service';
 import { FinanceService } from '@services/finance-service';
@@ -22,7 +23,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
 
 @Component({
   selector: 'app-financial-entry-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   template: `
     <section
       class="w-full"
@@ -32,12 +33,11 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
       <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4 md:grid-cols-2" novalidate>
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'FINANCE.ENTRY_DATE' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="date"
-            formControlName="entryDate"
-            [attr.aria-invalid]="form.controls.entryDate.touched && form.controls.entryDate.invalid"
-            [attr.aria-describedby]="
+          <app-date-input
+            [control]="form.controls.entryDate"
+            inputId="finance-entry-date"
+            [ariaInvalid]="form.controls.entryDate.touched && form.controls.entryDate.invalid"
+            [ariaDescribedBy]="
               form.controls.entryDate.touched && form.controls.entryDate.invalid
                 ? 'entry-date-error'
                 : null

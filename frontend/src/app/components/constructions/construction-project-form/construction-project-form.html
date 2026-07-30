@@ -178,28 +178,25 @@
 
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'CONSTRUCTIONS.START_DATE' | translate }}</span>
-          <input
-            type="date"
-            formControlName="startDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-date-input
+            [control]="form.controls.startDate"
+            inputId="construction-project-start-date"
           />
         </label>
 
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'CONSTRUCTIONS.EXPECTED_END_DATE' | translate }}</span>
-          <input
-            type="date"
-            formControlName="expectedEndDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-date-input
+            [control]="form.controls.expectedEndDate"
+            inputId="construction-project-expected-end-date"
           />
         </label>
 
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'CONSTRUCTIONS.ACTUAL_END_DATE' | translate }}</span>
-          <input
-            type="date"
-            formControlName="actualEndDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-date-input
+            [control]="form.controls.actualEndDate"
+            inputId="construction-project-actual-end-date"
           />
         </label>
 

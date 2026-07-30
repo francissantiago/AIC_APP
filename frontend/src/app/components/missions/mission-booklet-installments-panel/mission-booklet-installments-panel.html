@@ -79,7 +79,10 @@
                   </label>
                   <label class="flex flex-col gap-1 text-sm text-slate-700">
                     <span>{{ 'MISSIONS.BOOKLETS.PAID_AT' | translate }}</span>
-                    <input type="date" formControlName="paidAt" class="rounded-md border border-slate-200 px-3 py-2" />
+                    <app-date-input
+                      [control]="payForm.controls.paidAt"
+                      inputId="mission-booklet-installment-paid-at"
+                    />
                   </label>
                   <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-3">
                     <span>{{ 'MISSIONS.NOTES' | translate }}</span>

@@ -26,11 +26,10 @@
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'CONSTRUCTIONS.EXPENSE_DATE' | translate }}</span>
-      <input
-        type="date"
-        formControlName="entryDate"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        [attr.aria-invalid]="fieldInvalid('entryDate')"
+      <app-date-input
+        [control]="form.controls.entryDate"
+        inputId="construction-expense-entry-date"
+        [ariaInvalid]="fieldInvalid('entryDate')"
       />
       @if (fieldInvalid('entryDate')) {
         <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>

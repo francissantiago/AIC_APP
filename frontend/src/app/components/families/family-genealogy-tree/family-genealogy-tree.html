@@ -1,0 +1,69 @@
+<div class="genealogy-node" data-testid="genealogy-node">
+  <div class="genealogy-node__generation">
+    @for (sibling of node().siblings; track sibling.memberId) {
+      <div
+        class="genealogy-node__person genealogy-node__person--sibling"
+        [title]="sibling.fullName"
+        [attr.data-testid]="'genealogy-person-' + sibling.memberId"
+      >
+        <span class="genealogy-node__name">{{ shortName(sibling.fullName) }}</span>
+        @if (sibling.birthDate) {
+          <span class="genealogy-node__meta">{{ sibling.birthDate }}</span>
+        }
+        <span class="genealogy-node__badge">{{ 'FAMILIES.GENEALOGY_SIBLING' | translate }}</span>
+      </div>
+      <span class="genealogy-node__link genealogy-node__link--sibling" aria-hidden="true">—</span>
+    }
+
+    <div
+      class="genealogy-node__person"
+      [title]="node().fullName"
+      [attr.data-testid]="'genealogy-person-' + node().memberId"
+    >
+      <span class="genealogy-node__name">{{ shortName(node().fullName) }}</span>
+      @if (node().birthDate) {
+        <span class="genealogy-node__meta">{{ node().birthDate }}</span>
+      }
+    </div>
+
+    @for (spouse of node().spouses; track spouse.memberId) {
+      <span class="genealogy-node__link" aria-hidden="true">∞</span>
+      <div
+        class="genealogy-node__person genealogy-node__person--spouse"
+        [title]="spouse.fullName"
+        [attr.data-testid]="'genealogy-person-' + spouse.memberId"
+      >
+        <span class="genealogy-node__name">{{ shortName(spouse.fullName) }}</span>
+        @if (spouse.birthDate) {
+          <span class="genealogy-node__meta">{{ spouse.birthDate }}</span>
+        }
+      </div>
+
+      @for (sibling of spouse.siblings; track sibling.memberId) {
+        <span class="genealogy-node__link genealogy-node__link--sibling" aria-hidden="true">—</span>
+        <div
+          class="genealogy-node__person genealogy-node__person--sibling"
+          [title]="sibling.fullName"
+          [attr.data-testid]="'genealogy-person-' + sibling.memberId"
+        >
+          <span class="genealogy-node__name">{{ shortName(sibling.fullName) }}</span>
+          @if (sibling.birthDate) {
+            <span class="genealogy-node__meta">{{ sibling.birthDate }}</span>
+          }
+          <span class="genealogy-node__badge">{{ 'FAMILIES.GENEALOGY_SIBLING' | translate }}</span>
+        </div>
+      }
+    }
+  </div>
+
+  @if (node().children.length > 0) {
+    <div class="genealogy-node__stem" aria-hidden="true"></div>
+    <ul class="genealogy-node__children" role="list">
+      @for (child of node().children; track child.memberId) {
+        <li class="genealogy-node__child">
+          <app-family-genealogy-tree [node]="child" />
+        </li>
+      }
+    </ul>
+  }
+</div>

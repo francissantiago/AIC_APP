@@ -57,19 +57,17 @@
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'SMALL_GROUPS.FROM' | translate }}</span>
-      <input
-        type="date"
-        formControlName="from"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      <app-date-input
+        [control]="filterForm.controls.from"
+        inputId="small-group-frequency-report-from"
       />
     </label>
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'SMALL_GROUPS.TO' | translate }}</span>
-      <input
-        type="date"
-        formControlName="to"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      <app-date-input
+        [control]="filterForm.controls.to"
+        inputId="small-group-frequency-report-to"
       />
     </label>
 

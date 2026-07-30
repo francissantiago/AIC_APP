@@ -5,6 +5,12 @@ import { IBirthdayReport } from '@interfaces/IBirthdayReport';
 import { ICreateFamily } from '@interfaces/ICreateFamily';
 import { IFamily } from '@interfaces/IFamily';
 import { IFamilyMember } from '@interfaces/IFamilyMember';
+import {
+  ICreateFamilyMemberRelation,
+  IFamilyMemberRelation,
+  IFamilyMemberRelationList,
+} from '@interfaces/IFamilyMemberRelation';
+import { IFamilyGenealogy } from '@interfaces/IFamilyGenealogy';
 import { IPaginatedFamilies } from '@interfaces/IPaginatedFamilies';
 import { IPaginatedFamilyMembers } from '@interfaces/IPaginatedFamilyMembers';
 import { IQueryFamilies } from '@interfaces/IQueryFamilies';
@@ -146,6 +152,42 @@ export class FamiliesService {
   removeMember(familyId: string, memberId: string): Observable<void> {
     return this.#http
       .delete<void>(`${this.#apiUrl}/${familyId}/members/${memberId}`, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  listMemberRelations(familyId: string): Observable<IFamilyMemberRelationList> {
+    return this.#http
+      .get<IFamilyMemberRelationList>(
+        `${this.#apiUrl}/${familyId}/member-relations`,
+        { headers: this.#headers },
+      )
+      .pipe(this.#withRetry());
+  }
+
+  createMemberRelation(
+    familyId: string,
+    body: ICreateFamilyMemberRelation,
+  ): Observable<IFamilyMemberRelation> {
+    return this.#http
+      .post<IFamilyMemberRelation>(`${this.#apiUrl}/${familyId}/member-relations`, body, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  removeMemberRelation(familyId: string, relationId: string): Observable<void> {
+    return this.#http
+      .delete<void>(`${this.#apiUrl}/${familyId}/member-relations/${relationId}`, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  getGenealogy(familyId: string): Observable<IFamilyGenealogy> {
+    return this.#http
+      .get<IFamilyGenealogy>(`${this.#apiUrl}/${familyId}/genealogy`, {
         headers: this.#headers,
       })
       .pipe(this.#withRetry());

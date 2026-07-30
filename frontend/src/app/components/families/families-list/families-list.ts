@@ -110,6 +110,11 @@ export class FamiliesList implements OnInit {
 
   closeMembers(): void {
     this.managingMembersId.set(null);
+    this.#loadFamilies();
+  }
+
+  onMembersPanelChanged(): void {
+    this.#loadFamilies();
   }
 
   previousPage(): void {

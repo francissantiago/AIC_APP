@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TimeInput } from '@components/time-input/time-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SMALL_GROUP_STATUSES, SmallGroupStatus } from '@enums/small-group-status';
 import { ICreateSmallGroup } from '@interfaces/ICreateSmallGroup';
@@ -33,7 +34,7 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 
 @Component({
   selector: 'app-small-group-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TimeInput, TranslatePipe],
   templateUrl: './small-group-form.html',
   styleUrl: './small-group-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

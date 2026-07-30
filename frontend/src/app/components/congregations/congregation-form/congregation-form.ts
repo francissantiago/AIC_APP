@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-status';
@@ -23,7 +24,7 @@ import { CongregationService } from '@services/congregation-service';
 
 @Component({
   selector: 'app-congregation-form',
-  imports: [AppDialog, ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [AppDialog, DateInput, ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './congregation-form.html',
   styleUrl: './congregation-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

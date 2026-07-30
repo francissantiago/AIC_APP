@@ -32,11 +32,10 @@
       >
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SMALL_GROUPS.MEETING_DATE' | translate }}</span>
-          <input
-            type="date"
-            data-testid="small-group-meeting-date"
-            formControlName="meetingDate"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-date-input
+            [control]="meetingForm.controls.meetingDate"
+            inputId="small-group-meeting-date"
+            testId="small-group-meeting-date"
           />
         </label>
 

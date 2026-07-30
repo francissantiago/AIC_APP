@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   MISSION_BOOKLET_DESTINATION_TYPES,
@@ -32,7 +33,7 @@ import { MissionFieldsService } from '@services/mission-fields-service';
 
 @Component({
   selector: 'app-mission-booklet-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './mission-booklet-form.html',
   styleUrl: './mission-booklet-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

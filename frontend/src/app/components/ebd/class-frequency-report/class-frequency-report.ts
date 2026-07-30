@@ -13,6 +13,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CongregationType } from '@enums/congregation-type';
 import { CongregationStatus } from '@enums/congregation-status';
@@ -41,7 +42,7 @@ function monthStartIsoDate(): string {
 
 @Component({
   selector: 'app-class-frequency-report',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './class-frequency-report.html',
   styleUrl: './class-frequency-report.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

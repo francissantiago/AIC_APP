@@ -140,10 +140,9 @@
     <div class="grid gap-4 md:grid-cols-2">
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'CONGREGATION.FOUNDATION_DATE' | translate }}</span>
-        <input
-          type="date"
-          formControlName="foundationDate"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        <app-date-input
+          [control]="form.controls.foundationDate"
+          inputId="congregation-branch-foundation-date"
         />
       </label>
 

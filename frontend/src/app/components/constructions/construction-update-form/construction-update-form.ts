@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   ICreateConstructionUpdate,
@@ -23,7 +24,7 @@ import { ConstructionUpdatesService } from '@services/construction-updates-servi
 
 @Component({
   selector: 'app-construction-update-form',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './construction-update-form.html',
   styleUrl: './construction-update-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

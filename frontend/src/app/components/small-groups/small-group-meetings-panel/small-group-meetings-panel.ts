@@ -17,6 +17,7 @@ import { ISmallGroupMeeting } from '@interfaces/ISmallGroupMeeting';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { SmallGroupsService } from '@services/small-groups-service';
+import { DateInput } from '@components/date-input/date-input';
 import { AppDatePipe } from '@pipes/app-date-pipe';
 
 function todayIsoDate(): string {
@@ -29,7 +30,7 @@ function todayIsoDate(): string {
 
 @Component({
   selector: 'app-small-group-meetings-panel',
-  imports: [AppDatePipe, ReactiveFormsModule, SmallGroupAttendance, TranslatePipe],
+  imports: [AppDatePipe, DateInput, ReactiveFormsModule, SmallGroupAttendance, TranslatePipe],
   templateUrl: './small-group-meetings-panel.html',
   styleUrl: './small-group-meetings-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
