@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { DateDisplayService } from '@services/date-display-service';
 import { NotificationsService } from '@services/notifications-service';
 import { NotificationsSocketService } from '@services/notifications-socket-service';
 import { translateServiceStub } from '../../testing/translate-testing';
@@ -44,6 +45,10 @@ describe('NotificationsBell', () => {
         {
           provide: NotificationsSocketService,
           useValue: { connectionStatus: signal('connected') },
+        },
+        {
+          provide: DateDisplayService,
+          useValue: { format: (value: string) => value },
         },
         {
           provide: Router,

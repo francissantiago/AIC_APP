@@ -1,9 +1,16 @@
-import { signal } from '@angular/core';
+import { Pipe, PipeTransform, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { AppVersionService } from '@services/app-version-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { AppUpdateBanner } from './app-update-banner';
+
+@Pipe({ name: 'translate' })
+class TranslatePipeStub implements PipeTransform {
+  transform(key: string): string {
+    return key;
+  }
+}
 
 describe('AppUpdateBanner', () => {
   let fixture: ComponentFixture<AppUpdateBanner>;
@@ -11,6 +18,7 @@ describe('AppUpdateBanner', () => {
   let reloadSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     updateAvailableSignal = signal(false);
     reloadSpy = vi.fn();
 
@@ -25,9 +33,12 @@ describe('AppUpdateBanner', () => {
           },
         },
         { provide: TranslateService, useValue: translateServiceStub() },
-        { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(AppUpdateBanner, {
+        set: { imports: [TranslatePipeStub] },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(AppUpdateBanner);
     fixture.detectChanges();
@@ -43,7 +54,9 @@ describe('AppUpdateBanner', () => {
 
     expect(fixture.nativeElement.querySelector('[data-testid="app-update-banner"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="app-update-reload"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('[data-testid="app-update-dismiss"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="app-update-dismiss"]'),
+    ).not.toBeNull();
   });
 
   it('reload chama reloadApplication', () => {

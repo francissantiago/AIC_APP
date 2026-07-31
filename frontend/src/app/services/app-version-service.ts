@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from 'environments/environment';
 import { IAppVersionManifest } from '@interfaces/IAppVersionManifest';
 import { IHealthResponse } from '@interfaces/IHealthResponse';
+import { PwaUpdateService } from '@services/pwa-update-service';
 import { catchError, map, Observable, of, switchMap, tap, timer } from 'rxjs';
 
 const INITIAL_CHECK_DELAY_MS = 30_000;
@@ -14,6 +15,7 @@ const INITIAL_CHECK_DELAY_MS = 30_000;
 export class AppVersionService {
   readonly #http = inject(HttpClient);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #pwaUpdateService = inject(PwaUpdateService);
 
   readonly currentVersion = signal(environment.version);
   readonly currentBuiltAt = signal(environment.builtAt);
@@ -21,7 +23,8 @@ export class AppVersionService {
   readonly remoteVersion = this.#remoteVersion.asReadonly();
   readonly updateAvailable = computed(() => {
     const remote = this.#remoteVersion();
-    return remote !== null && remote !== this.currentVersion();
+    const remoteMismatch = remote !== null && remote !== this.currentVersion();
+    return remoteMismatch || this.#pwaUpdateService.swUpdateReady();
   });
   readonly checking = signal(false);
   readonly lastCheckAt = signal<string | null>(null);
@@ -84,7 +87,11 @@ export class AppVersionService {
       });
   }
 
-  reloadApplication(): void {
+  async reloadApplication(): Promise<void> {
+    if (this.#pwaUpdateService.swUpdateReady()) {
+      await this.#pwaUpdateService.activateUpdate();
+    }
+
     window.location.reload();
   }
 }

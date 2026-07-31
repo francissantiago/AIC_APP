@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
@@ -11,10 +12,12 @@ describe('DateInput', () => {
   let control: FormControl<string>;
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     control = new FormControl('', { nonNullable: true });
     await TestBed.configureTestingModule({
       imports: [DateInput],
       providers: [
+        { provide: DOCUMENT, useValue: document },
         { provide: TranslateService, useValue: translateServiceStub() },
         {
           provide: I18nService,
@@ -30,11 +33,16 @@ describe('DateInput', () => {
           },
         },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(DateInput, {
+        set: { template: '', imports: [] },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(DateInput);
     fixture.componentRef.setInput('control', control);
     fixture.componentRef.setInput('inputId', 'test-date');
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 

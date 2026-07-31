@@ -3,11 +3,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
+import { DateDisplayService } from '@services/date-display-service';
+import { I18nService } from '@services/i18n-service';
 import { MinistriesService } from '@services/ministries-service';
 import { SchedulesService } from '@services/schedules-service';
 import { of } from 'rxjs';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { SchedulesBoard } from './schedules-board';
+
+const dateDisplayStub = { format: (value: string) => value };
+const i18nStub = { currentLang: signal('pt-BR' as const) };
 
 function authStub(permissions: string[]) {
   return {
@@ -28,6 +33,8 @@ describe('SchedulesBoard', () => {
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
         { provide: AuthService, useValue: authStub(['schedules:read']) },
+        { provide: DateDisplayService, useValue: dateDisplayStub },
+        { provide: I18nService, useValue: i18nStub },
         {
           provide: SchedulesService,
           useValue: {
@@ -81,6 +88,8 @@ describe('SchedulesBoard with write permission', () => {
       imports: [SchedulesBoard],
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
+        { provide: DateDisplayService, useValue: dateDisplayStub },
+        { provide: I18nService, useValue: i18nStub },
         {
           provide: AuthService,
           useValue: authStub(['schedules:read', 'schedules:write']),

@@ -1,0 +1,15 @@
+<section
+  class="mx-auto flex min-h-[60vh] max-w-lg flex-col items-start justify-center gap-4 px-4 py-10"
+  data-testid="pwa-offline-page"
+>
+  <h1 class="text-2xl font-semibold text-slate-900">{{ 'PWA.OFFLINE_TITLE' | translate }}</h1>
+  <p class="text-slate-600">{{ 'PWA.OFFLINE_DESCRIPTION' | translate }}</p>
+  <button
+    type="button"
+    class="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+    data-testid="pwa-offline-retry"
+    (click)="retry()"
+  >
+    {{ 'PWA.OFFLINE_RETRY' | translate }}
+  </button>
+</section>

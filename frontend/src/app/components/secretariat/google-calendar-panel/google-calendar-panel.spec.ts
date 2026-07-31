@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { IGoogleCalendarConnectionStatus } from '@interfaces/IGoogleCalendar';
 import { AuthService } from '@services/auth-service';
+import { DateDisplayService } from '@services/date-display-service';
 import { GoogleCalendarService } from '@services/google-calendar-service';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
@@ -66,6 +67,7 @@ describe('GoogleCalendarPanel', () => {
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
         { provide: GoogleCalendarService, useValue: gcalMock },
+        { provide: DateDisplayService, useValue: { format: (value: string) => value } },
         { provide: ActivatedRoute, useValue: routeStub },
         { provide: Router, useValue: routerStub },
         {

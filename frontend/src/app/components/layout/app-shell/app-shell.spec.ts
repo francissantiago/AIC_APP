@@ -4,6 +4,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
 import { AppVersionService } from '@services/app-version-service';
+import { HelpVideoService } from '@services/help-video-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { Subject } from 'rxjs';
 import { AppShell } from './app-shell';
@@ -43,6 +44,15 @@ describe('AppShell', () => {
             startPolling: vi.fn(),
             fetchBackendVersion: vi.fn(),
             currentVersion: signal('1.0.0'),
+          },
+        },
+        {
+          provide: HelpVideoService,
+          useValue: {
+            currentVideo: signal(null),
+            ensureLoaded: vi.fn(),
+            loadManifest: vi.fn(),
+            resolveForCurrentRoute: vi.fn(),
           },
         },
       ],

@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
+import { HelpVideoService } from '@services/help-video-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
 import { of } from 'rxjs';
 import { Login } from './login';
@@ -35,6 +36,15 @@ describe('Login', () => {
       providers: [
         { provide: AuthService, useValue: authService },
         { provide: Router, useValue: { navigateByUrl: vi.fn() } },
+        {
+          provide: HelpVideoService,
+          useValue: {
+            currentVideo: signal(null),
+            ensureLoaded: vi.fn(),
+            loadManifest: vi.fn(),
+            resolveForCurrentRoute: vi.fn(),
+          },
+        },
         { provide: TranslateService, useValue: translateServiceStub() },
         { provide: TranslatePipe, useValue: { transform: (key: string) => key } },
       ],

@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AuthService } from '@services/auth-service';
+import { I18nService } from '@services/i18n-service';
 import { MembersService } from '@services/members-service';
 import { MembershipCardsService } from '@services/membership-cards-service';
 import { translateServiceStub } from '../../../testing/translate-testing';
@@ -18,6 +19,7 @@ describe('MembershipCardsPage', () => {
       imports: [MembershipCardsPage],
       providers: [
         { provide: TranslateService, useValue: translateServiceStub() },
+        { provide: I18nService, useValue: { currentLang: signal('pt-BR' as const) } },
         {
           provide: AuthService,
           useValue: {

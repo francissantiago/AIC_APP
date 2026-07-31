@@ -123,6 +123,20 @@
       "S7_BODY": "Podemos actualizar estos Términos periódicamente. La fecha de actualización aparecerá en esta página. El uso continuado de AIC tras cambios relevantes constituye aceptación de la versión actualizada, salvo disposición legal en contrario."
     }
   },
+  "PWA": {
+    "INSTALL_TITLE": "Instalar AIC",
+    "INSTALL_DESCRIPTION": "Instala la aplicación en tu dispositivo para un acceso más rápido y pantalla completa.",
+    "INSTALL_CTA": "Instalar",
+    "INSTALL_DISMISS": "Ahora no",
+    "INSTALL_REGION_LABEL": "Instalación de la aplicación",
+    "UPDATE_TITLE": "Actualización lista",
+    "UPDATE_DESCRIPTION": "Se descargó una nueva versión. Recarga para aplicarla.",
+    "UPDATE_RELOAD": "Recargar ahora",
+    "UPDATE_DISMISS": "Más tarde",
+    "OFFLINE_TITLE": "Sin conexión",
+    "OFFLINE_DESCRIPTION": "Comprueba tu conexión. Algunas funciones necesitan internet, pero aún puedes abrir la aplicación.",
+    "OFFLINE_RETRY": "Reintentar"
+  },
   "PROFILE": {
     "TITLE": "Mi perfil",
     "DESCRIPTION": "Administra tu cuenta, contraseña y autenticación en dos pasos.",

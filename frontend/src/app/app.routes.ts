@@ -58,6 +58,11 @@ export const routes: Routes = [
     loadComponent: () => import('@components/auth/login/login').then((m) => m.Login),
   },
   {
+    path: 'offline',
+    loadComponent: () =>
+      import('@components/pwa/pwa-offline-page/pwa-offline-page').then((m) => m.PwaOfflinePage),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('@components/layout/app-shell/app-shell').then((m) => m.AppShell),
