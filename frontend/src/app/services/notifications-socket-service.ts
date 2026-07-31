@@ -42,10 +42,14 @@ export class NotificationsSocketService {
     this.connectionStatus.set('connecting');
 
     const origin = environment.wsUrl || undefined;
+    // Dev behind HTTPS reverse proxy often allows HTTP polling but blocks WS upgrade.
+    // Production nginx upgrades /socket.io — prefer websocket there.
+    const useWebsocket = environment.production;
     this.#socket = io(`${origin ?? ''}/ws`, {
       path: '/socket.io',
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: useWebsocket ? ['websocket', 'polling'] : ['polling'],
+      upgrade: useWebsocket,
       reconnection: true,
     });
 

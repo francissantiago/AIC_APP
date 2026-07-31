@@ -31,20 +31,26 @@ A aplicação sobe em http://localhost:4200.
 |---------|-----------|
 | `npm start` | Servidor de desenvolvimento (`ng serve`, porta 4200) |
 | `npm run dev` | Dev em `0.0.0.0:83` (acesso local/rede) |
-| `npm run dev:remote` | Dev atrás de HTTPS reverse proxy (`dev-application.lightburden.net`) |
-| `npm run dev:no-hmr` | Igual ao `dev`, sem WebSocket/HMR (evita erro no console se o proxy não fizer upgrade WS) |
+| `npm run dev:remote` | Dev atrás de HTTPS reverse proxy (HMR off por padrão) |
+| `npm run dev:no-hmr` | Igual ao `dev`, sem WebSocket/HMR |
 | `npm run build` | Build de produção |
 | `npm run watch` | Build em watch (modo development) |
 | `npm test` | Testes unitários |
 
 ### HMR atrás de reverse proxy (HTTPS)
 
-O Vite/Angular precisa de **WebSocket** para hot reload. Se o browser carrega
-`https://dev-application.lightburden.net` e o proxy só encaminha HTTP para
-`localhost:83`, o HMR falha com `WebSocket connection to 'wss://…' failed`.
+O Vite precisa de **WebSocket** para hot reload. O proxy de
+`dev-application.lightburden.net` costuma encaminhar HTTP, mas **não** faz
+upgrade WS — por isso `npm run dev:remote` desliga HMR por padrão (sem erro no
+console; recarregue a página manualmente).
 
-1. Use `npm run dev:remote` (configura o cliente HMR para `wss` na porta 443).
-2. No reverse proxy, habilite upgrade de WebSocket. Exemplo Nginx:
+Para tentar HMR (só se o proxy tiver Upgrade/Connection):
+
+```bash
+AIC_ENABLE_HMR=1 npm run dev:remote
+```
+
+Exemplo Nginx com WebSocket:
 
 ```nginx
 location / {
@@ -58,13 +64,11 @@ location / {
 }
 ```
 
-3. Se o proxy **não** puder fazer upgrade WS, use `npm run dev:no-hmr` e atualize
-   a página manualmente — o app funciona; só o hot reload fica desligado.
-
 Variáveis opcionais (`dev:remote`):
 
 | Variável | Padrão | Uso |
 |----------|--------|-----|
+| `AIC_ENABLE_HMR` | off | `1` / `true` liga HMR via `wss` |
 | `AIC_DEV_PUBLIC_HOST` | `dev-application.lightburden.net` | Host público do HMR |
 | `AIC_HMR_PROTOCOL` | `wss` | Protocolo do cliente |
 | `AIC_HMR_CLIENT_PORT` | `443` | Porta vista pelo browser |

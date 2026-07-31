@@ -68,6 +68,8 @@ describe('NotificationsSocketService', () => {
       expect.objectContaining({
         path: '/socket.io',
         auth: { token: 'jwt-token' },
+        transports: ['polling'],
+        upgrade: false,
         reconnection: true,
       }),
     );
