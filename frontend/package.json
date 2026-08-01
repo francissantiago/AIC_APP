@@ -1,6 +1,6 @@
 {
   "name": "aic-app-frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "ng": "ng",
     "prebuild": "node ./scripts/generate-version.mjs",
