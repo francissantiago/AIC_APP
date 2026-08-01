@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
 import { IMember } from '@interfaces/IMember';
 import { IMinistryMember } from '@interfaces/IMinistryMember';
@@ -29,12 +32,13 @@ import {
 
 @Component({
   selector: 'app-ministry-members-panel',
-  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './ministry-members-panel.html',
   styleUrl: './ministry-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MinistryMembersPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #ministriesService = inject(MinistriesService);
   readonly #membersService = inject(MembersService);
   readonly #auth = inject(AuthService);

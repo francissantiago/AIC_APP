@@ -17,7 +17,9 @@
 
   <app-dialog
     [(open)]="showForm"
-    [title]="(editingId() ? 'MISSIONS.BOOKLETS.EDIT_TITLE' : 'MISSIONS.BOOKLETS.CREATE_TITLE') | translate"
+    [title]="
+      (editingId() ? 'MISSIONS.BOOKLETS.EDIT_TITLE' : 'MISSIONS.BOOKLETS.CREATE_TITLE') | translate
+    "
     (closed)="closeForm()"
   >
     @if (showForm()) {
@@ -161,8 +163,10 @@
                 }
               </td>
               <td class="px-3 py-2 text-slate-700">
-                {{ booklet.paidCount ?? 0 }}/{{ booklet.installmentCount }}
-                ({{ booklet.pendingCount ?? 0 }} {{ 'MISSIONS.BOOKLETS.PENDING' | translate }})
+                {{ booklet.paidCount ?? 0 }}/{{ booklet.installmentCount }} ({{
+                  booklet.pendingCount ?? 0
+                }}
+                {{ 'MISSIONS.BOOKLETS.PENDING' | translate }})
               </td>
               <td class="px-3 py-2 text-slate-700">
                 {{ booklet.totalAmount }}
@@ -176,27 +180,25 @@
                 {{ statusLabelKey(booklet.status) | translate }}
               </td>
               <td class="px-3 py-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700"
-                    (click)="openInstallments(booklet)"
-                  >
-                    {{ 'MISSIONS.BOOKLETS.VIEW_INSTALLMENTS' | translate }}
-                  </button>
+                <app-action-button-group>
+                  <app-action-button
+                    [variant]="actionVariants.VIEW"
+                    labelKey="MISSIONS.BOOKLETS.VIEW_INSTALLMENTS"
+                    (action)="openInstallments(booklet)"
+                  />
                   @if (canWrite()) {
-                    <button
-                      type="button"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700"
-                      (click)="openEdit(booklet.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button type="button" (click)="askDelete(booklet.id)">
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      (action)="openEdit(booklet.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      (action)="askDelete(booklet.id)"
+                    />
                   }
-                </div>
+                </app-action-button-group>
               </td>
             </tr>
           }

@@ -10,9 +10,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MinistryForm } from '@components/ministries/ministry-form/ministry-form';
 import { MinistryMembersPanel } from '@components/ministries/ministry-members-panel/ministry-members-panel';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { MINISTRY_STATUSES, MinistryStatus } from '@enums/ministry-status';
 import { IMinistry } from '@interfaces/IMinistry';
 import { AuthService } from '@services/auth-service';
@@ -21,12 +24,22 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-ministries-list',
-  imports: [AppDialog, MinistryForm, MinistryMembersPanel, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    MinistryForm,
+    MinistryMembersPanel,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './ministries-list.html',
   styleUrl: './ministries-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MinistriesList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #ministriesService = inject(MinistriesService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

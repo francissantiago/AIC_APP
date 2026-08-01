@@ -10,10 +10,12 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MemberForm } from '@components/members/member-form/member-form';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IVisitor } from '@interfaces/ISecretariat';
 import { AuthService } from '@services/auth-service';
@@ -25,7 +27,16 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-visitors-list',
-  imports: [AppDatePipe, AppDialog, DateInput, MemberForm, ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDatePipe,
+    AppDialog,
+    DateInput,
+    MemberForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   template: `
     <section class="w-full" data-testid="visitors-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -90,9 +101,7 @@ const PAGE_SIZE = 20;
               [control]="form.controls.visitDate"
               inputId="visitor-form-visit-date"
               testId="visitor-form-visit-date"
-              [ariaInvalid]="
-                form.controls.visitDate.touched && form.controls.visitDate.invalid
-              "
+              [ariaInvalid]="form.controls.visitDate.touched && form.controls.visitDate.invalid"
               [ariaDescribedBy]="
                 form.controls.visitDate.touched && form.controls.visitDate.invalid
                   ? 'visitor-date-error'
@@ -180,17 +189,11 @@ const PAGE_SIZE = 20;
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.FROM' | translate }}</span>
-          <app-date-input
-            [control]="filterForm.controls.from"
-            inputId="visitors-filter-from"
-          />
+          <app-date-input [control]="filterForm.controls.from" inputId="visitors-filter-from" />
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.TO' | translate }}</span>
-          <app-date-input
-            [control]="filterForm.controls.to"
-            inputId="visitors-filter-to"
-          />
+          <app-date-input [control]="filterForm.controls.to" inputId="visitors-filter-to" />
         </label>
         <button
           class="self-end rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
@@ -265,7 +268,10 @@ const PAGE_SIZE = 20;
             </thead>
             <tbody>
               @for (visitor of visitors(); track visitor.id) {
-                <tr class="border-t border-slate-100" [attr.data-testid]="'visitor-row-' + visitor.id">
+                <tr
+                  class="border-t border-slate-100"
+                  [attr.data-testid]="'visitor-row-' + visitor.id"
+                >
                   <td class="px-3 py-2 text-slate-900">{{ visitor.fullName }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ visitor.phone || ('COMMON.NOT_AVAILABLE' | translate) }}
@@ -281,12 +287,12 @@ const PAGE_SIZE = 20;
                       >
                         {{ 'SECRETARIAT.VISITORS.STATUS_INTEGRATED' | translate }}
                       </span>
-                      <a
-                        class="ml-2 text-sm text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                      <app-action-button
+                        class="ml-2"
+                        [variant]="actionVariants.VIEW"
+                        labelKey="SECRETARIAT.VISITORS.VIEW_MEMBER"
                         [routerLink]="['/members']"
-                      >
-                        {{ 'SECRETARIAT.VISITORS.VIEW_MEMBER' | translate }}
-                      </a>
+                      />
                     } @else {
                       <span
                         class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"
@@ -297,36 +303,30 @@ const PAGE_SIZE = 20;
                   </td>
                   @if (canWrite() || canConvert()) {
                     <td class="px-3 py-2">
-                      <div class="flex flex-wrap gap-2">
+                      <app-action-button-group>
                         @if (canConvert() && !visitor.memberId) {
-                          <button
-                            class="text-emerald-800 underline underline-offset-2 hover:text-emerald-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                            type="button"
-                            [attr.data-testid]="'visitor-convert-' + visitor.id"
-                            (click)="openConvert(visitor)"
-                          >
-                            {{ 'SECRETARIAT.VISITORS.CONVERT' | translate }}
-                          </button>
+                          <app-action-button
+                            [variant]="actionVariants.LINK"
+                            labelKey="SECRETARIAT.VISITORS.CONVERT"
+                            [testId]="'visitor-convert-' + visitor.id"
+                            (action)="openConvert(visitor)"
+                          />
                         }
                         @if (canWrite()) {
-                          <button
-                            class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                            type="button"
-                            [attr.data-testid]="'visitor-edit-' + visitor.id"
-                            (click)="openEdit(visitor)"
-                          >
-                            {{ 'COMMON.EDIT' | translate }}
-                          </button>
-                          <button
-                            class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                            type="button"
-                            [attr.data-testid]="'visitor-delete-' + visitor.id"
-                            (click)="pendingDelete.set(visitor.id)"
-                          >
-                            {{ 'COMMON.DELETE' | translate }}
-                          </button>
+                          <app-action-button
+                            [variant]="actionVariants.EDIT"
+                            labelKey="COMMON.EDIT"
+                            [testId]="'visitor-edit-' + visitor.id"
+                            (action)="openEdit(visitor)"
+                          />
+                          <app-action-button
+                            [variant]="actionVariants.DELETE"
+                            labelKey="COMMON.DELETE"
+                            [testId]="'visitor-delete-' + visitor.id"
+                            (action)="pendingDelete.set(visitor.id)"
+                          />
                         }
-                      </div>
+                      </app-action-button-group>
                     </td>
                   }
                 </tr>
@@ -361,6 +361,8 @@ const PAGE_SIZE = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisitorsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #secretariat = inject(SecretariatService);
   readonly #apiError = inject(ApiErrorService);
   readonly #auth = inject(AuthService);

@@ -133,13 +133,13 @@
               <td class="px-3 py-2 text-slate-700">{{ member.joinedAt | appDateTime }}</td>
               @if (canWrite()) {
                 <td class="px-3 py-2">
-                  <button
-                    type="button"
-                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    (click)="askUnlink(member.memberId)"
-                  >
-                    {{ 'SOCIAL_PROJECTS.REMOVE_MEMBER' | translate }}
-                  </button>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.UNLINK"
+                      labelKey="SOCIAL_PROJECTS.REMOVE_MEMBER"
+                      (action)="askUnlink(member.memberId)"
+                    />
+                  </app-action-button-group>
                 </td>
               }
             </tr>

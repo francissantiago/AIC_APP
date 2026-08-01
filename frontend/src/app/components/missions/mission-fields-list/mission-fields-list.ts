@@ -10,8 +10,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MissionFieldForm } from '@components/missions/mission-field-form/mission-field-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { MISSION_FIELD_STATUSES, MissionFieldStatus } from '@enums/mission-field-status';
 import { IMissionField } from '@interfaces/IMissionField';
 import { AuthService } from '@services/auth-service';
@@ -20,12 +23,21 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-mission-fields-list',
-  imports: [AppDialog, MissionFieldForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    MissionFieldForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './mission-fields-list.html',
   styleUrl: './mission-fields-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MissionFieldsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #fieldsService = inject(MissionFieldsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

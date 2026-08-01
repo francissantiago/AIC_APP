@@ -11,10 +11,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { ClassAttendance } from '@components/ebd/class-attendance/class-attendance';
 import { ClassEnrollmentsPanel } from '@components/ebd/class-enrollments-panel/class-enrollments-panel';
 import { ClassForm } from '@components/ebd/class-form/class-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { CLASS_AGE_GROUPS, ClassAgeGroup } from '@enums/class-age-group';
 import { CLASS_STATUSES, ClassStatus } from '@enums/class-status';
 import { IEbdClass } from '@interfaces/IEbdClass';
@@ -38,6 +41,8 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 @Component({
   selector: 'app-classes-list',
   imports: [
+    ActionButton,
+    ActionButtonGroup,
     AppDialog,
     AppTimePipe,
     ClassAttendance,
@@ -52,6 +57,8 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassesList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #classesService = inject(ClassesService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

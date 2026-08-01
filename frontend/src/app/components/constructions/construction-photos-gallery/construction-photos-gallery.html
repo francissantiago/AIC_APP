@@ -1,7 +1,9 @@
 <div class="w-full">
   @if (canWrite()) {
     <form [formGroup]="uploadForm" class="mb-4 grid gap-3 rounded-md border border-slate-200 p-4">
-      <h3 class="text-sm font-semibold text-slate-900">{{ 'CONSTRUCTIONS.ADD_PHOTO' | translate }}</h3>
+      <h3 class="text-sm font-semibold text-slate-900">
+        {{ 'CONSTRUCTIONS.ADD_PHOTO' | translate }}
+      </h3>
       <label class="flex flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'CONSTRUCTIONS.PHOTO_CAPTION' | translate }}</span>
         <input
@@ -46,15 +48,23 @@
       @for (photo of photos(); track photo.id) {
         <li class="rounded-md border border-slate-200 p-2">
           @if (photoSrc(photo); as src) {
-            <img [src]="src" [alt]="photo.caption || photo.originalFilename" class="mb-2 h-32 w-full rounded object-cover" />
+            <img
+              [src]="src"
+              [alt]="photo.caption || photo.originalFilename"
+              class="mb-2 h-32 w-full rounded object-cover"
+            />
           }
           @if (photo.caption) {
             <p class="text-xs text-slate-700">{{ photo.caption }}</p>
           }
           @if (canWrite()) {
-            <button type="button" class="mt-2 text-xs text-red-700 underline" (click)="confirmDelete(photo.id)">
-              {{ 'COMMON.DELETE' | translate }}
-            </button>
+            <app-action-button-group>
+              <app-action-button
+                [variant]="actionVariants.DELETE"
+                labelKey="COMMON.DELETE"
+                (action)="confirmDelete(photo.id)"
+              />
+            </app-action-button-group>
           }
         </li>
       }
@@ -65,7 +75,11 @@
     <div class="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
       <p class="text-sm text-slate-800">{{ 'CONSTRUCTIONS.PHOTO_DELETE_CONFIRM' | translate }}</p>
       <div class="mt-2 flex gap-2">
-        <button type="button" class="rounded bg-red-700 px-3 py-1 text-sm text-white" (click)="deletePhoto()">
+        <button
+          type="button"
+          class="rounded bg-red-700 px-3 py-1 text-sm text-white"
+          (click)="deletePhoto()"
+        >
           {{ 'COMMON.YES' | translate }}
         </button>
         <button type="button" class="rounded border px-3 py-1 text-sm" (click)="cancelDelete()">

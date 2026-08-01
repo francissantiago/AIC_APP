@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import {
   FAMILY_MEMBER_LINK_RELATIONS,
   FamilyMemberLinkRelation,
@@ -32,12 +35,19 @@ import { EntityMembersListLoader } from '@utils/entity-members-list.util';
 
 @Component({
   selector: 'app-family-members-panel',
-  imports: [ReactiveFormsModule, TranslatePipe, FamilyGenealogyTree],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    ReactiveFormsModule,
+    TranslatePipe,
+    FamilyGenealogyTree,
+  ],
   templateUrl: './family-members-panel.html',
   styleUrl: './family-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FamilyMembersPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #familiesService = inject(FamiliesService);
   readonly #membersService = inject(MembersService);
   readonly #auth = inject(AuthService);
@@ -77,9 +87,7 @@ export class FamilyMembersPanel implements OnInit {
 
   readonly canWrite = computed(() => this.#auth.hasPermission('members:write'));
   readonly canReadMembers = computed(() => this.#auth.hasPermission('members:read'));
-  readonly hasGenealogyTree = computed(
-    () => (this.genealogy()?.roots.length ?? 0) > 0,
-  );
+  readonly hasGenealogyTree = computed(() => (this.genealogy()?.roots.length ?? 0) > 0);
 
   readonly availableMembers = computed(() => {
     const linkedIds = new Set(this.members().map((item) => item.memberId));

@@ -10,9 +10,12 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { PAYMENT_METHODS, PaymentMethod } from '@enums/finance';
 import {
   MISSION_BOOKLET_INSTALLMENT_STATUSES,
@@ -27,12 +30,20 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-mission-booklet-installments-panel',
-  imports: [AppDatePipe, DateInput, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDatePipe,
+    DateInput,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './mission-booklet-installments-panel.html',
   styleUrl: './mission-booklet-installments-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MissionBookletInstallmentsPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #bookletsService = inject(MissionBookletsService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);

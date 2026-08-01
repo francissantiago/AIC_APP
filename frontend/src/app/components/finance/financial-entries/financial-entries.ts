@@ -11,8 +11,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { FinancialCategoryManager } from '@components/finance/financial-category-manager/financial-category-manager';
 import { FinancialEntryForm } from '@components/finance/financial-entry-form/financial-entry-form';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { FINANCIAL_TYPES, FinancialType, PaymentMethod } from '@enums/finance';
 import { IFinanceMemberOption, IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -23,7 +26,10 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-financial-entries',
-  imports: [AppDatePipe,
+  imports: [
+    AppDatePipe,
+    ActionButton,
+    ActionButtonGroup,
     AppDialog,
     DateInput,
     FinancialCategoryManager,
@@ -87,15 +93,11 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
       >
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.FROM' | translate }}</span
-          ><app-date-input
-            [control]="filterForm.controls.from"
-            inputId="finance-entries-from"
+          ><app-date-input [control]="filterForm.controls.from" inputId="finance-entries-from"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.TO' | translate }}</span
-          ><app-date-input
-            [control]="filterForm.controls.to"
-            inputId="finance-entries-to"
+          ><app-date-input [control]="filterForm.controls.to" inputId="finance-entries-to"
         /></label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700"
           ><span>{{ 'FINANCE.TYPE' | translate }}</span
@@ -227,7 +229,10 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
             </thead>
             <tbody>
               @for (entry of entries(); track entry.id) {
-                <tr class="border-t border-slate-100" [attr.data-testid]="'finance-entry-row-' + entry.id">
+                <tr
+                  class="border-t border-slate-100"
+                  [attr.data-testid]="'finance-entry-row-' + entry.id"
+                >
                   <td class="px-3 py-2 text-slate-700">{{ entry.entryDate | appDate }}</td>
                   <td class="px-3 py-2 text-slate-900">{{ entry.description }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ entry.category.name }}</td>
@@ -243,24 +248,20 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
                   <td class="px-3 py-2 text-slate-900">{{ money(entry.amount) }}</td>
                   @if (canWrite()) {
                     <td class="px-3 py-2">
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                          type="button"
-                          [attr.data-testid]="'finance-entry-edit-' + entry.id"
-                          (click)="openEdit(entry)"
-                        >
-                          {{ 'COMMON.EDIT' | translate }}
-                        </button>
-                        <button
-                          class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                          type="button"
-                          [attr.data-testid]="'finance-entry-delete-' + entry.id"
-                          (click)="pendingDelete.set(entry.id)"
-                        >
-                          {{ 'COMMON.DELETE' | translate }}
-                        </button>
-                      </div>
+                      <app-action-button-group>
+                        <app-action-button
+                          [variant]="actionVariants.EDIT"
+                          labelKey="COMMON.EDIT"
+                          [testId]="'finance-entry-edit-' + entry.id"
+                          (action)="openEdit(entry)"
+                        />
+                        <app-action-button
+                          [variant]="actionVariants.DELETE"
+                          labelKey="COMMON.DELETE"
+                          [testId]="'finance-entry-delete-' + entry.id"
+                          (action)="pendingDelete.set(entry.id)"
+                        />
+                      </app-action-button-group>
                     </td>
                   }
                 </tr>
@@ -294,6 +295,8 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FinancialEntries implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #finance = inject(FinanceService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

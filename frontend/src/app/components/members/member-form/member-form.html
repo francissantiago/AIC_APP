@@ -348,13 +348,11 @@
                   </p>
                 </div>
                 @if (canWriteMinistries()) {
-                  <button
-                    type="button"
-                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    (click)="askUnlinkMinistry(ministry.id)"
-                  >
-                    {{ 'MINISTRIES.REMOVE_MEMBER' | translate }}
-                  </button>
+                  <app-action-button
+                    [variant]="actionVariants.UNLINK"
+                    labelKey="MINISTRIES.REMOVE_MEMBER"
+                    (action)="askUnlinkMinistry(ministry.id)"
+                  />
                 }
               </li>
             }

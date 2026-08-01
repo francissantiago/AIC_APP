@@ -108,31 +108,29 @@
             <div class="flex flex-wrap gap-2">
               @if (canReadSecretariat() && transfer.document?.hasFile) {
                 @if (transfer.documentId; as documentId) {
-                  <button
-                    type="button"
-                    class="text-slate-800 underline underline-offset-2 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    (click)="downloadDocument(documentId)"
-                  >
-                    {{ 'SECRETARIAT.DOCUMENTS.DOWNLOAD' | translate }}
-                  </button>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.VIEW"
+                      labelKey="SECRETARIAT.DOCUMENTS.DOWNLOAD"
+                      (action)="downloadDocument(documentId)"
+                    />
+                  </app-action-button-group>
                 }
               }
 
               @if (canWrite() && transfer.status === MemberTransferStatus.PENDING) {
-                <button
-                  type="button"
-                  class="text-slate-800 underline underline-offset-2 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                  (click)="askComplete(transfer.id)"
-                >
-                  {{ 'MEMBER_TRANSFERS.COMPLETE' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                  (click)="askCancel(transfer.id)"
-                >
-                  {{ 'MEMBER_TRANSFERS.CANCEL' | translate }}
-                </button>
+                <app-action-button-group>
+                  <app-action-button
+                    [variant]="actionVariants.TRANSFER"
+                    labelKey="MEMBER_TRANSFERS.COMPLETE"
+                    (action)="askComplete(transfer.id)"
+                  />
+                  <app-action-button
+                    [variant]="actionVariants.DELETE"
+                    labelKey="MEMBER_TRANSFERS.CANCEL"
+                    (action)="askCancel(transfer.id)"
+                  />
+                </app-action-button-group>
               }
             </div>
           </div>

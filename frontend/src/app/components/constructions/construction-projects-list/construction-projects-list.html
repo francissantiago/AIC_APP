@@ -104,7 +104,9 @@
       <table class="min-w-full text-left text-sm">
         <thead class="bg-slate-50 text-slate-700">
           <tr>
-            <th scope="col" class="px-3 py-2 font-medium">{{ 'CONSTRUCTIONS.NAME' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'CONSTRUCTIONS.NAME' | translate }}
+            </th>
             <th scope="col" class="px-3 py-2 font-medium">
               {{ 'CONSTRUCTIONS.STATUS' | translate }}
             </th>
@@ -132,18 +134,18 @@
               <td class="px-3 py-2 text-slate-700">{{ formatCurrency(project.spentAmount) }}</td>
               <td class="px-3 py-2">
                 @if (canWrite()) {
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openEdit(project.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button type="button" (click)="askDelete(project.id)">
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
-                  </div>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      (action)="openEdit(project.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      (action)="askDelete(project.id)"
+                    />
+                  </app-action-button-group>
                 }
               </td>
             </tr>

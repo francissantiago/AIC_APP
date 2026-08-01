@@ -9,7 +9,9 @@
     </p>
   }
   @if (errorMessage(); as message) {
-    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{{ message }}</p>
+    <p class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+      {{ message }}
+    </p>
   }
 
   <div class="overflow-x-auto rounded-md border border-slate-200">
@@ -38,23 +40,19 @@
             </td>
             <td class="px-3 py-2">
               @if (canWrite() && !bookletCancelled() && item.status === InstallmentStatus.PENDING) {
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700"
-                    (click)="openPay(item.id)"
-                  >
-                    {{ 'MISSIONS.BOOKLETS.PAY' | translate }}
-                  </button>
-                  <button
-                    type="button"
-                    class="text-red-700 underline underline-offset-2 hover:text-red-800 disabled:opacity-50"
+                <app-action-button-group>
+                  <app-action-button
+                    [variant]="actionVariants.EDIT"
+                    labelKey="MISSIONS.BOOKLETS.PAY"
+                    (action)="openPay(item.id)"
+                  />
+                  <app-action-button
+                    [variant]="actionVariants.DELETE"
+                    labelKey="COMMON.CANCEL"
                     [disabled]="cancellingId() === item.id"
-                    (click)="cancelInstallment(item.id)"
-                  >
-                    {{ 'COMMON.CANCEL' | translate }}
-                  </button>
-                </div>
+                    (action)="cancelInstallment(item.id)"
+                  />
+                </app-action-button-group>
               }
             </td>
           </tr>
@@ -86,7 +84,11 @@
                   </label>
                   <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-3">
                     <span>{{ 'MISSIONS.NOTES' | translate }}</span>
-                    <input type="text" formControlName="notes" class="rounded-md border border-slate-200 px-3 py-2" />
+                    <input
+                      type="text"
+                      formControlName="notes"
+                      class="rounded-md border border-slate-200 px-3 py-2"
+                    />
                   </label>
                   <div class="flex gap-2 md:col-span-3">
                     <button

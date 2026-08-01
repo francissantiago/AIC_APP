@@ -30,8 +30,10 @@
     >
       <p class="text-sm font-medium text-slate-900">
         {{
-          (pending.completed ? 'CONSTRUCTIONS.STAGE_COMPLETE_PROMPT' : 'CONSTRUCTIONS.STAGE_REOPEN_PROMPT')
-            | translate: { stage: pending.stageTitle }
+          (pending.completed
+            ? 'CONSTRUCTIONS.STAGE_COMPLETE_PROMPT'
+            : 'CONSTRUCTIONS.STAGE_REOPEN_PROMPT'
+          ) | translate: { stage: pending.stageTitle }
         }}
       </p>
       <form [formGroup]="stageChangeForm" (ngSubmit)="confirmStageChange()" class="mt-3 grid gap-3">
@@ -92,7 +94,9 @@
   @if (loading()) {
     <p class="text-sm text-slate-600" role="status">{{ 'COMMON.LOADING' | translate }}</p>
   } @else if (error()) {
-    <p class="text-sm text-red-700" role="alert">{{ 'CONSTRUCTIONS.STAGES_LOAD_ERROR' | translate }}</p>
+    <p class="text-sm text-red-700" role="alert">
+      {{ 'CONSTRUCTIONS.STAGES_LOAD_ERROR' | translate }}
+    </p>
   } @else if (stages().length === 0) {
     <p class="mb-4 text-sm text-slate-600">{{ 'CONSTRUCTIONS.STAGES_EMPTY' | translate }}</p>
   } @else {
@@ -107,18 +111,21 @@
               [disabled]="!canWrite()"
               (change)="toggleCompleted(stage, $event)"
             />
-            <span [class.line-through]="isCompleted(stage)" [class.text-slate-500]="isCompleted(stage)">
+            <span
+              [class.line-through]="isCompleted(stage)"
+              [class.text-slate-500]="isCompleted(stage)"
+            >
               {{ stage.title }}
             </span>
           </label>
           @if (canWrite()) {
-            <button
-              type="button"
-              class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-              (click)="askDelete(stage.id)"
-            >
-              {{ 'COMMON.DELETE' | translate }}
-            </button>
+            <app-action-button-group>
+              <app-action-button
+                [variant]="actionVariants.DELETE"
+                labelKey="COMMON.DELETE"
+                (action)="askDelete(stage.id)"
+              />
+            </app-action-button-group>
           }
         </li>
       }

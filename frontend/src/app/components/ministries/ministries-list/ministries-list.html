@@ -38,10 +38,7 @@
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as ministryId) {
-      <app-ministry-members-panel
-        [ministryId]="ministryId"
-        (changed)="onMembersPanelChanged()"
-      />
+      <app-ministry-members-panel [ministryId]="ministryId" (changed)="onMembersPanelChanged()" />
     }
   </app-dialog>
 
@@ -131,7 +128,10 @@
         </thead>
         <tbody>
           @for (ministry of ministries(); track ministry.id) {
-            <tr class="border-t border-slate-100" [attr.data-testid]="'ministry-row-' + ministry.id">
+            <tr
+              class="border-t border-slate-100"
+              [attr.data-testid]="'ministry-row-' + ministry.id"
+            >
               <td class="px-3 py-2 text-slate-900">{{ ministry.name }}</td>
               <td class="px-3 py-2 text-slate-700">{{ ministry.leaderFullName || '' }}</td>
               <td class="px-3 py-2 text-slate-700">
@@ -141,33 +141,28 @@
                 {{ 'MINISTRIES.MEMBERS_COUNT' | translate: { count: ministry.membersCount ?? 0 } }}
               </td>
               <td class="px-3 py-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    [attr.data-testid]="'ministry-members-' + ministry.id"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    (click)="openMembers(ministry.id)"
-                  >
-                    {{ 'MINISTRIES.MANAGE_MEMBERS' | translate }}
-                  </button>
+                <app-action-button-group>
+                  <app-action-button
+                    [variant]="actionVariants.MANAGE_MEMBERS"
+                    labelKey="MINISTRIES.MANAGE_MEMBERS"
+                    [testId]="'ministry-members-' + ministry.id"
+                    (action)="openMembers(ministry.id)"
+                  />
                   @if (canWrite()) {
-                    <button
-                      type="button"
-                      [attr.data-testid]="'ministry-edit-' + ministry.id"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openEdit(ministry.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button
-                      type="button"
-                      [attr.data-testid]="'ministry-delete-' + ministry.id"
-                      (click)="askDelete(ministry.id)"
-                    >
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      [testId]="'ministry-edit-' + ministry.id"
+                      (action)="openEdit(ministry.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      [testId]="'ministry-delete-' + ministry.id"
+                      (action)="askDelete(ministry.id)"
+                    />
                   }
-                </div>
+                </app-action-button-group>
               </td>
             </tr>
           }

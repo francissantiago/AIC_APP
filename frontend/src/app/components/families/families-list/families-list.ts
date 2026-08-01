@@ -11,9 +11,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { FamilyForm } from '@components/families/family-form/family-form';
 import { FamilyMembersPanel } from '@components/families/family-members-panel/family-members-panel';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { IFamily } from '@interfaces/IFamily';
 import { AuthService } from '@services/auth-service';
 import { FamiliesService } from '@services/families-service';
@@ -22,6 +25,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-families-list',
   imports: [
+    ActionButton,
+    ActionButtonGroup,
     AppDialog,
     FamilyForm,
     FamilyMembersPanel,
@@ -34,6 +39,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FamiliesList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #familiesService = inject(FamiliesService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

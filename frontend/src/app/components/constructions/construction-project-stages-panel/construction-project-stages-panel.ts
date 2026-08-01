@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { IConstructionProjectStage } from '@interfaces/IConstructionProjectStage';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
@@ -26,12 +29,13 @@ interface PendingStageChange {
 
 @Component({
   selector: 'app-construction-project-stages-panel',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, ReactiveFormsModule, TranslatePipe],
   templateUrl: './construction-project-stages-panel.html',
   styleUrl: './construction-project-stages-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConstructionProjectStagesPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #projectsService = inject(ConstructionProjectsService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
@@ -61,7 +65,10 @@ export class ConstructionProjectStagesPanel implements OnInit {
   });
 
   readonly stageChangeForm = new FormGroup({
-    observation: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(2000)] }),
+    observation: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(2000)],
+    }),
   });
 
   readonly addForm = new FormGroup({

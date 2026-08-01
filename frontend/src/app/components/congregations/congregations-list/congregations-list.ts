@@ -10,8 +10,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { CongregationBranchForm } from '@components/congregations/congregation-branch-form/congregation-branch-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { CONGREGATION_STATUSES, CongregationStatus } from '@enums/congregation-status';
 import { CONGREGATION_TYPES, CongregationType } from '@enums/congregation-type';
 import { ICongregation } from '@interfaces/ICongregation';
@@ -21,12 +24,21 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-congregations-list',
-  imports: [AppDialog, CongregationBranchForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    CongregationBranchForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './congregations-list.html',
   styleUrl: './congregations-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CongregationsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #congregationsService = inject(CongregationsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

@@ -10,10 +10,13 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { SocialProjectForm } from '@components/social-projects/social-project-form/social-project-form';
 import { SocialProjectMembersPanel } from '@components/social-projects/social-project-members-panel/social-project-members-panel';
 import { SocialProjectSessionsPanel } from '@components/social-projects/social-project-sessions-panel/social-project-sessions-panel';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { SOCIAL_PROJECT_CATEGORIES, SocialProjectCategory } from '@enums/social-project-category';
 import { SOCIAL_PROJECT_STATUSES, SocialProjectStatus } from '@enums/social-project-status';
 import { ISocialProject } from '@interfaces/ISocialProject';
@@ -36,6 +39,8 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 @Component({
   selector: 'app-social-projects-list',
   imports: [
+    ActionButton,
+    ActionButtonGroup,
     AppDialog,
     SocialProjectForm,
     SocialProjectMembersPanel,
@@ -48,6 +53,8 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SocialProjectsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #projectsService = inject(SocialProjectsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

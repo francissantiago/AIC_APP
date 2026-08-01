@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { CLASS_ENROLLMENT_STATUSES, ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { IClassEnrollment } from '@interfaces/IClassEnrollment';
 import { IEnrollmentOption } from '@interfaces/IEnrollmentOption';
@@ -28,12 +31,13 @@ import {
 
 @Component({
   selector: 'app-class-enrollments-panel',
-  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './class-enrollments-panel.html',
   styleUrl: './class-enrollments-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassEnrollmentsPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #classesService = inject(ClassesService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);

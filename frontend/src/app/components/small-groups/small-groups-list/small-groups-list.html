@@ -47,10 +47,7 @@
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as groupId) {
-      <app-small-group-members-panel
-        [groupId]="groupId"
-        (changed)="onMembersPanelChanged()"
-      />
+      <app-small-group-members-panel [groupId]="groupId" (changed)="onMembersPanelChanged()" />
     }
   </app-dialog>
 
@@ -160,7 +157,10 @@
         </thead>
         <tbody>
           @for (group of groups(); track group.id) {
-            <tr class="border-t border-slate-100" [attr.data-testid]="'small-group-row-' + group.id">
+            <tr
+              class="border-t border-slate-100"
+              [attr.data-testid]="'small-group-row-' + group.id"
+            >
               <td class="px-3 py-2 text-slate-900">{{ group.name }}</td>
               <td class="px-3 py-2 text-slate-700">{{ group.leader?.fullName || '' }}</td>
               <td class="px-3 py-2 text-slate-700">
@@ -174,49 +174,41 @@
                 {{ 'SMALL_GROUPS.MEMBERS_COUNT' | translate: { count: group.membersCount ?? 0 } }}
               </td>
               <td class="px-3 py-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    [attr.data-testid]="'small-group-members-' + group.id"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    (click)="openMembers(group.id)"
-                  >
-                    {{ 'SMALL_GROUPS.MANAGE_MEMBERS' | translate }}
-                  </button>
-                  <button
-                    type="button"
-                    [attr.data-testid]="'small-group-meetings-' + group.id"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    (click)="openMeetings(group.id)"
-                  >
-                    {{ 'SMALL_GROUPS.MANAGE_MEETINGS' | translate }}
-                  </button>
-                  <a
+                <app-action-button-group>
+                  <app-action-button
+                    [variant]="actionVariants.MANAGE_MEMBERS"
+                    labelKey="SMALL_GROUPS.MANAGE_MEMBERS"
+                    [testId]="'small-group-members-' + group.id"
+                    (action)="openMembers(group.id)"
+                  />
+                  <app-action-button
+                    [variant]="actionVariants.CALENDAR"
+                    labelKey="SMALL_GROUPS.MANAGE_MEETINGS"
+                    [testId]="'small-group-meetings-' + group.id"
+                    (action)="openMeetings(group.id)"
+                  />
+                  <app-action-button
+                    [variant]="actionVariants.REPORT"
+                    labelKey="SMALL_GROUPS.REPORT_TITLE"
                     [routerLink]="['/small-groups/reports']"
                     [queryParams]="{ groupId: group.id }"
-                    [attr.data-testid]="'small-group-report-' + group.id"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                  >
-                    {{ 'SMALL_GROUPS.REPORT_TITLE' | translate }}
-                  </a>
+                    [testId]="'small-group-report-' + group.id"
+                  />
                   @if (canWrite()) {
-                    <button
-                      type="button"
-                      [attr.data-testid]="'small-group-edit-' + group.id"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openEdit(group.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button
-                      type="button"
-                      [attr.data-testid]="'small-group-delete-' + group.id"
-                      (click)="askDelete(group.id)"
-                    >
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      [testId]="'small-group-edit-' + group.id"
+                      (action)="openEdit(group.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      [testId]="'small-group-delete-' + group.id"
+                      (action)="askDelete(group.id)"
+                    />
                   }
-                </div>
+                </app-action-button-group>
               </td>
             </tr>
           }

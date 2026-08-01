@@ -10,8 +10,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { RoleForm } from '@components/roles/role-form/role-form';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { IRole, isSystemRole } from '@interfaces/IRole';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
@@ -19,12 +22,14 @@ import { RolesService } from '@services/roles-service';
 
 @Component({
   selector: 'app-roles-catalog',
-  imports: [AppDialog, RoleForm, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, AppDialog, RoleForm, TranslatePipe],
   templateUrl: './roles-catalog.html',
   styleUrl: './roles-catalog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RolesCatalog implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #rolesService = inject(RolesService);
   readonly #authService = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);

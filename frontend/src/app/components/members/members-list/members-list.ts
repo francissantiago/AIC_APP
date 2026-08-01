@@ -10,8 +10,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MemberForm } from '@components/members/member-form/member-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { MEMBER_STATUSES, MemberStatus } from '@enums/member-status';
 import { IMember } from '@interfaces/IMember';
 import { AuthService } from '@services/auth-service';
@@ -21,12 +24,22 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-members-list',
-  imports: [AppDatePipe, AppDialog, MemberForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDatePipe,
+    AppDialog,
+    MemberForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './members-list.html',
   styleUrl: './members-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MembersList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #membersService = inject(MembersService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

@@ -10,8 +10,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { ConstructionUpdateForm } from '@components/constructions/construction-update-form/construction-update-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { IConstructionProject } from '@interfaces/IConstructionProject';
 import { IConstructionUpdate } from '@interfaces/IConstructionUpdate';
 import { AuthService } from '@services/auth-service';
@@ -27,12 +30,21 @@ interface HistoryContext {
 
 @Component({
   selector: 'app-construction-updates-list',
-  imports: [AppDatePipe, AppDialog, ConstructionUpdateForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    AppDatePipe,
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    ConstructionUpdateForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './construction-updates-list.html',
   styleUrl: './construction-updates-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConstructionUpdatesList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #updatesService = inject(ConstructionUpdatesService);
   readonly #projectsService = inject(ConstructionProjectsService);
   readonly #auth = inject(AuthService);

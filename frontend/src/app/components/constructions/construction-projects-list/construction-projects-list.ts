@@ -10,8 +10,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { ConstructionProjectForm } from '@components/constructions/construction-project-form/construction-project-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import {
   CONSTRUCTION_PROJECT_STATUSES,
   ConstructionProjectStatus,
@@ -23,12 +26,20 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-construction-projects-list',
-  imports: [AppDialog, ConstructionProjectForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    ConstructionProjectForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './construction-projects-list.html',
   styleUrl: './construction-projects-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConstructionProjectsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #projectsService = inject(ConstructionProjectsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

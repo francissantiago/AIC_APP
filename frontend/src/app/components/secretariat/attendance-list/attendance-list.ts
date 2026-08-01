@@ -12,7 +12,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { ATTENDANCE_EVENT_TYPES, AttendanceEventType } from '@enums/secretariat';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IAttendanceRecord } from '@interfaces/ISecretariat';
 import { AuthService } from '@services/auth-service';
@@ -24,7 +27,15 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-attendance-list',
-  imports: [AppDatePipe, AppDialog, DateInput, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDatePipe,
+    AppDialog,
+    DateInput,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   template: `
     <section class="w-full" data-testid="attendance-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -61,9 +72,7 @@ const PAGE_SIZE = 20;
               [control]="form.controls.eventDate"
               inputId="attendance-form-date"
               testId="attendance-form-date"
-              [ariaInvalid]="
-                form.controls.eventDate.touched && form.controls.eventDate.invalid
-              "
+              [ariaInvalid]="form.controls.eventDate.touched && form.controls.eventDate.invalid"
               [ariaDescribedBy]="
                 form.controls.eventDate.touched && form.controls.eventDate.invalid
                   ? 'attendance-date-error'
@@ -178,17 +187,11 @@ const PAGE_SIZE = 20;
       >
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.FROM' | translate }}</span>
-          <app-date-input
-            [control]="filterForm.controls.from"
-            inputId="attendance-filter-from"
-          />
+          <app-date-input [control]="filterForm.controls.from" inputId="attendance-filter-from" />
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.TO' | translate }}</span>
-          <app-date-input
-            [control]="filterForm.controls.to"
-            inputId="attendance-filter-to"
-          />
+          <app-date-input [control]="filterForm.controls.to" inputId="attendance-filter-to" />
         </label>
         <label class="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SECRETARIAT.EVENT_TYPE' | translate }}</span>
@@ -275,7 +278,10 @@ const PAGE_SIZE = 20;
             </thead>
             <tbody>
               @for (record of records(); track record.id) {
-                <tr class="border-t border-slate-100" [attr.data-testid]="'attendance-row-' + record.id">
+                <tr
+                  class="border-t border-slate-100"
+                  [attr.data-testid]="'attendance-row-' + record.id"
+                >
                   <td class="px-3 py-2 text-slate-700">{{ record.eventDate | appDate }}</td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ typeLabel(record.eventType) | translate }}
@@ -289,24 +295,20 @@ const PAGE_SIZE = 20;
                   </td>
                   @if (canWrite()) {
                     <td class="px-3 py-2">
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                          type="button"
-                          [attr.data-testid]="'attendance-edit-' + record.id"
-                          (click)="openEdit(record)"
-                        >
-                          {{ 'COMMON.EDIT' | translate }}
-                        </button>
-                        <button
-                          class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                          type="button"
-                          [attr.data-testid]="'attendance-delete-' + record.id"
-                          (click)="pendingDelete.set(record.id)"
-                        >
-                          {{ 'COMMON.DELETE' | translate }}
-                        </button>
-                      </div>
+                      <app-action-button-group>
+                        <app-action-button
+                          [variant]="actionVariants.EDIT"
+                          labelKey="COMMON.EDIT"
+                          [testId]="'attendance-edit-' + record.id"
+                          (action)="openEdit(record)"
+                        />
+                        <app-action-button
+                          [variant]="actionVariants.DELETE"
+                          labelKey="COMMON.DELETE"
+                          [testId]="'attendance-delete-' + record.id"
+                          (action)="pendingDelete.set(record.id)"
+                        />
+                      </app-action-button-group>
                     </td>
                   }
                 </tr>
@@ -341,6 +343,8 @@ const PAGE_SIZE = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AttendanceList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #secretariat = inject(SecretariatService);
   readonly #apiError = inject(ApiErrorService);
   readonly #auth = inject(AuthService);

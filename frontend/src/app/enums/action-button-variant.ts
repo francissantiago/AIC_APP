@@ -1,0 +1,33 @@
+export enum ActionButtonVariant {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MEMBERS = 'members',
+  MANAGE_MEMBERS = 'manage-members',
+  VIEW = 'view',
+  LINK = 'link',
+  UNLINK = 'unlink',
+  SETTINGS = 'settings',
+  CALENDAR = 'calendar',
+  PRINT = 'print',
+  TRANSFER = 'transfer',
+  GENEALOGY = 'genealogy',
+  REPORT = 'report',
+  DOWNLOAD = 'download',
+}
+
+export const ACTION_BUTTON_VARIANTS = [
+  ActionButtonVariant.EDIT,
+  ActionButtonVariant.DELETE,
+  ActionButtonVariant.MEMBERS,
+  ActionButtonVariant.MANAGE_MEMBERS,
+  ActionButtonVariant.VIEW,
+  ActionButtonVariant.LINK,
+  ActionButtonVariant.UNLINK,
+  ActionButtonVariant.SETTINGS,
+  ActionButtonVariant.CALENDAR,
+  ActionButtonVariant.PRINT,
+  ActionButtonVariant.TRANSFER,
+  ActionButtonVariant.GENEALOGY,
+  ActionButtonVariant.REPORT,
+  ActionButtonVariant.DOWNLOAD,
+] as const;

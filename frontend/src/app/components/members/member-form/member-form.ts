@@ -22,7 +22,9 @@ import { ClassEnrollmentStatus } from '@enums/class-enrollment-status';
 import { ClassStatus } from '@enums/class-status';
 import { MINISTRY_MEMBER_ROLES, MinistryMemberRole } from '@enums/ministry-member-role';
 import { DateInput } from '@components/date-input/date-input';
+import { ActionButton } from '@components/action-button/action-button';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { ICreateMember } from '@interfaces/ICreateMember';
 import { IFamily } from '@interfaces/IFamily';
 import { IFamilyLinkResult } from '@interfaces/IFamilyLinkResult';
@@ -49,6 +51,7 @@ type MemberFormMode = 'create' | 'edit' | 'convert';
 @Component({
   selector: 'app-member-form',
   imports: [
+    ActionButton,
     DateInput,
     ReactiveFormsModule,
     RouterLink,
@@ -62,6 +65,8 @@ type MemberFormMode = 'create' | 'edit' | 'convert';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MemberForm implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #membersService = inject(MembersService);
   readonly #ministriesService = inject(MinistriesService);
   readonly #classesService = inject(ClassesService);

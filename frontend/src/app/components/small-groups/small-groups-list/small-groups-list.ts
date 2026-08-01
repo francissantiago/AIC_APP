@@ -11,10 +11,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { SmallGroupForm } from '@components/small-groups/small-group-form/small-group-form';
 import { SmallGroupMeetingsPanel } from '@components/small-groups/small-group-meetings-panel/small-group-meetings-panel';
 import { SmallGroupMembersPanel } from '@components/small-groups/small-group-members-panel/small-group-members-panel';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { SMALL_GROUP_STATUSES, SmallGroupStatus } from '@enums/small-group-status';
 import { ISmallGroup } from '@interfaces/ISmallGroup';
 import { AuthService } from '@services/auth-service';
@@ -37,6 +40,8 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
 @Component({
   selector: 'app-small-groups-list',
   imports: [
+    ActionButton,
+    ActionButtonGroup,
     AppDialog,
     AppTimePipe,
     ReactiveFormsModule,
@@ -51,6 +56,8 @@ const DAY_LABEL_KEYS: Record<(typeof DAY_OF_WEEK_VALUES)[number], string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SmallGroupsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #smallGroupsService = inject(SmallGroupsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import {
   SOCIAL_PROJECT_MEMBER_ROLES,
   SocialProjectMemberRole,
@@ -32,12 +35,13 @@ import {
 
 @Component({
   selector: 'app-social-project-members-panel',
-  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './social-project-members-panel.html',
   styleUrl: './social-project-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SocialProjectMembersPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #projectsService = inject(SocialProjectsService);
   readonly #membersService = inject(MembersService);
   readonly #auth = inject(AuthService);

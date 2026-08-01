@@ -143,36 +143,30 @@
               </td>
               <td class="px-3 py-2 text-slate-700">{{ rolesSummary(user) }}</td>
               <td class="px-3 py-2">
-                <div class="flex flex-wrap gap-2">
+                <app-action-button-group>
                   @if (canWrite()) {
-                    <button
-                      type="button"
-                      [attr.data-testid]="'user-edit-' + user.username"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openEdit(user.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button
-                      type="button"
-                      [attr.data-testid]="'user-delete-' + user.username"
-                      class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                      (click)="askDelete(user.id)"
-                    >
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      [testId]="'user-edit-' + user.username"
+                      (action)="openEdit(user.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      [testId]="'user-delete-' + user.username"
+                      (action)="askDelete(user.id)"
+                    />
                   }
                   @if (canManageMemberships()) {
-                    <button
-                      type="button"
-                      [attr.data-testid]="'user-congregations-' + user.username"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openCongregations(user)"
-                    >
-                      {{ 'USERS.CONGREGATIONS_ACTION' | translate }}
-                    </button>
+                    <app-action-button
+                      [variant]="actionVariants.SETTINGS"
+                      labelKey="USERS.CONGREGATIONS_ACTION"
+                      [testId]="'user-congregations-' + user.username"
+                      (action)="openCongregations(user)"
+                    />
                   }
-                </div>
+                </app-action-button-group>
               </td>
             </tr>
           }

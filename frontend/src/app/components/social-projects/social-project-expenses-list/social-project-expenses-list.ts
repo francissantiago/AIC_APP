@@ -11,8 +11,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { SocialProjectExpenseForm } from '@components/social-projects/social-project-expense-form/social-project-expense-form';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { PaymentMethod } from '@enums/finance';
 import { ISocialProjectExpense } from '@interfaces/ISocialProjectExpense';
 import { AuthService } from '@services/auth-service';
@@ -21,12 +24,21 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-social-project-expenses-list',
-  imports: [AppDatePipe, AppDialog, SocialProjectExpenseForm, TranslatePipe],
+  imports: [
+    AppDatePipe,
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    SocialProjectExpenseForm,
+    TranslatePipe,
+  ],
   templateUrl: './social-project-expenses-list.html',
   styleUrl: './social-project-expenses-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SocialProjectExpensesList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #expensesService = inject(SocialProjectExpensesService);
   readonly #auth = inject(AuthService);
   readonly #translate = inject(TranslateService);

@@ -10,17 +10,17 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MissionBookletForm } from '@components/missions/mission-booklet-form/mission-booklet-form';
 import { MissionBookletInstallmentsPanel } from '@components/missions/mission-booklet-installments-panel/mission-booklet-installments-panel';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import {
   MISSION_BOOKLET_DESTINATION_TYPES,
   MissionBookletDestinationType,
 } from '@enums/mission-booklet-destination-type';
-import {
-  MISSION_BOOKLET_STATUSES,
-  MissionBookletStatus,
-} from '@enums/mission-booklet-status';
+import { MISSION_BOOKLET_STATUSES, MissionBookletStatus } from '@enums/mission-booklet-status';
 import { IMissionBooklet } from '@interfaces/IMissionBooklet';
 import { AuthService } from '@services/auth-service';
 import { MissionBookletsService } from '@services/mission-booklets-service';
@@ -29,6 +29,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-mission-booklets-list',
   imports: [
+    ActionButton,
+    ActionButtonGroup,
     AppDialog,
     MissionBookletForm,
     MissionBookletInstallmentsPanel,
@@ -40,6 +42,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MissionBookletsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #bookletsService = inject(MissionBookletsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

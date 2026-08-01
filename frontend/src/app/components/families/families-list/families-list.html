@@ -44,10 +44,7 @@
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as familyId) {
-      <app-family-members-panel
-        [familyId]="familyId"
-        (changed)="onMembersPanelChanged()"
-      />
+      <app-family-members-panel [familyId]="familyId" (changed)="onMembersPanelChanged()" />
     }
   </app-dialog>
 
@@ -129,34 +126,28 @@
               <td class="px-3 py-2 text-slate-700">{{ family.headMemberName || '' }}</td>
               <td class="px-3 py-2 text-slate-700">{{ family.membersCount ?? 0 }}</td>
               <td class="px-3 py-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    [attr.data-testid]="'family-members-' + family.id"
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    (click)="openMembers(family.id)"
-                  >
-                    {{ 'FAMILIES.MEMBERS' | translate }}
-                  </button>
+                <app-action-button-group>
+                  <app-action-button
+                    [variant]="actionVariants.MEMBERS"
+                    labelKey="FAMILIES.MEMBERS"
+                    [testId]="'family-members-' + family.id"
+                    (action)="openMembers(family.id)"
+                  />
                   @if (canWrite()) {
-                    <button
-                      type="button"
-                      [attr.data-testid]="'family-edit-' + family.id"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openEdit(family.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button
-                      type="button"
-                      [attr.data-testid]="'family-delete-' + family.id"
-                      class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                      (click)="askDelete(family.id)"
-                    >
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      [testId]="'family-edit-' + family.id"
+                      (action)="openEdit(family.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      [testId]="'family-delete-' + family.id"
+                      (action)="askDelete(family.id)"
+                    />
                   }
-                </div>
+                </app-action-button-group>
               </td>
             </tr>
           }

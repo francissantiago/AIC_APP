@@ -9,10 +9,13 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { UserCongregationsDialog } from '@components/users/user-congregations-dialog/user-congregations-dialog';
 import { UserForm } from '@components/users/user-form/user-form';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { USER_STATUSES, UserStatus } from '@enums/user-status';
 import { IRole } from '@interfaces/IRole';
 import { IUser } from '@interfaces/IUser';
@@ -23,12 +26,22 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-users-list',
-  imports: [AppDialog, UserCongregationsDialog, UserForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    UserCongregationsDialog,
+    UserForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './users-list.html',
   styleUrl: './users-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #usersService = inject(UsersService);
   readonly #rolesService = inject(RolesService);
   readonly #auth = inject(AuthService);

@@ -10,7 +10,10 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { AssetForm } from '@components/assets/asset-form/asset-form';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { ASSET_STATUSES, ASSET_TYPES, AssetStatus, AssetType } from '@enums/finance';
 import { IAsset } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -19,7 +22,14 @@ import { FinanceService } from '@services/finance-service';
 
 @Component({
   selector: 'app-assets-list',
-  imports: [AppDialog, AssetForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    AssetForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   template: `
     <section class="w-full" data-testid="assets-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -165,24 +175,20 @@ import { FinanceService } from '@services/finance-service';
                   </td>
                   @if (canWrite()) {
                     <td class="px-3 py-2">
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                          type="button"
-                          [attr.data-testid]="'asset-edit-' + asset.id"
-                          (click)="openEdit(asset)"
-                        >
-                          {{ 'COMMON.EDIT' | translate }}
-                        </button>
-                        <button
-                          class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                          type="button"
-                          [attr.data-testid]="'asset-delete-' + asset.id"
-                          (click)="pendingDelete.set(asset.id)"
-                        >
-                          {{ 'COMMON.DELETE' | translate }}
-                        </button>
-                      </div>
+                      <app-action-button-group>
+                        <app-action-button
+                          [variant]="actionVariants.EDIT"
+                          labelKey="COMMON.EDIT"
+                          [testId]="'asset-edit-' + asset.id"
+                          (action)="openEdit(asset)"
+                        />
+                        <app-action-button
+                          [variant]="actionVariants.DELETE"
+                          labelKey="COMMON.DELETE"
+                          [testId]="'asset-delete-' + asset.id"
+                          (action)="pendingDelete.set(asset.id)"
+                        />
+                      </app-action-button-group>
                     </td>
                   }
                 </tr>
@@ -216,6 +222,8 @@ import { FinanceService } from '@services/finance-service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #finance = inject(FinanceService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

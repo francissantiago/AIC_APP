@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { SMALL_GROUP_MEMBER_ROLES, SmallGroupMemberRole } from '@enums/small-group-member-role';
 import {
   SMALL_GROUP_MEMBER_STATUSES,
@@ -32,12 +35,13 @@ import {
 
 @Component({
   selector: 'app-small-group-members-panel',
-  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './small-group-members-panel.html',
   styleUrl: './small-group-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SmallGroupMembersPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #smallGroupsService = inject(SmallGroupsService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);

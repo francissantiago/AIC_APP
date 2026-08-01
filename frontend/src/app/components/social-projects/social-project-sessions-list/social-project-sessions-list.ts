@@ -11,8 +11,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { SocialProjectSessionForm } from '@components/social-projects/social-project-session-form/social-project-session-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { ISocialProject } from '@interfaces/ISocialProject';
 import { ISocialProjectSession } from '@interfaces/ISocialProjectSession';
 import { AuthService } from '@services/auth-service';
@@ -24,12 +27,23 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-social-project-sessions-list',
-  imports: [AppDatePipe, AppDialog, DateInput, ReactiveFormsModule, SocialProjectSessionForm, TranslatePipe],
+  imports: [
+    AppDatePipe,
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    DateInput,
+    ReactiveFormsModule,
+    SocialProjectSessionForm,
+    TranslatePipe,
+  ],
   templateUrl: './social-project-sessions-list.html',
   styleUrl: './social-project-sessions-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SocialProjectSessionsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #sessionsService = inject(SocialProjectSessionsService);
   readonly #projectsService = inject(SocialProjectsService);
   readonly #auth = inject(AuthService);

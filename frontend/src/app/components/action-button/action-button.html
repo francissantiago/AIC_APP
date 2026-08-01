@@ -1,0 +1,63 @@
+@if (isRouterLink()) {
+  <a
+    [routerLink]="routerLink()!"
+    [queryParams]="queryParams()"
+    [class]="buttonClasses()"
+    [class.pointer-events-none]="disabled()"
+    [class.opacity-50]="disabled()"
+    [attr.data-testid]="testId() ?? null"
+    [attr.aria-expanded]="ariaExpanded()"
+    [attr.aria-disabled]="disabled() ? true : null"
+    [attr.aria-label]="labelKey() | translate"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      [class]="iconSizeClasses()"
+      aria-hidden="true"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="config().iconPath" />
+    </svg>
+
+    @if (appearance() === 'icon-label') {
+      <span class="font-medium">{{ labelKey() | translate }}</span>
+    }
+
+    @if (appearance() === 'icon-only') {
+      <span class="action-button__tooltip" aria-hidden="true">{{ labelKey() | translate }}</span>
+    }
+  </a>
+} @else {
+  <button
+    type="button"
+    [class]="buttonClasses()"
+    [disabled]="disabled()"
+    [attr.data-testid]="testId() ?? null"
+    [attr.aria-expanded]="ariaExpanded()"
+    [attr.aria-label]="labelKey() | translate"
+    (click)="onClick()"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      [class]="iconSizeClasses()"
+      aria-hidden="true"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="config().iconPath" />
+    </svg>
+
+    @if (appearance() === 'icon-label') {
+      <span class="font-medium">{{ labelKey() | translate }}</span>
+    }
+
+    @if (appearance() === 'icon-only') {
+      <span class="action-button__tooltip" aria-hidden="true">{{ labelKey() | translate }}</span>
+    }
+  </button>
+}

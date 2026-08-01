@@ -10,12 +10,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MissionAssignmentForm } from '@components/missions/mission-assignment-form/mission-assignment-form';
 import { TranslatePipe } from '@ngx-translate/core';
-import {
-  MISSION_ASSIGNMENT_ROLES,
-  MissionAssignmentRole,
-} from '@enums/mission-assignment-role';
+import { ActionButtonVariant } from '@enums/action-button-variant';
+import { MISSION_ASSIGNMENT_ROLES, MissionAssignmentRole } from '@enums/mission-assignment-role';
 import {
   MISSION_ASSIGNMENT_STATUSES,
   MissionAssignmentStatus,
@@ -28,12 +28,22 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-mission-assignments-list',
-  imports: [AppDatePipe, AppDialog, MissionAssignmentForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    AppDatePipe,
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    MissionAssignmentForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './mission-assignments-list.html',
   styleUrl: './mission-assignments-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MissionAssignmentsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #assignmentsService = inject(MissionAssignmentsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

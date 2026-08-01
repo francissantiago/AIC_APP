@@ -11,10 +11,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ScheduleEventEditor } from '@components/secretariat/schedule-event-editor/schedule-event-editor';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { MinistryStatus } from '@enums/ministry-status';
 import { IMinistry } from '@interfaces/IMinistry';
 import { IScheduleWeekViewEvent } from '@interfaces/IScheduleWeekView';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { AuthService } from '@services/auth-service';
 import { MinistriesService } from '@services/ministries-service';
 import { DateDisplayService } from '@services/date-display-service';
@@ -25,12 +28,21 @@ import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 @Component({
   selector: 'app-schedules-board',
-  imports: [AppDateTimePipe, ReactiveFormsModule, ScheduleEventEditor, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDateTimePipe,
+    ReactiveFormsModule,
+    ScheduleEventEditor,
+    TranslatePipe,
+  ],
   templateUrl: './schedules-board.html',
   styleUrl: './schedules-board.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SchedulesBoard implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #schedules = inject(SchedulesService);
   readonly #dates = inject(DateDisplayService);
   readonly #i18n = inject(I18nService);

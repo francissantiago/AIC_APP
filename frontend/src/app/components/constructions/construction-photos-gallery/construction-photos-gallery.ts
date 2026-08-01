@@ -9,19 +9,23 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { IConstructionPhoto } from '@interfaces/IConstructionPhoto';
 import { AuthService } from '@services/auth-service';
 import { ConstructionPhotosService } from '@services/construction-photos-service';
 
 @Component({
   selector: 'app-construction-photos-gallery',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, ReactiveFormsModule, TranslatePipe],
   templateUrl: './construction-photos-gallery.html',
   styleUrl: './construction-photos-gallery.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConstructionPhotosGallery implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #photosService = inject(ConstructionPhotosService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

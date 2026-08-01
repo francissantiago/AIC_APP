@@ -11,8 +11,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { SmallGroupAttendance } from '@components/small-groups/small-group-attendance/small-group-attendance';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { ISmallGroupMeeting } from '@interfaces/ISmallGroupMeeting';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
@@ -30,12 +33,21 @@ function todayIsoDate(): string {
 
 @Component({
   selector: 'app-small-group-meetings-panel',
-  imports: [AppDatePipe, DateInput, ReactiveFormsModule, SmallGroupAttendance, TranslatePipe],
+  imports: [
+    ActionButton,
+    ActionButtonGroup,
+    AppDatePipe,
+    DateInput,
+    ReactiveFormsModule,
+    SmallGroupAttendance,
+    TranslatePipe,
+  ],
   templateUrl: './small-group-meetings-panel.html',
   styleUrl: './small-group-meetings-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SmallGroupMeetingsPanel implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #smallGroupsService = inject(SmallGroupsService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);

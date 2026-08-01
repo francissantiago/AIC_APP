@@ -1,4 +1,8 @@
-<section class="w-full" data-testid="small-group-meetings-panel" [attr.aria-label]="'SMALL_GROUPS.MEETINGS' | translate">
+<section
+  class="w-full"
+  data-testid="small-group-meetings-panel"
+  [attr.aria-label]="'SMALL_GROUPS.MEETINGS' | translate"
+>
   @if (feedback(); as messageKey) {
     <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
       {{ messageKey | translate }}
@@ -137,37 +141,34 @@
           </thead>
           <tbody>
             @for (meeting of meetings(); track meeting.id) {
-              <tr class="border-t border-slate-100" [attr.data-testid]="'small-group-meeting-row-' + meeting.id">
+              <tr
+                class="border-t border-slate-100"
+                [attr.data-testid]="'small-group-meeting-row-' + meeting.id"
+              >
                 <td class="px-3 py-2 text-slate-900">{{ meeting.meetingDate | appDate }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ meeting.theme || '' }}</td>
                 <td class="px-3 py-2 text-slate-700">{{ meeting.notes || '' }}</td>
                 <td class="px-3 py-2">
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      [attr.data-testid]="'small-group-meeting-attendance-' + meeting.id"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openAttendance(meeting.id)"
-                    >
-                      {{ 'SMALL_GROUPS.TAKE_ROLL' | translate }}
-                    </button>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.VIEW"
+                      labelKey="SMALL_GROUPS.TAKE_ROLL"
+                      [testId]="'small-group-meeting-attendance-' + meeting.id"
+                      (action)="openAttendance(meeting.id)"
+                    />
                     @if (canWrite()) {
-                      <button
-                        type="button"
-                        class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                        (click)="startEdit(meeting)"
-                      >
-                        {{ 'COMMON.EDIT' | translate }}
-                      </button>
-                      <button
-                        type="button"
-                        class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                        (click)="askDelete(meeting.id)"
-                      >
-                        {{ 'COMMON.DELETE' | translate }}
-                      </button>
+                      <app-action-button
+                        [variant]="actionVariants.EDIT"
+                        labelKey="COMMON.EDIT"
+                        (action)="startEdit(meeting)"
+                      />
+                      <app-action-button
+                        [variant]="actionVariants.DELETE"
+                        labelKey="COMMON.DELETE"
+                        (action)="askDelete(meeting.id)"
+                      />
                     }
-                  </div>
+                  </app-action-button-group>
                 </td>
               </tr>
             }

@@ -10,8 +10,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { ConstructionExpenseForm } from '@components/constructions/construction-expense-form/construction-expense-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { PaymentMethod } from '@enums/finance';
 import { IConstructionExpense } from '@interfaces/IConstructionExpense';
 import { AuthService } from '@services/auth-service';
@@ -20,12 +23,20 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-construction-expenses-list',
-  imports: [AppDatePipe, AppDialog, ConstructionExpenseForm, TranslatePipe],
+  imports: [
+    AppDatePipe,
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    ConstructionExpenseForm,
+    TranslatePipe,
+  ],
   templateUrl: './construction-expenses-list.html',
   styleUrl: './construction-expenses-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConstructionExpensesList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
   readonly #expensesService = inject(ConstructionExpensesService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

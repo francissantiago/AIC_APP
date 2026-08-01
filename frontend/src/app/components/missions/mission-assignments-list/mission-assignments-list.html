@@ -118,7 +118,9 @@
             <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.FIELD' | translate }}</th>
             <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.ROLE' | translate }}</th>
             <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.STATUS' | translate }}</th>
-            <th scope="col" class="px-3 py-2 font-medium">{{ 'MISSIONS.START_DATE' | translate }}</th>
+            <th scope="col" class="px-3 py-2 font-medium">
+              {{ 'MISSIONS.START_DATE' | translate }}
+            </th>
             <th scope="col" class="px-3 py-2 font-medium">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -136,18 +138,18 @@
               <td class="px-3 py-2 text-slate-700">{{ assignment.startDate | appDate }}</td>
               <td class="px-3 py-2">
                 @if (canWrite()) {
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                      (click)="openEdit(assignment.id)"
-                    >
-                      {{ 'COMMON.EDIT' | translate }}
-                    </button>
-                    <button type="button" (click)="askDelete(assignment.id)">
-                      {{ 'COMMON.DELETE' | translate }}
-                    </button>
-                  </div>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.EDIT"
+                      labelKey="COMMON.EDIT"
+                      (action)="openEdit(assignment.id)"
+                    />
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      (action)="askDelete(assignment.id)"
+                    />
+                  </app-action-button-group>
                 }
               </td>
             </tr>

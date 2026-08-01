@@ -11,7 +11,10 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { MemberTransferStatus } from '@enums/member-transfer-status';
 import { IMemberTransfer } from '@interfaces/IMemberTransfer';
 import { ApiErrorService } from '@services/api-error.service';
@@ -21,11 +24,13 @@ import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 
 @Component({
   selector: 'app-member-transfer-history',
-  imports: [AppDateTimePipe, TranslatePipe],
+  imports: [ActionButton, ActionButtonGroup, AppDateTimePipe, TranslatePipe],
   templateUrl: './member-transfer-history.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MemberTransferHistory implements OnChanges {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #transfersService = inject(MemberTransfersService);
   readonly #secretariatService = inject(SecretariatService);
   readonly #apiError = inject(ApiErrorService);

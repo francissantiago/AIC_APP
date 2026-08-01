@@ -105,9 +105,13 @@
               <td class="px-3 py-2 text-slate-700">{{ registeredByLabel(expense) }}</td>
               @if (canWrite()) {
                 <td class="px-3 py-2">
-                  <button type="button" (click)="askDelete(expense.id)">
-                    {{ 'COMMON.DELETE' | translate }}
-                  </button>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.DELETE"
+                      labelKey="COMMON.DELETE"
+                      (action)="askDelete(expense.id)"
+                    />
+                  </app-action-button-group>
                 </td>
               }
             </tr>

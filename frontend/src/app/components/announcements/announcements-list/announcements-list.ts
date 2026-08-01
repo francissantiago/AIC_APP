@@ -12,8 +12,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { ActionButton } from '@components/action-button/action-button';
+import { ActionButtonGroup } from '@components/action-button-group/action-button-group';
 import { AnnouncementForm } from '@components/announcements/announcement-form/announcement-form';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ActionButtonVariant } from '@enums/action-button-variant';
 import { AnnouncementStatus } from '@enums/announcement-status';
 import { IAnnouncement } from '@interfaces/IAnnouncement';
 import { AuthService } from '@services/auth-service';
@@ -22,12 +25,22 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-announcements-list',
-  imports: [AppDateTimePipe, AppDialog, AnnouncementForm, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    AppDateTimePipe,
+    ActionButton,
+    ActionButtonGroup,
+    AppDialog,
+    AnnouncementForm,
+    ReactiveFormsModule,
+    TranslatePipe,
+  ],
   templateUrl: './announcements-list.html',
   styleUrl: './announcements-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnnouncementsList implements OnInit {
+  readonly actionVariants = ActionButtonVariant;
+
   readonly #announcementsService = inject(AnnouncementsService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);

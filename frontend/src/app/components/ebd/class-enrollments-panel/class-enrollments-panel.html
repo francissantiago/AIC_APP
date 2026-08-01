@@ -1,4 +1,8 @@
-<section class="w-full" data-testid="class-enrollments-panel" [attr.aria-label]="'EBD_ENROLLMENTS.TITLE' | translate">
+<section
+  class="w-full"
+  data-testid="class-enrollments-panel"
+  [attr.aria-label]="'EBD_ENROLLMENTS.TITLE' | translate"
+>
   @if (feedback(); as messageKey) {
     <p class="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800" role="status">
       {{ messageKey | translate }}
@@ -31,15 +35,12 @@
   </form>
 
   @if (canWrite()) {
-    <form
-      [formGroup]="enrollForm"
-      (ngSubmit)="enrollMembers()"
-      class="mb-4 grid gap-3"
-      novalidate
-    >
+    <form [formGroup]="enrollForm" (ngSubmit)="enrollMembers()" class="mb-4 grid gap-3" novalidate>
       <div class="flex flex-col gap-2">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-sm font-medium text-slate-700">{{ 'EBD_ENROLLMENTS.MEMBERS' | translate }}</span>
+          <span class="text-sm font-medium text-slate-700">{{
+            'EBD_ENROLLMENTS.MEMBERS' | translate
+          }}</span>
           @if (selectedCount() > 0) {
             <span class="text-sm text-slate-600">
               {{ 'EBD_ENROLLMENTS.SELECTED_COUNT' | translate: { count: selectedCount() } }}
@@ -65,7 +66,9 @@
             }
           </ul>
         } @else {
-          <p class="text-sm text-slate-600">{{ 'EBD_ENROLLMENTS.NO_AVAILABLE_MEMBERS' | translate }}</p>
+          <p class="text-sm text-slate-600">
+            {{ 'EBD_ENROLLMENTS.NO_AVAILABLE_MEMBERS' | translate }}
+          </p>
         }
       </div>
 
@@ -147,7 +150,10 @@
         </thead>
         <tbody>
           @for (enrollment of enrollments(); track enrollment.memberId) {
-            <tr class="border-t border-slate-100" [attr.data-testid]="'class-enrollment-row-' + enrollment.memberId">
+            <tr
+              class="border-t border-slate-100"
+              [attr.data-testid]="'class-enrollment-row-' + enrollment.memberId"
+            >
               <td class="px-3 py-2 text-slate-900">{{ enrollment.memberFullName }}</td>
               <td class="px-3 py-2 text-slate-700">
                 @if (canWrite()) {
@@ -168,14 +174,14 @@
               <td class="px-3 py-2 text-slate-700">{{ enrollment.enrolledAt | appDateTime }}</td>
               @if (canWrite()) {
                 <td class="px-3 py-2">
-                  <button
-                    type="button"
-                    [attr.data-testid]="'class-enrollment-remove-' + enrollment.memberId"
-                    class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    (click)="askRemove(enrollment.memberId)"
-                  >
-                    {{ 'EBD_ENROLLMENTS.REMOVE' | translate }}
-                  </button>
+                  <app-action-button-group>
+                    <app-action-button
+                      [variant]="actionVariants.UNLINK"
+                      labelKey="EBD_ENROLLMENTS.REMOVE"
+                      [testId]="'class-enrollment-remove-' + enrollment.memberId"
+                      (action)="askRemove(enrollment.memberId)"
+                    />
+                  </app-action-button-group>
                 </td>
               }
             </tr>
