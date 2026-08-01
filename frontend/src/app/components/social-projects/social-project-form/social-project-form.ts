@@ -54,6 +54,7 @@ export class SocialProjectForm implements OnInit {
 
   readonly projectId = input<string | null>(null);
   readonly saved = output<void>();
+  readonly created = output<void>();
   readonly cancelled = output<void>();
 
   readonly statuses = SOCIAL_PROJECT_STATUSES;
@@ -225,6 +226,7 @@ export class SocialProjectForm implements OnInit {
           this.budgetUsagePercent.set(project.budgetUsagePercent);
           this.feedbackKey.set('SOCIAL_PROJECTS.SAVE_SUCCESS');
           this.activeTab.set('expenses');
+          this.created.emit();
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);

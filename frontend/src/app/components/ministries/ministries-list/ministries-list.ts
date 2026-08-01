@@ -110,6 +110,11 @@ export class MinistriesList implements OnInit {
 
   closeMembers(): void {
     this.managingMembersId.set(null);
+    this.#loadMinistries();
+  }
+
+  onMembersPanelChanged(): void {
+    this.#loadMinistries();
   }
 
   previousPage(): void {

@@ -7,6 +7,7 @@ import {
   inject,
   input,
   OnInit,
+  output,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,6 +23,11 @@ import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
 import { SocialProjectsService } from '@services/social-projects-service';
+import {
+  applyEntityMembershipMutation,
+  EntityMembersListLoader,
+  upsertEntityMember,
+} from '@utils/entity-members-list.util';
 
 @Component({
   selector: 'app-social-project-members-panel',
@@ -38,6 +44,7 @@ export class SocialProjectMembersPanel implements OnInit {
   readonly #destroyRef = inject(DestroyRef);
 
   readonly projectId = input.required<string>();
+  readonly changed = output<void>();
 
   readonly roles = SOCIAL_PROJECT_MEMBER_ROLES;
   readonly members = signal<ISocialProjectMember[]>([]);
@@ -49,6 +56,14 @@ export class SocialProjectMembersPanel implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly pendingUnlinkId = signal<string | null>(null);
   readonly unlinking = signal(false);
+
+  readonly #listLoader = new EntityMembersListLoader<ISocialProjectMember>({
+    members: this.members,
+    loading: this.loading,
+    error: this.error,
+    fetch: () => this.#projectsService.listMembers(this.projectId(), { page: 1, limit: 100 }),
+    destroyRef: this.#destroyRef,
+  });
 
   readonly canWrite = computed(() => this.#auth.hasPermission('social-projects:write'));
   readonly canReadMembers = computed(() => this.#auth.hasPermission('members:read'));
@@ -70,7 +85,7 @@ export class SocialProjectMembersPanel implements OnInit {
   });
 
   ngOnInit(): void {
-    this.#loadMembers();
+    this.#listLoader.reload();
     this.#loadMemberOptions();
   }
 
@@ -93,11 +108,11 @@ export class SocialProjectMembersPanel implements OnInit {
       .addMember(this.projectId(), { memberId, role })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.linking.set(false);
           this.linkForm.reset({ memberId: '', role: SocialProjectMemberRole.PARTICIPANT });
           this.feedback.set('SOCIAL_PROJECTS.LINK_SUCCESS');
-          this.#loadMembers();
+          this.#afterMembershipChange({ upsert: created });
         },
         error: (error: HttpErrorResponse) => {
           this.linking.set(false);
@@ -120,14 +135,12 @@ export class SocialProjectMembersPanel implements OnInit {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (updated) => {
-          this.members.update((list) =>
-            list.map((item) => (item.memberId === memberId ? updated : item)),
-          );
+          this.members.update((list) => upsertEntityMember(list, updated));
         },
         error: (error: HttpErrorResponse) => {
           const resolved = this.#apiError.resolve(error);
           this.errorMessage.set(resolved.displayMessage);
-          this.#loadMembers();
+          this.#listLoader.reload({ showLoading: false });
         },
       });
   }
@@ -158,7 +171,7 @@ export class SocialProjectMembersPanel implements OnInit {
           this.unlinking.set(false);
           this.pendingUnlinkId.set(null);
           this.feedback.set('SOCIAL_PROJECTS.UNLINK_SUCCESS');
-          this.#loadMembers();
+          this.#afterMembershipChange({ removeMemberId: memberId });
         },
         error: (error: HttpErrorResponse) => {
           this.unlinking.set(false);
@@ -173,24 +186,19 @@ export class SocialProjectMembersPanel implements OnInit {
     this.changeRole(memberId, value);
   }
 
-  #loadMembers(): void {
-    this.loading.set(true);
-    this.error.set(false);
-
-    this.#projectsService
-      .listMembers(this.projectId(), { page: 1, limit: 100 })
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (response) => {
-          this.members.set(response.data);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.members.set([]);
-          this.loading.set(false);
-          this.error.set(true);
-        },
-      });
+  #afterMembershipChange(options: {
+    upsert?: ISocialProjectMember;
+    removeMemberId?: string;
+  }): void {
+    this.changed.emit();
+    applyEntityMembershipMutation({
+      loader: this.#listLoader,
+      members: this.members,
+      loading: this.loading,
+      upsert: options.upsert,
+      removeMemberId: options.removeMemberId,
+      reloadOptions: () => this.#loadMemberOptions(),
+    });
   }
 
   #loadMemberOptions(): void {

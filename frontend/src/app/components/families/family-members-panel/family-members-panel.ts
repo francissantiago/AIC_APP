@@ -28,6 +28,7 @@ import { FamiliesService } from '@services/families-service';
 import { MembersService } from '@services/members-service';
 import { MemberStatus } from '@enums/member-status';
 import { FamilyGenealogyTree } from '../family-genealogy-tree/family-genealogy-tree';
+import { EntityMembersListLoader } from '@utils/entity-members-list.util';
 
 @Component({
   selector: 'app-family-members-panel',
@@ -65,6 +66,14 @@ export class FamilyMembersPanel implements OnInit {
   readonly genealogy = signal<IFamilyGenealogy | null>(null);
   readonly genealogyLoading = signal(false);
   readonly genealogyError = signal(false);
+
+  readonly #listLoader = new EntityMembersListLoader<IFamilyMember>({
+    members: this.members,
+    loading: this.loading,
+    error: this.error,
+    fetch: () => this.#familiesService.listMembers(this.familyId(), { page: 1, limit: 100 }),
+    destroyRef: this.#destroyRef,
+  });
 
   readonly canWrite = computed(() => this.#auth.hasPermission('members:write'));
   readonly canReadMembers = computed(() => this.#auth.hasPermission('members:read'));
@@ -104,7 +113,7 @@ export class FamilyMembersPanel implements OnInit {
   });
 
   ngOnInit(): void {
-    this.#loadMembers();
+    this.#listLoader.reload();
     this.#loadMemberOptions();
   }
 
@@ -308,12 +317,12 @@ export class FamilyMembersPanel implements OnInit {
       .subscribe({
         next: () => {
           // PATCH devolve DTO sem relations/summary — recarrega a lista completa.
-          this.#loadMembers();
+          this.#listLoader.reload({ showLoading: false });
         },
         error: (error: HttpErrorResponse) => {
           const resolved = this.#apiError.resolve(error);
           this.errorMessage.set(resolved.displayMessage);
-          this.#loadMembers();
+          this.#listLoader.reload({ showLoading: false });
         },
       });
   }
@@ -371,7 +380,10 @@ export class FamilyMembersPanel implements OnInit {
 
   #afterStructureChange(): void {
     this.changed.emit();
-    this.#loadMembers();
+    this.#listLoader.invalidatePending();
+    this.loading.set(false);
+    this.#listLoader.reload({ showLoading: false });
+    this.#loadMemberOptions();
     if (this.showGenealogy()) {
       this.#loadGenealogy();
     }
@@ -426,26 +438,6 @@ export class FamilyMembersPanel implements OnInit {
           const resolved = this.#apiError.resolve(error);
           this.errorMessage.set(resolved.displayMessage);
           onError();
-        },
-      });
-  }
-
-  #loadMembers(): void {
-    this.loading.set(true);
-    this.error.set(false);
-
-    this.#familiesService
-      .listMembers(this.familyId(), { page: 1, limit: 100 })
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (response) => {
-          this.members.set(response.data);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.members.set([]);
-          this.loading.set(false);
-          this.error.set(true);
         },
       });
   }

@@ -158,6 +158,10 @@ export class ClassesList implements OnInit {
     this.#loadClasses();
   }
 
+  onEnrollmentsPanelChanged(): void {
+    this.#loadClasses();
+  }
+
   openAttendance(id: string): void {
     this.showForm.set(false);
     this.pendingDeleteId.set(null);

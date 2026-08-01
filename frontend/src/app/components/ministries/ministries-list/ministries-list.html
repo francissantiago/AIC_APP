@@ -38,7 +38,10 @@
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as ministryId) {
-      <app-ministry-members-panel [ministryId]="ministryId" />
+      <app-ministry-members-panel
+        [ministryId]="ministryId"
+        (changed)="onMembersPanelChanged()"
+      />
     }
   </app-dialog>
 

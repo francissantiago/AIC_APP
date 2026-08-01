@@ -28,6 +28,7 @@
       <app-social-project-form
         [projectId]="editingId()"
         (saved)="afterSave()"
+        (created)="refreshProjectsList()"
         (cancelled)="closeForm()"
       />
     }
@@ -39,7 +40,10 @@
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as projectId) {
-      <app-social-project-members-panel [projectId]="projectId" />
+      <app-social-project-members-panel
+        [projectId]="projectId"
+        (changed)="onMembersPanelChanged()"
+      />
     }
   </app-dialog>
 

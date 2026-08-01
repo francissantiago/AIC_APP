@@ -7,6 +7,7 @@ import {
   inject,
   input,
   OnInit,
+  output,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,6 +20,11 @@ import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
 import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
+import {
+  applyEntityMembershipMutation,
+  EntityMembersListLoader,
+  upsertEntityMember,
+} from '@utils/entity-members-list.util';
 
 @Component({
   selector: 'app-class-enrollments-panel',
@@ -34,6 +40,7 @@ export class ClassEnrollmentsPanel implements OnInit {
   readonly #destroyRef = inject(DestroyRef);
 
   readonly classId = input.required<string>();
+  readonly changed = output<void>();
 
   readonly statuses = CLASS_ENROLLMENT_STATUSES;
   readonly enrollments = signal<IClassEnrollment[]>([]);
@@ -45,6 +52,21 @@ export class ClassEnrollmentsPanel implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly pendingRemoveId = signal<string | null>(null);
   readonly removing = signal(false);
+
+  readonly #listLoader = new EntityMembersListLoader<IClassEnrollment>({
+    members: this.enrollments,
+    loading: this.loading,
+    error: this.error,
+    fetch: () => {
+      const status = this.filterForm.controls.status.value;
+      return this.#classesService.listEnrollments(this.classId(), {
+        page: 1,
+        limit: 100,
+        status: status || undefined,
+      });
+    },
+    destroyRef: this.#destroyRef,
+  });
 
   readonly canWrite = computed(() => this.#auth.hasPermission('classes:write'));
 
@@ -64,12 +86,12 @@ export class ClassEnrollmentsPanel implements OnInit {
   });
 
   ngOnInit(): void {
-    this.#loadEnrollments();
+    this.#listLoader.reload();
     this.#loadEnrollmentOptions();
 
     this.filterForm.controls.status.valueChanges
       .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe(() => this.#loadEnrollments());
+      .subscribe(() => this.#listLoader.reload());
   }
 
   statusLabelKey(status: ClassEnrollmentStatus): string {
@@ -91,12 +113,11 @@ export class ClassEnrollmentsPanel implements OnInit {
       .addEnrollment(this.classId(), { memberId, status })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.enrolling.set(false);
           this.enrollForm.reset({ memberId: '', status: ClassEnrollmentStatus.ACTIVE });
           this.feedback.set('EBD_ENROLLMENTS.ENROLL_SUCCESS');
-          this.#loadEnrollments();
-          this.#loadEnrollmentOptions();
+          this.#afterMembershipChange({ upsert: created });
         },
         error: (error: HttpErrorResponse) => {
           this.enrolling.set(false);
@@ -119,15 +140,13 @@ export class ClassEnrollmentsPanel implements OnInit {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (updated) => {
-          this.enrollments.update((list) =>
-            list.map((item) => (item.memberId === memberId ? updated : item)),
-          );
+          this.enrollments.update((list) => upsertEntityMember(list, updated));
           this.#loadEnrollmentOptions();
         },
         error: (error: HttpErrorResponse) => {
           const resolved = this.#apiError.resolve(error);
           this.errorMessage.set(resolved.displayMessage);
-          this.#loadEnrollments();
+          this.#listLoader.reload({ showLoading: false });
         },
       });
   }
@@ -158,8 +177,7 @@ export class ClassEnrollmentsPanel implements OnInit {
           this.removing.set(false);
           this.pendingRemoveId.set(null);
           this.feedback.set('EBD_ENROLLMENTS.REMOVE_SUCCESS');
-          this.#loadEnrollments();
-          this.#loadEnrollmentOptions();
+          this.#afterMembershipChange({ removeMemberId: memberId });
         },
         error: (error: HttpErrorResponse) => {
           this.removing.set(false);
@@ -174,30 +192,16 @@ export class ClassEnrollmentsPanel implements OnInit {
     this.changeStatus(memberId, value);
   }
 
-  #loadEnrollments(): void {
-    this.loading.set(true);
-    this.error.set(false);
-
-    const status = this.filterForm.controls.status.value;
-
-    this.#classesService
-      .listEnrollments(this.classId(), {
-        page: 1,
-        limit: 100,
-        status: status || undefined,
-      })
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (response) => {
-          this.enrollments.set(response.data);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.enrollments.set([]);
-          this.loading.set(false);
-          this.error.set(true);
-        },
-      });
+  #afterMembershipChange(options: { upsert?: IClassEnrollment; removeMemberId?: string }): void {
+    this.changed.emit();
+    applyEntityMembershipMutation({
+      loader: this.#listLoader,
+      members: this.enrollments,
+      loading: this.loading,
+      upsert: options.upsert,
+      removeMemberId: options.removeMemberId,
+      reloadOptions: () => this.#loadEnrollmentOptions(),
+    });
   }
 
   #loadEnrollmentOptions(): void {

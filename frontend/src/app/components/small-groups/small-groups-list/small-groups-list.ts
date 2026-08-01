@@ -148,6 +148,10 @@ export class SmallGroupsList implements OnInit {
     this.#loadGroups();
   }
 
+  onMembersPanelChanged(): void {
+    this.#loadGroups();
+  }
+
   openMeetings(id: string): void {
     this.showForm.set(false);
     this.pendingDeleteId.set(null);

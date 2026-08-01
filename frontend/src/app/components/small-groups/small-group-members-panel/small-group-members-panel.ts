@@ -7,6 +7,7 @@ import {
   inject,
   input,
   OnInit,
+  output,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,6 +23,11 @@ import { ISmallGroupMemberOption } from '@interfaces/ISmallGroupMemberOption';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { SmallGroupsService } from '@services/small-groups-service';
+import {
+  applyEntityMembershipMutation,
+  EntityMembersListLoader,
+  upsertEntityMember,
+} from '@utils/entity-members-list.util';
 
 @Component({
   selector: 'app-small-group-members-panel',
@@ -37,6 +43,7 @@ export class SmallGroupMembersPanel implements OnInit {
   readonly #destroyRef = inject(DestroyRef);
 
   readonly groupId = input.required<string>();
+  readonly changed = output<void>();
 
   readonly roles = SMALL_GROUP_MEMBER_ROLES;
   readonly statuses = SMALL_GROUP_MEMBER_STATUSES;
@@ -49,6 +56,14 @@ export class SmallGroupMembersPanel implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly pendingUnlinkId = signal<string | null>(null);
   readonly unlinking = signal(false);
+
+  readonly #listLoader = new EntityMembersListLoader<ISmallGroupMember>({
+    members: this.members,
+    loading: this.loading,
+    error: this.error,
+    fetch: () => this.#smallGroupsService.listMembers(this.groupId(), { page: 1, limit: 100 }),
+    destroyRef: this.#destroyRef,
+  });
 
   readonly canWrite = computed(() => this.#auth.hasPermission('small-groups:write'));
 
@@ -64,7 +79,7 @@ export class SmallGroupMembersPanel implements OnInit {
   });
 
   ngOnInit(): void {
-    this.#loadMembers();
+    this.#listLoader.reload();
     this.#loadMemberOptions();
   }
 
@@ -91,12 +106,11 @@ export class SmallGroupMembersPanel implements OnInit {
       .addMember(this.groupId(), { memberId, role })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.linking.set(false);
           this.linkForm.reset({ memberId: '', role: SmallGroupMemberRole.MEMBER });
           this.feedback.set('SMALL_GROUPS.LINK_SUCCESS');
-          this.#loadMembers();
-          this.#loadMemberOptions();
+          this.#afterMembershipChange({ upsert: created });
         },
         error: (error: HttpErrorResponse) => {
           this.linking.set(false);
@@ -119,14 +133,12 @@ export class SmallGroupMembersPanel implements OnInit {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (updated) => {
-          this.members.update((list) =>
-            list.map((item) => (item.memberId === memberId ? updated : item)),
-          );
+          this.members.update((list) => upsertEntityMember(list, updated));
         },
         error: (error: HttpErrorResponse) => {
           const resolved = this.#apiError.resolve(error);
           this.errorMessage.set(resolved.displayMessage);
-          this.#loadMembers();
+          this.#listLoader.reload({ showLoading: false });
         },
       });
   }
@@ -144,14 +156,12 @@ export class SmallGroupMembersPanel implements OnInit {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (updated) => {
-          this.members.update((list) =>
-            list.map((item) => (item.memberId === memberId ? updated : item)),
-          );
+          this.members.update((list) => upsertEntityMember(list, updated));
         },
         error: (error: HttpErrorResponse) => {
           const resolved = this.#apiError.resolve(error);
           this.errorMessage.set(resolved.displayMessage);
-          this.#loadMembers();
+          this.#listLoader.reload({ showLoading: false });
         },
       });
   }
@@ -182,8 +192,7 @@ export class SmallGroupMembersPanel implements OnInit {
           this.unlinking.set(false);
           this.pendingUnlinkId.set(null);
           this.feedback.set('SMALL_GROUPS.UNLINK_SUCCESS');
-          this.#loadMembers();
-          this.#loadMemberOptions();
+          this.#afterMembershipChange({ removeMemberId: memberId });
         },
         error: (error: HttpErrorResponse) => {
           this.unlinking.set(false);
@@ -203,24 +212,16 @@ export class SmallGroupMembersPanel implements OnInit {
     this.changeStatus(memberId, value);
   }
 
-  #loadMembers(): void {
-    this.loading.set(true);
-    this.error.set(false);
-
-    this.#smallGroupsService
-      .listMembers(this.groupId(), { page: 1, limit: 100 })
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (response) => {
-          this.members.set(response.data);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.members.set([]);
-          this.loading.set(false);
-          this.error.set(true);
-        },
-      });
+  #afterMembershipChange(options: { upsert?: ISmallGroupMember; removeMemberId?: string }): void {
+    this.changed.emit();
+    applyEntityMembershipMutation({
+      loader: this.#listLoader,
+      members: this.members,
+      loading: this.loading,
+      upsert: options.upsert,
+      removeMemberId: options.removeMemberId,
+      reloadOptions: () => this.#loadMemberOptions(),
+    });
   }
 
   #loadMemberOptions(): void {

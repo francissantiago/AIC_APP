@@ -163,6 +163,10 @@ export class SocialProjectsList implements OnInit {
     this.#loadProjects();
   }
 
+  refreshProjectsList(): void {
+    this.#loadProjects();
+  }
+
   openMembers(id: string): void {
     this.showForm.set(false);
     this.pendingDeleteId.set(null);
@@ -172,6 +176,11 @@ export class SocialProjectsList implements OnInit {
 
   closeMembers(): void {
     this.managingMembersId.set(null);
+    this.#loadProjects();
+  }
+
+  onMembersPanelChanged(): void {
+    this.#loadProjects();
   }
 
   openSessions(id: string): void {

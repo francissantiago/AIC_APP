@@ -43,7 +43,10 @@
     (closed)="closeEnrollments()"
   >
     @if (managingEnrollmentsId(); as classId) {
-      <app-class-enrollments-panel [classId]="classId" />
+      <app-class-enrollments-panel
+        [classId]="classId"
+        (changed)="onEnrollmentsPanelChanged()"
+      />
     }
   </app-dialog>
 

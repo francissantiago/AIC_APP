@@ -47,7 +47,10 @@
     (closed)="closeMembers()"
   >
     @if (managingMembersId(); as groupId) {
-      <app-small-group-members-panel [groupId]="groupId" />
+      <app-small-group-members-panel
+        [groupId]="groupId"
+        (changed)="onMembersPanelChanged()"
+      />
     }
   </app-dialog>
 

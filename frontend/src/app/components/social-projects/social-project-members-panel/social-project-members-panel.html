@@ -117,12 +117,13 @@
                 @if (canWrite()) {
                   <select
                     class="rounded-md border border-slate-200 px-2 py-1 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    [value]="member.role"
                     (change)="onRoleSelect(member.memberId, $event)"
                     [attr.aria-label]="'SOCIAL_PROJECTS.ROLE' | translate"
                   >
                     @for (role of roles; track role) {
-                      <option [value]="role">{{ roleLabelKey(role) | translate }}</option>
+                      <option [value]="role" [selected]="member.role === role">
+                        {{ roleLabelKey(role) | translate }}
+                      </option>
                     }
                   </select>
                 } @else {
