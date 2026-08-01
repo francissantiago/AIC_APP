@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { IAddClassEnrollment } from '@interfaces/IAddClassEnrollment';
+import { IBulkAddClassEnrollments, IBulkClassEnrollmentsResponse } from '@interfaces/IBulkClassEnrollments';
 import { IClassEnrollment } from '@interfaces/IClassEnrollment';
 import { IClassFrequencyReport } from '@interfaces/IClassFrequencyReport';
 import { IClassSessionAttendance } from '@interfaces/IClassSessionAttendance';
@@ -162,6 +163,17 @@ export class ClassesService {
   addEnrollment(classId: string, body: IAddClassEnrollment): Observable<IClassEnrollment> {
     return this.#http
       .post<IClassEnrollment>(`${this.#apiUrl}/${classId}/enrollments`, body, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  bulkAddEnrollments(
+    classId: string,
+    body: IBulkAddClassEnrollments,
+  ): Observable<IBulkClassEnrollmentsResponse> {
+    return this.#http
+      .post<IBulkClassEnrollmentsResponse>(`${this.#apiUrl}/${classId}/enrollments/bulk`, body, {
         headers: this.#headers,
       })
       .pipe(this.#withRetry());

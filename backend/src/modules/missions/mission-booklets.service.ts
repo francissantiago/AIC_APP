@@ -14,6 +14,10 @@ import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { CreateMissionBookletDto } from './dto/create-mission-booklet.dto';
+import {
+  BulkMissionBookletsResponseDto,
+  CreateMissionBookletsBulkDto,
+} from './dto/create-mission-booklets-bulk.dto';
 import { MissionBookletInstallmentResponseDto } from './dto/mission-booklet-installment-response.dto';
 import {
   MissionBookletResponseDto,
@@ -110,6 +114,39 @@ export class MissionBookletsService {
 
     this.logger.log(`Carnê missionário criado: ${saved.id}`);
     return this.findOne(saved.id, activeCongregationId);
+  }
+
+  async createBulk(
+    dto: CreateMissionBookletsBulkDto,
+    user: UserResponseDto,
+    activeCongregationId?: string,
+  ): Promise<BulkMissionBookletsResponseDto> {
+    const results: MissionBookletResponseDto[] = [];
+
+    await this.dataSource.transaction(async () => {
+      for (const memberId of dto.memberIds) {
+        const singleDto: CreateMissionBookletDto = {
+          memberId,
+          destinationType: dto.destinationType,
+          missionFieldId: dto.missionFieldId,
+          missionAssignmentId: dto.missionAssignmentId,
+          title: dto.title,
+          installmentCount: dto.installmentCount,
+          installmentAmount: dto.installmentAmount,
+          firstDueDate: dto.firstDueDate,
+          notes: dto.notes,
+        };
+        const created = await this.create(
+          singleDto,
+          user,
+          activeCongregationId,
+        );
+        results.push(created);
+      }
+    });
+
+    this.logger.log(`${results.length} carnês missionários emitidos em lote`);
+    return { data: results, total: results.length };
   }
 
   async findAll(

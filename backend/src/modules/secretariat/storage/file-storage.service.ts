@@ -143,7 +143,7 @@ export class FileStorageService {
     const mimeType = file.mimetype?.toLowerCase().trim();
     const extension = this.resolveAllowedExtension(
       mimeType,
-      file.originalname,
+      this.normalizeOriginalName(file.originalname),
       mimeMap,
     );
     if (!mimeType) {
@@ -155,7 +155,7 @@ export class FileStorageService {
     }
     await this.assertMagicMatches(file.buffer, mimeType);
     const originalFilename = this.sanitizeOriginalFilename(
-      file.originalname,
+      this.normalizeOriginalName(file.originalname),
       extension,
     );
 
@@ -314,6 +314,10 @@ export class FileStorageService {
       return cleaned.slice(0, 255);
     }
     return `${cleaned.slice(0, 255 - extension.length)}${extension}`;
+  }
+
+  private normalizeOriginalName(name: string): string {
+    return Buffer.from(name, 'latin1').toString('utf8');
   }
 
   private resolveRoot(): string {

@@ -19,6 +19,7 @@ import { IMinistryMember } from '@interfaces/IMinistryMember';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 import { MinistriesService } from '@services/ministries-service';
 import {
   applyEntityMembershipMutation,
@@ -28,7 +29,7 @@ import {
 
 @Component({
   selector: 'app-ministry-members-panel',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './ministry-members-panel.html',
   styleUrl: './ministry-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

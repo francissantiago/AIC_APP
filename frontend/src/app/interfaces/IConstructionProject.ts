@@ -4,8 +4,6 @@ import { ConstructionProjectStatus } from '@enums/construction-project-status';
 export interface IConstructionProject {
   id: string;
   congregationId: string;
-  ministryId: string;
-  ministryName: string | null;
   name: string;
   description: string | null;
   location: string | null;

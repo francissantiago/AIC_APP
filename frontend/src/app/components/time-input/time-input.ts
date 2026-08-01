@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DateDisplayService } from '@services/date-display-service';
-import { parseFlexibleTimeInput } from '@utils/date-display.util';
+import { parseFlexibleTimeInput, maskTimeDigits } from '@utils/date-display.util';
 
 const DEFAULT_INPUT_CLASS =
   'w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100 disabled:cursor-not-allowed';
@@ -52,6 +52,15 @@ export class TimeInput implements OnInit {
       .statusChanges.pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe(() => {
         this.#syncDisabledState();
+      });
+
+    this.displayControl.valueChanges
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe((text) => {
+        const masked = maskTimeDigits(text);
+        if (masked !== text) {
+          this.displayControl.setValue(masked, { emitEvent: false });
+        }
       });
   }
 

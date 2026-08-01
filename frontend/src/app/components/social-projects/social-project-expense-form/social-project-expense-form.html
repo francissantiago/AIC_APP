@@ -11,13 +11,10 @@
   <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4" novalidate>
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'SOCIAL_PROJECTS.AMOUNT' | translate }}</span>
-      <input
-        type="number"
-        formControlName="amount"
-        min="0.01"
-        step="0.01"
-        class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        [attr.aria-invalid]="fieldInvalid('amount')"
+      <app-currency-input
+        [control]="form.controls.amount"
+        inputId="social-project-expense-amount"
+        [ariaInvalid]="fieldInvalid('amount')"
       />
       @if (fieldInvalid('amount')) {
         <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
@@ -49,6 +46,31 @@
         <span class="text-xs text-red-700">{{ 'COMMON.REQUIRED_FIELD' | translate }}</span>
       }
     </label>
+
+    <div class="flex flex-col gap-1 text-sm text-slate-700">
+      <label class="flex flex-col gap-1">
+        <span>{{ 'SOCIAL_PROJECTS.MEMBER_OPTIONAL' | translate }}</span>
+        <input
+          type="search"
+          formControlName="memberQuery"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          [attr.placeholder]="'FINANCE.MEMBER_PLACEHOLDER' | translate"
+        />
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="sr-only">{{ 'FINANCE.SELECT_MEMBER' | translate }}</span>
+        <select
+          formControlName="memberId"
+          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        >
+          <option value="">{{ 'COMMON.NONE' | translate }}</option>
+          @for (option of memberOptions(); track option.id) {
+            <option [value]="option.id">{{ option.fullName }}</option>
+          }
+        </select>
+      </label>
+      <span class="text-xs text-slate-500">{{ 'FINANCE.MEMBER_HINT_MIN_CHARS' | translate }}</span>
+    </div>
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
       <span>{{ 'SOCIAL_PROJECTS.PAYMENT_METHOD' | translate }}</span>

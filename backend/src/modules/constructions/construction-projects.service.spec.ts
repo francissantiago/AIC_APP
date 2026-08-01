@@ -9,7 +9,6 @@ import { CongregationStatus } from '../congregations/enums/congregation-status.e
 import { CongregationType } from '../congregations/enums/congregation-type.enum';
 import { FinancialEntry } from '../finance/entities/financial-entry.entity';
 import { Member } from '../members/entities/member.entity';
-import { Ministry } from '../ministries/entities/ministry.entity';
 import { ConstructionNotificationsService } from './construction-notifications.service';
 import { ConstructionProjectsService } from './construction-projects.service';
 import { ConstructionProject } from './entities/construction-project.entity';
@@ -20,7 +19,6 @@ describe('ConstructionProjectsService', () => {
 
   const baseCongregationId = 'cccccccc-dddd-eeee-ffff-000000000001';
   const projectId = '11111111-2222-3333-4444-555555555555';
-  const ministryId = '22222222-3333-4444-5555-666666666666';
 
   const projectsRepository = {
     findOne: jest.fn(),
@@ -29,9 +27,6 @@ describe('ConstructionProjectsService', () => {
     softRemove: jest.fn(),
     update: jest.fn(),
     createQueryBuilder: jest.fn(),
-  };
-  const ministriesRepository = {
-    findOne: jest.fn(),
   };
   const membersRepository = {
     findOne: jest.fn(),
@@ -63,7 +58,6 @@ describe('ConstructionProjectsService', () => {
     const project = new ConstructionProject();
     project.id = projectId;
     project.congregationId = baseCongregationId;
-    project.ministryId = ministryId;
     project.name = 'Reforma do templo';
     project.description = null;
     project.location = null;
@@ -92,10 +86,6 @@ describe('ConstructionProjectsService', () => {
         {
           provide: getRepositoryToken(ConstructionProject),
           useValue: projectsRepository,
-        },
-        {
-          provide: getRepositoryToken(Ministry),
-          useValue: ministriesRepository,
         },
         { provide: getRepositoryToken(Member), useValue: membersRepository },
         {

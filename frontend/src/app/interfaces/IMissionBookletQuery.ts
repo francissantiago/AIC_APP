@@ -32,6 +32,15 @@ export interface ICreateMissionBooklet {
   notes?: string;
 }
 
+export interface ICreateMissionBookletsBulk extends Omit<ICreateMissionBooklet, 'memberId'> {
+  memberIds: string[];
+}
+
+export interface IBulkMissionBookletsResponse {
+  data: IMissionBooklet[];
+  total: number;
+}
+
 export interface IUpdateMissionBooklet {
   title?: string | null;
   notes?: string | null;

@@ -180,7 +180,7 @@
           </div>
           <div class="flex justify-between gap-3">
             <dt>{{ 'USERS.LAST_LOGIN' | translate }}</dt>
-            <dd>{{ user.lastLoginAt || '' }}</dd>
+            <dd>{{ user.lastLoginAt | appDateTime }}</dd>
           </div>
         </dl>
       }

@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
@@ -12,6 +13,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CurrencyInput } from '@components/currency-input/currency-input';
 import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
@@ -20,7 +22,7 @@ import {
 } from '@enums/mission-booklet-destination-type';
 import { MissionAssignmentStatus } from '@enums/mission-assignment-status';
 import { MissionFieldStatus } from '@enums/mission-field-status';
-import { ICreateMissionBooklet, IUpdateMissionBooklet } from '@interfaces/IMissionBookletQuery';
+import { ICreateMissionBookletsBulk, IUpdateMissionBooklet } from '@interfaces/IMissionBookletQuery';
 import { IMember } from '@interfaces/IMember';
 import { IMissionAssignment } from '@interfaces/IMissionAssignment';
 import { IMissionField } from '@interfaces/IMissionField';
@@ -30,10 +32,11 @@ import { MembersService } from '@services/members-service';
 import { MissionAssignmentsService } from '@services/mission-assignments-service';
 import { MissionBookletsService } from '@services/mission-booklets-service';
 import { MissionFieldsService } from '@services/mission-fields-service';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-mission-booklet-form',
-  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
+  imports: [CurrencyInput, DateInput, ReactiveFormsModule, TranslatePipe],
   templateUrl: './mission-booklet-form.html',
   styleUrl: './mission-booklet-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,6 +57,8 @@ export class MissionBookletForm implements OnInit {
   readonly destinationTypes = MISSION_BOOKLET_DESTINATION_TYPES;
   readonly DestinationType = MissionBookletDestinationType;
   readonly memberOptions = signal<IMember[]>([]);
+  readonly selectedMemberIds = signal<string[]>([]);
+  readonly memberQuery = signal('');
   readonly fieldOptions = signal<IMissionField[]>([]);
   readonly assignmentOptions = signal<IMissionAssignment[]>([]);
   readonly isEditMode = signal(false);
@@ -64,11 +69,11 @@ export class MissionBookletForm implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly supportHint = signal<string | null>(null);
 
+  readonly memberQueryControl = new FormControl('', { nonNullable: true });
+
+  readonly selectedCount = computed(() => this.selectedMemberIds().length);
+
   readonly form = new FormGroup({
-    memberId: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
     destinationType: new FormControl(MissionBookletDestinationType.GENERAL, {
       nonNullable: true,
       validators: [Validators.required],
@@ -109,13 +114,19 @@ export class MissionBookletForm implements OnInit {
       fieldControl.updateValueAndValidity({ emitEvent: false });
       assignmentControl.updateValueAndValidity({ emitEvent: false });
     });
+
+    this.memberQueryControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.#destroyRef))
+      .subscribe((query) => {
+        this.memberQuery.set(query.trim());
+        this.#loadMemberOptions(query.trim());
+      });
   }
 
   ngOnInit(): void {
     const id = this.bookletId();
     if (id) {
       this.isEditMode.set(true);
-      this.form.controls.memberId.disable();
       this.form.controls.destinationType.disable();
       this.form.controls.missionFieldId.disable();
       this.form.controls.missionAssignmentId.disable();
@@ -138,6 +149,20 @@ export class MissionBookletForm implements OnInit {
     return control.invalid && (control.dirty || control.touched);
   }
 
+  isMemberSelected(memberId: string): boolean {
+    return this.selectedMemberIds().includes(memberId);
+  }
+
+  toggleMember(memberId: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectedMemberIds.update((ids) => {
+      if (checked) {
+        return ids.includes(memberId) ? ids : [...ids, memberId];
+      }
+      return ids.filter((id) => id !== memberId);
+    });
+  }
+
   submit(): void {
     this.feedbackKey.set(null);
     this.errorMessage.set(null);
@@ -153,19 +178,16 @@ export class MissionBookletForm implements OnInit {
       return;
     }
 
-    this.#submitCreate();
+    if (this.selectedMemberIds().length === 0) {
+      this.feedbackKey.set('MISSIONS.BOOKLETS.MEMBERS_REQUIRED');
+      return;
+    }
+
+    this.#submitCreateBulk();
   }
 
   #loadCreateOptions(): void {
-    if (this.#auth.hasPermission('members:read')) {
-      this.#membersService
-        .list({ page: 1, limit: 100 })
-        .pipe(takeUntilDestroyed(this.#destroyRef))
-        .subscribe({
-          next: (response) => this.memberOptions.set(response.data),
-          error: () => this.memberOptions.set([]),
-        });
-    }
+    this.#loadMemberOptions('');
 
     this.#fieldsService
       .list({ page: 1, limit: 100, status: MissionFieldStatus.ACTIVE })
@@ -184,6 +206,26 @@ export class MissionBookletForm implements OnInit {
       });
   }
 
+  #loadMemberOptions(query: string): void {
+    if (!this.#auth.hasPermission('members:read')) {
+      return;
+    }
+
+    const trimmed = query.trim();
+    if (trimmed.length > 0 && trimmed.length < 3) {
+      this.memberOptions.set([]);
+      return;
+    }
+
+    this.#membersService
+      .list({ page: 1, limit: 50, q: trimmed || undefined })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (response) => this.memberOptions.set(response.data),
+        error: () => this.memberOptions.set([]),
+      });
+  }
+
   #loadBooklet(id: string): void {
     this.loading.set(true);
     this.loadError.set(false);
@@ -194,7 +236,6 @@ export class MissionBookletForm implements OnInit {
       .subscribe({
         next: (booklet) => {
           this.form.patchValue({
-            memberId: booklet.memberId,
             destinationType: booklet.destinationType,
             missionFieldId: booklet.missionFieldId ?? '',
             missionAssignmentId: booklet.missionAssignmentId ?? '',
@@ -204,6 +245,7 @@ export class MissionBookletForm implements OnInit {
             firstDueDate: booklet.firstDueDate,
             notes: booklet.notes ?? '',
           });
+          this.selectedMemberIds.set([booklet.memberId]);
           this.loading.set(false);
         },
         error: () => {
@@ -214,10 +256,10 @@ export class MissionBookletForm implements OnInit {
       });
   }
 
-  #submitCreate(): void {
+  #submitCreateBulk(): void {
     this.saving.set(true);
     this.#bookletsService
-      .create(this.#buildCreatePayload())
+      .createBulk(this.#buildBulkPayload())
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: () => {
@@ -254,10 +296,10 @@ export class MissionBookletForm implements OnInit {
       });
   }
 
-  #buildCreatePayload(): ICreateMissionBooklet {
+  #buildBulkPayload(): ICreateMissionBookletsBulk {
     const raw = this.form.getRawValue();
-    const payload: ICreateMissionBooklet = {
-      memberId: raw.memberId,
+    const payload: ICreateMissionBookletsBulk = {
+      memberIds: this.selectedMemberIds(),
       destinationType: raw.destinationType,
       installmentCount: raw.installmentCount ?? 1,
       installmentAmount: raw.installmentAmount ?? 0,

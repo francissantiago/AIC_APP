@@ -37,7 +37,9 @@ import { AssetsService } from './assets.service';
 import {
   AssetReportResponseDto,
   AssetResponseDto,
+  BulkAssetsResponseDto,
   CreateAssetDto,
+  CreateAssetsBulkDto,
   PaginatedAssetsResponseDto,
   QueryAssetsDto,
   UpdateAssetDto,
@@ -99,6 +101,18 @@ export class AssetsController {
     @ActiveCongregation() activeCongregationId?: string,
   ): Promise<AssetResponseDto> {
     return this.assetsService.createAsset(dto, user, activeCongregationId);
+  }
+
+  @Post('assets/bulk')
+  @RequirePermission('assets:write')
+  @ApiOperation({ summary: 'Cadastrar bens patrimoniais em lote' })
+  @ApiCreatedResponse({ type: BulkAssetsResponseDto })
+  createAssetsBulk(
+    @Body() dto: CreateAssetsBulkDto,
+    @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<BulkAssetsResponseDto> {
+    return this.assetsService.createAssetsBulk(dto, user, activeCongregationId);
   }
 
   @Patch('assets/:id')

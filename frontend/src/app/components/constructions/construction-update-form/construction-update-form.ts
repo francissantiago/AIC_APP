@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   input,
@@ -9,7 +10,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -21,6 +22,7 @@ import { IConstructionProject } from '@interfaces/IConstructionProject';
 import { ApiErrorService } from '@services/api-error.service';
 import { ConstructionProjectsService } from '@services/construction-projects-service';
 import { ConstructionUpdatesService } from '@services/construction-updates-service';
+import { startWith } from 'rxjs';
 
 @Component({
   selector: 'app-construction-update-form',
@@ -47,6 +49,7 @@ export class ConstructionUpdateForm implements OnInit {
   readonly feedbackKey = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly supportHint = signal<string | null>(null);
+  readonly snapshotProgressPercent = signal<number | null>(null);
 
   readonly form = new FormGroup({
     constructionProjectId: new FormControl('', {
@@ -58,13 +61,33 @@ export class ConstructionUpdateForm implements OnInit {
       validators: [Validators.required, Validators.maxLength(120)],
     }),
     description: new FormControl('', { nonNullable: true }),
-    progressPercent: new FormControl<number | null>(null, {
-      validators: [Validators.min(0), Validators.max(100)],
-    }),
     recordedAt: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required],
     }),
+  });
+
+  readonly selectedProjectId = toSignal(
+    this.form.controls.constructionProjectId.valueChanges.pipe(
+      startWith(this.form.controls.constructionProjectId.value),
+    ),
+    { initialValue: '' },
+  );
+
+  readonly selectedProjectProgress = computed(() => {
+    const projectId = this.selectedProjectId().trim();
+    if (!projectId) {
+      return null;
+    }
+    const project = this.projectOptions().find((item) => item.id === projectId);
+    return project?.progressPercent ?? null;
+  });
+
+  readonly displayedProgress = computed(() => {
+    if (this.isEditMode()) {
+      return this.snapshotProgressPercent();
+    }
+    return this.selectedProjectProgress();
   });
 
   ngOnInit(): void {
@@ -124,9 +147,11 @@ export class ConstructionUpdateForm implements OnInit {
             constructionProjectId: update.constructionProjectId,
             title: update.title,
             description: update.description ?? '',
-            progressPercent: update.progressPercent,
             recordedAt: update.recordedAt,
           });
+          this.snapshotProgressPercent.set(
+            update.progressPercent ?? update.projectProgressPercent,
+          );
           this.loading.set(false);
         },
         error: () => {
@@ -184,7 +209,6 @@ export class ConstructionUpdateForm implements OnInit {
     };
     const description = raw.description.trim();
     if (description) payload.description = description;
-    if (raw.progressPercent != null) payload.progressPercent = raw.progressPercent;
     return payload;
   }
 
@@ -193,7 +217,6 @@ export class ConstructionUpdateForm implements OnInit {
     return {
       title: raw.title.trim(),
       description: raw.description.trim() || null,
-      progressPercent: raw.progressPercent,
       recordedAt: raw.recordedAt,
     };
   }

@@ -374,11 +374,7 @@ describe('FamiliesService', () => {
       familiesRepository.create.mockReturnValue(createdFamily);
       familiesRepository.save.mockResolvedValue(createdFamily);
       familyMembersRepository.findOne.mockImplementation(
-        async ({
-          where,
-        }: {
-          where?: { memberId?: string; familyId?: string };
-        }) => {
+        ({ where }: { where?: { memberId?: string; familyId?: string } }) => {
           if (where?.familyId && where?.memberId) {
             return Object.assign(new FamilyMember(), {
               familyId: where.familyId,

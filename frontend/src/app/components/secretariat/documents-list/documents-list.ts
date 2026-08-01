@@ -144,7 +144,7 @@ const ALLOWED_MIME_TYPES = new Set([
             ></textarea>
           </label>
 
-          @if (editing(); as doc) {
+          @if (canWrite()) {
             <fieldset
               class="rounded-md border border-slate-200 p-3 md:col-span-2"
               [attr.aria-labelledby]="'document-attachment-legend'"
@@ -159,22 +159,22 @@ const ALLOWED_MIME_TYPES = new Set([
                 {{ 'SECRETARIAT.DOCUMENTS.MAX_SIZE_HINT' | translate: { maxMb: maxUploadMb } }}
               </p>
 
-              @if (doc.hasAttachment) {
-                <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-slate-800">
-                  <span class="font-medium">{{ doc.originalFilename }}</span>
-                  @if (doc.sizeBytes !== null) {
-                    <span class="text-slate-600">({{ formatFileSize(doc.sizeBytes) }})</span>
-                  }
-                  <button
-                    class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
-                    type="button"
-                    data-testid="document-form-download"
-                    [disabled]="downloading() || removingFile()"
-                    (click)="downloadFile(doc)"
-                  >
-                    {{ 'SECRETARIAT.DOCUMENTS.DOWNLOAD' | translate }}
-                  </button>
-                  @if (canWrite()) {
+              @if (editing(); as doc) {
+                @if (doc.hasAttachment) {
+                  <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-slate-800">
+                    <span class="font-medium">{{ doc.originalFilename }}</span>
+                    @if (doc.sizeBytes !== null) {
+                      <span class="text-slate-600">({{ formatFileSize(doc.sizeBytes) }})</span>
+                    }
+                    <button
+                      class="text-slate-900 underline underline-offset-2 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-50"
+                      type="button"
+                      data-testid="document-form-download"
+                      [disabled]="downloading() || removingFile()"
+                      (click)="downloadFile(doc)"
+                    >
+                      {{ 'SECRETARIAT.DOCUMENTS.DOWNLOAD' | translate }}
+                    </button>
                     <button
                       class="text-red-700 underline underline-offset-2 hover:text-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:opacity-50"
                       type="button"
@@ -183,27 +183,31 @@ const ALLOWED_MIME_TYPES = new Set([
                     >
                       {{ 'SECRETARIAT.DOCUMENTS.REMOVE_FILE' | translate }}
                     </button>
-                  }
-                </div>
+                  </div>
+                } @else {
+                  <p class="mb-3 text-sm text-slate-600">
+                    {{ 'SECRETARIAT.DOCUMENTS.NO_FILE' | translate }}
+                  </p>
+                }
               } @else {
                 <p class="mb-3 text-sm text-slate-600">
-                  {{ 'SECRETARIAT.DOCUMENTS.NO_FILE' | translate }}
+                  {{ 'SECRETARIAT.DOCUMENTS.UPLOAD_AFTER_SAVE_HINT' | translate }}
                 </p>
               }
 
-              @if (canWrite()) {
-                <div class="flex flex-wrap items-end gap-3">
-                  <label class="flex min-w-0 flex-1 flex-col gap-1 text-sm text-slate-700">
-                    <span>{{ 'SECRETARIAT.DOCUMENTS.CHOOSE_FILE' | translate }}</span>
-                    <input
-                      class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-                      type="file"
-                      data-testid="document-form-upload-input"
-                      [accept]="fileAccept"
-                      [disabled]="uploading()"
-                      (change)="onFileSelected($event)"
-                    />
-                  </label>
+              <div class="flex flex-wrap items-end gap-3">
+                <label class="flex min-w-0 flex-1 flex-col gap-1 text-sm text-slate-700">
+                  <span>{{ 'SECRETARIAT.DOCUMENTS.CHOOSE_FILE' | translate }}</span>
+                  <input
+                    class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
+                    type="file"
+                    data-testid="document-form-upload-input"
+                    [accept]="fileAccept"
+                    [disabled]="uploading()"
+                    (change)="onFileSelected($event)"
+                  />
+                </label>
+                @if (editing()) {
                   <button
                     class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
                     type="button"
@@ -213,16 +217,16 @@ const ALLOWED_MIME_TYPES = new Set([
                   >
                     @if (uploading()) {
                       {{ 'SECRETARIAT.DOCUMENTS.UPLOADING' | translate }}
-                    } @else if (doc.hasAttachment) {
+                    } @else if (editing()?.hasAttachment) {
                       {{ 'SECRETARIAT.DOCUMENTS.REPLACE' | translate }}
                     } @else {
                       {{ 'SECRETARIAT.DOCUMENTS.UPLOAD' | translate }}
                     }
                   </button>
-                </div>
-                @if (selectedFile(); as file) {
-                  <p class="mt-2 text-xs text-slate-600">{{ file.name }}</p>
                 }
+              </div>
+              @if (selectedFile(); as file) {
+                <p class="mt-2 text-xs text-slate-600">{{ file.name }}</p>
               }
             </fieldset>
           }

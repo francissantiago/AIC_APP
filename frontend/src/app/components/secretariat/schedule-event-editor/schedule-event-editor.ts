@@ -117,15 +117,18 @@ export class ScheduleEventEditor {
   onMinistryChange(): void {
     const ministryId = this.form.controls.ministryId.value;
     const eventId = this.form.controls.calendarEventId.value;
+    this.memberOptions.set([]);
     if (!ministryId) {
-      this.memberOptions.set([]);
       this.#rebuildRows([]);
       return;
     }
-    this.#loadMemberOptions(ministryId);
-    if (eventId) {
-      this.#applyMinistryRows(eventId, ministryId);
-    }
+    this.#loadMemberOptions(ministryId, () => {
+      if (eventId) {
+        this.#applyMinistryRows(eventId, ministryId);
+      } else {
+        this.#rebuildRows([]);
+      }
+    });
   }
 
   addRow(): void {
@@ -223,6 +226,11 @@ export class ScheduleEventEditor {
             ministryId: selectedMinistryId,
           });
 
+          if (selectedEventId && !events.data.some((item) => item.id === selectedEventId)) {
+            this.#ensureEventLoaded(selectedEventId, selectedMinistryId || undefined);
+            return;
+          }
+
           if (selectedEventId) {
             this.#loadEventAssignments(selectedEventId, selectedMinistryId || undefined);
           } else {
@@ -230,7 +238,11 @@ export class ScheduleEventEditor {
           }
 
           if (selectedMinistryId) {
-            this.#loadMemberOptions(selectedMinistryId);
+            this.#loadMemberOptions(selectedMinistryId, () => {
+              if (selectedEventId) {
+                this.#applyMinistryRows(selectedEventId, selectedMinistryId);
+              }
+            });
           }
         },
         error: (error: unknown) => {
@@ -269,19 +281,51 @@ export class ScheduleEventEditor {
       });
   }
 
-  #loadMemberOptions(ministryId: string): void {
+  #loadMemberOptions(ministryId: string, onLoaded?: () => void): void {
     this.#schedules
       .memberOptions({ ministryId, limit: 100 })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: (options) => this.memberOptions.set(options),
-        error: () => this.memberOptions.set([]),
+        next: (options) => {
+          this.memberOptions.set(options);
+          onLoaded?.();
+        },
+        error: () => {
+          this.memberOptions.set([]);
+          onLoaded?.();
+        },
       });
   }
 
   #applyMinistryRows(_eventId: string, ministryId: string): void {
-    const rows = this.eventAssignments().filter((item) => item.ministryId === ministryId);
+    const optionIds = new Set(this.memberOptions().map((item) => item.id));
+    const rows = this.eventAssignments()
+      .filter((item) => item.ministryId === ministryId)
+      .filter((item) => optionIds.size === 0 || optionIds.has(item.memberId));
     this.#rebuildRows(rows);
+  }
+
+  #ensureEventLoaded(eventId: string, preferredMinistryId?: string): void {
+    this.#secretariat
+      .calendarEvent(eventId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (event) => {
+          this.events.update((items) => {
+            if (items.some((item) => item.id === event.id)) {
+              return items;
+            }
+            return [event, ...items];
+          });
+          this.#loadEventAssignments(eventId, preferredMinistryId);
+        },
+        error: (error: unknown) => {
+          this.loading.set(false);
+          const resolved = this.#apiError.resolve(error);
+          this.errorMessage.set(resolved.displayMessage);
+          this.supportHint.set(resolved.supportHint ?? null);
+        },
+      });
   }
 
   #rebuildRows(assignments: IScheduleAssignment[]): void {

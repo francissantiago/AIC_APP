@@ -7,7 +7,6 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Max,
   MaxLength,
   Min,
   MinLength,
@@ -21,10 +20,6 @@ export class CreateConstructionProjectDto {
   @MinLength(1)
   @MaxLength(120)
   name!: string;
-
-  @ApiProperty({ example: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' })
-  @IsUUID()
-  ministryId!: string;
 
   @ApiPropertyOptional({ maxLength: 255 })
   @IsOptional()
@@ -42,13 +37,6 @@ export class CreateConstructionProjectDto {
   @IsOptional()
   @IsEnum(ConstructionProjectStatus)
   status?: ConstructionProjectStatus;
-
-  @ApiPropertyOptional({ minimum: 0, maximum: 100 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  progressPercent?: number;
 
   @ApiPropertyOptional({ example: 50000 })
   @IsOptional()

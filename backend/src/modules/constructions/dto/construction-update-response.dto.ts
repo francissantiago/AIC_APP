@@ -23,6 +23,12 @@ export class ConstructionUpdateResponseDto {
   @ApiPropertyOptional({ nullable: true })
   progressPercent!: number | null;
 
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Progresso atual da obra (calculado pelas etapas)',
+  })
+  projectProgressPercent!: number | null;
+
   @ApiProperty()
   recordedAt!: string;
 
@@ -41,6 +47,7 @@ export class ConstructionUpdateResponseDto {
     dto.title = update.title;
     dto.description = update.description;
     dto.progressPercent = update.progressPercent;
+    dto.projectProgressPercent = update.constructionProject?.progressPercent ?? null;
     dto.recordedAt = update.recordedAt;
     dto.createdAt = update.createdAt;
     dto.updatedAt = update.updatedAt;

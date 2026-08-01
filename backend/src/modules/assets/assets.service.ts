@@ -1,7 +1,8 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   Brackets,
+  DataSource,
   QueryFailedError,
   Repository,
   SelectQueryBuilder,
@@ -18,6 +19,8 @@ import {
   AssetReportResponseDto,
   AssetResponseDto,
   CreateAssetDto,
+  BulkAssetsResponseDto,
+  CreateAssetsBulkDto,
   PaginatedAssetsResponseDto,
   QueryAssetsDto,
   UpdateAssetDto,
@@ -37,6 +40,8 @@ export class AssetsService {
   constructor(
     @InjectRepository(Asset)
     private readonly assetsRepository: Repository<Asset>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
     private readonly congregationsService: CongregationsService,
   ) {}
 
@@ -66,6 +71,59 @@ export class AssetsService {
     } catch (error) {
       this.rethrowAssetDuplicate(error);
     }
+  }
+
+  async createAssetsBulk(
+    dto: CreateAssetsBulkDto,
+    user: UserResponseDto,
+    activeCongregationId?: string,
+  ): Promise<BulkAssetsResponseDto> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    const baseName = dto.name.trim();
+    const prefix = this.nullableText(dto.assetTagPrefix)?.toUpperCase() ?? null;
+    const padWidth = String(dto.assetTagStartNumber + dto.quantity - 1).length;
+
+    const created = await this.dataSource.transaction(async (manager) => {
+      const repo = manager.getRepository(Asset);
+      const results: Asset[] = [];
+
+      for (let index = 0; index < dto.quantity; index += 1) {
+        const number = dto.assetTagStartNumber + index;
+        const assetTag = prefix
+          ? `${prefix}-${String(number).padStart(Math.max(padWidth, 3), '0')}`
+          : null;
+
+        const asset = repo.create({
+          congregationId,
+          createdByUserId: user.id,
+          assetTag,
+          name: `${baseName} #${number}`,
+          type: dto.type,
+          acquisitionDate: dto.acquisitionDate ?? null,
+          acquisitionValue:
+            dto.acquisitionValue == null
+              ? null
+              : this.money(dto.acquisitionValue),
+          currentValue:
+            dto.currentValue == null ? null : this.money(dto.currentValue),
+          location: this.nullableText(dto.location),
+          status: dto.status,
+          notes: this.nullableText(dto.notes),
+        });
+        results.push(await repo.save(asset));
+      }
+
+      return results;
+    });
+
+    this.logger.log(
+      `${created.length} bens cadastrados em lote na congregação ${congregationId}`,
+    );
+
+    return {
+      data: created.map(this.toAssetDto),
+      total: created.length,
+    };
   }
 
   async findAssets(

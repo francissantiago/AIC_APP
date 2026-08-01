@@ -57,10 +57,7 @@ export function buildMemberRelationBriefs(
       edge.relation === FamilyMemberLinkRelation.SIBLING_OF
     ) {
       // Somente os dois extremos da aresta recebem o vínculo.
-      if (
-        edge.fromMemberId !== memberId &&
-        edge.toMemberId !== memberId
-      ) {
+      if (edge.fromMemberId !== memberId && edge.toMemberId !== memberId) {
         continue;
       }
       if (edge.fromMemberId === edge.toMemberId) {

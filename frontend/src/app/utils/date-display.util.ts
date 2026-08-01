@@ -242,6 +242,17 @@ export function parseFlexibleDateInput(text: string, locale: string): string | n
   return null;
 }
 
+export function maskTimeDigits(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 4);
+  if (!digits) {
+    return '';
+  }
+  if (digits.length <= 2) {
+    return digits;
+  }
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
 export function parseFlexibleTimeInput(text: string): string | null {
   const trimmed = text.trim();
   if (!trimmed) {

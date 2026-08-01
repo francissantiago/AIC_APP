@@ -101,9 +101,13 @@ export class DocumentsController {
       activeCongregationId,
     );
     const safeName = file.originalFilename.replace(/"/g, '');
+    const encodedName = encodeURIComponent(file.originalFilename);
     response
       .setHeader('Content-Type', file.mimeType)
-      .setHeader('Content-Disposition', `attachment; filename="${safeName}"`)
+      .setHeader(
+        'Content-Disposition',
+        `attachment; filename="${safeName}"; filename*=UTF-8''${encodedName}`,
+      )
       .setHeader('Content-Length', String(file.sizeBytes));
     file.stream.pipe(response);
   }

@@ -1,8 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CreatedByUserSummaryDto } from '../../../common/dto/created-by-user-summary.dto';
 import {
   FinancialType,
   PaymentMethod,
 } from '../../finance/enums/finance.enums';
+import { FinanceMemberSummaryDto } from '../../finance/dto/finance.dto';
 
 export class SocialProjectExpenseResponseDto {
   @ApiProperty()
@@ -40,6 +42,12 @@ export class SocialProjectExpenseResponseDto {
 
   @ApiPropertyOptional({ nullable: true })
   notes!: string | null;
+
+  @ApiPropertyOptional({ type: FinanceMemberSummaryDto, nullable: true })
+  member!: FinanceMemberSummaryDto | null;
+
+  @ApiPropertyOptional({ type: CreatedByUserSummaryDto, nullable: true })
+  createdBy!: CreatedByUserSummaryDto | null;
 
   @ApiProperty()
   createdAt!: Date;

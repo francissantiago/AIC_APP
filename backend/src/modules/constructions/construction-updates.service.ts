@@ -42,27 +42,15 @@ export class ConstructionUpdatesService {
         congregationId,
       );
 
-    if (dto.progressPercent !== undefined) {
-      this.assertProgressValid(dto.progressPercent);
-    }
-
     const update = this.updatesRepository.create({
       congregationId,
       constructionProjectId: project.id,
       title: dto.title.trim(),
       description: this.nullableText(dto.description),
-      progressPercent: dto.progressPercent ?? null,
+      progressPercent: project.progressPercent,
       recordedAt: dto.recordedAt,
     });
     const saved = await this.updatesRepository.save(update);
-
-    if (dto.progressPercent !== undefined) {
-      await this.constructionProjectsService.updateProgress(
-        project.id,
-        congregationId,
-        dto.progressPercent,
-      );
-    }
 
     await this.constructionNotificationsService.notifyUpdateCreated(
       saved,
@@ -136,15 +124,6 @@ export class ConstructionUpdatesService {
     if (dto.description !== undefined) {
       update.description = this.nullableText(dto.description);
     }
-    if (dto.progressPercent !== undefined) {
-      this.assertProgressValid(dto.progressPercent);
-      update.progressPercent = dto.progressPercent;
-      await this.constructionProjectsService.updateProgress(
-        update.constructionProjectId,
-        update.congregationId,
-        dto.progressPercent,
-      );
-    }
     if (dto.recordedAt !== undefined) {
       update.recordedAt = dto.recordedAt;
     }
@@ -203,15 +182,6 @@ export class ConstructionUpdatesService {
       });
     }
     return update;
-  }
-
-  private assertProgressValid(value: number): void {
-    if (value < 0 || value > 100) {
-      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
-        code: ApiErrorCode.CONSTRUCTIONS_INVALID_PROGRESS,
-        message: ApiErrorMessage[ApiErrorCode.CONSTRUCTIONS_INVALID_PROGRESS],
-      });
-    }
   }
 
   private nullableText(value: string | null | undefined): string | null {

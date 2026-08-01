@@ -97,6 +97,10 @@ export class SecretariatService {
     return this.#get<IPaginatedVisitors>('visitors', query);
   }
 
+  getVisitor(id: string): Observable<IVisitor> {
+    return this.#get<IVisitor>(`visitors/${id}`, {});
+  }
+
   createVisitor(body: ICreateVisitor): Observable<IVisitor> {
     return this.#request(this.#http.post<IVisitor>(`${this.#apiUrl}/visitors`, body));
   }

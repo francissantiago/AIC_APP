@@ -14,8 +14,12 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { MemberResponseDto } from '../../members/dto/member-response.dto';
+import { MemberGender } from '../../members/enums/member-gender.enum';
+import { MemberMaritalStatus } from '../../members/enums/member-marital-status.enum';
+import { MemberStatus } from '../../members/enums/member-status.enum';
 import {
   AttendanceEventType,
   CalendarEventType,
@@ -422,6 +426,114 @@ export class ConvertVisitorToMemberDto {
   @IsString()
   @MaxLength(65535)
   notes?: string;
+
+  @ApiPropertyOptional({ example: '1990-05-20' })
+  @IsOptional()
+  @Matches(ISO_DATE_PATTERN)
+  @IsDateString({ strict: true })
+  birthDate?: string;
+
+  @ApiPropertyOptional({ enum: MemberGender })
+  @IsOptional()
+  @IsEnum(MemberGender)
+  gender?: MemberGender;
+
+  @ApiPropertyOptional({ enum: MemberMaritalStatus })
+  @IsOptional()
+  @IsEnum(MemberMaritalStatus)
+  maritalStatus?: MemberMaritalStatus;
+
+  @ApiPropertyOptional({ enum: MemberStatus })
+  @IsOptional()
+  @IsEnum(MemberStatus)
+  status?: MemberStatus;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(255)
+  address?: string;
+
+  @ApiPropertyOptional({ maxLength: 100 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(100)
+  city?: string;
+
+  @ApiPropertyOptional({ maxLength: 50 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(50)
+  state?: string;
+
+  @ApiPropertyOptional({ maxLength: 20 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(20)
+  zipCode?: string;
+
+  @ApiPropertyOptional({ maxLength: 30 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(30)
+  rg?: string;
+
+  @ApiPropertyOptional({ maxLength: 150 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(150)
+  placeOfBirth?: string;
+
+  @ApiPropertyOptional({ maxLength: 10 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(10)
+  bloodType?: string;
+
+  @ApiPropertyOptional({ maxLength: 150 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(150)
+  fatherName?: string;
+
+  @ApiPropertyOptional({ maxLength: 150 })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(150)
+  motherName?: string;
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID()
+  fatherMemberId?: string | null;
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID()
+  motherMemberId?: string | null;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  linkFamily?: boolean;
+
+  @ApiPropertyOptional({ maxLength: 100, description: 'Cargo eclesiástico' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(100)
+  positionTitle?: string;
 }
 
 export class ConvertVisitorToMemberResponseDto {

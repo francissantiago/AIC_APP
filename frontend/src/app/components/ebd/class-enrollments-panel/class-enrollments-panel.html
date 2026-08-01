@@ -33,25 +33,43 @@
   @if (canWrite()) {
     <form
       [formGroup]="enrollForm"
-      (ngSubmit)="enrollMember()"
-      class="mb-4 grid gap-3 md:grid-cols-3"
+      (ngSubmit)="enrollMembers()"
+      class="mb-4 grid gap-3"
       novalidate
     >
-      <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-1">
-        <span>{{ 'EBD_ENROLLMENTS.MEMBER' | translate }}</span>
-        <select
-          data-testid="class-enroll-member-select"
-          formControlName="memberId"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-        >
-          <option value="">{{ 'COMMON.FILTER' | translate }}</option>
-          @for (member of memberOptions(); track member.id) {
-            <option [value]="member.id">{{ member.fullName }}</option>
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-sm font-medium text-slate-700">{{ 'EBD_ENROLLMENTS.MEMBERS' | translate }}</span>
+          @if (selectedCount() > 0) {
+            <span class="text-sm text-slate-600">
+              {{ 'EBD_ENROLLMENTS.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+            </span>
           }
-        </select>
-      </label>
+        </div>
 
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        @if (memberOptions().length > 0) {
+          <ul class="max-h-48 space-y-2 overflow-y-auto rounded-md border border-slate-200 p-3">
+            @for (member of memberOptions(); track member.id) {
+              <li>
+                <label class="flex items-center gap-2 text-sm text-slate-800">
+                  <input
+                    type="checkbox"
+                    class="size-4"
+                    data-testid="class-enroll-member-checkbox"
+                    [checked]="isMemberSelected(member.id)"
+                    (change)="toggleMember(member.id, $event)"
+                  />
+                  <span>{{ member.fullName }}</span>
+                </label>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-sm text-slate-600">{{ 'EBD_ENROLLMENTS.NO_AVAILABLE_MEMBERS' | translate }}</p>
+        }
+      </div>
+
+      <label class="flex max-w-xs flex-col gap-1 text-sm text-slate-700">
         <span>{{ 'EBD_ENROLLMENTS.STATUS' | translate }}</span>
         <select
           formControlName="status"
@@ -63,14 +81,14 @@
         </select>
       </label>
 
-      <div class="flex items-end">
+      <div>
         <button
           type="submit"
           data-testid="class-enroll-member-btn"
           class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
           [disabled]="enrolling()"
         >
-          {{ 'EBD_ENROLLMENTS.ADD' | translate }}
+          {{ 'EBD_ENROLLMENTS.BULK_ADD' | translate }}
         </button>
       </div>
     </form>

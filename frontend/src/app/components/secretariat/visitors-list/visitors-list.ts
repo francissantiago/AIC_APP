@@ -13,6 +13,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
+import { MemberForm } from '@components/members/member-form/member-form';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IVisitor } from '@interfaces/ISecretariat';
 import { AuthService } from '@services/auth-service';
@@ -24,7 +25,7 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-visitors-list',
-  imports: [AppDatePipe, AppDialog, DateInput, ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [AppDatePipe, AppDialog, DateInput, MemberForm, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="w-full" data-testid="visitors-list">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -152,107 +153,15 @@ const PAGE_SIZE = 20;
         <p class="mb-4 text-sm text-slate-700">
           {{ 'SECRETARIAT.VISITORS.CONVERT_DESCRIPTION' | translate }}
         </p>
-        <form
-          [formGroup]="convertForm"
-          (ngSubmit)="submitConvert()"
-          class="grid gap-4 md:grid-cols-2"
-          novalidate
-          data-testid="visitor-convert-form"
-        >
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'SECRETARIAT.FULL_NAME' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              formControlName="fullName"
-              maxlength="150"
-              [attr.aria-invalid]="
-                convertForm.controls.fullName.touched && convertForm.controls.fullName.invalid
-              "
-              [attr.aria-describedby]="
-                convertForm.controls.fullName.touched && convertForm.controls.fullName.invalid
-                  ? 'convert-name-error'
-                  : null
-              "
-            />
-            @if (convertForm.controls.fullName.touched && convertForm.controls.fullName.invalid) {
-              <span id="convert-name-error" class="text-xs text-red-700">
-                {{ 'COMMON.REQUIRED_FIELD' | translate }}
-              </span>
-            }
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'SECRETARIAT.PHONE' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              formControlName="phone"
-              maxlength="30"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'MEMBERS.EMAIL' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              type="email"
-              formControlName="email"
-              maxlength="255"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'MEMBERS.DOCUMENT' | translate }}</span>
-            <input
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              formControlName="document"
-              maxlength="30"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'SECRETARIAT.VISITORS.MEMBERSHIP_DATE' | translate }}</span>
-            <app-date-input
-              [control]="convertForm.controls.membershipDate"
-              inputId="visitor-convert-membership-date"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700">
-            <span>{{ 'SECRETARIAT.VISITORS.BAPTISM_DATE' | translate }}</span>
-            <app-date-input
-              [control]="convertForm.controls.baptismDate"
-              inputId="visitor-convert-baptism-date"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
-            <span>{{ 'SECRETARIAT.NOTES' | translate }}</span>
-            <textarea
-              class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-              rows="3"
-              formControlName="notes"
-            ></textarea>
-          </label>
-          @if (convertErrorMessage(); as message) {
-            <p role="alert" class="text-sm text-red-700 md:col-span-2">
-              {{ message }}
-              @if (convertSupportHint(); as hint) {
-                <span class="mt-1 block text-xs opacity-90">{{ hint }}</span>
-              }
-            </p>
-          }
-          <div class="mt-2 flex flex-wrap gap-3 md:col-span-2">
-            <button
-              class="rounded-md bg-slate-500 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 disabled:opacity-50"
-              type="submit"
-              data-testid="visitor-convert-save"
-              [disabled]="converting()"
-            >
-              {{ 'SECRETARIAT.VISITORS.CONVERT' | translate }}
-            </button>
-            <button
-              class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-              type="button"
-              (click)="closeConvert()"
-            >
-              {{ 'COMMON.CANCEL' | translate }}
-            </button>
-          </div>
-        </form>
+        @if (showConvert() && convertingVisitor(); as visitor) {
+          <app-member-form
+            mode="convert"
+            [visitorId]="visitor.id"
+            [compact]="true"
+            (saved)="afterConvert()"
+            (cancelled)="closeConvert()"
+          />
+        }
       </app-dialog>
 
       <form
@@ -471,9 +380,6 @@ export class VisitorsList implements OnInit {
   readonly pendingDelete = signal<string | null>(null);
   readonly showConvert = signal(false);
   readonly convertingVisitor = signal<IVisitor | null>(null);
-  readonly converting = signal(false);
-  readonly convertErrorMessage = signal<string | null>(null);
-  readonly convertSupportHint = signal<string | null>(null);
 
   readonly canWrite = computed(() => this.#auth.hasPermission('secretariat:write'));
   readonly canConvert = computed(
@@ -493,16 +399,6 @@ export class VisitorsList implements OnInit {
     phone: new FormControl('', { nonNullable: true }),
     visitDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     followUpDone: new FormControl(false, { nonNullable: true }),
-    notes: new FormControl('', { nonNullable: true }),
-  });
-
-  readonly convertForm = new FormGroup({
-    fullName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    phone: new FormControl('', { nonNullable: true }),
-    email: new FormControl('', { nonNullable: true }),
-    document: new FormControl('', { nonNullable: true }),
-    membershipDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    baptismDate: new FormControl('', { nonNullable: true }),
     notes: new FormControl('', { nonNullable: true }),
   });
 
@@ -543,65 +439,17 @@ export class VisitorsList implements OnInit {
 
   openConvert(visitor: IVisitor): void {
     this.convertingVisitor.set(visitor);
-    this.convertForm.reset({
-      fullName: visitor.fullName,
-      phone: visitor.phone ?? '',
-      email: '',
-      document: '',
-      membershipDate: this.#today(),
-      baptismDate: '',
-      notes: '',
-    });
-    this.convertErrorMessage.set(null);
-    this.convertSupportHint.set(null);
     this.showConvert.set(true);
   }
 
   closeConvert(): void {
     this.showConvert.set(false);
     this.convertingVisitor.set(null);
-    this.convertErrorMessage.set(null);
-    this.convertSupportHint.set(null);
   }
 
-  submitConvert(): void {
-    if (this.convertForm.invalid) {
-      this.convertForm.markAllAsTouched();
-      return;
-    }
-    const visitor = this.convertingVisitor();
-    if (!visitor) {
-      return;
-    }
-    const v = this.convertForm.getRawValue();
-    const payload = {
-      fullName: v.fullName,
-      phone: v.phone || null,
-      email: v.email || undefined,
-      document: v.document || undefined,
-      membershipDate: v.membershipDate,
-      baptismDate: v.baptismDate || undefined,
-      notes: v.notes || undefined,
-    };
-    this.converting.set(true);
-    this.convertErrorMessage.set(null);
-    this.convertSupportHint.set(null);
-    this.#secretariat
-      .convertVisitorToMember(visitor.id, payload)
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: () => {
-          this.converting.set(false);
-          this.closeConvert();
-          this.load();
-        },
-        error: (error: unknown) => {
-          this.converting.set(false);
-          const resolved = this.#apiError.resolve(error);
-          this.convertErrorMessage.set(resolved.displayMessage);
-          this.convertSupportHint.set(resolved.supportHint ?? null);
-        },
-      });
+  afterConvert(): void {
+    this.closeConvert();
+    this.load();
   }
 
   submit(): void {

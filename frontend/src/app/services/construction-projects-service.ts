@@ -7,6 +7,11 @@ import {
   IQueryConstructionProjects,
   IUpdateConstructionProject,
 } from '@interfaces/IConstructionProjectQuery';
+import {
+  IConstructionProjectStage,
+  ICreateConstructionProjectStage,
+  IUpdateConstructionProjectStage,
+} from '@interfaces/IConstructionProjectStage';
 import { environment } from 'environments/environment';
 import { Observable, retry, tap, timer } from 'rxjs';
 
@@ -42,9 +47,6 @@ export class ConstructionProjectsService {
     }
     if (query.q) {
       params = params.set('q', query.q);
-    }
-    if (query.ministryId) {
-      params = params.set('ministryId', query.ministryId);
     }
 
     this.loading.set(true);
@@ -89,6 +91,43 @@ export class ConstructionProjectsService {
   remove(id: string): Observable<void> {
     return this.#http
       .delete<void>(`${this.#apiUrl}/${id}`, { headers: this.#headers })
+      .pipe(this.#withRetry());
+  }
+
+  listStages(projectId: string): Observable<IConstructionProjectStage[]> {
+    return this.#http
+      .get<IConstructionProjectStage[]>(`${this.#apiUrl}/${projectId}/stages`, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  createStage(
+    projectId: string,
+    body: ICreateConstructionProjectStage,
+  ): Observable<IConstructionProjectStage> {
+    return this.#http
+      .post<IConstructionProjectStage>(`${this.#apiUrl}/${projectId}/stages`, body, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  updateStage(
+    projectId: string,
+    stageId: string,
+    body: IUpdateConstructionProjectStage,
+  ): Observable<IConstructionProjectStage> {
+    return this.#http
+      .patch<IConstructionProjectStage>(`${this.#apiUrl}/${projectId}/stages/${stageId}`, body, {
+        headers: this.#headers,
+      })
+      .pipe(this.#withRetry());
+  }
+
+  removeStage(projectId: string, stageId: string): Observable<void> {
+    return this.#http
+      .delete<void>(`${this.#apiUrl}/${projectId}/stages/${stageId}`, { headers: this.#headers })
       .pipe(this.#withRetry());
   }
 

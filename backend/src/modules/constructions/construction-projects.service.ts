@@ -11,7 +11,6 @@ import { FinancialEntry } from '../finance/entities/financial-entry.entity';
 import { FinancialType } from '../finance/enums/finance.enums';
 import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
-import { Ministry } from '../ministries/entities/ministry.entity';
 import { CreateConstructionProjectDto } from './dto/create-construction-project.dto';
 import {
   ConstructionProjectResponseDto,
@@ -32,8 +31,6 @@ export class ConstructionProjectsService {
   constructor(
     @InjectRepository(ConstructionProject)
     private readonly projectsRepository: Repository<ConstructionProject>,
-    @InjectRepository(Ministry)
-    private readonly ministriesRepository: Repository<Ministry>,
     @InjectRepository(Member)
     private readonly membersRepository: Repository<Member>,
     @InjectRepository(FinancialEntry)
@@ -50,7 +47,6 @@ export class ConstructionProjectsService {
     const congregationId = await this.getCongregationId(activeCongregationId);
     const name = dto.name.trim();
     await this.assertNameAvailable(congregationId, name);
-    await this.assertMinistryEligible(dto.ministryId, congregationId);
 
     let supervisorMemberId: string | null = null;
     if (dto.supervisorMemberId) {
@@ -61,18 +57,13 @@ export class ConstructionProjectsService {
       supervisorMemberId = dto.supervisorMemberId;
     }
 
-    if (dto.progressPercent !== undefined) {
-      this.assertProgressPercent(dto.progressPercent);
-    }
-
     const project = this.projectsRepository.create({
       congregationId,
-      ministryId: dto.ministryId,
       name,
       description: this.nullableText(dto.description),
       location: this.nullableText(dto.location),
       status: dto.status ?? ConstructionProjectStatus.PLANNING,
-      progressPercent: dto.progressPercent ?? 0,
+      progressPercent: 0,
       budgetAmount:
         dto.budgetAmount !== undefined ? dto.budgetAmount.toFixed(2) : null,
       spentAmount: '0.00',
@@ -93,11 +84,10 @@ export class ConstructionProjectsService {
     activeCongregationId?: string,
   ): Promise<PaginatedConstructionProjectsResponseDto> {
     const congregationId = await this.getCongregationId(activeCongregationId);
-    const { page, limit, q, status, ministryId } = query;
+    const { page, limit, q, status } = query;
 
     const qb = this.projectsRepository
       .createQueryBuilder('project')
-      .leftJoinAndSelect('project.ministry', 'ministry')
       .leftJoinAndSelect('project.supervisorMember', 'supervisorMember')
       .loadRelationCountAndMap('project.updatesCount', 'project.updates')
       .loadRelationCountAndMap('project.photosCount', 'project.photos')
@@ -108,9 +98,6 @@ export class ConstructionProjectsService {
 
     if (status) {
       qb.andWhere('project.status = :status', { status });
-    }
-    if (ministryId) {
-      qb.andWhere('project.ministryId = :ministryId', { ministryId });
     }
     if (q) {
       qb.andWhere(
@@ -161,10 +148,6 @@ export class ConstructionProjectsService {
       }
       project.name = name;
     }
-    if (dto.ministryId !== undefined) {
-      await this.assertMinistryEligible(dto.ministryId, project.congregationId);
-      project.ministryId = dto.ministryId;
-    }
     if (dto.description !== undefined) {
       project.description = this.nullableText(dto.description);
     }
@@ -173,10 +156,6 @@ export class ConstructionProjectsService {
     }
     if (dto.status !== undefined) {
       project.status = dto.status;
-    }
-    if (dto.progressPercent !== undefined) {
-      this.assertProgressPercent(dto.progressPercent);
-      project.progressPercent = dto.progressPercent;
     }
     if (dto.budgetAmount !== undefined) {
       project.budgetAmount =
@@ -303,9 +282,7 @@ export class ConstructionProjectsService {
     const congregationId = await this.getCongregationId(activeCongregationId);
     const project = await this.projectsRepository.findOne({
       where: { id, congregationId },
-      relations: withRelations
-        ? { ministry: true, supervisorMember: true }
-        : undefined,
+      relations: withRelations ? { supervisorMember: true } : undefined,
     });
     if (!project) {
       throw new ApiException(HttpStatus.NOT_FOUND, {
@@ -332,31 +309,6 @@ export class ConstructionProjectsService {
           ApiErrorMessage[ApiErrorCode.CONSTRUCTIONS_PROJECT_NAME_IN_USE],
       });
     }
-  }
-
-  private async assertMinistryEligible(
-    ministryId: string,
-    congregationId: string,
-  ): Promise<Ministry> {
-    const ministry = await this.ministriesRepository.findOne({
-      where: { id: ministryId },
-    });
-    if (!ministry) {
-      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
-        code: ApiErrorCode.CONSTRUCTIONS_MINISTRY_NOT_FOUND,
-        message: ApiErrorMessage[ApiErrorCode.CONSTRUCTIONS_MINISTRY_NOT_FOUND],
-      });
-    }
-    if (ministry.congregationId !== congregationId) {
-      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
-        code: ApiErrorCode.CONSTRUCTIONS_MINISTRY_WRONG_CONGREGATION,
-        message:
-          ApiErrorMessage[
-            ApiErrorCode.CONSTRUCTIONS_MINISTRY_WRONG_CONGREGATION
-          ],
-      });
-    }
-    return ministry;
   }
 
   private async assertSupervisorEligible(

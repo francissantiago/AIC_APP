@@ -3,11 +3,9 @@ import { IConstructionProject } from '@interfaces/IConstructionProject';
 
 export interface ICreateConstructionProject {
   name: string;
-  ministryId: string;
   description?: string;
   location?: string;
   status?: ConstructionProjectStatus;
-  progressPercent?: number;
   budgetAmount?: number;
   startDate?: string;
   expectedEndDate?: string;
@@ -17,11 +15,9 @@ export interface ICreateConstructionProject {
 
 export interface IUpdateConstructionProject {
   name?: string;
-  ministryId?: string;
   description?: string | null;
   location?: string | null;
   status?: ConstructionProjectStatus;
-  progressPercent?: number;
   budgetAmount?: number | null;
   startDate?: string | null;
   expectedEndDate?: string | null;
@@ -34,7 +30,6 @@ export interface IQueryConstructionProjects {
   limit?: number;
   q?: string;
   status?: ConstructionProjectStatus;
-  ministryId?: string;
 }
 
 export interface IPaginatedConstructionProjects {

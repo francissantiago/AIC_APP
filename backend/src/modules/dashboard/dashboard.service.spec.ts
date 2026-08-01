@@ -23,9 +23,9 @@ describe('DashboardService', () => {
   let announcementsRepository: jest.Mocked<Repository<Announcement>>;
 
   const congregationsService = {
-    resolveScopeCongregationIds: jest.fn(
-      async (activeCongregationId: string) => [activeCongregationId],
-    ),
+    resolveScopeCongregationIds: jest.fn((activeCongregationId: string) => [
+      activeCongregationId,
+    ]),
   };
 
   const mockQueryBuilder = () => ({

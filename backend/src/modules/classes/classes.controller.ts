@@ -37,6 +37,10 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { ActiveCongregation } from '../congregations/decorators/active-congregation.decorator';
 import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { AddClassEnrollmentDto } from './dto/add-class-enrollment.dto';
+import {
+  BulkAddClassEnrollmentsDto,
+  BulkClassEnrollmentsResponseDto,
+} from './dto/bulk-add-class-enrollments.dto';
 import { ClassSessionAttendanceDto } from './dto/class-attendance-response.dto';
 import {
   ClassEnrollmentOptionDto,
@@ -156,6 +160,23 @@ export class ClassesController {
     @ActiveCongregation() activeCongregationId?: string,
   ): Promise<ClassEnrollmentResponseDto> {
     return this.classesService.addEnrollment(id, dto, activeCongregationId);
+  }
+
+  @Post(':id/enrollments/bulk')
+  @RequirePermission('classes:write')
+  @ApiOperation({ summary: 'Matricular múltiplos alunos na turma' })
+  @ApiCreatedResponse({ type: BulkClassEnrollmentsResponseDto })
+  @ApiNotFoundResponse({ description: 'Turma não encontrada' })
+  bulkAddEnrollments(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: BulkAddClassEnrollmentsDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<BulkClassEnrollmentsResponseDto> {
+    return this.classesService.bulkAddEnrollments(
+      id,
+      dto,
+      activeCongregationId,
+    );
   }
 
   @Patch(':id/enrollments/:memberId')

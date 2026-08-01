@@ -202,6 +202,7 @@ export class FinanceService {
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.category', 'category')
       .leftJoinAndSelect('entry.member', 'member')
+      .leftJoinAndSelect('entry.createdByUser', 'createdByUser')
       .where('entry.congregationId = :congregationId', { congregationId });
     this.applyEntryFilters(qb, query);
     qb.orderBy('entry.entryDate', 'DESC')
@@ -687,7 +688,7 @@ export class FinanceService {
   ): Promise<FinancialEntry> {
     const entry = await this.entriesRepository.findOne({
       where: { id, congregationId },
-      relations: { category: true, member: true },
+      relations: { category: true, member: true, createdByUser: true },
     });
     if (!entry) {
       throw new ApiException(HttpStatus.NOT_FOUND, {
@@ -1017,6 +1018,9 @@ export class FinanceService {
     memberId: entry.memberId ?? null,
     member: entry.member
       ? { id: entry.member.id, fullName: entry.member.fullName }
+      : null,
+    createdBy: entry.createdByUser
+      ? { id: entry.createdByUser.id, fullName: entry.createdByUser.fullName }
       : null,
     type: entry.type,
     amount: this.money(entry.amount),

@@ -9,6 +9,8 @@ import { ApiException } from '../../common/errors/api.exception';
 import { FinancialCategory } from '../finance/entities/financial-category.entity';
 import { FinancialEntry } from '../finance/entities/financial-entry.entity';
 import { FinancialType, PaymentMethod } from '../finance/enums/finance.enums';
+import { Member } from '../members/entities/member.entity';
+import { MemberStatus } from '../members/enums/member-status.enum';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { CreateSocialProjectExpenseDto } from './dto/create-social-project-expense.dto';
 import {
@@ -28,6 +30,8 @@ export class SocialProjectExpensesService {
     private readonly entriesRepository: Repository<FinancialEntry>,
     @InjectRepository(FinancialCategory)
     private readonly categoriesRepository: Repository<FinancialCategory>,
+    @InjectRepository(Member)
+    private readonly membersRepository: Repository<Member>,
     private readonly socialProjectsService: SocialProjectsService,
   ) {}
 
@@ -46,11 +50,18 @@ export class SocialProjectExpensesService {
 
     const category = await this.resolveCategory(congregationId, dto.categoryId);
 
+    let memberId: string | null = null;
+    let member: Member | null = null;
+    if (dto.memberId) {
+      member = await this.assertMemberEligible(dto.memberId, congregationId);
+      memberId = member.id;
+    }
+
     const entry = this.entriesRepository.create({
       congregationId,
       categoryId: category.id,
       createdByUserId: user.id,
-      memberId: null,
+      memberId,
       socialProjectId: projectId,
       type: FinancialType.EXPENSE,
       amount: this.money(dto.amount),
@@ -61,7 +72,11 @@ export class SocialProjectExpensesService {
       notes: this.nullableText(dto.notes),
     });
     const saved = await this.entriesRepository.save(entry);
-    saved.category = category;
+
+    const loaded = await this.entriesRepository.findOneOrFail({
+      where: { id: saved.id },
+      relations: { category: true, member: true, createdByUser: true },
+    });
 
     await this.socialProjectsService.syncSpentAmount(projectId);
     const project = await this.socialProjectsService.getProjectOrFailInternal(
@@ -70,8 +85,8 @@ export class SocialProjectExpensesService {
     );
     await this.socialProjectsService.checkBudgetAlert(project, user.id);
 
-    this.logger.log(`Despesa de projeto social registrada: ${saved.id}`);
-    return this.toDto(saved);
+    this.logger.log(`Despesa de projeto social registrada: ${loaded.id}`);
+    return this.toDto(loaded);
   }
 
   async findAll(
@@ -93,7 +108,7 @@ export class SocialProjectExpensesService {
         socialProjectId: projectId,
         type: FinancialType.EXPENSE,
       },
-      relations: { category: true },
+      relations: { category: true, member: true, createdByUser: true },
       order: { entryDate: 'DESC', createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -146,6 +161,28 @@ export class SocialProjectExpensesService {
     this.logger.log(`Despesa de projeto social removida: ${entryId}`);
   }
 
+  private async assertMemberEligible(
+    memberId: string,
+    congregationId: string,
+  ): Promise<Member> {
+    const member = await this.membersRepository.findOne({
+      where: { id: memberId },
+    });
+    if (!member || member.status !== MemberStatus.ACTIVE) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.MEMBERS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MEMBERS_NOT_FOUND],
+      });
+    }
+    if (member.congregationId !== congregationId) {
+      throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, {
+        code: ApiErrorCode.MEMBERS_NOT_FOUND,
+        message: ApiErrorMessage[ApiErrorCode.MEMBERS_NOT_FOUND],
+      });
+    }
+    return member;
+  }
+
   private async resolveCategory(
     congregationId: string,
     categoryId?: string,
@@ -195,6 +232,12 @@ export class SocialProjectExpensesService {
       paymentMethod: entry.paymentMethod,
       reference: entry.reference,
       notes: entry.notes,
+      member: entry.member
+        ? { id: entry.member.id, fullName: entry.member.fullName }
+        : null,
+      createdBy: entry.createdByUser
+        ? { id: entry.createdByUser.id, fullName: entry.createdByUser.fullName }
+        : null,
       createdAt: entry.createdAt,
       updatedAt: entry.updatedAt,
     };

@@ -12,7 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { SocialProjectExpenseForm } from '@components/social-projects/social-project-expense-form/social-project-expense-form';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { PaymentMethod } from '@enums/finance';
 import { ISocialProjectExpense } from '@interfaces/ISocialProjectExpense';
 import { AuthService } from '@services/auth-service';
@@ -29,6 +29,7 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
 export class SocialProjectExpensesList implements OnInit {
   readonly #expensesService = inject(SocialProjectExpensesService);
   readonly #auth = inject(AuthService);
+  readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly projectId = input.required<string>();
@@ -66,6 +67,16 @@ export class SocialProjectExpensesList implements OnInit {
       return value;
     }
     return amount.toLocaleString(undefined, { style: 'currency', currency: 'BRL' });
+  }
+
+  registeredByLabel(expense: ISocialProjectExpense): string {
+    if (expense.member?.fullName) {
+      return expense.member.fullName;
+    }
+    if (expense.createdBy?.fullName) {
+      return expense.createdBy.fullName;
+    }
+    return this.#translate.instant('COMMON.NOT_AVAILABLE');
   }
 
   openCreate(): void {

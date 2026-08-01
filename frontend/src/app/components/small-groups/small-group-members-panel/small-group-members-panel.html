@@ -154,7 +154,7 @@
                   {{ statusLabelKey(member.status) | translate }}
                 }
               </td>
-              <td class="px-3 py-2 text-slate-700">{{ member.joinedAt }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ member.joinedAt | appDateTime }}</td>
               @if (canWrite()) {
                 <td class="px-3 py-2">
                   <button

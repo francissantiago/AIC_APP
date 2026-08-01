@@ -152,12 +152,9 @@
 
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'SOCIAL_PROJECTS.BUDGET' | translate }}</span>
-          <input
-            type="number"
-            formControlName="budgetAmount"
-            min="0"
-            step="0.01"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          <app-currency-input
+            [control]="form.controls.budgetAmount"
+            inputId="social-project-budget"
           />
         </label>
 

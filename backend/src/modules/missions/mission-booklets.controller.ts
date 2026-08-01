@@ -34,6 +34,10 @@ import { ActiveCongregation } from '../congregations/decorators/active-congregat
 import { CongregationContextGuard } from '../congregations/guards/congregation-context.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { CreateMissionBookletDto } from './dto/create-mission-booklet.dto';
+import {
+  BulkMissionBookletsResponseDto,
+  CreateMissionBookletsBulkDto,
+} from './dto/create-mission-booklets-bulk.dto';
 import { MissionBookletInstallmentResponseDto } from './dto/mission-booklet-installment-response.dto';
 import {
   MissionBookletResponseDto,
@@ -68,6 +72,23 @@ export class MissionBookletsController {
     @ActiveCongregation() activeCongregationId?: string,
   ): Promise<MissionBookletResponseDto> {
     return this.missionBookletsService.create(dto, user, activeCongregationId);
+  }
+
+  @Post('bulk')
+  @RequirePermission('missions:write')
+  @ApiOperation({ summary: 'Emitir carnês missionários em lote' })
+  @ApiCreatedResponse({ type: BulkMissionBookletsResponseDto })
+  @ApiUnprocessableEntityResponse({ description: 'Destino ou membro inválido' })
+  createBulk(
+    @Body() dto: CreateMissionBookletsBulkDto,
+    @CurrentUser() user: UserResponseDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<BulkMissionBookletsResponseDto> {
+    return this.missionBookletsService.createBulk(
+      dto,
+      user,
+      activeCongregationId,
+    );
   }
 
   @Get()

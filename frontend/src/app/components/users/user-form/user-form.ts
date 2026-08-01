@@ -27,6 +27,7 @@ import { IUser } from '@interfaces/IUser';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { RolesService } from '@services/roles-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 import { UsersService } from '@services/users-service';
 import { switchMap } from 'rxjs';
 import {
@@ -50,7 +51,7 @@ function minRolesValidator(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-user-form',
-  imports: [ReactiveFormsModule, TranslatePipe, UserMemberLink],
+  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe, UserMemberLink],
   templateUrl: './user-form.html',
   styleUrl: './user-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

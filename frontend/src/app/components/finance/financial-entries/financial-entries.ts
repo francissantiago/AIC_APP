@@ -13,7 +13,7 @@ import { DateInput } from '@components/date-input/date-input';
 import { AppDialog } from '@components/app-dialog/app-dialog';
 import { FinancialCategoryManager } from '@components/finance/financial-category-manager/financial-category-manager';
 import { FinancialEntryForm } from '@components/finance/financial-entry-form/financial-entry-form';
-import { FINANCIAL_TYPES, FinancialType } from '@enums/finance';
+import { FINANCIAL_TYPES, FinancialType, PaymentMethod } from '@enums/finance';
 import { IFinanceMemberOption, IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@services/auth-service';
@@ -210,6 +210,9 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
                   {{ 'FINANCE.MEMBER' | translate }}
                 </th>
                 <th scope="col" class="px-3 py-2 font-medium">
+                  {{ 'FINANCE.PAYMENT_METHOD' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 font-medium">
                   {{ 'FINANCE.TYPE' | translate }}
                 </th>
                 <th scope="col" class="px-3 py-2 font-medium">
@@ -229,7 +232,10 @@ import { AppDatePipe } from '@pipes/app-date-pipe';
                   <td class="px-3 py-2 text-slate-900">{{ entry.description }}</td>
                   <td class="px-3 py-2 text-slate-700">{{ entry.category.name }}</td>
                   <td class="px-3 py-2 text-slate-700">
-                    {{ entry.member?.fullName || ('FINANCE.ANONYMOUS' | translate) }}
+                    {{ memberLabel(entry) }}
+                  </td>
+                  <td class="px-3 py-2 text-slate-700">
+                    {{ paymentLabel(entry.paymentMethod) | translate }}
                   </td>
                   <td class="px-3 py-2 text-slate-700">
                     {{ typeLabel(entry.type) | translate }}
@@ -398,6 +404,18 @@ export class FinancialEntries implements OnInit {
   }
   typeLabel(type: FinancialType): string {
     return type === FinancialType.INCOME ? 'FINANCE.INCOME' : 'FINANCE.EXPENSE';
+  }
+  memberLabel(entry: IFinancialEntry): string {
+    if (entry.member?.fullName) {
+      return entry.member.fullName;
+    }
+    if (entry.createdBy?.fullName) {
+      return entry.createdBy.fullName;
+    }
+    return this.#translate.instant('FINANCE.ANONYMOUS');
+  }
+  paymentLabel(method: PaymentMethod): string {
+    return `FINANCE.PAYMENT.${method.toUpperCase()}`;
   }
   money(value: string): string {
     return new Intl.NumberFormat(this.#translate.currentLang() || 'en', {

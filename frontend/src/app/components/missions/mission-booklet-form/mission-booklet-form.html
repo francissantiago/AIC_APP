@@ -5,19 +5,48 @@
 } @else {
   <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-4">
     @if (!isEditMode()) {
-      <label class="flex flex-col gap-1 text-sm text-slate-700">
-        <span>{{ 'MISSIONS.MEMBER' | translate }}</span>
-        <select
-          formControlName="memberId"
-          class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          [class.border-red-500]="fieldInvalid('memberId')"
-        >
-          <option value="">{{ 'MISSIONS.MEMBER_PLACEHOLDER' | translate }}</option>
-          @for (member of memberOptions(); track member.id) {
-            <option [value]="member.id">{{ member.fullName }}</option>
-          }
-        </select>
-      </label>
+      <div class="flex flex-col gap-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          <span>{{ 'MISSIONS.BOOKLETS.MEMBERS' | translate }}</span>
+          <input
+            type="search"
+            [formControl]="memberQueryControl"
+            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            [attr.placeholder]="'FINANCE.MEMBER_PLACEHOLDER' | translate"
+          />
+          <span class="text-xs text-slate-500">{{ 'FINANCE.MEMBER_HINT_MIN_CHARS' | translate }}</span>
+        </label>
+
+        @if (selectedCount() > 0) {
+          <p class="text-sm text-slate-700">
+            {{ 'MISSIONS.BOOKLETS.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+          </p>
+        }
+
+        @if (memberOptions().length > 0) {
+          <ul class="max-h-48 space-y-2 overflow-y-auto rounded-md border border-slate-200 p-3">
+            @for (member of memberOptions(); track member.id) {
+              <li>
+                <label class="flex items-center gap-2 text-sm text-slate-800">
+                  <input
+                    type="checkbox"
+                    class="size-4"
+                    [checked]="isMemberSelected(member.id)"
+                    (change)="toggleMember(member.id, $event)"
+                  />
+                  <span>{{ member.fullName }}</span>
+                </label>
+              </li>
+            }
+          </ul>
+        } @else if (memberQuery().length >= 3) {
+          <p class="text-sm text-slate-600">{{ 'COMMON.NO_RESULTS' | translate }}</p>
+        }
+
+        @if (feedbackKey() === 'MISSIONS.BOOKLETS.MEMBERS_REQUIRED') {
+          <span class="text-xs text-red-700">{{ 'MISSIONS.BOOKLETS.MEMBERS_REQUIRED' | translate }}</span>
+        }
+      </div>
 
       <fieldset class="grid gap-2">
         <legend class="text-sm font-medium text-slate-700">
@@ -79,13 +108,9 @@
         </label>
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'MISSIONS.BOOKLETS.INSTALLMENT_AMOUNT' | translate }}</span>
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
-            formControlName="installmentAmount"
-            class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-            [class.border-red-500]="fieldInvalid('installmentAmount')"
+          <app-currency-input
+            [control]="form.controls.installmentAmount"
+            inputId="mission-booklet-installment-amount"
           />
         </label>
       </div>

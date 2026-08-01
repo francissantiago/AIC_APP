@@ -1,4 +1,9 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PartialType,
+} from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsDateString,
@@ -100,6 +105,31 @@ export class CreateAssetDto {
 
 export class UpdateAssetDto extends PartialType(CreateAssetDto) {}
 
+export class CreateAssetsBulkDto extends OmitType(CreateAssetDto, [
+  'assetTag',
+] as const) {
+  @ApiProperty({ minimum: 2, maximum: 500 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(2)
+  @Max(500)
+  quantity!: number;
+
+  @ApiPropertyOptional({ maxLength: 50, example: 'CADEIRA' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(50)
+  assetTagPrefix?: string | null;
+
+  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  assetTagStartNumber: number = 1;
+}
+
 export class QueryAssetsDto extends PaginationDto {
   @ApiPropertyOptional({ enum: AssetType })
   @IsOptional()
@@ -146,6 +176,14 @@ export class AssetResponseDto {
   createdAt!: Date;
   @ApiProperty({ format: 'date-time' })
   updatedAt!: Date;
+}
+
+export class BulkAssetsResponseDto {
+  @ApiProperty({ type: AssetResponseDto, isArray: true })
+  data!: AssetResponseDto[];
+
+  @ApiProperty()
+  total!: number;
 }
 
 export class PaginatedAssetsResponseDto {

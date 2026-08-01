@@ -12,6 +12,7 @@ import {
 import { ConstructionProject } from '../../constructions/entities/construction-project.entity';
 import { Member } from '../../members/entities/member.entity';
 import { SocialProject } from '../../social-projects/entities/social-project.entity';
+import { User } from '../../users/entities/user.entity';
 import { FinancialType, PaymentMethod } from '../enums/finance.enums';
 import { FinancialCategory } from './financial-category.entity';
 
@@ -52,6 +53,10 @@ export class FinancialEntry {
 
   @Column({ name: 'created_by_user_id', type: 'char', length: 36 })
   createdByUserId!: string;
+
+  @ManyToOne(() => User, { nullable: false })
+  @JoinColumn({ name: 'created_by_user_id' })
+  createdByUser!: User;
 
   @Column({ name: 'member_id', type: 'char', length: 36, nullable: true })
   memberId!: string | null;

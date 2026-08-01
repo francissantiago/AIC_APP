@@ -2,6 +2,8 @@ import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular
 import { inject, Injectable, signal } from '@angular/core';
 import {
   ICreateMissionBooklet,
+  ICreateMissionBookletsBulk,
+  IBulkMissionBookletsResponse,
   IMissionBookletInstallment,
   IPaginatedMissionBooklets,
   IPayMissionBookletInstallment,
@@ -85,6 +87,12 @@ export class MissionBookletsService {
   create(body: ICreateMissionBooklet): Observable<IMissionBooklet> {
     return this.#http
       .post<IMissionBooklet>(this.#apiUrl, body, { headers: this.#headers })
+      .pipe(this.#withRetry());
+  }
+
+  createBulk(body: ICreateMissionBookletsBulk): Observable<IBulkMissionBookletsResponse> {
+    return this.#http
+      .post<IBulkMissionBookletsResponse>(`${this.#apiUrl}/bulk`, body, { headers: this.#headers })
       .pipe(this.#withRetry());
   }
 

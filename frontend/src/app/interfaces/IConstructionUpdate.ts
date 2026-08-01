@@ -7,6 +7,7 @@ export interface IConstructionUpdate {
   title: string;
   description: string | null;
   progressPercent: number | null;
+  projectProgressPercent: number | null;
   recordedAt: string;
   createdAt: string;
   updatedAt: string;

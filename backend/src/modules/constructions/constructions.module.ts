@@ -5,8 +5,6 @@ import { FinancialCategory } from '../finance/entities/financial-category.entity
 import { FinancialEntry } from '../finance/entities/financial-entry.entity';
 import { FinanceModule } from '../finance/finance.module';
 import { Member } from '../members/entities/member.entity';
-import { Ministry } from '../ministries/entities/ministry.entity';
-import { MinistriesModule } from '../ministries/ministries.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { StorageModule } from '../secretariat/storage/storage.module';
 import { User } from '../users/entities/user.entity';
@@ -14,11 +12,13 @@ import { ConstructionExpensesService } from './construction-expenses.service';
 import { ConstructionNotificationsService } from './construction-notifications.service';
 import { ConstructionPhotosController } from './construction-photos.controller';
 import { ConstructionPhotosService } from './construction-photos.service';
+import { ConstructionProjectStagesService } from './construction-project-stages.service';
 import { ConstructionProjectsController } from './construction-projects.controller';
 import { ConstructionProjectsService } from './construction-projects.service';
 import { ConstructionUpdatesController } from './construction-updates.controller';
 import { ConstructionUpdatesService } from './construction-updates.service';
 import { ConstructionPhoto } from './entities/construction-photo.entity';
+import { ConstructionProjectStage } from './entities/construction-project-stage.entity';
 import { ConstructionProject } from './entities/construction-project.entity';
 import { ConstructionUpdate } from './entities/construction-update.entity';
 
@@ -26,11 +26,11 @@ import { ConstructionUpdate } from './entities/construction-update.entity';
   imports: [
     TypeOrmModule.forFeature([
       ConstructionProject,
+      ConstructionProjectStage,
       ConstructionUpdate,
       ConstructionPhoto,
       FinancialEntry,
       FinancialCategory,
-      Ministry,
       Member,
       User,
     ]),
@@ -38,7 +38,6 @@ import { ConstructionUpdate } from './entities/construction-update.entity';
     FinanceModule,
     NotificationsModule,
     StorageModule,
-    MinistriesModule,
   ],
   controllers: [
     ConstructionProjectsController,
@@ -47,6 +46,7 @@ import { ConstructionUpdate } from './entities/construction-update.entity';
   ],
   providers: [
     ConstructionProjectsService,
+    ConstructionProjectStagesService,
     ConstructionUpdatesService,
     ConstructionExpensesService,
     ConstructionPhotosService,
@@ -54,6 +54,7 @@ import { ConstructionUpdate } from './entities/construction-update.entity';
   ],
   exports: [
     ConstructionProjectsService,
+    ConstructionProjectStagesService,
     ConstructionUpdatesService,
     ConstructionExpensesService,
     ConstructionPhotosService,

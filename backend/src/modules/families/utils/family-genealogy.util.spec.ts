@@ -30,10 +30,10 @@ describe('family-genealogy.util', () => {
     );
 
     expect(forest.roots).toHaveLength(1);
-    const root = forest.roots[0]!;
+    const root = forest.roots[0];
     expect(root.spouses.map((spouse) => spouse.memberId)).toContain('renata');
     expect(root.children).toHaveLength(1);
-    expect(root.children[0]!.memberId).toBe('sofia');
+    expect(root.children[0].memberId).toBe('sofia');
     expect(forest.unlinkedMembers.map((item) => item.memberId)).toEqual([
       'tio',
     ]);
@@ -72,7 +72,7 @@ describe('family-genealogy.util', () => {
     );
 
     expect(forest.roots).toHaveLength(1);
-    const root = forest.roots[0]!;
+    const root = forest.roots[0];
     const renata = root.spouses.find((spouse) => spouse.memberId === 'renata');
     expect(renata?.siblings.map((sibling) => sibling.memberId)).toEqual([
       'marcelo',
@@ -107,6 +107,6 @@ describe('family-genealogy.util', () => {
     );
 
     expect(forest.roots).toHaveLength(1);
-    expect(forest.roots[0]!.children).toHaveLength(1);
+    expect(forest.roots[0].children).toHaveLength(1);
   });
 });

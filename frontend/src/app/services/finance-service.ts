@@ -9,6 +9,8 @@ import {
   ICashFlowReport,
   ICategoryQuery,
   ICreateAsset,
+  ICreateAssetsBulk,
+  IBulkAssetsResponse,
   ICreateFinancialCategory,
   ICreateFinancialEntry,
   IFinanceMemberOption,
@@ -88,6 +90,10 @@ export class FinanceService {
 
   createAsset(body: ICreateAsset): Observable<IAsset> {
     return this.#request(this.#http.post<IAsset>(`${this.#apiUrl}/assets`, body));
+  }
+
+  createAssetsBulk(body: ICreateAssetsBulk): Observable<IBulkAssetsResponse> {
+    return this.#request(this.#http.post<IBulkAssetsResponse>(`${this.#apiUrl}/assets/bulk`, body));
   }
 
   updateAsset(id: string, body: IUpdateAsset): Observable<IAsset> {

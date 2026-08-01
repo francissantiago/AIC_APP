@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 import { Congregation } from '../../congregations/entities/congregation.entity';
 import { Member } from '../../members/entities/member.entity';
-import { Ministry } from '../../ministries/entities/ministry.entity';
 import { ConstructionProjectStatus } from '../enums/construction-project-status.enum';
 import { ConstructionPhoto } from './construction-photo.entity';
 import { ConstructionUpdate } from './construction-update.entity';
@@ -27,7 +26,6 @@ import { ConstructionUpdate } from './construction-update.entity';
   'congregationId',
   'status',
 ])
-@Index('IDX_construction_projects_ministry', ['ministryId'])
 @Index('IDX_construction_projects_supervisor', ['supervisorMemberId'])
 export class ConstructionProject {
   @PrimaryGeneratedColumn('uuid')
@@ -39,13 +37,6 @@ export class ConstructionProject {
   @ManyToOne(() => Congregation, { nullable: false })
   @JoinColumn({ name: 'congregation_id' })
   congregation!: Congregation;
-
-  @Column({ name: 'ministry_id', type: 'char', length: 36 })
-  ministryId!: string;
-
-  @ManyToOne(() => Ministry, { nullable: false })
-  @JoinColumn({ name: 'ministry_id' })
-  ministry!: Ministry;
 
   @Column({ type: 'varchar', length: 120 })
   name!: string;

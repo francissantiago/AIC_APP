@@ -5,6 +5,9 @@ import {
   SecretariatDocumentStatus,
   SecretariatDocumentType,
 } from '@enums/secretariat';
+import { MemberGender } from '@enums/member-gender';
+import { MemberMaritalStatus } from '@enums/member-marital-status';
+import { MemberStatus } from '@enums/member-status';
 import { IMember } from '@interfaces/IMember';
 
 export interface IPaginationQuery {
@@ -130,6 +133,20 @@ export interface IConvertVisitorToMember {
   membershipDate?: string;
   baptismDate?: string;
   notes?: string;
+  birthDate?: string;
+  gender?: MemberGender;
+  maritalStatus?: MemberMaritalStatus;
+  status?: MemberStatus;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  rg?: string;
+  placeOfBirth?: string;
+  bloodType?: string;
+  fatherName?: string;
+  motherName?: string;
+  positionTitle?: string;
 }
 
 export interface IConvertVisitorToMemberResponse {

@@ -125,6 +125,18 @@ describe('FileStorageService', () => {
     });
   });
 
+  it('preserva acentos e em-dash no nome original (UTF-8 via latin1)', async () => {
+    const utf8Name = 'AIC — Administração de Igrejas.pdf';
+    const latin1Name = Buffer.from(utf8Name, 'utf8').toString('latin1');
+    const saved = await service.saveSecretariatDocument('doc-utf8', {
+      buffer: Buffer.from('%PDF-1.4'),
+      originalname: latin1Name,
+      mimetype: 'application/pdf',
+      size: 8,
+    });
+    expect(saved.originalFilename).toBe(utf8Name);
+  });
+
   it('aceita PNG com magic bytes válidos', async () => {
     const pngBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',

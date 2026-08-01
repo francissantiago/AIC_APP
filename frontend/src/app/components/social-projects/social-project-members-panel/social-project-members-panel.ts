@@ -22,6 +22,7 @@ import { ISocialProjectMember } from '@interfaces/ISocialProjectMember';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { MembersService } from '@services/members-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 import { SocialProjectsService } from '@services/social-projects-service';
 import {
   applyEntityMembershipMutation,
@@ -31,7 +32,7 @@ import {
 
 @Component({
   selector: 'app-social-project-members-panel',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './social-project-members-panel.html',
   styleUrl: './social-project-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -10,12 +10,6 @@ export class ConstructionProjectResponseDto {
   congregationId!: string;
 
   @ApiProperty()
-  ministryId!: string;
-
-  @ApiPropertyOptional({ nullable: true })
-  ministryName!: string | null;
-
-  @ApiProperty()
   name!: string;
 
   @ApiPropertyOptional({ nullable: true })
@@ -80,8 +74,6 @@ export class ConstructionProjectResponseDto {
     const dto = new ConstructionProjectResponseDto();
     dto.id = project.id;
     dto.congregationId = project.congregationId;
-    dto.ministryId = project.ministryId;
-    dto.ministryName = project.ministry?.name ?? null;
     dto.name = project.name;
     dto.description = project.description;
     dto.location = project.location;

@@ -8,7 +8,7 @@
       >
         <span class="genealogy-node__name">{{ shortName(sibling.fullName) }}</span>
         @if (sibling.birthDate) {
-          <span class="genealogy-node__meta">{{ sibling.birthDate }}</span>
+          <span class="genealogy-node__meta">{{ sibling.birthDate | appDate }}</span>
         }
         <span class="genealogy-node__badge">{{ 'FAMILIES.GENEALOGY_SIBLING' | translate }}</span>
       </div>
@@ -22,7 +22,7 @@
     >
       <span class="genealogy-node__name">{{ shortName(node().fullName) }}</span>
       @if (node().birthDate) {
-        <span class="genealogy-node__meta">{{ node().birthDate }}</span>
+        <span class="genealogy-node__meta">{{ node().birthDate | appDate }}</span>
       }
     </div>
 
@@ -35,7 +35,7 @@
       >
         <span class="genealogy-node__name">{{ shortName(spouse.fullName) }}</span>
         @if (spouse.birthDate) {
-          <span class="genealogy-node__meta">{{ spouse.birthDate }}</span>
+          <span class="genealogy-node__meta">{{ spouse.birthDate | appDate }}</span>
         }
       </div>
 
@@ -48,7 +48,7 @@
         >
           <span class="genealogy-node__name">{{ shortName(sibling.fullName) }}</span>
           @if (sibling.birthDate) {
-            <span class="genealogy-node__meta">{{ sibling.birthDate }}</span>
+            <span class="genealogy-node__meta">{{ sibling.birthDate | appDate }}</span>
           }
           <span class="genealogy-node__badge">{{ 'FAMILIES.GENEALOGY_SIBLING' | translate }}</span>
         </div>

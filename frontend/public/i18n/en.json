@@ -330,6 +330,8 @@
     "NO": "No",
     "REQUIRED_FIELD": "Required field",
     "NOT_AVAILABLE": "Not available",
+    "NONE": "None",
+    "NO_RESULTS": "No results found",
     "DIALOG": {
       "CLOSE": "Close",
       "CLOSE_ARIA": "Close dialog"
@@ -337,6 +339,10 @@
     "CONSOLIDATED_TOGGLE": "Consolidated view",
     "CONSOLIDATED_HINT": "Includes headquarters and active branches in the report.",
     "CONSOLIDATED_BADGE": "Consolidated"
+  },
+  "CURRENCY_INPUT": {
+    "PLACEHOLDER": "0.00",
+    "INVALID": "Enter a valid amount"
   },
   "EXAMPLE": {
     "TITLE": "Example",
@@ -837,6 +843,8 @@
     "SPENT": "Spent",
     "BUDGET_USAGE": "{{percent}}% of budget used",
     "AMOUNT": "Amount",
+    "MEMBER_OPTIONAL": "Member (optional)",
+    "REGISTERED_BY": "Registered by",
     "ENTRY_DATE": "Date",
     "PAYMENT_METHOD": "Payment method",
     "PAYMENT_CASH": "Cash",
@@ -935,6 +943,9 @@
       "INSTALLMENT_STATUS_PENDING": "Pending",
       "INSTALLMENT_STATUS_PAID": "Paid",
       "INSTALLMENT_STATUS_CANCELLED": "Cancelled",
+      "MEMBERS": "Members",
+      "SELECTED_COUNT": "{{count}} selected",
+      "MEMBERS_REQUIRED": "Select at least one member",
       "PAYMENT_CASH": "Cash",
       "PAYMENT_PIX": "PIX",
       "PAYMENT_BANK_TRANSFER": "Bank transfer",
@@ -966,6 +977,7 @@
     "STATUS_COMPLETED": "Completed",
     "STATUS_CANCELLED": "Cancelled",
     "PROGRESS": "Progress",
+    "PROGRESS_FROM_STAGES": "Calculated automatically from project stages",
     "BUDGET": "Budget",
     "SPENT": "Spent",
     "START_DATE": "Start date",
@@ -1012,7 +1024,17 @@
     "PHOTOS_LIMIT_REACHED": "20 photos per project limit",
     "TAB_DETAILS": "Details",
     "TAB_EXPENSES": "Expenses",
-    "TAB_PHOTOS": "Photos"
+    "TAB_PHOTOS": "Photos",
+    "TAB_STAGES": "Stages",
+    "STAGES_TITLE": "Progress stages",
+    "STAGES_PROGRESS": "Progress: {{percent}}%",
+    "STAGE_TITLE": "Stage name",
+    "STAGE_ADD": "Add stage",
+    "STAGE_ADD_SUCCESS": "Stage added",
+    "STAGE_DELETE_SUCCESS": "Stage removed",
+    "STAGE_DELETE_CONFIRM": "Remove this stage?",
+    "STAGES_EMPTY": "No stages defined yet",
+    "STAGES_LOAD_ERROR": "Failed to load stages"
   },
   "EBD_CLASSES": {
     "TITLE": "Sunday School",
@@ -1079,7 +1101,14 @@
     "REMOVE_SUCCESS": "Enrollment removed",
     "LOAD_ERROR": "Failed to load enrollments",
     "SAVE_ERROR": "Failed to save enrollment",
-    "REMOVE_ERROR": "Failed to remove enrollment"
+    "REMOVE_ERROR": "Failed to remove enrollment",
+    "MEMBERS": "Students",
+    "SELECTED_COUNT": "{{count}} selected",
+    "MEMBERS_REQUIRED": "Select at least one student",
+    "NO_AVAILABLE_MEMBERS": "No students available for enrollment",
+    "BULK_ADD": "Enroll selected",
+    "BULK_ENROLL_SUCCESS": "Students enrolled",
+    "BULK_ENROLL_PARTIAL": "Some students were already enrolled"
   },
   "EBD_ATTENDANCE": {
     "TITLE": "Sunday School roll call",
@@ -1146,6 +1175,8 @@
     "MEMBER_OPTIONAL": "Member (optional)",
     "MEMBER_PLACEHOLDER": "Search member…",
     "MEMBER_HINT": "Only for tithes, offerings and donations",
+    "MEMBER_HINT_MIN_CHARS": "Type at least 3 characters to search",
+    "SELECT_MEMBER": "Select member",
     "FILTER_BY_MEMBER": "Filter by member",
     "ANONYMOUS": "Anonymous",
     "MEMBER_CONTRIBUTIONS": "Member contributions",
@@ -1190,7 +1221,12 @@
     "TYPE_OTHER": "Other",
     "LOAD_ERROR": "Failed to load assets",
     "SAVE_ERROR": "Failed to save asset",
-    "EMPTY": "No assets found"
+    "EMPTY": "No assets found",
+    "BULK_MODE": "Bulk registration",
+    "BULK_QUANTITY": "Quantity",
+    "BULK_TAG_PREFIX": "Tag prefix",
+    "BULK_TAG_START": "Starting tag number",
+    "BULK_CREATE": "Create assets"
   },
   "REPORTS": {
     "TITLE": "Reports",
@@ -1222,6 +1258,10 @@
     "WEEKDAY_THU": "Thu",
     "WEEKDAY_FRI": "Fri",
     "WEEKDAY_SAT": "Sat"
+  },
+  "CURRENCY_INPUT": {
+    "PLACEHOLDER": "$0.00",
+    "INVALID": "Invalid monetary value"
   },
   "CONGREGATION": {
     "TITLE": "Congregation",
@@ -1452,7 +1492,8 @@
       "INVALID_TYPE": "File type not allowed",
       "HAS_ATTACHMENT": "Has attachment",
       "CHOOSE_FILE": "Choose file",
-      "MAX_SIZE_HINT": "Max size: {{maxMb}} MB. Allowed: PDF, DOCX, PNG, JPEG."
+      "MAX_SIZE_HINT": "Max size: {{maxMb}} MB. Allowed: PDF, DOCX, PNG, JPEG.",
+      "UPLOAD_AFTER_SAVE_HINT": "You can attach a file now; it will be uploaded when you save the document."
     }
   },
   "ERRORS": {

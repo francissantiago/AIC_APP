@@ -489,10 +489,10 @@ describe('CongregationsService', () => {
       expect(result).toEqual([hq.id, branch.id]);
       expect(congregationsRepository.find).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: {
             parentId: hq.id,
             status: CongregationStatus.ACTIVE,
-          }),
+          },
         }),
       );
     });

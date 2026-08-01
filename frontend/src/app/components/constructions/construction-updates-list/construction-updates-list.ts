@@ -144,6 +144,10 @@ export class ConstructionUpdatesList implements OnInit {
       });
   }
 
+  displayProgress(update: IConstructionUpdate): number {
+    return update.progressPercent ?? update.projectProgressPercent ?? 0;
+  }
+
   #loadProjects(): void {
     this.#projectsService
       .list({ page: 1, limit: 100 })

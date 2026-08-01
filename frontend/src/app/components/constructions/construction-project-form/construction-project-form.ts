@@ -12,9 +12,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CurrencyInput } from '@components/currency-input/currency-input';
 import { DateInput } from '@components/date-input/date-input';
 import { ConstructionExpensesList } from '@components/constructions/construction-expenses-list/construction-expenses-list';
 import { ConstructionPhotosGallery } from '@components/constructions/construction-photos-gallery/construction-photos-gallery';
+import { ConstructionProjectStagesPanel } from '@components/constructions/construction-project-stages-panel/construction-project-stages-panel';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   CONSTRUCTION_PROJECT_STATUSES,
@@ -25,23 +27,23 @@ import {
   IUpdateConstructionProject,
 } from '@interfaces/IConstructionProjectQuery';
 import { IMember } from '@interfaces/IMember';
-import { IMinistry } from '@interfaces/IMinistry';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ConstructionProjectsService } from '@services/construction-projects-service';
 import { MembersService } from '@services/members-service';
-import { MinistriesService } from '@services/ministries-service';
 
-type ProjectFormTab = 'details' | 'expenses' | 'photos';
+type ProjectFormTab = 'details' | 'stages' | 'expenses' | 'photos';
 
 @Component({
   selector: 'app-construction-project-form',
   imports: [
+    CurrencyInput,
     DateInput,
     ReactiveFormsModule,
     TranslatePipe,
     ConstructionExpensesList,
     ConstructionPhotosGallery,
+    ConstructionProjectStagesPanel,
   ],
   templateUrl: './construction-project-form.html',
   styleUrl: './construction-project-form.scss',
@@ -49,7 +51,6 @@ type ProjectFormTab = 'details' | 'expenses' | 'photos';
 })
 export class ConstructionProjectForm implements OnInit {
   readonly #projectsService = inject(ConstructionProjectsService);
-  readonly #ministriesService = inject(MinistriesService);
   readonly #membersService = inject(MembersService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
@@ -57,10 +58,10 @@ export class ConstructionProjectForm implements OnInit {
 
   readonly projectId = input<string | null>(null);
   readonly saved = output<void>();
+  readonly created = output<void>();
   readonly cancelled = output<void>();
 
   readonly statuses = CONSTRUCTION_PROJECT_STATUSES;
-  readonly ministryOptions = signal<IMinistry[]>([]);
   readonly supervisorOptions = signal<IMember[]>([]);
   readonly activeTab = signal<ProjectFormTab>('details');
   readonly resolvedProjectId = signal<string | null>(null);
@@ -73,6 +74,7 @@ export class ConstructionProjectForm implements OnInit {
   readonly supportHint = signal<string | null>(null);
   readonly spentAmount = signal<string | null>(null);
   readonly budgetUsagePercent = signal<number | null>(null);
+  readonly progressPercent = signal(0);
 
   readonly canAccessSubTabs = computed(() => this.resolvedProjectId() !== null);
 
@@ -80,10 +82,6 @@ export class ConstructionProjectForm implements OnInit {
     name: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(1), Validators.maxLength(120)],
-    }),
-    ministryId: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
     }),
     description: new FormControl('', {
       nonNullable: true,
@@ -97,10 +95,6 @@ export class ConstructionProjectForm implements OnInit {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    progressPercent: new FormControl(0, {
-      nonNullable: true,
-      validators: [Validators.required, Validators.min(0), Validators.max(100)],
-    }),
     budgetAmount: new FormControl<number | null>(null),
     startDate: new FormControl('', { nonNullable: true }),
     expectedEndDate: new FormControl('', { nonNullable: true }),
@@ -109,7 +103,6 @@ export class ConstructionProjectForm implements OnInit {
   });
 
   ngOnInit(): void {
-    this.#loadMinistryOptions();
     this.#loadSupervisorOptions();
 
     const id = this.projectId();
@@ -129,6 +122,13 @@ export class ConstructionProjectForm implements OnInit {
       return;
     }
     this.activeTab.set(tab);
+  }
+
+  onStagesChanged(): void {
+    const id = this.resolvedProjectId();
+    if (id) {
+      this.#loadProject(id, { silent: true });
+    }
   }
 
   fieldInvalid(controlName: keyof typeof this.form.controls): boolean {
@@ -155,20 +155,6 @@ export class ConstructionProjectForm implements OnInit {
     this.#submitCreate();
   }
 
-  #loadMinistryOptions(): void {
-    if (!this.#auth.hasPermission('ministries:read')) {
-      return;
-    }
-
-    this.#ministriesService
-      .list({ page: 1, limit: 100 })
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (response) => this.ministryOptions.set(response.data),
-        error: () => this.ministryOptions.set([]),
-      });
-  }
-
   #loadSupervisorOptions(): void {
     if (!this.#auth.hasPermission('members:read')) {
       return;
@@ -183,9 +169,11 @@ export class ConstructionProjectForm implements OnInit {
       });
   }
 
-  #loadProject(id: string): void {
-    this.loading.set(true);
-    this.loadError.set(false);
+  #loadProject(id: string, options?: { silent?: boolean }): void {
+    if (!options?.silent) {
+      this.loading.set(true);
+      this.loadError.set(false);
+    }
 
     this.#projectsService
       .getById(id)
@@ -194,11 +182,9 @@ export class ConstructionProjectForm implements OnInit {
         next: (project) => {
           this.form.patchValue({
             name: project.name,
-            ministryId: project.ministryId,
             description: project.description ?? '',
             location: project.location ?? '',
             status: project.status,
-            progressPercent: project.progressPercent,
             budgetAmount: project.budgetAmount ? Number(project.budgetAmount) : null,
             startDate: project.startDate ?? '',
             expectedEndDate: project.expectedEndDate ?? '',
@@ -207,6 +193,7 @@ export class ConstructionProjectForm implements OnInit {
           });
           this.spentAmount.set(project.spentAmount);
           this.budgetUsagePercent.set(project.budgetUsagePercent);
+          this.progressPercent.set(project.progressPercent);
           this.loading.set(false);
         },
         error: () => {
@@ -229,8 +216,10 @@ export class ConstructionProjectForm implements OnInit {
           this.resolvedProjectId.set(project.id);
           this.spentAmount.set(project.spentAmount);
           this.budgetUsagePercent.set(project.budgetUsagePercent);
+          this.progressPercent.set(project.progressPercent);
           this.feedbackKey.set('CONSTRUCTIONS.SAVE_SUCCESS');
-          this.activeTab.set('expenses');
+          this.activeTab.set('stages');
+          this.created.emit();
         },
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
@@ -254,6 +243,7 @@ export class ConstructionProjectForm implements OnInit {
           this.saving.set(false);
           this.spentAmount.set(project.spentAmount);
           this.budgetUsagePercent.set(project.budgetUsagePercent);
+          this.progressPercent.set(project.progressPercent);
           this.feedbackKey.set('CONSTRUCTIONS.SAVE_SUCCESS');
           this.saved.emit();
         },
@@ -268,9 +258,7 @@ export class ConstructionProjectForm implements OnInit {
     const raw = this.form.getRawValue();
     const payload: ICreateConstructionProject = {
       name: raw.name.trim(),
-      ministryId: raw.ministryId.trim(),
       status: raw.status,
-      progressPercent: raw.progressPercent,
     };
 
     const description = raw.description.trim();
@@ -291,11 +279,9 @@ export class ConstructionProjectForm implements OnInit {
     const raw = this.form.getRawValue();
     return {
       name: raw.name.trim(),
-      ministryId: raw.ministryId.trim(),
       description: raw.description.trim() || null,
       location: raw.location.trim() || null,
       status: raw.status,
-      progressPercent: raw.progressPercent,
       budgetAmount: raw.budgetAmount != null && raw.budgetAmount > 0 ? raw.budgetAmount : null,
       startDate: raw.startDate || null,
       expectedEndDate: raw.expectedEndDate || null,

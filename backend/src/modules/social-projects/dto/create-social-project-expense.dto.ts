@@ -40,6 +40,11 @@ export class CreateSocialProjectExpenseDto {
   @IsUUID()
   categoryId?: string;
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @IsOptional()
+  @IsUUID()
+  memberId?: string | null;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

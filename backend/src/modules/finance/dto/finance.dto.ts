@@ -17,6 +17,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { FinancialType, PaymentMethod } from '../enums/finance.enums';
+import { CreatedByUserSummaryDto } from '../../../common/dto/created-by-user-summary.dto';
 import { ReportScope } from '../../congregations/enums/report-scope.enum';
 
 const trim = ({ value }: { value: unknown }): unknown =>
@@ -247,6 +248,7 @@ export class FinanceMemberOptionsQueryDto {
   @IsOptional()
   @Transform(trim)
   @IsString()
+  @MinLength(3)
   @MaxLength(150)
   q?: string;
 
@@ -333,6 +335,8 @@ export class FinancialEntryResponseDto {
   memberId!: string | null;
   @ApiPropertyOptional({ type: FinanceMemberSummaryDto, nullable: true })
   member!: FinanceMemberSummaryDto | null;
+  @ApiPropertyOptional({ type: CreatedByUserSummaryDto, nullable: true })
+  createdBy!: CreatedByUserSummaryDto | null;
   @ApiProperty({ enum: FinancialType })
   type!: FinancialType;
   @ApiProperty({ example: '1250.00', description: 'Decimal como string' })

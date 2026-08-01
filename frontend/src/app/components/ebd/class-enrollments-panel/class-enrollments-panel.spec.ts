@@ -11,19 +11,25 @@ import { ClassEnrollmentsPanel } from './class-enrollments-panel';
 describe('ClassEnrollmentsPanel', () => {
   let component: ClassEnrollmentsPanel;
   let fixture: ComponentFixture<ClassEnrollmentsPanel>;
-  const addEnrollment = vi.fn(() =>
+  const bulkAddEnrollments = vi.fn(() =>
     of({
-      classId: 'c1',
-      memberId: 'mem1',
-      memberFullName: 'Ana',
-      status: ClassEnrollmentStatus.ACTIVE,
-      enrolledAt: '2026-07-18T00:00:00.000Z',
+      created: 1,
+      skipped: 0,
+      enrollments: [
+        {
+          classId: 'c1',
+          memberId: 'mem1',
+          memberFullName: 'Ana',
+          status: ClassEnrollmentStatus.ACTIVE,
+          enrolledAt: '2026-07-18T00:00:00.000Z',
+        },
+      ],
     }),
   );
 
   beforeEach(async () => {
     TestBed.resetTestingModule();
-    addEnrollment.mockClear();
+    bulkAddEnrollments.mockClear();
     await TestBed.configureTestingModule({
       imports: [ClassEnrollmentsPanel],
       providers: [
@@ -41,7 +47,7 @@ describe('ClassEnrollmentsPanel', () => {
           provide: ClassesService,
           useValue: {
             listEnrollments: () => of({ data: [], total: 0, page: 1, limit: 100 }),
-            addEnrollment,
+            bulkAddEnrollments,
             updateEnrollmentStatus: () => of({}),
             removeEnrollment: () => of(undefined),
             enrollmentOptions: () => of([{ id: 'mem1', fullName: 'Ana' }]),
@@ -64,14 +70,14 @@ describe('ClassEnrollmentsPanel', () => {
     expect(component).toBeTruthy();
   });
 
-  it('enrolls a member via service', () => {
+  it('enrolls selected members via bulk service', () => {
+    component.selectedMemberIds.set(['mem1']);
     component.enrollForm.patchValue({
-      memberId: 'mem1',
       status: ClassEnrollmentStatus.ACTIVE,
     });
-    component.enrollMember();
-    expect(addEnrollment).toHaveBeenCalledWith('c1', {
-      memberId: 'mem1',
+    component.enrollMembers();
+    expect(bulkAddEnrollments).toHaveBeenCalledWith('c1', {
+      memberIds: ['mem1'],
       status: ClassEnrollmentStatus.ACTIVE,
     });
   });

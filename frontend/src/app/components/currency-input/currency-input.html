@@ -1,0 +1,20 @@
+<div>
+  <input
+    [id]="inputId()"
+    type="text"
+    inputmode="decimal"
+    [formControl]="displayControl"
+    [class]="inputClass()"
+    [attr.placeholder]="'CURRENCY_INPUT.PLACEHOLDER' | translate"
+    [attr.data-testid]="testId()"
+    [attr.aria-invalid]="ariaInvalid() ?? (parseError() || control().invalid)"
+    [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.autocomplete]="'off'"
+    (blur)="onBlur()"
+    (paste)="onPaste($event)"
+  />
+
+  @if (parseError()) {
+    <span class="mt-1 block text-xs text-red-700">{{ 'CURRENCY_INPUT.INVALID' | translate }}</span>
+  }
+</div>

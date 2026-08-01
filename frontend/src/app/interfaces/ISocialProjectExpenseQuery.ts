@@ -7,6 +7,7 @@ export interface ICreateSocialProjectExpense {
   description: string;
   paymentMethod?: PaymentMethod;
   categoryId?: string;
+  memberId?: string | null;
   notes?: string;
 }
 

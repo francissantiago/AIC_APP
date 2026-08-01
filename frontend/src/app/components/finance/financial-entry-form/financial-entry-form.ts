@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FINANCIAL_TYPES, FinancialType, PAYMENT_METHODS, PaymentMethod } from '@enums/finance';
 import { IFinanceMemberOption, IFinancialCategory, IFinancialEntry } from '@interfaces/IFinance';
+import { CurrencyInput } from '@components/currency-input/currency-input';
 import { DateInput } from '@components/date-input/date-input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiErrorService } from '@services/api-error.service';
@@ -23,7 +24,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
 
 @Component({
   selector: 'app-financial-entry-form',
-  imports: [DateInput, ReactiveFormsModule, TranslatePipe],
+  imports: [CurrencyInput, DateInput, ReactiveFormsModule, TranslatePipe],
   template: `
     <section
       class="w-full"
@@ -89,19 +90,12 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
         </label>
         <label class="flex flex-col gap-1 text-sm text-slate-700">
           <span>{{ 'FINANCE.AMOUNT' | translate }}</span>
-          <input
-            class="w-full min-w-0 rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:bg-slate-100"
-            type="number"
-            min="0.01"
-            step="0.01"
-            formControlName="amount"
-            data-testid="finance-entry-form-amount"
-            [attr.aria-invalid]="form.controls.amount.touched && form.controls.amount.invalid"
-            [attr.aria-describedby]="
-              form.controls.amount.touched && form.controls.amount.invalid
-                ? 'entry-amount-error'
-                : null
-            "
+          <app-currency-input
+            [control]="form.controls.amount"
+            inputId="finance-entry-amount"
+            testId="finance-entry-form-amount"
+            [ariaInvalid]="form.controls.amount.touched && form.controls.amount.invalid"
+            ariaDescribedBy="entry-amount-error"
           />
           @if (form.controls.amount.touched && form.controls.amount.invalid) {
             <span id="entry-amount-error" class="text-xs text-red-700">
@@ -134,7 +128,7 @@ const LINKABLE_CATEGORY_NAMES = new Set(['dízimos', 'ofertas', 'doações']);
                 }
               </select>
             </label>
-            <span class="text-xs text-slate-500">{{ 'FINANCE.MEMBER_HINT' | translate }}</span>
+            <span class="text-xs text-slate-500">{{ 'FINANCE.MEMBER_HINT_MIN_CHARS' | translate }}</span>
           </div>
         }
         <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
@@ -305,7 +299,11 @@ export class FinancialEntryForm {
           return;
         }
         const trimmed = q.trim();
-        if (trimmed.length === 0 || trimmed.length >= 2) {
+        if (trimmed.length === 0) {
+          this.memberOptions.set([]);
+          return;
+        }
+        if (trimmed.length >= 3) {
           this.#loadMemberOptions(trimmed);
         }
       });

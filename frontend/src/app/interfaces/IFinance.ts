@@ -1,5 +1,6 @@
 import { ReportScope } from '@enums/report-scope';
 import { AssetStatus, AssetType, FinancialType, PaymentMethod } from '@enums/finance';
+import { ICreatedByUserSummary } from '@interfaces/ICreatedByUserSummary';
 
 export interface IPaginationQuery {
   page?: number;
@@ -53,6 +54,7 @@ export interface IFinancialEntry {
   createdByUserId: string;
   memberId: string | null;
   member: IFinanceMemberSummary | null;
+  createdBy: ICreatedByUserSummary | null;
   type: FinancialType;
   amount: string;
   entryDate: string;
@@ -122,6 +124,17 @@ export interface ICreateAsset {
 }
 
 export type IUpdateAsset = Partial<ICreateAsset>;
+
+export interface ICreateAssetsBulk extends Omit<ICreateAsset, 'assetTag'> {
+  quantity: number;
+  assetTagPrefix?: string | null;
+  assetTagStartNumber?: number;
+}
+
+export interface IBulkAssetsResponse {
+  data: IAsset[];
+  total: number;
+}
 
 export interface IAssetsQuery extends IPaginationQuery {
   type?: AssetType;

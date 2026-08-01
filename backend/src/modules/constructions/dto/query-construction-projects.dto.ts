@@ -5,7 +5,6 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   MaxLength,
   Min,
@@ -38,9 +37,4 @@ export class QueryConstructionProjectsDto {
   @IsOptional()
   @IsEnum(ConstructionProjectStatus)
   status?: ConstructionProjectStatus;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsUUID()
-  ministryId?: string;
 }

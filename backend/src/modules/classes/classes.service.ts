@@ -12,6 +12,10 @@ import { Member } from '../members/entities/member.entity';
 import { MemberStatus } from '../members/enums/member-status.enum';
 import { AddClassEnrollmentDto } from './dto/add-class-enrollment.dto';
 import {
+  BulkAddClassEnrollmentsDto,
+  BulkClassEnrollmentsResponseDto,
+} from './dto/bulk-add-class-enrollments.dto';
+import {
   ClassAttendanceEntryDto,
   ClassSessionAttendanceDto,
 } from './dto/class-attendance-response.dto';
@@ -317,6 +321,52 @@ export class ClassesService {
       `Membro ${dto.memberId} matriculado na turma EBD ${classId}`,
     );
     return ClassEnrollmentResponseDto.fromEntity(saved);
+  }
+
+  async bulkAddEnrollments(
+    classId: string,
+    dto: BulkAddClassEnrollmentsDto,
+    activeCongregationId?: string,
+  ): Promise<BulkClassEnrollmentsResponseDto> {
+    const ebdClass = await this.getClassOrFail(classId, activeCongregationId);
+    const status = dto.status ?? ClassEnrollmentStatus.ACTIVE;
+    let enrolled = 0;
+    let skipped = 0;
+
+    for (const memberId of dto.memberIds) {
+      const existing = await this.enrollmentsRepository.findOne({
+        where: { classId, memberId },
+      });
+      if (existing) {
+        skipped += 1;
+        continue;
+      }
+
+      try {
+        await this.assertEnrollmentMemberEligible(
+          memberId,
+          ebdClass.congregationId,
+        );
+      } catch {
+        skipped += 1;
+        continue;
+      }
+
+      const link = this.enrollmentsRepository.create({
+        classId,
+        memberId,
+        status,
+        enrolledAt: new Date(),
+      });
+      await this.enrollmentsRepository.save(link);
+      enrolled += 1;
+    }
+
+    this.logger.log(
+      `Matrículas em lote na turma ${classId}: ${enrolled} matriculados, ${skipped} ignorados`,
+    );
+
+    return { enrolled, skipped };
   }
 
   async updateEnrollmentStatus(

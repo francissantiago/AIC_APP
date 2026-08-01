@@ -270,9 +270,7 @@ function buildNode(
     };
   });
 
-  const childIds = new Set<string>([
-    ...(childrenByParent.get(memberId) ?? []),
-  ]);
+  const childIds = new Set<string>([...(childrenByParent.get(memberId) ?? [])]);
   for (const spouseId of spouseIds) {
     for (const childId of childrenByParent.get(spouseId) ?? []) {
       childIds.add(childId);

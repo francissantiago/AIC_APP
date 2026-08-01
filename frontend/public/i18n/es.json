@@ -330,6 +330,8 @@
     "NO": "No",
     "REQUIRED_FIELD": "Campo obligatorio",
     "NOT_AVAILABLE": "No disponible",
+    "NONE": "Ninguno",
+    "NO_RESULTS": "No se encontraron resultados",
     "DIALOG": {
       "CLOSE": "Cerrar",
       "CLOSE_ARIA": "Cerrar diálogo"
@@ -337,6 +339,10 @@
     "CONSOLIDATED_TOGGLE": "Vista consolidada",
     "CONSOLIDATED_HINT": "Incluye matriz y filiales activas en el informe.",
     "CONSOLIDATED_BADGE": "Consolidado"
+  },
+  "CURRENCY_INPUT": {
+    "PLACEHOLDER": "0,00",
+    "INVALID": "Ingrese un monto válido"
   },
   "EXAMPLE": {
     "TITLE": "Ejemplo",
@@ -837,6 +843,8 @@
     "SPENT": "Gastado",
     "BUDGET_USAGE": "{{percent}}% del presupuesto utilizado",
     "AMOUNT": "Valor",
+    "MEMBER_OPTIONAL": "Miembro (opcional)",
+    "REGISTERED_BY": "Registrado por",
     "ENTRY_DATE": "Fecha",
     "PAYMENT_METHOD": "Forma de pago",
     "PAYMENT_CASH": "Efectivo",
@@ -935,6 +943,9 @@
       "INSTALLMENT_STATUS_PENDING": "Pendiente",
       "INSTALLMENT_STATUS_PAID": "Pagada",
       "INSTALLMENT_STATUS_CANCELLED": "Cancelada",
+      "MEMBERS": "Miembros",
+      "SELECTED_COUNT": "{{count}} seleccionados",
+      "MEMBERS_REQUIRED": "Seleccione al menos un miembro",
       "PAYMENT_CASH": "Efectivo",
       "PAYMENT_PIX": "PIX",
       "PAYMENT_BANK_TRANSFER": "Transferencia",
@@ -966,6 +977,7 @@
     "STATUS_COMPLETED": "Completada",
     "STATUS_CANCELLED": "Cancelada",
     "PROGRESS": "Progreso",
+    "PROGRESS_FROM_STAGES": "Calculado automáticamente según las etapas del proyecto",
     "BUDGET": "Presupuesto",
     "SPENT": "Gastado",
     "START_DATE": "Inicio",
@@ -1012,7 +1024,17 @@
     "PHOTOS_LIMIT_REACHED": "Límite de 20 fotos por obra",
     "TAB_DETAILS": "Detalles",
     "TAB_EXPENSES": "Gastos",
-    "TAB_PHOTOS": "Fotos"
+    "TAB_PHOTOS": "Fotos",
+    "TAB_STAGES": "Etapas",
+    "STAGES_TITLE": "Etapas de avance",
+    "STAGES_PROGRESS": "Progreso: {{percent}}%",
+    "STAGE_TITLE": "Nombre de la etapa",
+    "STAGE_ADD": "Agregar etapa",
+    "STAGE_ADD_SUCCESS": "Etapa agregada",
+    "STAGE_DELETE_SUCCESS": "Etapa eliminada",
+    "STAGE_DELETE_CONFIRM": "¿Eliminar esta etapa?",
+    "STAGES_EMPTY": "Aún no hay etapas definidas",
+    "STAGES_LOAD_ERROR": "Error al cargar etapas"
   },
   "EBD_CLASSES": {
     "TITLE": "Escuela Bíblica Dominical",
@@ -1079,7 +1101,14 @@
     "REMOVE_SUCCESS": "Matrícula eliminada",
     "LOAD_ERROR": "Error al cargar las matrículas",
     "SAVE_ERROR": "Error al guardar la matrícula",
-    "REMOVE_ERROR": "Error al eliminar la matrícula"
+    "REMOVE_ERROR": "Error al eliminar la matrícula",
+    "MEMBERS": "Alumnos",
+    "SELECTED_COUNT": "{{count}} seleccionados",
+    "MEMBERS_REQUIRED": "Seleccione al menos un alumno",
+    "NO_AVAILABLE_MEMBERS": "No hay alumnos disponibles para inscripción",
+    "BULK_ADD": "Inscribir seleccionados",
+    "BULK_ENROLL_SUCCESS": "Alumnos inscritos",
+    "BULK_ENROLL_PARTIAL": "Algunos alumnos ya estaban inscritos"
   },
   "EBD_ATTENDANCE": {
     "TITLE": "Lista de asistencia de Escuela Bíblica",
@@ -1146,6 +1175,7 @@
     "MEMBER_OPTIONAL": "Miembro (opcional)",
     "MEMBER_PLACEHOLDER": "Buscar miembro…",
     "MEMBER_HINT": "Solo para diezmos, ofrendas y donaciones",
+    "MEMBER_HINT_MIN_CHARS": "Escriba al menos 3 caracteres para buscar",
     "FILTER_BY_MEMBER": "Filtrar por miembro",
     "ANONYMOUS": "Anónimo",
     "MEMBER_CONTRIBUTIONS": "Contribuciones del miembro",
@@ -1190,7 +1220,12 @@
     "TYPE_OTHER": "Otro",
     "LOAD_ERROR": "Error al cargar el patrimonio",
     "SAVE_ERROR": "Error al guardar el bien",
-    "EMPTY": "No se encontraron bienes"
+    "EMPTY": "No se encontraron bienes",
+    "BULK_MODE": "Registro en lote",
+    "BULK_QUANTITY": "Cantidad",
+    "BULK_TAG_PREFIX": "Prefijo de identificación",
+    "BULK_TAG_START": "Número inicial de identificación",
+    "BULK_CREATE": "Crear bienes"
   },
   "REPORTS": {
     "TITLE": "Informes",
@@ -1222,6 +1257,10 @@
     "WEEKDAY_THU": "jue",
     "WEEKDAY_FRI": "vie",
     "WEEKDAY_SAT": "sáb"
+  },
+  "CURRENCY_INPUT": {
+    "PLACEHOLDER": "$0,00",
+    "INVALID": "Valor monetario invalido"
   },
   "CONGREGATION": {
     "TITLE": "Congregación",
@@ -1452,7 +1491,8 @@
       "INVALID_TYPE": "Tipo de archivo no permitido",
       "HAS_ATTACHMENT": "Tiene adjunto",
       "CHOOSE_FILE": "Elegir archivo",
-      "MAX_SIZE_HINT": "Tamaño máx.: {{maxMb}} MB. Permitidos: PDF, DOCX, PNG, JPEG."
+      "MAX_SIZE_HINT": "Tamaño máx.: {{maxMb}} MB. Permitidos: PDF, DOCX, PNG, JPEG.",
+      "UPLOAD_AFTER_SAVE_HINT": "Puede adjuntar un archivo ahora; se subirá al guardar el documento."
     }
   },
   "ERRORS": {

@@ -30,6 +30,7 @@ import { IMemberClassSummary } from '@interfaces/IMemberClassSummary';
 import { IMemberTransfer } from '@interfaces/IMemberTransfer';
 import { IMinistry } from '@interfaces/IMinistry';
 import { IUpdateMember } from '@interfaces/IUpdateMember';
+import { IConvertVisitorToMember } from '@interfaces/ISecretariat';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ClassesService } from '@services/classes-service';
@@ -37,11 +38,13 @@ import { FamiliesService } from '@services/families-service';
 import { MemberTransfersService } from '@services/member-transfers-service';
 import { MembersService } from '@services/members-service';
 import { MinistriesService } from '@services/ministries-service';
+import { SecretariatService } from '@services/secretariat-service';
 import { MemberFiliationAutocomplete } from '../member-filiation-autocomplete/member-filiation-autocomplete';
 import { MemberTransferHistory } from '../member-transfer-history/member-transfer-history';
 import { MemberTransferWizard } from '../member-transfer-wizard/member-transfer-wizard';
 
 type MemberFormTab = 'details' | 'ministries' | 'ebd' | 'family' | 'transfers';
+type MemberFormMode = 'create' | 'edit' | 'convert';
 
 @Component({
   selector: 'app-member-form',
@@ -64,12 +67,16 @@ export class MemberForm implements OnInit {
   readonly #classesService = inject(ClassesService);
   readonly #familiesService = inject(FamiliesService);
   readonly #transfersService = inject(MemberTransfersService);
+  readonly #secretariat = inject(SecretariatService);
   readonly #auth = inject(AuthService);
   readonly #apiError = inject(ApiErrorService);
   readonly #translate = inject(TranslateService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly memberId = input<string | null>(null);
+  readonly mode = input<MemberFormMode>('create');
+  readonly visitorId = input<string | null>(null);
+  readonly compact = input(false);
   readonly saved = output<void>();
   readonly cancelled = output<void>();
 
@@ -103,10 +110,19 @@ export class MemberForm implements OnInit {
   readonly canReadMembers = computed(() => this.#auth.hasPermission('members:read'));
   readonly canWriteMembers = computed(() => this.#auth.hasPermission('members:write'));
   readonly canReadSecretariat = computed(() => this.#auth.hasPermission('secretariat:read'));
-  readonly showMinistriesTab = computed(() => this.isEditMode() && this.canReadMinistries());
-  readonly showEbdTab = computed(() => this.isEditMode() && this.canReadClasses());
-  readonly showFamilyTab = computed(() => this.isEditMode() && this.canReadMembers());
-  readonly showTransfersTab = computed(() => this.isEditMode() && this.canReadMembers());
+  readonly showMinistriesTab = computed(
+    () => !this.compact() && !this.isConvertMode() && this.isEditMode() && this.canReadMinistries(),
+  );
+  readonly showEbdTab = computed(
+    () => !this.compact() && !this.isConvertMode() && this.isEditMode() && this.canReadClasses(),
+  );
+  readonly showFamilyTab = computed(
+    () => !this.compact() && !this.isConvertMode() && this.isEditMode() && this.canReadMembers(),
+  );
+  readonly showTransfersTab = computed(
+    () => !this.compact() && !this.isConvertMode() && this.isEditMode() && this.canReadMembers(),
+  );
+  readonly isConvertMode = computed(() => this.mode() === 'convert');
   readonly showSideTabs = computed(
     () =>
       this.showMinistriesTab() ||
@@ -250,6 +266,14 @@ export class MemberForm implements OnInit {
 
   ngOnInit(): void {
     const id = this.memberId();
+    if (this.isConvertMode()) {
+      const visitorId = this.visitorId();
+      if (visitorId) {
+        this.#loadVisitorForConvert(visitorId);
+      }
+      return;
+    }
+
     if (id) {
       this.isEditMode.set(true);
       this.#loadMember(id);
@@ -478,12 +502,128 @@ export class MemberForm implements OnInit {
       return;
     }
 
+    if (this.isConvertMode()) {
+      this.#submitConvert();
+      return;
+    }
+
     if (this.isEditMode()) {
       this.#submitEdit();
       return;
     }
 
     this.#submitCreate();
+  }
+
+  submitLabelKey(): string {
+    if (this.isConvertMode()) {
+      return 'SECRETARIAT.VISITORS.CONVERT';
+    }
+    return 'COMMON.SAVE';
+  }
+
+  #loadVisitorForConvert(visitorId: string): void {
+    this.loading.set(true);
+    this.loadError.set(false);
+
+    this.#secretariat
+      .getVisitor(visitorId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (visitor) => {
+          this.form.patchValue({
+            fullName: visitor.fullName,
+            phone: visitor.phone ?? '',
+            email: '',
+            document: '',
+            membershipDate: this.#today(),
+            baptismDate: '',
+            notes: '',
+          });
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.loadError.set(true);
+          this.feedbackKey.set('SECRETARIAT.LOAD_ERROR');
+        },
+      });
+  }
+
+  #submitConvert(): void {
+    const visitorId = this.visitorId();
+    if (!visitorId) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.errorMessage.set(null);
+    this.supportHint.set(null);
+
+    this.#secretariat
+      .convertVisitorToMember(visitorId, this.#buildConvertPayload())
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.saved.emit();
+        },
+        error: (error: HttpErrorResponse) => {
+          this.saving.set(false);
+          this.#applySaveError(error);
+        },
+      });
+  }
+
+  #buildConvertPayload(): IConvertVisitorToMember {
+    const raw = this.form.getRawValue();
+    const payload: IConvertVisitorToMember = {
+      fullName: raw.fullName.trim(),
+      phone: raw.phone.trim() || null,
+      membershipDate: raw.membershipDate || undefined,
+    };
+
+    const email = raw.email.trim();
+    const document = raw.document.trim();
+    const notes = raw.notes.trim();
+    if (email) payload.email = email;
+    if (document) payload.document = document;
+    if (raw.baptismDate) payload.baptismDate = raw.baptismDate;
+    if (notes) payload.notes = notes;
+    if (raw.birthDate) payload.birthDate = raw.birthDate;
+    payload.gender = raw.gender;
+    payload.maritalStatus = raw.maritalStatus;
+    payload.status = raw.status;
+    const address = raw.address.trim();
+    if (address) payload.address = address;
+    const city = raw.city.trim();
+    if (city) payload.city = city;
+    const state = raw.state.trim();
+    if (state) payload.state = state;
+    const zipCode = raw.zipCode.trim();
+    if (zipCode) payload.zipCode = zipCode;
+    const rg = raw.rg.trim();
+    if (rg) payload.rg = rg;
+    const placeOfBirth = raw.placeOfBirth.trim();
+    if (placeOfBirth) payload.placeOfBirth = placeOfBirth;
+    const bloodType = raw.bloodType.trim();
+    if (bloodType) payload.bloodType = bloodType;
+    const fatherName = raw.fatherName.trim();
+    if (fatherName) payload.fatherName = fatherName;
+    const motherName = raw.motherName.trim();
+    if (motherName) payload.motherName = motherName;
+    const positionTitle = raw.positionTitle.trim();
+    if (positionTitle) payload.positionTitle = positionTitle;
+
+    return payload;
+  }
+
+  #today(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   #loadMember(id: string): void {

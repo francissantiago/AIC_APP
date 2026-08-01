@@ -17,10 +17,8 @@ import {
   ConstructionProjectStatus,
 } from '@enums/construction-project-status';
 import { IConstructionProject } from '@interfaces/IConstructionProject';
-import { IMinistry } from '@interfaces/IMinistry';
 import { AuthService } from '@services/auth-service';
 import { ConstructionProjectsService } from '@services/construction-projects-service';
-import { MinistriesService } from '@services/ministries-service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -32,13 +30,11 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 })
 export class ConstructionProjectsList implements OnInit {
   readonly #projectsService = inject(ConstructionProjectsService);
-  readonly #ministriesService = inject(MinistriesService);
   readonly #auth = inject(AuthService);
   readonly #destroyRef = inject(DestroyRef);
 
   readonly statuses = CONSTRUCTION_PROJECT_STATUSES;
   readonly projects = signal<IConstructionProject[]>([]);
-  readonly ministries = signal<IMinistry[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
   readonly limit = signal(20);
@@ -60,20 +56,15 @@ export class ConstructionProjectsList implements OnInit {
   readonly filterForm = new FormGroup({
     q: new FormControl('', { nonNullable: true }),
     status: new FormControl<ConstructionProjectStatus | ''>('', { nonNullable: true }),
-    ministryId: new FormControl('', { nonNullable: true }),
   });
 
   ngOnInit(): void {
-    this.#loadMinistries();
     this.#loadProjects();
 
     this.filterForm.valueChanges
       .pipe(
         debounceTime(300),
-        distinctUntilChanged(
-          (prev, next) =>
-            prev.q === next.q && prev.status === next.status && prev.ministryId === next.ministryId,
-        ),
+        distinctUntilChanged((prev, next) => prev.q === next.q && prev.status === next.status),
         takeUntilDestroyed(this.#destroyRef),
       )
       .subscribe(() => {
@@ -117,6 +108,10 @@ export class ConstructionProjectsList implements OnInit {
   afterSave(): void {
     this.closeForm();
     this.feedback.set('CONSTRUCTIONS.SAVE_SUCCESS');
+    this.#loadProjects();
+  }
+
+  refreshProjectsList(): void {
     this.#loadProjects();
   }
 
@@ -164,24 +159,10 @@ export class ConstructionProjectsList implements OnInit {
       });
   }
 
-  #loadMinistries(): void {
-    if (!this.#auth.hasPermission('ministries:read')) {
-      return;
-    }
-
-    this.#ministriesService
-      .list({ page: 1, limit: 100 })
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (response) => this.ministries.set(response.data),
-        error: () => this.ministries.set([]),
-      });
-  }
-
   #loadProjects(): void {
     this.loading.set(true);
     this.error.set(false);
-    const { q, status, ministryId } = this.filterForm.getRawValue();
+    const { q, status } = this.filterForm.getRawValue();
 
     this.#projectsService
       .list({
@@ -189,7 +170,6 @@ export class ConstructionProjectsList implements OnInit {
         limit: this.limit(),
         q: q.trim() || undefined,
         status: status || undefined,
-        ministryId: ministryId.trim() || undefined,
       })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({

@@ -45,6 +45,7 @@ export class ClassEnrollmentsPanel implements OnInit {
   readonly statuses = CLASS_ENROLLMENT_STATUSES;
   readonly enrollments = signal<IClassEnrollment[]>([]);
   readonly memberOptions = signal<IEnrollmentOption[]>([]);
+  readonly selectedMemberIds = signal<string[]>([]);
   readonly loading = signal(false);
   readonly enrolling = signal(false);
   readonly error = signal(false);
@@ -69,16 +70,13 @@ export class ClassEnrollmentsPanel implements OnInit {
   });
 
   readonly canWrite = computed(() => this.#auth.hasPermission('classes:write'));
+  readonly selectedCount = computed(() => this.selectedMemberIds().length);
 
   readonly filterForm = new FormGroup({
     status: new FormControl<ClassEnrollmentStatus | ''>('', { nonNullable: true }),
   });
 
   readonly enrollForm = new FormGroup({
-    memberId: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
     status: new FormControl<ClassEnrollmentStatus>(ClassEnrollmentStatus.ACTIVE, {
       nonNullable: true,
       validators: [Validators.required],
@@ -98,26 +96,53 @@ export class ClassEnrollmentsPanel implements OnInit {
     return `EBD_ENROLLMENTS.STATUS_${status.toUpperCase()}`;
   }
 
-  enrollMember(): void {
+  isMemberSelected(memberId: string): boolean {
+    return this.selectedMemberIds().includes(memberId);
+  }
+
+  toggleMember(memberId: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectedMemberIds.update((ids) => {
+      if (checked) {
+        return ids.includes(memberId) ? ids : [...ids, memberId];
+      }
+      return ids.filter((id) => id !== memberId);
+    });
+  }
+
+  enrollMembers(): void {
     if (!this.canWrite() || this.enrollForm.invalid) {
       this.enrollForm.markAllAsTouched();
       return;
     }
 
-    const { memberId, status } = this.enrollForm.getRawValue();
+    const memberIds = this.selectedMemberIds();
+    if (memberIds.length === 0) {
+      this.feedback.set('EBD_ENROLLMENTS.MEMBERS_REQUIRED');
+      return;
+    }
+
+    const { status } = this.enrollForm.getRawValue();
     this.enrolling.set(true);
     this.feedback.set(null);
     this.errorMessage.set(null);
 
     this.#classesService
-      .addEnrollment(this.classId(), { memberId, status })
+      .bulkAddEnrollments(this.classId(), { memberIds, status })
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe({
-        next: (created) => {
+        next: (result) => {
           this.enrolling.set(false);
-          this.enrollForm.reset({ memberId: '', status: ClassEnrollmentStatus.ACTIVE });
-          this.feedback.set('EBD_ENROLLMENTS.ENROLL_SUCCESS');
-          this.#afterMembershipChange({ upsert: created });
+          this.selectedMemberIds.set([]);
+          this.enrollForm.reset({ status: ClassEnrollmentStatus.ACTIVE });
+          this.feedback.set(
+            result.skipped > 0
+              ? 'EBD_ENROLLMENTS.BULK_ENROLL_PARTIAL'
+              : 'EBD_ENROLLMENTS.BULK_ENROLL_SUCCESS',
+          );
+          this.#listLoader.reload({ showLoading: false });
+          this.#loadEnrollmentOptions();
+          this.changed.emit();
         },
         error: (error: HttpErrorResponse) => {
           this.enrolling.set(false);

@@ -22,6 +22,7 @@ import { ISmallGroupMember } from '@interfaces/ISmallGroupMember';
 import { ISmallGroupMemberOption } from '@interfaces/ISmallGroupMemberOption';
 import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
+import { AppDateTimePipe } from '@pipes/app-date-time-pipe';
 import { SmallGroupsService } from '@services/small-groups-service';
 import {
   applyEntityMembershipMutation,
@@ -31,7 +32,7 @@ import {
 
 @Component({
   selector: 'app-small-group-members-panel',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [AppDateTimePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './small-group-members-panel.html',
   styleUrl: './small-group-members-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

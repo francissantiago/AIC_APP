@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IGenealogyTreeNode } from '@interfaces/IFamilyGenealogy';
+import { AppDatePipe } from '@pipes/app-date-pipe';
 
 @Component({
   selector: 'app-family-genealogy-tree',
-  imports: [FamilyGenealogyTree, TranslatePipe],
+  imports: [AppDatePipe, FamilyGenealogyTree, TranslatePipe],
   templateUrl: './family-genealogy-tree.html',
   styleUrl: './family-genealogy-tree.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
