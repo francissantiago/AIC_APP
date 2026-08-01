@@ -11,6 +11,7 @@ import { CreateConstructionProjectStageDto } from './dto/create-construction-pro
 import { UpdateConstructionProjectStageDto } from './dto/update-construction-project-stage.dto';
 import { ConstructionProjectStage } from './entities/construction-project-stage.entity';
 import { ConstructionProjectsService } from './construction-projects.service';
+import { ConstructionUpdatesService } from './construction-updates.service';
 
 @Injectable()
 export class ConstructionProjectStagesService {
@@ -20,6 +21,7 @@ export class ConstructionProjectStagesService {
     @InjectRepository(ConstructionProjectStage)
     private readonly stagesRepository: Repository<ConstructionProjectStage>,
     private readonly constructionProjectsService: ConstructionProjectsService,
+    private readonly constructionUpdatesService: ConstructionUpdatesService,
   ) {}
 
   list(
@@ -87,12 +89,14 @@ export class ConstructionProjectStagesService {
     stageId: string,
     dto: UpdateConstructionProjectStageDto,
     activeCongregationId?: string,
+    actorUserId?: string,
   ): Promise<ConstructionProjectStageResponseDto> {
     const congregationId =
       await this.constructionProjectsService.getCongregationId(
         activeCongregationId,
       );
     const stage = await this.getStageOrFail(projectId, stageId, congregationId);
+    const wasCompleted = stage.completedAt != null;
 
     if (dto.title !== undefined) {
       stage.title = dto.title.trim();
@@ -103,6 +107,24 @@ export class ConstructionProjectStagesService {
 
     const saved = await this.stagesRepository.save(stage);
     await this.syncProgressPercent(projectId, congregationId);
+
+    if (dto.completed !== undefined && dto.completed !== wasCompleted) {
+      const title = dto.completed
+        ? `Etapa concluída: ${saved.title}`
+        : `Etapa reaberta: ${saved.title}`;
+      await this.constructionUpdatesService.create(
+        {
+          constructionProjectId: projectId,
+          title,
+          description: dto.observation,
+          recordedAt: new Date().toISOString().slice(0, 10),
+        },
+        activeCongregationId,
+        actorUserId,
+      );
+      this.logger.log(`Andamento registrado para alteração de etapa: ${saved.id}`);
+    }
+
     return ConstructionProjectStageResponseDto.fromEntity(saved);
   }
 

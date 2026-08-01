@@ -60,6 +60,7 @@ export class ConstructionProjectForm implements OnInit {
   readonly saved = output<void>();
   readonly created = output<void>();
   readonly cancelled = output<void>();
+  readonly stagesChanged = output<void>();
 
   readonly statuses = CONSTRUCTION_PROJECT_STATUSES;
   readonly supervisorOptions = signal<IMember[]>([]);
@@ -129,6 +130,7 @@ export class ConstructionProjectForm implements OnInit {
     if (id) {
       this.#loadProject(id, { silent: true });
     }
+    this.stagesChanged.emit();
   }
 
   fieldInvalid(controlName: keyof typeof this.form.controls): boolean {

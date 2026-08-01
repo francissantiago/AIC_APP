@@ -31,11 +31,13 @@
     </label>
 
     <label class="flex flex-col gap-1 text-sm text-slate-700">
-      <span>{{ 'CONSTRUCTIONS.DESCRIPTION_FIELD' | translate }}</span>
+      <span>{{ 'CONSTRUCTIONS.OBSERVATION' | translate }}</span>
       <textarea
         formControlName="description"
         rows="3"
+        maxlength="2000"
         class="rounded-md border border-slate-200 px-3 py-2 focus:border-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        [placeholder]="'CONSTRUCTIONS.OBSERVATION_PLACEHOLDER' | translate"
       ></textarea>
     </label>
 

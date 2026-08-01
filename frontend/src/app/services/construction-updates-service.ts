@@ -71,6 +71,13 @@ export class ConstructionUpdatesService {
       .pipe(this.#withRetry());
   }
 
+  listHistory(constructionProjectId: string): Observable<IConstructionUpdate[]> {
+    const params = new HttpParams().set('constructionProjectId', constructionProjectId);
+    return this.#http
+      .get<IConstructionUpdate[]>(`${this.#apiUrl}/history`, { headers: this.#headers, params })
+      .pipe(this.#withRetry());
+  }
+
   create(body: ICreateConstructionUpdate): Observable<IConstructionUpdate> {
     return this.#http
       .post<IConstructionUpdate>(this.#apiUrl, body, { headers: this.#headers })

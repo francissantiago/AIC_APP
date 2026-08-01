@@ -19,4 +19,5 @@ export interface ICreateConstructionProjectStage {
 export interface IUpdateConstructionProjectStage {
   title?: string;
   completed?: boolean;
+  observation?: string;
 }

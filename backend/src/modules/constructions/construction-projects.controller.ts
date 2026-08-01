@@ -161,12 +161,14 @@ export class ConstructionProjectsController {
     @Param('stageId', ParseUUIDPipe) stageId: string,
     @Body() dto: UpdateConstructionProjectStageDto,
     @ActiveCongregation() activeCongregationId?: string,
+    @CurrentUser() user?: UserResponseDto,
   ): Promise<ConstructionProjectStageResponseDto> {
     return this.constructionProjectStagesService.update(
       id,
       stageId,
       dto,
       activeCongregationId,
+      user?.id,
     );
   }
 

@@ -38,6 +38,7 @@ import {
   ConstructionUpdateResponseDto,
   PaginatedConstructionUpdatesResponseDto,
 } from './dto/construction-update-response.dto';
+import { QueryConstructionUpdateHistoryDto } from './dto/query-construction-update-history.dto';
 import { QueryConstructionUpdatesDto } from './dto/query-construction-updates.dto';
 import { UpdateConstructionUpdateDto } from './dto/update-construction-update.dto';
 
@@ -80,6 +81,20 @@ export class ConstructionUpdatesController {
     @ActiveCongregation() activeCongregationId?: string,
   ): Promise<PaginatedConstructionUpdatesResponseDto> {
     return this.constructionUpdatesService.findAll(query, activeCongregationId);
+  }
+
+  @Get('history')
+  @ApiOperation({ summary: 'Histórico de andamentos de uma obra' })
+  @ApiOkResponse({ type: ConstructionUpdateResponseDto, isArray: true })
+  @ApiNotFoundResponse({ description: 'Obra não encontrada' })
+  findHistory(
+    @Query() query: QueryConstructionUpdateHistoryDto,
+    @ActiveCongregation() activeCongregationId?: string,
+  ): Promise<ConstructionUpdateResponseDto[]> {
+    return this.constructionUpdatesService.findHistoryByProject(
+      query.constructionProjectId,
+      activeCongregationId,
+    );
   }
 
   @Get(':id')

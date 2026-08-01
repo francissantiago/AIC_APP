@@ -75,6 +75,16 @@ export class ConstructionUpdatesService {
       .createQueryBuilder('update')
       .leftJoinAndSelect('update.constructionProject', 'project')
       .where('update.congregationId = :congregationId', { congregationId })
+      .andWhere(
+        `update.id = (
+          SELECT u.id FROM construction_updates u
+          WHERE u.construction_project_id = update.construction_project_id
+            AND u.congregation_id = :congregationId
+            AND u.deleted_at IS NULL
+          ORDER BY u.recorded_at DESC, u.created_at DESC
+          LIMIT 1
+        )`,
+      )
       .orderBy('update.recordedAt', 'DESC')
       .addOrderBy('update.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -100,6 +110,27 @@ export class ConstructionUpdatesService {
       page,
       limit,
     };
+  }
+
+  async findHistoryByProject(
+    constructionProjectId: string,
+    activeCongregationId?: string,
+  ): Promise<ConstructionUpdateResponseDto[]> {
+    const congregationId = await this.getCongregationId(activeCongregationId);
+    await this.constructionProjectsService.getProjectOrFailInternal(
+      constructionProjectId,
+      congregationId,
+    );
+
+    const updates = await this.updatesRepository.find({
+      where: { constructionProjectId, congregationId },
+      relations: { constructionProject: true },
+      order: { recordedAt: 'DESC', createdAt: 'DESC' },
+    });
+
+    return updates.map((item) =>
+      ConstructionUpdateResponseDto.fromEntity(item),
+    );
   }
 
   async findOne(

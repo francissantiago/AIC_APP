@@ -21,4 +21,12 @@ export class UpdateConstructionProjectStageDto {
   @IsOptional()
   @IsBoolean()
   completed?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Observação sobre a alteração de progresso (avanço ou retrocesso)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  observation?: string;
 }

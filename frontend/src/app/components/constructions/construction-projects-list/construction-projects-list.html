@@ -28,6 +28,7 @@
         [projectId]="editingId()"
         (saved)="afterSave()"
         (created)="refreshProjectsList()"
+        (stagesChanged)="refreshProjectsList()"
         (cancelled)="closeForm()"
       />
     }

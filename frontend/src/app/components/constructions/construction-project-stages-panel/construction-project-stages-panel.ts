@@ -18,6 +18,12 @@ import { ApiErrorService } from '@services/api-error.service';
 import { AuthService } from '@services/auth-service';
 import { ConstructionProjectsService } from '@services/construction-projects-service';
 
+interface PendingStageChange {
+  stageId: string;
+  stageTitle: string;
+  completed: boolean;
+}
+
 @Component({
   selector: 'app-construction-project-stages-panel',
   imports: [ReactiveFormsModule, TranslatePipe],
@@ -41,6 +47,7 @@ export class ConstructionProjectStagesPanel implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly feedbackKey = signal<string | null>(null);
   readonly pendingDeleteId = signal<string | null>(null);
+  readonly pendingStageChange = signal<PendingStageChange | null>(null);
 
   readonly canWrite = computed(() => this.#auth.hasPermission('constructions:write'));
 
@@ -51,6 +58,10 @@ export class ConstructionProjectStagesPanel implements OnInit {
     }
     const completed = list.filter((stage) => stage.completedAt != null).length;
     return Math.round((completed / list.length) * 100);
+  });
+
+  readonly stageChangeForm = new FormGroup({
+    observation: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(2000)] }),
   });
 
   readonly addForm = new FormGroup({
@@ -72,8 +83,59 @@ export class ConstructionProjectStagesPanel implements OnInit {
     if (!this.canWrite()) {
       return;
     }
-    const checked = (event.target as HTMLInputElement).checked;
-    this.#updateStage(stage.id, { completed: checked });
+
+    const input = event.target as HTMLInputElement;
+    const targetCompleted = input.checked;
+    const currentCompleted = this.isCompleted(stage);
+    if (targetCompleted === currentCompleted) {
+      return;
+    }
+
+    input.checked = currentCompleted;
+    this.stageChangeForm.reset({ observation: '' });
+    this.pendingStageChange.set({
+      stageId: stage.id,
+      stageTitle: stage.title,
+      completed: targetCompleted,
+    });
+  }
+
+  cancelStageChange(): void {
+    this.pendingStageChange.set(null);
+    this.stageChangeForm.reset({ observation: '' });
+  }
+
+  confirmStageChange(): void {
+    const pending = this.pendingStageChange();
+    if (!pending || !this.canWrite()) {
+      return;
+    }
+
+    const observation = this.stageChangeForm.controls.observation.value.trim();
+    this.saving.set(true);
+    this.errorMessage.set(null);
+
+    this.#projectsService
+      .updateStage(this.projectId(), pending.stageId, {
+        completed: pending.completed,
+        observation: observation || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.saving.set(false);
+          this.pendingStageChange.set(null);
+          this.stageChangeForm.reset({ observation: '' });
+          this.stages.update((list) =>
+            list.map((item) => (item.id === updated.id ? updated : item)),
+          );
+          this.changed.emit();
+        },
+        error: (error: HttpErrorResponse) => {
+          this.saving.set(false);
+          this.errorMessage.set(this.#apiError.resolve(error).displayMessage);
+        },
+      });
   }
 
   submitAdd(): void {
@@ -133,25 +195,6 @@ export class ConstructionProjectStagesPanel implements OnInit {
         error: (error: HttpErrorResponse) => {
           this.saving.set(false);
           this.errorMessage.set(this.#apiError.resolve(error).displayMessage);
-        },
-      });
-  }
-
-  #updateStage(stageId: string, body: { completed: boolean }): void {
-    this.errorMessage.set(null);
-    this.#projectsService
-      .updateStage(this.projectId(), stageId, body)
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (updated) => {
-          this.stages.update((list) =>
-            list.map((item) => (item.id === updated.id ? updated : item)),
-          );
-          this.changed.emit();
-        },
-        error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(this.#apiError.resolve(error).displayMessage);
-          this.#loadStages();
         },
       });
   }

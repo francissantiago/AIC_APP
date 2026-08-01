@@ -103,6 +103,7 @@ export class ConstructionProjectsList implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.editingId.set(null);
+    this.#loadProjects();
   }
 
   afterSave(): void {

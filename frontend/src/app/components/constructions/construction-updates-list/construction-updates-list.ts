@@ -20,6 +20,11 @@ import { ConstructionUpdatesService } from '@services/construction-updates-servi
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { AppDatePipe } from '@pipes/app-date-pipe';
 
+interface HistoryContext {
+  projectId: string;
+  projectName: string;
+}
+
 @Component({
   selector: 'app-construction-updates-list',
   imports: [AppDatePipe, AppDialog, ConstructionUpdateForm, ReactiveFormsModule, TranslatePipe],
@@ -35,16 +40,21 @@ export class ConstructionUpdatesList implements OnInit {
 
   readonly updates = signal<IConstructionUpdate[]>([]);
   readonly projects = signal<IConstructionProject[]>([]);
+  readonly historyItems = signal<IConstructionUpdate[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
   readonly limit = signal(20);
   readonly loading = signal(false);
+  readonly historyLoading = signal(false);
   readonly error = signal(false);
+  readonly historyError = signal(false);
   readonly deleting = signal(false);
   readonly pendingDeleteId = signal<string | null>(null);
   readonly feedback = signal<string | null>(null);
   readonly showForm = signal(false);
+  readonly showHistory = signal(false);
   readonly editingId = signal<string | null>(null);
+  readonly historyContext = signal<HistoryContext | null>(null);
 
   readonly totalPages = computed(() => {
     const pages = Math.ceil(this.total() / this.limit());
@@ -87,6 +97,37 @@ export class ConstructionUpdatesList implements OnInit {
     this.editingId.set(id);
     this.pendingDeleteId.set(null);
     this.showForm.set(true);
+  }
+
+  openHistory(update: IConstructionUpdate): void {
+    const projectId = update.constructionProjectId;
+    const projectName = update.projectName ?? '—';
+    this.historyContext.set({ projectId, projectName });
+    this.showHistory.set(true);
+    this.historyLoading.set(true);
+    this.historyError.set(false);
+    this.historyItems.set([]);
+
+    this.#updatesService
+      .listHistory(projectId)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (items) => {
+          this.historyItems.set(items);
+          this.historyLoading.set(false);
+        },
+        error: () => {
+          this.historyItems.set([]);
+          this.historyLoading.set(false);
+          this.historyError.set(true);
+        },
+      });
+  }
+
+  closeHistory(): void {
+    this.showHistory.set(false);
+    this.historyContext.set(null);
+    this.historyItems.set([]);
   }
 
   closeForm(): void {
@@ -146,6 +187,11 @@ export class ConstructionUpdatesList implements OnInit {
 
   displayProgress(update: IConstructionUpdate): number {
     return update.progressPercent ?? update.projectProgressPercent ?? 0;
+  }
+
+  observationText(update: IConstructionUpdate): string {
+    const text = update.description?.trim();
+    return text ? text : '—';
   }
 
   #loadProjects(): void {
