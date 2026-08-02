@@ -1,39 +1,39 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page } from "@playwright/test";
 
-const HIGHLIGHT_MS = Number(process.env.E2E_TUTORIAL_HIGHLIGHT_MS ?? '1400');
-const CURSOR_MOVE_MS = Number(process.env.E2E_TUTORIAL_CURSOR_MOVE_MS ?? '450');
+const HIGHLIGHT_MS = Number(process.env.E2E_TUTORIAL_HIGHLIGHT_MS ?? "1400");
+const CURSOR_MOVE_MS = Number(process.env.E2E_TUTORIAL_CURSOR_MOVE_MS ?? "450");
 
 const LOCATOR_CHAIN_METHODS = new Set([
-  'and',
-  'filter',
-  'first',
-  'last',
-  'locator',
-  'nth',
-  'or',
-  'getByAltText',
-  'getByLabel',
-  'getByPlaceholder',
-  'getByRole',
-  'getByTestId',
-  'getByText',
-  'getByTitle',
+  "and",
+  "filter",
+  "first",
+  "last",
+  "locator",
+  "nth",
+  "or",
+  "getByAltText",
+  "getByLabel",
+  "getByPlaceholder",
+  "getByRole",
+  "getByTestId",
+  "getByText",
+  "getByTitle",
 ]);
 
 const ACTION_METHODS = new Set([
-  'check',
-  'click',
-  'dblclick',
-  'fill',
-  'press',
-  'pressSequentially',
-  'selectOption',
-  'setInputFiles',
-  'tap',
-  'uncheck',
+  "check",
+  "click",
+  "dblclick",
+  "fill",
+  "press",
+  "pressSequentially",
+  "selectOption",
+  "setInputFiles",
+  "tap",
+  "uncheck",
 ]);
 
-const WRAPPED_LOCATOR = Symbol('tutorial-wrapped-locator');
+const WRAPPED_LOCATOR = Symbol("tutorial-wrapped-locator");
 
 const TUTORIAL_VISUALS_STYLE = `
   @keyframes e2e-tutorial-ring-pulse {
@@ -117,23 +117,23 @@ const TUTORIAL_VISUALS_STYLE = `
 export async function installTutorialVisuals(page: Page): Promise<void> {
   await page.addInitScript((styleText: string) => {
     const install = (): void => {
-      if (document.getElementById('e2e-tutorial-visuals-style')) {
+      if (document.getElementById("e2e-tutorial-visuals-style")) {
         return;
       }
 
-      const style = document.createElement('style');
-      style.id = 'e2e-tutorial-visuals-style';
+      const style = document.createElement("style");
+      style.id = "e2e-tutorial-visuals-style";
       style.textContent = styleText;
       document.head.appendChild(style);
 
-      const cursor = document.createElement('div');
-      cursor.id = 'e2e-tutorial-cursor';
-      cursor.setAttribute('aria-hidden', 'true');
+      const cursor = document.createElement("div");
+      cursor.id = "e2e-tutorial-cursor";
+      cursor.setAttribute("aria-hidden", "true");
       document.body.appendChild(cursor);
 
-      const ring = document.createElement('div');
-      ring.id = 'e2e-tutorial-click-ring';
-      ring.setAttribute('aria-hidden', 'true');
+      const ring = document.createElement("div");
+      ring.id = "e2e-tutorial-click-ring";
+      ring.setAttribute("aria-hidden", "true");
       document.body.appendChild(ring);
     };
 
@@ -142,16 +142,28 @@ export async function installTutorialVisuals(page: Page): Promise<void> {
       return;
     }
 
-    document.addEventListener('DOMContentLoaded', install, { once: true });
+    document.addEventListener("DOMContentLoaded", install, { once: true });
   }, TUTORIAL_VISUALS_STYLE);
 }
 
-async function revealTutorialTarget(page: Page, locator: Locator): Promise<void> {
-  await locator.first().scrollIntoViewIfNeeded().catch(() => undefined);
+async function revealTutorialTarget(
+  page: Page,
+  locator: Locator,
+): Promise<void> {
+  await locator
+    .first()
+    .scrollIntoViewIfNeeded()
+    .catch(() => undefined);
 
-  const box = await locator.first().boundingBox().catch(() => null);
+  const box = await locator
+    .first()
+    .boundingBox()
+    .catch(() => null);
   if (!box) {
-    await locator.first().highlight().catch(() => undefined);
+    await locator
+      .first()
+      .highlight()
+      .catch(() => undefined);
     await page.waitForTimeout(HIGHLIGHT_MS);
     return;
   }
@@ -162,32 +174,32 @@ async function revealTutorialTarget(page: Page, locator: Locator): Promise<void>
   await locator
     .first()
     .evaluate((element) => {
-      element.classList.add('e2e-tutorial-target');
+      element.classList.add("e2e-tutorial-target");
     })
     .catch(() => undefined);
 
   await page
     .evaluate(
       ({ x, y, moveMs }) => {
-        const cursor = document.getElementById('e2e-tutorial-cursor');
-        const ring = document.getElementById('e2e-tutorial-click-ring');
+        const cursor = document.getElementById("e2e-tutorial-cursor");
+        const ring = document.getElementById("e2e-tutorial-click-ring");
         if (!cursor || !ring) {
           return;
         }
 
-        cursor.style.setProperty('--e2e-cursor-x', `${x}px`);
-        cursor.style.setProperty('--e2e-cursor-y', `${y}px`);
-        cursor.classList.add('is-visible');
+        cursor.style.setProperty("--e2e-cursor-x", `${x}px`);
+        cursor.style.setProperty("--e2e-cursor-y", `${y}px`);
+        cursor.classList.add("is-visible");
 
-        ring.style.setProperty('--e2e-ring-x', `${x}px`);
-        ring.style.setProperty('--e2e-ring-y', `${y}px`);
-        ring.classList.remove('is-active');
+        ring.style.setProperty("--e2e-ring-x", `${x}px`);
+        ring.style.setProperty("--e2e-ring-y", `${y}px`);
+        ring.classList.remove("is-active");
         void ring.offsetWidth;
-        ring.classList.add('is-active');
+        ring.classList.add("is-active");
 
         window.setTimeout(() => {
-          cursor.classList.add('is-clicking');
-          window.setTimeout(() => cursor.classList.remove('is-clicking'), 180);
+          cursor.classList.add("is-clicking");
+          window.setTimeout(() => cursor.classList.remove("is-clicking"), 180);
         }, moveMs);
       },
       { x: centerX, y: centerY, moveMs: CURSOR_MOVE_MS },
@@ -199,7 +211,7 @@ async function revealTutorialTarget(page: Page, locator: Locator): Promise<void>
   await locator
     .first()
     .evaluate((element) => {
-      element.classList.remove('e2e-tutorial-target');
+      element.classList.remove("e2e-tutorial-target");
     })
     .catch(() => undefined);
 }
@@ -212,7 +224,7 @@ function wrapLocator(page: Page, locator: Locator): Locator {
   const wrapped = new Proxy(locator, {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
-      if (typeof value !== 'function') {
+      if (typeof value !== "function") {
         return value;
       }
 
@@ -226,7 +238,8 @@ function wrapLocator(page: Page, locator: Locator): Locator {
       }
 
       if (LOCATOR_CHAIN_METHODS.has(method)) {
-        return (...args: unknown[]) => wrapLocator(page, Reflect.apply(value, target, args) as Locator);
+        return (...args: unknown[]) =>
+          wrapLocator(page, Reflect.apply(value, target, args) as Locator);
       }
 
       return value.bind(target);
@@ -240,24 +253,27 @@ function wrapLocator(page: Page, locator: Locator): Locator {
 function wrapPageLocators(page: Page): void {
   const pageWithLocators = page as Page & Record<string, unknown>;
   const locatorFactories = [
-    'getByAltText',
-    'getByLabel',
-    'getByPlaceholder',
-    'getByRole',
-    'getByTestId',
-    'getByText',
-    'getByTitle',
-    'locator',
+    "getByAltText",
+    "getByLabel",
+    "getByPlaceholder",
+    "getByRole",
+    "getByTestId",
+    "getByText",
+    "getByTitle",
+    "locator",
   ] as const;
 
   for (const factory of locatorFactories) {
-    const original = page[factory].bind(page) as (...args: unknown[]) => Locator;
-    pageWithLocators[factory] = (...args: unknown[]) => wrapLocator(page, original(...args));
+    const original = page[factory].bind(page) as (
+      ...args: unknown[]
+    ) => Locator;
+    pageWithLocators[factory] = (...args: unknown[]) =>
+      wrapLocator(page, original(...args));
   }
 }
 
 export async function prepareTutorialPage(page: Page): Promise<void> {
-  if (process.env.E2E_TUTORIAL_VISUALS === '0') {
+  if (process.env.E2E_TUTORIAL_VISUALS === "0") {
     return;
   }
 

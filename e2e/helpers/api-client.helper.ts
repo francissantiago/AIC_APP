@@ -1,5 +1,5 @@
-import { loginViaApi } from './api-auth.helper';
-import { getApiUrl } from './session.helper';
+import { loginViaApi } from "./api-auth.helper";
+import { getApiUrl } from "./session.helper";
 
 export interface RoleSummary {
   id: number;
@@ -144,25 +144,41 @@ export class ApiClient {
     private readonly apiUrl = getApiUrl(),
   ) {}
 
+  private static adminLoginPromise: Promise<AuthResponseBody> | null = null;
+
   static async asAdmin(): Promise<ApiClient> {
-    const email = process.env.E2E_ADMIN_EMAIL ?? 'admin@admin.com';
-    const password = process.env.E2E_ADMIN_PASSWORD ?? '';
+    const email = process.env.E2E_ADMIN_EMAIL ?? "admin@admin.com";
+    const password = process.env.E2E_ADMIN_PASSWORD ?? "";
     if (!password) {
-      throw new Error('E2E_ADMIN_PASSWORD não configurado.');
+      throw new Error("E2E_ADMIN_PASSWORD não configurado.");
     }
-    const { accessToken } = await loginViaApi(getApiUrl(), email, password);
+    if (!ApiClient.adminLoginPromise) {
+      ApiClient.adminLoginPromise = loginViaApi(
+        getApiUrl(),
+        email,
+        password,
+      ).catch((error) => {
+        ApiClient.adminLoginPromise = null;
+        throw error;
+      });
+    }
+    const { accessToken } = await ApiClient.adminLoginPromise;
     return new ApiClient(accessToken);
   }
 
   private headers(): Record<string, string> {
     return {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
       Authorization: `Bearer ${this.token}`,
     };
   }
 
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     const response = await fetch(`${this.apiUrl}${path}`, {
       method,
       headers: this.headers(),
@@ -171,7 +187,9 @@ export class ApiClient {
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`API ${method} ${path} falhou (${response.status}): ${text}`);
+      throw new Error(
+        `API ${method} ${path} falhou (${response.status}): ${text}`,
+      );
     }
 
     if (response.status === 204) {
@@ -182,11 +200,11 @@ export class ApiClient {
   }
 
   listRoles(): Promise<RoleSummary[]> {
-    return this.request<RoleSummary[]>('GET', '/roles');
+    return this.request<RoleSummary[]>("GET", "/roles");
   }
 
   listPermissions(): Promise<PermissionSummary[]> {
-    return this.request<PermissionSummary[]>('GET', '/permissions');
+    return this.request<PermissionSummary[]>("GET", "/permissions");
   }
 
   findRoleIdByCode(code: string): Promise<number> {
@@ -207,16 +225,20 @@ export class ApiClient {
     status?: string;
     roleIds: number[];
   }): Promise<UserSummary> {
-    return this.request<UserSummary>('POST', '/users', payload);
+    return this.request<UserSummary>("POST", "/users", payload);
   }
 
   deleteUser(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/users/${id}`);
+    return this.request<void>("DELETE", `/users/${id}`);
   }
 
   findUserIdByUsername(username: string): Promise<string | null> {
-    return this.request<{ data: UserSummary[] }>('GET', `/users?q=${encodeURIComponent(username)}`).then(
-      (response) => response.data.find((item) => item.username === username)?.id ?? null,
+    return this.request<{ data: UserSummary[] }>(
+      "GET",
+      `/users?q=${encodeURIComponent(username)}`,
+    ).then(
+      (response) =>
+        response.data.find((item) => item.username === username)?.id ?? null,
     );
   }
 
@@ -226,11 +248,11 @@ export class ApiClient {
     description?: string | null;
     permissionIds?: number[];
   }): Promise<RoleSummary> {
-    return this.request<RoleSummary>('POST', '/roles', payload);
+    return this.request<RoleSummary>("POST", "/roles", payload);
   }
 
   deleteRole(id: number): Promise<void> {
-    return this.request<void>('DELETE', `/roles/${id}`);
+    return this.request<void>("DELETE", `/roles/${id}`);
   }
 
   findPermissionIdByCode(code: string): Promise<number> {
@@ -249,98 +271,148 @@ export class ApiClient {
     birthDate?: string;
     status?: string;
   }): Promise<MemberSummary> {
-    return this.request<MemberSummary>('POST', '/members', payload);
+    return this.request<MemberSummary>("POST", "/members", payload);
   }
 
   deleteMember(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/members/${id}`);
+    return this.request<void>("DELETE", `/members/${id}`);
   }
 
   findMemberIdByFullName(fullName: string): Promise<string | null> {
     return this.request<{ data: MemberSummary[] }>(
-      'GET',
+      "GET",
       `/members?q=${encodeURIComponent(fullName)}`,
-    ).then((response) => response.data.find((item) => item.fullName === fullName)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.fullName === fullName)?.id ?? null,
+    );
   }
 
-  createFamily(payload: { name: string; notes?: string | null; headMemberId?: string | null }): Promise<FamilySummary> {
-    return this.request<FamilySummary>('POST', '/families', payload);
+  createFamily(payload: {
+    name: string;
+    notes?: string | null;
+    headMemberId?: string | null;
+  }): Promise<FamilySummary> {
+    return this.request<FamilySummary>("POST", "/families", payload);
   }
 
   deleteFamily(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/families/${id}`);
+    return this.request<void>("DELETE", `/families/${id}`);
   }
 
   findFamilyIdByName(name: string): Promise<string | null> {
     return this.request<{ data: FamilySummary[] }>(
-      'GET',
+      "GET",
       `/families?search=${encodeURIComponent(name)}`,
-    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
+    );
   }
 
-  addFamilyMember(familyId: string, memberId: string, relation = 'other'): Promise<void> {
-    return this.request<void>('POST', `/families/${familyId}/members`, { memberId, relation });
+  addFamilyMember(
+    familyId: string,
+    memberId: string,
+    relation = "other",
+  ): Promise<void> {
+    return this.request<void>("POST", `/families/${familyId}/members`, {
+      memberId,
+      relation,
+    });
   }
 
   removeFamilyMember(familyId: string, memberId: string): Promise<void> {
-    return this.request<void>('DELETE', `/families/${familyId}/members/${memberId}`);
+    return this.request<void>(
+      "DELETE",
+      `/families/${familyId}/members/${memberId}`,
+    );
   }
 
-  findCalendarEvents(params: { from: string; to: string; type?: string }): Promise<CalendarEventSummary[]> {
+  findCalendarEvents(params: {
+    from: string;
+    to: string;
+    type?: string;
+  }): Promise<CalendarEventSummary[]> {
     const search = new URLSearchParams({
       from: params.from,
       to: params.to,
-      limit: '100',
+      limit: "100",
     });
     if (params.type) {
-      search.set('type', params.type);
+      search.set("type", params.type);
     }
     return this.request<{ data: CalendarEventSummary[] }>(
-      'GET',
+      "GET",
       `/secretariat/calendar-events?${search.toString()}`,
     ).then((response) => response.data);
   }
 
-  findBirthdayEventForMember(memberId: string, from: string, to: string): Promise<CalendarEventSummary | null> {
+  findBirthdayEventForMember(
+    memberId: string,
+    from: string,
+    to: string,
+  ): Promise<CalendarEventSummary | null> {
     return this.findCalendarEvents({ from, to }).then(
       (events) =>
         events.find(
-          (event) => event.sourceMemberId === memberId && event.type === 'birthday',
+          (event) =>
+            event.sourceMemberId === memberId && event.type === "birthday",
         ) ?? null,
     );
   }
 
-  getFamilyBirthdays(month: number, familyId?: string): Promise<BirthdayReportItem[]> {
+  getFamilyBirthdays(
+    month: number,
+    familyId?: string,
+  ): Promise<BirthdayReportItem[]> {
     const search = new URLSearchParams({ month: String(month) });
     if (familyId) {
-      search.set('familyId', familyId);
+      search.set("familyId", familyId);
     }
     return this.request<{ data: BirthdayReportItem[] }>(
-      'GET',
+      "GET",
       `/families/birthdays?${search.toString()}`,
     ).then((response) => response.data);
   }
 
-  createMinistry(payload: { name: string; description?: string; status?: string }): Promise<MinistrySummary> {
-    return this.request<MinistrySummary>('POST', '/ministries', payload);
+  createMinistry(payload: {
+    name: string;
+    description?: string;
+    status?: string;
+  }): Promise<MinistrySummary> {
+    return this.request<MinistrySummary>("POST", "/ministries", payload);
   }
 
   deleteMinistry(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/ministries/${id}`);
+    return this.request<void>("DELETE", `/ministries/${id}`);
   }
 
   findMinistryIdByName(name: string): Promise<string | null> {
-    return this.request<{ data: MinistrySummary[] }>('GET', `/ministries?q=${encodeURIComponent(name)}`).then(
-      (response) => response.data.find((item) => item.name === name)?.id ?? null,
+    return this.request<{ data: MinistrySummary[] }>(
+      "GET",
+      `/ministries?q=${encodeURIComponent(name)}`,
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
     );
   }
 
-  addMinistryMember(ministryId: string, memberId: string, role = 'member'): Promise<void> {
-    return this.request<void>('POST', `/ministries/${ministryId}/members`, { memberId, role });
+  addMinistryMember(
+    ministryId: string,
+    memberId: string,
+    role = "member",
+  ): Promise<void> {
+    return this.request<void>("POST", `/ministries/${ministryId}/members`, {
+      memberId,
+      role,
+    });
   }
 
   removeMinistryMember(ministryId: string, memberId: string): Promise<void> {
-    return this.request<void>('DELETE', `/ministries/${ministryId}/members/${memberId}`);
+    return this.request<void>(
+      "DELETE",
+      `/ministries/${ministryId}/members/${memberId}`,
+    );
   }
 
   createClass(payload: {
@@ -351,42 +423,70 @@ export class ApiClient {
     startTime?: string;
     room?: string;
   }): Promise<ClassSummary> {
-    return this.request<ClassSummary>('POST', '/classes', payload);
+    return this.request<ClassSummary>("POST", "/classes", payload);
   }
 
   deleteClass(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/classes/${id}`);
+    return this.request<void>("DELETE", `/classes/${id}`);
   }
 
   findClassIdByName(name: string): Promise<string | null> {
-    return this.request<{ data: ClassSummary[] }>('GET', `/classes?q=${encodeURIComponent(name)}`).then(
-      (response) => response.data.find((item) => item.name === name)?.id ?? null,
+    return this.request<{ data: ClassSummary[] }>(
+      "GET",
+      `/classes?q=${encodeURIComponent(name)}`,
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
     );
   }
 
-  enrollClassMember(classId: string, memberId: string, status = 'active'): Promise<void> {
-    return this.request<void>('POST', `/classes/${classId}/enrollments`, { memberId, status });
+  enrollClassMember(
+    classId: string,
+    memberId: string,
+    status = "active",
+  ): Promise<void> {
+    return this.request<void>("POST", `/classes/${classId}/enrollments`, {
+      memberId,
+      status,
+    });
   }
 
   removeClassEnrollment(classId: string, memberId: string): Promise<void> {
-    return this.request<void>('DELETE', `/classes/${classId}/enrollments/${memberId}`);
+    return this.request<void>(
+      "DELETE",
+      `/classes/${classId}/enrollments/${memberId}`,
+    );
   }
 
   upsertClassAttendance(
     classId: string,
     sessionDate: string,
-    entries: Array<{ memberId: string; present: boolean; notes?: string | null }>,
+    entries: Array<{
+      memberId: string;
+      present: boolean;
+      notes?: string | null;
+    }>,
   ): Promise<void> {
-    return this.request<void>('PUT', `/classes/${classId}/attendance`, { sessionDate, entries });
+    return this.request<void>("PUT", `/classes/${classId}/attendance`, {
+      sessionDate,
+      entries,
+    });
   }
 
   getClassFrequencyReport(
     classId: string,
     from: string,
     to: string,
-  ): Promise<{ className: string; sessionsCount: number; members: Array<{ memberId: string; memberFullName: string }> }> {
+  ): Promise<{
+    className: string;
+    sessionsCount: number;
+    members: Array<{ memberId: string; memberFullName: string }>;
+  }> {
     const search = new URLSearchParams({ from, to });
-    return this.request(`GET`, `/classes/${classId}/reports/frequency?${search.toString()}`);
+    return this.request(
+      `GET`,
+      `/classes/${classId}/reports/frequency?${search.toString()}`,
+    );
   }
 
   createSmallGroup(payload: {
@@ -395,100 +495,169 @@ export class ApiClient {
     dayOfWeek?: number;
     startTime?: string;
   }): Promise<SmallGroupSummary> {
-    return this.request<SmallGroupSummary>('POST', '/small-groups', payload);
+    return this.request<SmallGroupSummary>("POST", "/small-groups", payload);
   }
 
   deleteSmallGroup(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/small-groups/${id}`);
+    return this.request<void>("DELETE", `/small-groups/${id}`);
   }
 
   findSmallGroupIdByName(name: string): Promise<string | null> {
     return this.request<{ data: SmallGroupSummary[] }>(
-      'GET',
+      "GET",
       `/small-groups?q=${encodeURIComponent(name)}`,
-    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
+    );
   }
 
-  addSmallGroupMember(groupId: string, memberId: string, role = 'member'): Promise<void> {
-    return this.request<void>('POST', `/small-groups/${groupId}/members`, { memberId, role });
+  addSmallGroupMember(
+    groupId: string,
+    memberId: string,
+    role = "member",
+  ): Promise<void> {
+    return this.request<void>("POST", `/small-groups/${groupId}/members`, {
+      memberId,
+      role,
+    });
   }
 
   removeSmallGroupMember(groupId: string, memberId: string): Promise<void> {
-    return this.request<void>('DELETE', `/small-groups/${groupId}/members/${memberId}`);
+    return this.request<void>(
+      "DELETE",
+      `/small-groups/${groupId}/members/${memberId}`,
+    );
   }
 
   createSmallGroupMeeting(
     groupId: string,
     payload: { meetingDate: string; theme?: string; notes?: string },
   ): Promise<SmallGroupMeetingSummary> {
-    return this.request<SmallGroupMeetingSummary>('POST', `/small-groups/${groupId}/meetings`, payload);
+    return this.request<SmallGroupMeetingSummary>(
+      "POST",
+      `/small-groups/${groupId}/meetings`,
+      payload,
+    );
   }
 
   upsertSmallGroupAttendance(
     groupId: string,
     meetingId: string,
-    entries: Array<{ memberId: string; present: boolean; notes?: string | null }>,
+    entries: Array<{
+      memberId: string;
+      present: boolean;
+      notes?: string | null;
+    }>,
   ): Promise<void> {
-    return this.request<void>('PUT', `/small-groups/${groupId}/meetings/${meetingId}/attendance`, {
-      entries,
-    });
+    return this.request<void>(
+      "PUT",
+      `/small-groups/${groupId}/meetings/${meetingId}/attendance`,
+      {
+        entries,
+      },
+    );
   }
 
   getSmallGroupFrequencyReport(
     groupId: string,
     from: string,
     to: string,
-  ): Promise<{ smallGroupName: string; meetingsCount: number; members: Array<{ memberId: string; memberFullName: string }> }> {
+  ): Promise<{
+    smallGroupName: string;
+    meetingsCount: number;
+    members: Array<{ memberId: string; memberFullName: string }>;
+  }> {
     const search = new URLSearchParams({ from, to });
-    return this.request(`GET`, `/small-groups/${groupId}/reports/frequency?${search.toString()}`);
+    return this.request(
+      `GET`,
+      `/small-groups/${groupId}/reports/frequency?${search.toString()}`,
+    );
   }
 
   getCongregationBase(): Promise<CongregationSummary> {
-    return this.request<CongregationSummary>('GET', '/congregation');
+    return this.request<CongregationSummary>("GET", "/congregation");
   }
 
-  updateCongregationBase(payload: { name?: string; phone?: string; notes?: string }): Promise<CongregationSummary> {
-    return this.request<CongregationSummary>('PATCH', '/congregation', payload);
+  updateCongregationBase(payload: {
+    name?: string;
+    phone?: string;
+    notes?: string;
+  }): Promise<CongregationSummary> {
+    return this.request<CongregationSummary>("PATCH", "/congregation", payload);
   }
 
-  listCongregations(params?: { q?: string; type?: string; status?: string }): Promise<{ data: CongregationSummary[] }> {
+  listCongregations(params?: {
+    q?: string;
+    type?: string;
+    status?: string;
+  }): Promise<{ data: CongregationSummary[] }> {
     const search = new URLSearchParams();
-    if (params?.q) search.set('q', params.q);
-    if (params?.type) search.set('type', params.type);
-    if (params?.status) search.set('status', params.status);
+    if (params?.q) search.set("q", params.q);
+    if (params?.type) search.set("type", params.type);
+    if (params?.status) search.set("status", params.status);
     const query = search.toString();
-    return this.request('GET', `/congregations${query ? `?${query}` : ''}`);
+    return this.request("GET", `/congregations${query ? `?${query}` : ""}`);
   }
 
-  createCongregationBranch(payload: { name: string; status?: string; city?: string }): Promise<CongregationSummary> {
-    return this.request<CongregationSummary>('POST', '/congregations', payload);
+  createCongregationBranch(payload: {
+    name: string;
+    status?: string;
+    city?: string;
+  }): Promise<CongregationSummary> {
+    return this.request<CongregationSummary>("POST", "/congregations", payload);
   }
 
-  updateCongregation(id: string, payload: { name?: string; status?: string; city?: string }): Promise<CongregationSummary> {
-    return this.request<CongregationSummary>('PATCH', `/congregations/${id}`, payload);
+  updateCongregation(
+    id: string,
+    payload: { name?: string; status?: string; city?: string },
+  ): Promise<CongregationSummary> {
+    return this.request<CongregationSummary>(
+      "PATCH",
+      `/congregations/${id}`,
+      payload,
+    );
   }
 
   deleteCongregation(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/congregations/${id}`);
+    return this.request<void>("DELETE", `/congregations/${id}`);
   }
 
   findCongregationIdByName(name: string): Promise<string | null> {
     return this.listCongregations({ q: name }).then(
-      (response) => response.data.find((item) => item.name === name)?.id ?? null,
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
     );
   }
 
   listFinancialCategories(type?: string): Promise<FinancialCategorySummary[]> {
-    const query = type ? `?type=${encodeURIComponent(type)}` : '';
-    return this.request<FinancialCategorySummary[]>('GET', `/finance/categories${query}`);
+    const query = type ? `?type=${encodeURIComponent(type)}` : "";
+    return this.request<FinancialCategorySummary[]>(
+      "GET",
+      `/finance/categories${query}`,
+    );
   }
 
-  createFinancialCategory(payload: { name: string; type: string }): Promise<FinancialCategorySummary> {
-    return this.request<FinancialCategorySummary>('POST', '/finance/categories', payload);
+  createFinancialCategory(payload: {
+    name: string;
+    type: string;
+  }): Promise<FinancialCategorySummary> {
+    return this.request<FinancialCategorySummary>(
+      "POST",
+      "/finance/categories",
+      payload,
+    );
   }
 
-  updateFinancialCategory(id: string, payload: { name?: string; active?: boolean }): Promise<FinancialCategorySummary> {
-    return this.request<FinancialCategorySummary>('PATCH', `/finance/categories/${id}`, payload);
+  updateFinancialCategory(
+    id: string,
+    payload: { name?: string; active?: boolean },
+  ): Promise<FinancialCategorySummary> {
+    return this.request<FinancialCategorySummary>(
+      "PATCH",
+      `/finance/categories/${id}`,
+      payload,
+    );
   }
 
   findFinancialCategoryIdByName(name: string): Promise<string | null> {
@@ -497,9 +666,14 @@ export class ApiClient {
     );
   }
 
-  findIncomeCategoryByName(name: string): Promise<FinancialCategorySummary | null> {
-    return this.listFinancialCategories('income').then(
-      (categories) => categories.find((item) => item.name.toLowerCase() === name.toLowerCase()) ?? null,
+  findIncomeCategoryByName(
+    name: string,
+  ): Promise<FinancialCategorySummary | null> {
+    return this.listFinancialCategories("income").then(
+      (categories) =>
+        categories.find(
+          (item) => item.name.toLowerCase() === name.toLowerCase(),
+        ) ?? null,
     );
   }
 
@@ -512,18 +686,28 @@ export class ApiClient {
     memberId?: string | null;
     paymentMethod?: string;
   }): Promise<FinancialEntrySummary> {
-    return this.request<FinancialEntrySummary>('POST', '/finance/entries', payload);
+    return this.request<FinancialEntrySummary>(
+      "POST",
+      "/finance/entries",
+      payload,
+    );
   }
 
   deleteFinancialEntry(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/finance/entries/${id}`);
+    return this.request<void>("DELETE", `/finance/entries/${id}`);
   }
 
-  findFinancialEntryIdByDescription(description: string): Promise<string | null> {
+  findFinancialEntryIdByDescription(
+    description: string,
+  ): Promise<string | null> {
     return this.request<{ data: FinancialEntrySummary[] }>(
-      'GET',
+      "GET",
       `/finance/entries?q=${encodeURIComponent(description)}`,
-    ).then((response) => response.data.find((item) => item.description === description)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.description === description)?.id ??
+        null,
+    );
   }
 
   createAsset(payload: {
@@ -533,16 +717,20 @@ export class ApiClient {
     acquisitionValue?: number;
     currentValue?: number;
   }): Promise<AssetSummary> {
-    return this.request<AssetSummary>('POST', '/finance/assets', payload);
+    return this.request<AssetSummary>("POST", "/finance/assets", payload);
   }
 
   deleteAsset(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/finance/assets/${id}`);
+    return this.request<void>("DELETE", `/finance/assets/${id}`);
   }
 
   findAssetIdByName(name: string): Promise<string | null> {
-    return this.request<{ data: AssetSummary[] }>('GET', `/finance/assets?q=${encodeURIComponent(name)}`).then(
-      (response) => response.data.find((item) => item.name === name)?.id ?? null,
+    return this.request<{ data: AssetSummary[] }>(
+      "GET",
+      `/finance/assets?q=${encodeURIComponent(name)}`,
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
     );
   }
 
@@ -555,14 +743,22 @@ export class ApiClient {
     location?: string | null;
     description?: string | null;
   }): Promise<CalendarEventSummary> {
-    return this.request<CalendarEventSummary>('POST', '/secretariat/calendar-events', payload);
+    return this.request<CalendarEventSummary>(
+      "POST",
+      "/secretariat/calendar-events",
+      payload,
+    );
   }
 
   deleteCalendarEvent(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/secretariat/calendar-events/${id}`);
+    return this.request<void>("DELETE", `/secretariat/calendar-events/${id}`);
   }
 
-  findCalendarEventIdByTitle(title: string, from: string, to: string): Promise<string | null> {
+  findCalendarEventIdByTitle(
+    title: string,
+    from: string,
+    to: string,
+  ): Promise<string | null> {
     return this.findCalendarEvents({ from, to }).then(
       (events) => events.find((event) => event.title === title)?.id ?? null,
     );
@@ -574,18 +770,25 @@ export class ApiClient {
     phone?: string | null;
     notes?: string | null;
   }): Promise<VisitorSummary> {
-    return this.request<VisitorSummary>('POST', '/secretariat/visitors', payload);
+    return this.request<VisitorSummary>(
+      "POST",
+      "/secretariat/visitors",
+      payload,
+    );
   }
 
   deleteVisitor(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/secretariat/visitors/${id}`);
+    return this.request<void>("DELETE", `/secretariat/visitors/${id}`);
   }
 
   findVisitorIdByFullName(fullName: string): Promise<string | null> {
     return this.request<{ data: VisitorSummary[] }>(
-      'GET',
+      "GET",
       `/secretariat/visitors?search=${encodeURIComponent(fullName)}`,
-    ).then((response) => response.data.find((item) => item.fullName === fullName)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.fullName === fullName)?.id ?? null,
+    );
   }
 
   createAttendance(payload: {
@@ -596,18 +799,25 @@ export class ApiClient {
     children?: number | null;
     notes?: string | null;
   }): Promise<AttendanceSummary> {
-    return this.request<AttendanceSummary>('POST', '/secretariat/attendance', payload);
+    return this.request<AttendanceSummary>(
+      "POST",
+      "/secretariat/attendance",
+      payload,
+    );
   }
 
   deleteAttendance(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/secretariat/attendance/${id}`);
+    return this.request<void>("DELETE", `/secretariat/attendance/${id}`);
   }
 
   findAttendanceIdByDate(eventDate: string): Promise<string | null> {
     return this.request<{ data: AttendanceSummary[] }>(
-      'GET',
+      "GET",
       `/secretariat/attendance?from=${encodeURIComponent(eventDate)}&to=${encodeURIComponent(eventDate)}`,
-    ).then((response) => response.data.find((item) => item.eventDate === eventDate)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.eventDate === eventDate)?.id ?? null,
+    );
   }
 
   createDocument(payload: {
@@ -617,31 +827,49 @@ export class ApiClient {
     status?: string;
     summary?: string | null;
   }): Promise<DocumentSummary> {
-    return this.request<DocumentSummary>('POST', '/secretariat/documents', payload);
+    return this.request<DocumentSummary>(
+      "POST",
+      "/secretariat/documents",
+      payload,
+    );
   }
 
   deleteDocument(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/secretariat/documents/${id}`);
+    return this.request<void>("DELETE", `/secretariat/documents/${id}`);
   }
 
   findDocumentIdByTitle(title: string): Promise<string | null> {
     return this.request<{ data: DocumentSummary[] }>(
-      'GET',
+      "GET",
       `/secretariat/documents?search=${encodeURIComponent(title)}`,
-    ).then((response) => response.data.find((item) => item.title === title)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.title === title)?.id ?? null,
+    );
   }
 
-  async uploadDocumentFile(documentId: string, buffer: Buffer, fileName: string): Promise<void> {
+  async uploadDocumentFile(
+    documentId: string,
+    buffer: Buffer,
+    fileName: string,
+  ): Promise<void> {
     const formData = new FormData();
-    formData.append('file', new Blob([buffer], { type: 'application/pdf' }), fileName);
+    formData.append(
+      "file",
+      new Blob([buffer], { type: "application/pdf" }),
+      fileName,
+    );
 
-    const response = await fetch(`${this.apiUrl}/secretariat/documents/${documentId}/upload`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.token}`,
+    const response = await fetch(
+      `${this.apiUrl}/secretariat/documents/${documentId}/upload`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: formData,
       },
-      body: formData,
-    });
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -649,30 +877,46 @@ export class ApiClient {
     }
   }
 
-  getSchedulesWeek(from: string, to: string, ministryId?: string): Promise<{
-    events: Array<{ id: string; title: string; ministries: Array<{ ministryId: string; assignments: ScheduleAssignmentSummary[] }> }>;
+  getSchedulesWeek(
+    from: string,
+    to: string,
+    ministryId?: string,
+  ): Promise<{
+    events: Array<{
+      id: string;
+      title: string;
+      ministries: Array<{
+        ministryId: string;
+        assignments: ScheduleAssignmentSummary[];
+      }>;
+    }>;
   }> {
     const search = new URLSearchParams({ from, to });
     if (ministryId) {
-      search.set('ministryId', ministryId);
+      search.set("ministryId", ministryId);
     }
-    return this.request('GET', `/schedules/week?${search.toString()}`);
+    return this.request("GET", `/schedules/week?${search.toString()}`);
   }
 
   bulkUpsertScheduleAssignments(
     calendarEventId: string,
     ministryId: string,
-    items: Array<{ memberId: string; roleLabel: string; confirmed?: boolean; notes?: string | null }>,
+    items: Array<{
+      memberId: string;
+      roleLabel: string;
+      confirmed?: boolean;
+      notes?: string | null;
+    }>,
   ): Promise<ScheduleAssignmentSummary[]> {
     return this.request<ScheduleAssignmentSummary[]>(
-      'PUT',
+      "PUT",
       `/schedules/events/${calendarEventId}/ministries/${ministryId}/assignments`,
       { items },
     );
   }
 
   deleteScheduleAssignment(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/schedules/assignments/${id}`);
+    return this.request<void>("DELETE", `/schedules/assignments/${id}`);
   }
 
   createAnnouncement(payload: {
@@ -681,33 +925,46 @@ export class ApiClient {
     publishedAt?: string;
     expiresAt?: string | null;
   }): Promise<AnnouncementSummary> {
-    return this.request<AnnouncementSummary>('POST', '/announcements', payload);
+    return this.request<AnnouncementSummary>("POST", "/announcements", payload);
   }
 
   deleteAnnouncement(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/announcements/${id}`);
+    return this.request<void>("DELETE", `/announcements/${id}`);
   }
 
   findAnnouncementIdByTitle(title: string): Promise<string | null> {
     return this.request<{ data: AnnouncementSummary[] }>(
-      'GET',
+      "GET",
       `/announcements?search=${encodeURIComponent(title)}&includeExpired=true`,
-    ).then((response) => response.data.find((item) => item.title === title)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.title === title)?.id ?? null,
+    );
   }
 
-  createSocialProject(payload: { name: string; description?: string }): Promise<SocialProjectSummary> {
-    return this.request<SocialProjectSummary>('POST', '/social-projects', payload);
+  createSocialProject(payload: {
+    name: string;
+    description?: string;
+  }): Promise<SocialProjectSummary> {
+    return this.request<SocialProjectSummary>(
+      "POST",
+      "/social-projects",
+      payload,
+    );
   }
 
   deleteSocialProject(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/social-projects/${id}`);
+    return this.request<void>("DELETE", `/social-projects/${id}`);
   }
 
   findSocialProjectIdByName(name: string): Promise<string | null> {
     return this.request<{ data: SocialProjectSummary[] }>(
-      'GET',
+      "GET",
       `/social-projects?q=${encodeURIComponent(name)}`,
-    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
+    );
   }
 
   createMissionField(payload: {
@@ -715,18 +972,25 @@ export class ApiClient {
     country: string;
     city?: string;
   }): Promise<MissionFieldSummary> {
-    return this.request<MissionFieldSummary>('POST', '/mission-fields', payload);
+    return this.request<MissionFieldSummary>(
+      "POST",
+      "/mission-fields",
+      payload,
+    );
   }
 
   deleteMissionField(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/mission-fields/${id}`);
+    return this.request<void>("DELETE", `/mission-fields/${id}`);
   }
 
   findMissionFieldIdByName(name: string): Promise<string | null> {
     return this.request<{ data: MissionFieldSummary[] }>(
-      'GET',
+      "GET",
       `/mission-fields?q=${encodeURIComponent(name)}`,
-    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
+    );
   }
 
   createMissionAssignment(payload: {
@@ -734,29 +998,46 @@ export class ApiClient {
     missionFieldId: string;
     startDate: string;
   }): Promise<MissionAssignmentSummary> {
-    return this.request<MissionAssignmentSummary>('POST', '/mission-assignments', payload);
+    return this.request<MissionAssignmentSummary>(
+      "POST",
+      "/mission-assignments",
+      payload,
+    );
   }
 
   deleteMissionAssignment(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/mission-assignments/${id}`);
+    return this.request<void>("DELETE", `/mission-assignments/${id}`);
   }
 
   createConstructionProject(payload: {
     name: string;
-    ministryId: string;
+    supervisorMemberId?: string;
     description?: string;
+    location?: string;
+    status?: string;
+    budgetAmount?: number;
+    startDate?: string;
+    expectedEndDate?: string;
+    actualEndDate?: string;
   }): Promise<ConstructionProjectSummary> {
-    return this.request<ConstructionProjectSummary>('POST', '/construction-projects', payload);
+    return this.request<ConstructionProjectSummary>(
+      "POST",
+      "/construction-projects",
+      payload,
+    );
   }
 
   deleteConstructionProject(id: string): Promise<void> {
-    return this.request<void>('DELETE', `/construction-projects/${id}`);
+    return this.request<void>("DELETE", `/construction-projects/${id}`);
   }
 
   findConstructionProjectIdByName(name: string): Promise<string | null> {
     return this.request<{ data: ConstructionProjectSummary[] }>(
-      'GET',
+      "GET",
       `/construction-projects?q=${encodeURIComponent(name)}`,
-    ).then((response) => response.data.find((item) => item.name === name)?.id ?? null);
+    ).then(
+      (response) =>
+        response.data.find((item) => item.name === name)?.id ?? null,
+    );
   }
 }

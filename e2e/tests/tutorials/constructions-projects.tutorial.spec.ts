@@ -1,13 +1,19 @@
-import { test, expect } from '../../fixtures/tutorial.fixture';
-import { ApiClient } from '../../helpers/api-client.helper';
-import { waitForResourceId } from '../../helpers/demo-cleanup.helper';
-import { createTutorialCleanupState, cleanupTutorialState } from '../../helpers/tutorial-cleanup.helper';
-import { e2eConstructionProjectName, e2eMinistryName } from '../../helpers/test-data.helper';
-import { ConstructionsPage } from '../../pages/constructions.page';
+import { test, expect } from "../../fixtures/tutorial.fixture";
+import { ApiClient } from "../../helpers/api-client.helper";
+import { waitForResourceId } from "../../helpers/demo-cleanup.helper";
+import {
+  createTutorialCleanupState,
+  cleanupTutorialState,
+} from "../../helpers/tutorial-cleanup.helper";
+import {
+  e2eConstructionProjectName,
+  e2eMemberName,
+} from "../../helpers/test-data.helper";
+import { ConstructionsPage } from "../../pages/constructions.page";
 
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({ mode: "serial" });
 
-test.describe('constructions-projects tutorial', () => {
+test.describe("constructions-projects tutorial", () => {
   const cleanup = createTutorialCleanupState();
   const constructionProjectIds: string[] = [];
 
@@ -19,31 +25,40 @@ test.describe('constructions-projects tutorial', () => {
     await cleanupTutorialState(cleanup);
   });
 
-  test('constructions-projects — cadastrar obra', async ({ page, tutorialStep }) => {
+  test("constructions-projects — cadastrar obra", async ({
+    page,
+    tutorialStep,
+  }) => {
     const api = await ApiClient.asAdmin();
-    const ministryName = e2eMinistryName('TUTORIAL Obra Min');
-    const ministry = await api.createMinistry({ name: ministryName });
-    cleanup.ministryIds.push(ministry.id);
+    const memberName = e2eMemberName("TUTORIAL Obra Supervisor");
+    const member = await api.createMember({
+      fullName: memberName,
+      status: "active",
+    });
+    cleanup.memberIds.push(member.id);
 
-    const projectName = e2eConstructionProjectName('TUTORIAL Obra');
+    const projectName = e2eConstructionProjectName("TUTORIAL Obra");
     const constructions = new ConstructionsPage(page);
 
-    await tutorialStep('Abrir obras e projetos', async () => {
+    await tutorialStep("Abrir obras e projetos", async () => {
       await constructions.gotoProjects();
     });
 
-    await tutorialStep('Cadastrar obra de demonstração', async () => {
+    await tutorialStep("Cadastrar obra de demonstração", async () => {
       await constructions.openCreateProjectDialog();
-      await constructions.fillProjectForm({ name: projectName, ministryId: ministry.id });
+      await constructions.fillProjectForm({
+        name: projectName,
+        supervisorMemberId: member.id,
+      });
       await constructions.saveProjectForm();
       await constructions.search(projectName);
 
       const projectId = await waitForResourceId(
         () => api.findConstructionProjectIdByName(projectName),
-        'Obra tutorial',
+        "Obra tutorial",
       );
       constructionProjectIds.push(projectId);
-      await expect(page.getByRole('cell', { name: projectName })).toBeVisible();
+      await expect(page.getByRole("cell", { name: projectName })).toBeVisible();
     });
   });
 });

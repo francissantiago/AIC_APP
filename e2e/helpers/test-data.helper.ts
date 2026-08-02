@@ -2,80 +2,84 @@ export function e2eSuffix(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function e2eUsername(prefix = 'e2e'): string {
-  return `${prefix}-${e2eSuffix()}`.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 50);
+export function e2eUsername(prefix = "e2e"): string {
+  return `${prefix}-${e2eSuffix()}`
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .slice(0, 50);
 }
 
 export function e2eEmail(username: string): string {
   return `${username}@example.test`;
 }
 
-export function e2eRoleCode(prefix = 'E2E'): string {
-  const raw = `${prefix}${e2eSuffix()}`.replace(/[^A-Za-z0-9_]/g, '_').toUpperCase();
+export function e2eRoleCode(prefix = "E2E"): string {
+  const raw = `${prefix}${e2eSuffix()}`
+    .replace(/[^A-Za-z0-9_]/g, "_")
+    .toUpperCase();
   return raw.slice(0, 30);
 }
 
-export function e2eMemberName(prefix = 'E2E Membro'): string {
+export function e2eMemberName(prefix = "E2E Membro"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eFamilyName(prefix = 'E2E Família'): string {
+export function e2eFamilyName(prefix = "E2E Família"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eMinistryName(prefix = 'E2E Ministério'): string {
+export function e2eMinistryName(prefix = "E2E Ministério"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eClassName(prefix = 'E2E Classe'): string {
+export function e2eClassName(prefix = "E2E Classe"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eSmallGroupName(prefix = 'E2E Célula'): string {
+export function e2eSmallGroupName(prefix = "E2E Célula"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eCongregationBranchName(prefix = 'E2E Filial'): string {
+export function e2eCongregationBranchName(prefix = "E2E Filial"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eFinanceEntryDescription(prefix = 'E2E Lançamento'): string {
+export function e2eFinanceEntryDescription(prefix = "E2E Lançamento"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eFinanceCategoryName(prefix = 'E2E Categoria'): string {
+export function e2eFinanceCategoryName(prefix = "E2E Categoria"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eAssetName(prefix = 'E2E Bem'): string {
+export function e2eAssetName(prefix = "E2E Bem"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eVisitorName(prefix = 'E2E Visitante'): string {
+export function e2eVisitorName(prefix = "E2E Visitante"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eCalendarEventTitle(prefix = 'E2E Evento'): string {
+export function e2eCalendarEventTitle(prefix = "E2E Evento"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eDocumentTitle(prefix = 'E2E Documento'): string {
+export function e2eDocumentTitle(prefix = "E2E Documento"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eAnnouncementTitle(prefix = 'E2E Aviso'): string {
+export function e2eAnnouncementTitle(prefix = "E2E Aviso"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eSocialProjectName(prefix = 'E2E Projeto'): string {
+export function e2eSocialProjectName(prefix = "E2E Projeto"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eMissionFieldName(prefix = 'E2E Campo'): string {
+export function e2eMissionFieldName(prefix = "E2E Campo"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
-export function e2eConstructionProjectName(prefix = 'E2E Obra'): string {
+export function e2eConstructionProjectName(prefix = "E2E Obra"): string {
   return `${prefix} ${e2eSuffix()}`;
 }
 
@@ -85,10 +89,10 @@ export function tutorialLabel(prefix: string): string {
 
 export function localDateTimeInput(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
@@ -166,26 +170,26 @@ export function eventEarlyMorningInCurrentWeek(): {
 
 export function todayIsoDate(): string {
   const today = new Date();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
   return `${today.getFullYear()}-${month}-${day}`;
 }
 
 export function monthRangeIsoDate(): { from: string; to: string } {
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, "0");
   const lastDay = new Date(year, today.getMonth() + 1, 0).getDate();
   return {
     from: `${year}-${month}-01`,
-    to: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
+    to: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
   };
 }
 
 export function todayBirthDateIso(referenceYear = 1990): string {
   const today = new Date();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
   return `${referenceYear}-${month}-${day}`;
 }
 

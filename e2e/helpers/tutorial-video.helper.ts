@@ -1,5 +1,13 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
-import path from 'path';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "fs";
+import path from "path";
 
 export interface CatalogFeature {
   id: string;
@@ -59,12 +67,12 @@ interface PlaywrightJsonReport {
 }
 
 export function loadCatalog(catalogPath: string): CatalogFile {
-  return JSON.parse(readFileSync(catalogPath, 'utf-8')) as CatalogFile;
+  return JSON.parse(readFileSync(catalogPath, "utf-8")) as CatalogFile;
 }
 
 export function featureIdFromSpecPath(specPath: string): string {
   const base = path.basename(specPath);
-  return base.replace('.tutorial.spec.ts', '');
+  return base.replace(".tutorial.spec.ts", "");
 }
 
 export function findVideoArtifacts(artifactsDir: string): string[] {
@@ -82,7 +90,7 @@ export function findVideoArtifacts(artifactsDir: string): string[] {
         walk(fullPath);
         continue;
       }
-      if (entry === 'video.webm') {
+      if (entry === "video.webm") {
         videos.push(fullPath);
       }
     }
@@ -96,14 +104,14 @@ export function resolveFeatureIdFromArtifactPath(
   artifactPath: string,
   features: CatalogFeature[],
 ): string | null {
-  const normalized = artifactPath.toLowerCase().replace(/\\/g, '/');
+  const normalized = artifactPath.toLowerCase().replace(/\\/g, "/");
 
   const sorted = [...features].sort((a, b) => b.id.length - a.id.length);
   for (const feature of sorted) {
     if (normalized.includes(feature.id)) {
       return feature.id;
     }
-    const slug = feature.id.replace(/-/g, '');
+    const slug = feature.id.replace(/-/g, "");
     if (normalized.includes(slug.slice(0, Math.min(slug.length, 20)))) {
       return feature.id;
     }
@@ -111,8 +119,8 @@ export function resolveFeatureIdFromArtifactPath(
 
   const folder = path.basename(path.dirname(normalized));
   for (const feature of sorted) {
-    const folderPrefix = feature.id.replace(/-/g, '').slice(0, 12);
-    if (folder.replace(/-/g, '').includes(folderPrefix.slice(0, 8))) {
+    const folderPrefix = feature.id.replace(/-/g, "").slice(0, 12);
+    if (folder.replace(/-/g, "").includes(folderPrefix.slice(0, 8))) {
       return feature.id;
     }
   }
@@ -120,19 +128,23 @@ export function resolveFeatureIdFromArtifactPath(
   return null;
 }
 
-export function collectVideosFromReport(reportPath: string): Array<{ featureId: string; videoPath: string }> {
+export function collectVideosFromReport(
+  reportPath: string,
+): Array<{ featureId: string; videoPath: string }> {
   if (!existsSync(reportPath)) {
     return [];
   }
 
-  const report = JSON.parse(readFileSync(reportPath, 'utf-8')) as PlaywrightJsonReport;
+  const report = JSON.parse(
+    readFileSync(reportPath, "utf-8"),
+  ) as PlaywrightJsonReport;
   const entries: Array<{ featureId: string; videoPath: string }> = [];
   const seen = new Set<string>();
 
   const walkSuite = (suite: PlaywrightSuite): void => {
     for (const spec of suite.specs ?? []) {
       const specFile = spec.file ?? suite.file;
-      if (!specFile?.includes('.tutorial.spec.ts')) {
+      if (!specFile?.includes(".tutorial.spec.ts")) {
         continue;
       }
 
@@ -140,7 +152,11 @@ export function collectVideosFromReport(reportPath: string): Array<{ featureId: 
       for (const test of spec.tests ?? []) {
         for (const result of test.results ?? []) {
           for (const attachment of result.attachments ?? []) {
-            if (attachment.name !== 'video' || !attachment.path || seen.has(featureId)) {
+            if (
+              attachment.name !== "video" ||
+              !attachment.path ||
+              seen.has(featureId)
+            ) {
               continue;
             }
             seen.add(featureId);
@@ -177,11 +193,15 @@ export function publishTutorialVideos(options: {
   locale?: string;
 }): HelpVideoManifest {
   const catalog = loadCatalog(options.catalogPath);
-  const implemented = catalog.features.filter((feature) => feature.status === 'implemented');
+  const implemented = catalog.features.filter(
+    (feature) => feature.status === "implemented",
+  );
 
   ensureDir(options.outputDir);
 
-  const fromReport = options.resultsPath ? collectVideosFromReport(options.resultsPath) : [];
+  const fromReport = options.resultsPath
+    ? collectVideosFromReport(options.resultsPath)
+    : [];
   const artifactVideos = findVideoArtifacts(options.artifactsDir);
 
   const manifestVideos: HelpVideoManifestEntry[] = [];
@@ -190,7 +210,11 @@ export function publishTutorialVideos(options: {
 
   for (const entry of fromReport) {
     const feature = implemented.find((item) => item.id === entry.featureId);
-    if (!feature || published.has(entry.featureId) || !existsSync(entry.videoPath)) {
+    if (
+      !feature ||
+      published.has(entry.featureId) ||
+      !existsSync(entry.videoPath)
+    ) {
       continue;
     }
 
@@ -233,22 +257,37 @@ export function publishTutorialVideos(options: {
 
   const manifest: HelpVideoManifest = {
     version: catalog.version,
-    locale: options.locale ?? 'pt-BR',
-    videos: manifestVideos.sort((a, b) => a.featureId.localeCompare(b.featureId)),
+    locale: options.locale ?? "pt-BR",
+    videos: manifestVideos.sort((a, b) =>
+      a.featureId.localeCompare(b.featureId),
+    ),
   };
 
-  const manifestPath = path.join(options.outputDir, 'help-videos.manifest.json');
-  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf-8');
+  const manifestPath = path.join(
+    options.outputDir,
+    "help-videos.manifest.json",
+  );
+  writeFileSync(
+    manifestPath,
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "utf-8",
+  );
 
   if (options.frontendDir) {
     ensureDir(options.frontendDir);
     for (const entry of manifestVideos) {
       const source = path.join(options.outputDir, `${entry.featureId}.webm`);
       if (existsSync(source)) {
-        copyFileSync(source, path.join(options.frontendDir, `${entry.featureId}.webm`));
+        copyFileSync(
+          source,
+          path.join(options.frontendDir, `${entry.featureId}.webm`),
+        );
       }
     }
-    copyFileSync(manifestPath, path.join(options.frontendDir, 'help-videos.manifest.json'));
+    copyFileSync(
+      manifestPath,
+      path.join(options.frontendDir, "help-videos.manifest.json"),
+    );
   }
 
   return manifest;

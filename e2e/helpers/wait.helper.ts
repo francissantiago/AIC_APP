@@ -1,11 +1,21 @@
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
 export async function waitForAppShell(page: Page): Promise<void> {
-  await page.getByTestId('app-sidebar').waitFor({ state: 'visible' });
-  await page.getByTestId('app-main').waitFor({ state: 'visible' });
+  await page.getByTestId("app-sidebar").waitFor({ state: "visible" });
+  await page.getByTestId("app-main").waitFor({ state: "visible" });
 }
 
 export async function waitForRoute(page: Page, path: string): Promise<void> {
-  await page.waitForURL((url) => url.pathname === path || url.pathname.startsWith(`${path}/`));
+  await page.waitForURL(
+    (url) => url.pathname === path || url.pathname.startsWith(`${path}/`),
+  );
   await waitForAppShell(page);
+}
+
+export async function waitForSearchResponse(page: Page): Promise<void> {
+  await page.waitForTimeout(800);
+  await page
+    .getByText(/Carregando|Loading/i)
+    .waitFor({ state: "hidden" })
+    .catch(() => undefined);
 }

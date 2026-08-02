@@ -1,4 +1,4 @@
-import { ApiClient } from './api-client.helper';
+import { ApiClient } from "./api-client.helper";
 
 export interface DemoCleanupState {
   announcementIds: string[];
@@ -88,7 +88,9 @@ export async function cleanupDemoState(state: DemoCleanupState): Promise<void> {
     await api.deleteAnnouncement(id).catch(() => undefined);
   }
   if (state.restoreCongregationName) {
-    await api.updateCongregationBase({ name: state.restoreCongregationName }).catch(() => undefined);
+    await api
+      .updateCongregationBase({ name: state.restoreCongregationName })
+      .catch(() => undefined);
     state.restoreCongregationName = undefined;
   }
 }

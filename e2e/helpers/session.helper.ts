@@ -1,8 +1,11 @@
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-export const TOKEN_STORAGE_KEY = 'aic.accessToken';
+export const TOKEN_STORAGE_KEY = "aic.accessToken";
 
-export async function injectSessionToken(page: Page, token: string): Promise<void> {
+export async function injectSessionToken(
+  page: Page,
+  token: string,
+): Promise<void> {
   await page.addInitScript(
     ([key, value]) => {
       sessionStorage.setItem(key, value);
@@ -12,5 +15,5 @@ export async function injectSessionToken(page: Page, token: string): Promise<voi
 }
 
 export function getApiUrl(): string {
-  return process.env.E2E_API_URL ?? 'http://localhost:3002/api';
+  return process.env.E2E_API_URL ?? "http://localhost:3002/api";
 }

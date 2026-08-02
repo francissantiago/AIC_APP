@@ -1,12 +1,19 @@
-import { test, expect } from '../../fixtures/tutorial.fixture';
-import { ApiClient } from '../../helpers/api-client.helper';
-import { createTutorialCleanupState, cleanupTutorialState } from '../../helpers/tutorial-cleanup.helper';
-import { e2eMemberName, e2eMissionFieldName, todayIsoDate } from '../../helpers/test-data.helper';
-import { MissionsPage } from '../../pages/missions.page';
+import { test, expect } from "../../fixtures/tutorial.fixture";
+import { ApiClient } from "../../helpers/api-client.helper";
+import {
+  createTutorialCleanupState,
+  cleanupTutorialState,
+} from "../../helpers/tutorial-cleanup.helper";
+import {
+  e2eMemberName,
+  e2eMissionFieldName,
+  todayIsoDate,
+} from "../../helpers/test-data.helper";
+import { MissionsPage } from "../../pages/missions.page";
 
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({ mode: "serial" });
 
-test.describe('missions-assignments tutorial', () => {
+test.describe("missions-assignments tutorial", () => {
   const cleanup = createTutorialCleanupState();
   const missionFieldIds: string[] = [];
   const missionAssignmentIds: string[] = [];
@@ -22,22 +29,32 @@ test.describe('missions-assignments tutorial', () => {
     await cleanupTutorialState(cleanup);
   });
 
-  test('missions-assignments — vincular missionário ao campo', async ({ page, tutorialStep }) => {
+  test("missions-assignments — vincular missionário ao campo", async ({
+    page,
+    tutorialStep,
+  }) => {
     const api = await ApiClient.asAdmin();
-    const memberName = e2eMemberName('TUTORIAL Missionário');
-    const fieldName = e2eMissionFieldName('TUTORIAL Campo');
-    const member = await api.createMember({ fullName: memberName, status: 'active' });
+    const memberName = e2eMemberName("TUTORIAL Missionário");
+    const fieldName = e2eMissionFieldName("TUTORIAL Campo");
+    const member = await api.createMember({
+      fullName: memberName,
+      status: "active",
+    });
     cleanup.memberIds.push(member.id);
-    const field = await api.createMissionField({ name: fieldName, country: 'Brasil', city: 'São Paulo' });
+    const field = await api.createMissionField({
+      name: fieldName,
+      country: "Brasil",
+      city: "São Paulo",
+    });
     missionFieldIds.push(field.id);
 
     const missions = new MissionsPage(page);
 
-    await tutorialStep('Abrir designações missionárias', async () => {
+    await tutorialStep("Abrir designações missionárias", async () => {
       await missions.gotoAssignments();
     });
 
-    await tutorialStep('Criar designação de demonstração', async () => {
+    await tutorialStep("Criar designação de demonstração", async () => {
       await missions.openCreateAssignmentDialog();
       await missions.fillAssignmentForm({
         memberId: member.id,
@@ -45,7 +62,7 @@ test.describe('missions-assignments tutorial', () => {
         startDate: todayIsoDate(),
       });
       await missions.saveAssignmentForm();
-      await expect(page.getByRole('cell', { name: memberName })).toBeVisible();
+      await expect(page.getByRole("cell", { name: memberName })).toBeVisible();
     });
   });
 });
