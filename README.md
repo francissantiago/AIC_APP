@@ -14,6 +14,22 @@ AIC_APP/
 └── README.md
 ```
 
+## Módulos da Aplicação
+
+O sistema é composto por diversos módulos integrados para a gestão completa da igreja:
+
+- **Autenticação e Acesso:** Login, gestão de usuários, cargos (roles) e permissões granulares (ACL).
+- **Membros e Famílias:** Cadastro de membros, histórico, transferências, gestão familiar e emissão de carteirinhas.
+- **Congregações:** Gestão de múltiplas congregações (matriz e filiais) em um ambiente unificado.
+- **Secretaria e Agenda:** Gestão de eventos, calendário (com integração bidirecional ao Google Calendar), visitantes e documentos.
+- **Financeiro e Patrimônio:** Controle de entradas (dízimos, ofertas), saídas, relatórios financeiros e gestão de bens.
+- **Escola Bíblica Dominical (EBD):** Gestão de turmas, alunos, professores e registro de frequência.
+- **Pequenos Grupos / Células:** Cadastro de grupos, líderes, participantes e relatórios de reuniões.
+- **Ministérios e Missões:** Gestão de equipes, escalas de serviço, projetos missionários e voluntários.
+- **Projetos Sociais e Obras:** Acompanhamento de ações sociais, distribuição de recursos e gestão de construções/reformas.
+- **Comunicação:** Mural de avisos e sistema de notificações em tempo real.
+- **Dashboards:** Painéis gerenciais com métricas e gráficos para visão estratégica.
+
 ## Pré-requisitos
 
 - Node.js 20+

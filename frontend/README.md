@@ -10,6 +10,17 @@ Interface web do **AIC — Administração de Igrejas Cristãs**.
 - ngx-translate (i18n)
 - Vitest (testes)
 
+## Módulos e Componentes
+
+A interface é dividida em componentes funcionais (localizados em `src/app/components/`), refletindo os módulos de negócio do sistema:
+
+- **Acesso e Perfil:** `auth`, `users`, `roles`, `profile`, `setup`
+- **Gestão de Pessoas:** `members`, `families`, `membership-cards`
+- **Administração:** `congregations`, `secretariat`, `finance`, `assets`
+- **Atividades da Igreja:** `ebd` (Escola Bíblica), `small-groups` (Células), `ministries`, `missions`
+- **Projetos:** `social-projects`, `constructions`
+- **Comunicação e Painel:** `dashboard`, `announcements`, `notifications-bell`
+
 ## Pré-requisitos
 
 - Node.js 20+

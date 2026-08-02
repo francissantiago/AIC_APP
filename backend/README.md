@@ -10,6 +10,19 @@ Scaffold da API do **AIC — Administração de Igrejas Cristãs**.
 - Cron (`@nestjs/schedule`)
 - WebSocket (Socket.IO, namespace `/ws`)
 
+## Módulos
+
+A arquitetura do backend é modular, separando as responsabilidades por domínio. Os principais módulos localizados em `src/modules/` incluem:
+
+- **Core e Segurança:** `auth`, `users`, `roles`, `permissions`, `setup`
+- **Gestão de Pessoas:** `members`, `families`, `membership-cards`, `member-transfers`, `member-user-link`
+- **Institucional:** `congregations`, `secretariat`, `schedules`
+- **Financeiro e Bens:** `finance`, `assets`
+- **Atividades Eclesiásticas:** `classes` (EBD), `small-groups`, `ministries`, `missions`
+- **Projetos:** `social-projects`, `constructions`
+- **Comunicação:** `announcements`, `notifications`
+- **Visão Geral:** `dashboard`
+
 ## Pré-requisitos
 
 - Node.js 20+
